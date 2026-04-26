@@ -480,6 +480,48 @@
   </section>
 
   <section>
+    <h2>Predicates Are The Product</h2>
+    <p>
+      A predicate is a specific claim Paxiom can prove about Ethereum state. Subscribers are not buying
+      a vague market-data stream; they are buying verified answers they can wire into trading, risk,
+      accounting, and monitoring systems.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3><code>storage_equals</code></h3>
+        <p>Proves a contract storage slot had a specific value under a block state root.</p>
+        <ul>
+          <li>Answer: did this protocol fact exist at this block?</li>
+          <li>Use it for accounting, audits, and custom feeds</li>
+          <li>Live now</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><code>uniswap_v3_slot0</code></h3>
+        <p>Proves and decodes the pool price/tick state traders and monitors care about.</p>
+        <ul>
+          <li>Answer: what did this pool know before the trade?</li>
+          <li>Use it for routing, divergence, and replayable signals</li>
+          <li>Live now</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Decision predicates</h3>
+        <p>The roadmap expands from raw storage to assertions capital systems can act on.</p>
+        <ul>
+          <li>Is an oracle stale or divergent?</li>
+          <li>Is an Aave account liquidatable?</li>
+          <li>Did an event actually happen?</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">
+      The moat compounds as the predicate library grows: protocol storage layouts, proof adapters,
+      decoders, historical records, and subscriber integrations all become reusable infrastructure.
+    </p>
+  </section>
+
+  <section>
     <h2>Where The Roadmap Goes</h2>
     <p>
       The feed starts with real Ethereum storage proof verification and grows toward a broader
@@ -523,6 +565,8 @@
       by predicate, feed, or subject so early customers only receive the feeds they are approved to use.
     </p>
 <pre><code>GET /health
+GET /v1/predicates
+GET /v1/predicates/:id
 GET /v1/feed/latest
 GET /v1/feed/subjects
 GET /v1/feed/commitment/:commitment</code></pre>
