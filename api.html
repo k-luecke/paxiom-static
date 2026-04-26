@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom API Docs</title>
+<style>
+  :root {
+    --bg: #f7f8f6;
+    --ink: #101312;
+    --text: #222826;
+    --muted: #64706a;
+    --line: #d8ded9;
+    --panel: #ffffff;
+    --green: #136f4a;
+    --blue: #234f7d;
+    --amber: #8a5a08;
+    --code: #111817;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 34px clamp(20px, 5vw, 56px) 70px;
+  }
+  nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 54px;
+  }
+  a { color: var(--blue); font-weight: 700; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .mark {
+    color: var(--ink);
+    font-weight: 800;
+    letter-spacing: .08em;
+  }
+  h1 {
+    margin: 0;
+    color: var(--ink);
+    font-size: clamp(38px, 5vw, 64px);
+    line-height: 1.04;
+    letter-spacing: 0;
+    max-width: 780px;
+  }
+  h2 {
+    margin: 0 0 14px;
+    color: var(--ink);
+    font-size: clamp(25px, 3vw, 36px);
+    letter-spacing: 0;
+  }
+  h3 {
+    margin: 0 0 8px;
+    color: var(--ink);
+    font-size: 18px;
+  }
+  p {
+    font-size: 17px;
+    line-height: 1.65;
+    max-width: 760px;
+  }
+  section {
+    padding: 42px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .lead {
+    color: var(--text);
+    font-size: 20px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 22px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+  }
+  .card p, li {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  ul { margin: 10px 0 0; padding-left: 18px; }
+  pre {
+    margin: 18px 0 0;
+    padding: 18px;
+    overflow-x: auto;
+    background: var(--code);
+    color: #e9f0ec;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  code { font-family: "SFMono-Regular", Consolas, monospace; }
+  .note {
+    border-left: 4px solid var(--amber);
+    padding: 12px 16px;
+    background: #fff9ea;
+    color: #4a3920;
+    max-width: 780px;
+    line-height: 1.55;
+  }
+  .action {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 0 16px;
+    border: 1px solid var(--ink);
+    border-radius: 6px;
+    color: #fff;
+    background: var(--ink);
+    font-weight: 800;
+    margin-top: 10px;
+  }
+  @media (max-width: 760px) {
+    nav, .grid { display: block; }
+    .card { margin-top: 12px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <nav>
+    <a class="mark" href="index.html">PAXIOM</a>
+    <div>
+      <a href="index.html#feed-console">Console</a>
+      &nbsp;&nbsp;
+      <a href="index.html#request-access">Request access</a>
+    </div>
+  </nav>
+
+  <section>
+    <h1>Paxiom Feed API</h1>
+    <p class="lead">
+      Subscriber-gated Ethereum proof feeds. Each record includes the value, the predicate,
+      the Ethereum proof context, and a Paxiom commitment so downstream systems can verify,
+      archive, and replay the fact.
+    </p>
+    <p class="note">
+      Live feed access requires an approved subscriber token. Public pages may show schemas,
+      predicates, health, and sample records, but production data is not open-access.
+    </p>
+  </section>
+
+  <section>
+    <h2>Base URL And Auth</h2>
+<pre><code>Base URL: https://api.paxiom.org
+Header:   x-paxiom-feed-token: &lt;subscriber-token&gt;</code></pre>
+<pre><code>curl https://api.paxiom.org/v1/feed/latest?limit=5 \
+  -H "x-paxiom-feed-token: $PAXIOM_FEED_TOKEN"</code></pre>
+  </section>
+
+  <section>
+    <h2>Endpoints</h2>
+    <div class="grid">
+      <div class="card">
+        <h3><code>GET /health</code></h3>
+        <p>Checks whether the API is reachable and whether feed reads require subscriber auth.</p>
+      </div>
+      <div class="card">
+        <h3><code>GET /v1/predicates</code></h3>
+        <p>Lists live and planned predicates, proof systems, expected inputs, outputs, and use cases.</p>
+      </div>
+      <div class="card">
+        <h3><code>GET /v1/feed/latest</code></h3>
+        <p>Returns recent feed records allowed by the subscriber token. Supports <code>limit</code>, <code>predicate</code>, and <code>subject</code>.</p>
+      </div>
+      <div class="card">
+        <h3><code>GET /v1/feed/commitment/:id</code></h3>
+        <p>Looks up a specific proof-backed record by Paxiom commitment or feed item hash.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Predicates</h2>
+    <p>
+      A predicate is a verifiable claim about Ethereum state. The first live package focuses on
+      high-value state facts that trading and risk systems already consume.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3><code>storage_equals</code></h3>
+        <p>Proves a contract storage slot value under an Ethereum state root.</p>
+        <ul>
+          <li>Status: live</li>
+          <li>Proof: EIP-1186 Merkle Patricia proof</li>
+          <li>Use: custom protocol accounting and feed construction</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><code>uniswap_v3_slot0</code></h3>
+        <p>Proves and decodes Uniswap V3 pool price/tick state.</p>
+        <ul>
+          <li>Status: live</li>
+          <li>Proof: EIP-1186 MPT plus slot0 decoder</li>
+          <li>Use: routing, monitoring, divergence, replayable signals</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Record Shape</h2>
+<pre><code>{
+  "schema": "paxiom.feed.v1",
+  "feed_id": "ethereum.uniswap_v3_slot0",
+  "predicate": "uniswap_v3_slot0",
+  "subject": "ethereum:0x88e6...f5640:slot0",
+  "block_number": 24961596,
+  "state_root": "0xd8f847...",
+  "proof_system": "eip1186-mpt+uniswap-v3-slot0",
+  "verification_level": "mpt_verified",
+  "custody": "none",
+  "paxiom_commitment": "775ca05c...",
+  "feed_item_hash": "..."
+}</code></pre>
+  </section>
+
+  <section>
+    <h2>Request Access</h2>
+    <p>
+      Include your company, use case, requested predicates, required freshness, and expected request volume.
+      Early tokens are issued manually with explicit feed scopes and rate limits.
+    </p>
+    <a class="action" href="mailto:access@paxiom.org?subject=Paxiom%20feed%20pilot%20access&body=Company%3A%0AUse%20case%3A%0AFeeds%20requested%3A%20uniswap_v3_slot0%0AFreshness%20needed%3A%0AExpected%20monthly%20volume%3A%0A">Request pilot access</a>
+  </section>
+</main>
+</body>
+</html>

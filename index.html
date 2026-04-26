@@ -391,6 +391,8 @@
     </div>
     <div class="links">
       <a href="#feed-console">Live feed</a>
+      <a href="api.html">API docs</a>
+      <a href="#request-access">Request access</a>
       <a href="spec/proof-corpus.md">Spec</a>
       <a href="https://github.com/k-luecke/paxiom-static" target="_blank" rel="noreferrer">GitHub</a>
     </div>
@@ -405,8 +407,8 @@
       verification level, and commitment trail. Live feed access is subscriber-gated.
     </p>
     <div class="actions">
-      <a class="action primary" href="#feed-console">Inspect sample feed</a>
-      <a class="action" href="spec/proof-corpus.md">Read proof spec</a>
+      <a class="action primary" href="#request-access">Request pilot access</a>
+      <a class="action" href="api.html">Read API docs</a>
     </div>
 
     <div class="status-strip">
@@ -577,6 +579,33 @@ GET /v1/feed/commitment/:commitment</code></pre>
     </p>
   </section>
 
+  <section id="request-access">
+    <div class="split">
+      <div>
+        <h2>Private Feed Pilot</h2>
+        <p>
+          Paxiom is onboarding early subscribers for verified Ethereum state feeds. The first package is
+          proof-backed Uniswap V3 pool state with scoped API access, commitment lookup, and replayable
+          records for trading, monitoring, and risk systems.
+        </p>
+        <p>
+          Pilot access is manually approved. Tokens are scoped by predicate, feed, or subject; production
+          feeds are not open-access and are not custody, execution, or investment advice.
+        </p>
+        <div class="actions">
+          <a class="action primary" href="mailto:access@paxiom.org?subject=Paxiom%20feed%20pilot%20access&body=Company%3A%0AUse%20case%3A%0AFeeds%20requested%3A%20uniswap_v3_slot0%0AFreshness%20needed%3A%0AExpected%20monthly%20volume%3A%0A">Email access@paxiom.org</a>
+          <a class="action" href="api.html">Review integration</a>
+        </div>
+      </div>
+      <div class="rail">
+        <div class="step"><b>1. Qualify the use case</b><span>Trading, monitoring, liquidation, risk, accounting, or settlement checks.</span></div>
+        <div class="step"><b>2. Choose feed scope</b><span>Start with selected predicates and subjects instead of broad API access.</span></div>
+        <div class="step"><b>3. Issue token</b><span>Subscribers receive an API key with explicit rate and feed limits.</span></div>
+        <div class="step"><b>4. Expand predicates</b><span>Custom protocol facts can be added after the first integration is live.</span></div>
+      </div>
+    </div>
+  </section>
+
   <section id="feed-console">
     <h2>Live Feed Console</h2>
     <p>
@@ -627,6 +656,7 @@ npm run proof:live
 
 npm run feed:server</code></pre>
     <div class="footer-links">
+      <a href="api.html">API docs</a>
       <a href="spec/proof-corpus.md">Proof corpus spec</a>
       <a href="https://github.com/k-luecke/paxiom-static" target="_blank" rel="noreferrer">Static site repository</a>
     </div>
