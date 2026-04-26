@@ -339,13 +339,14 @@
     <p class="lead">
       The first product is not custody. It is a feed of machine-readable Ethereum facts,
       verified from Merkle Patricia proofs, committed through Paxiom, and labeled by verification depth.
+      Live feed access is subscriber-gated.
     </p>
 
     <div class="status-strip">
-      <div class="status"><b>Live predicate</b><span>Uniswap V3 pool <code>slot0</code> state.</span></div>
+      <div class="status"><b>Live predicate</b><span>Uniswap V3 pool <code>slot0</code> state for approved feeds.</span></div>
       <div class="status"><b>Current proof level</b><span><code>mpt_verified</code> against Ethereum state roots.</span></div>
-      <div class="status"><b>Feed custody</b><span>None. Subscribers consume data, not hosted assets.</span></div>
-      <div class="status"><b>Next depth</b><span>AO commitment, recursive aggregation, then ZK verification.</span></div>
+      <div class="status"><b>Access model</b><span>Subscriber API keys. Public page shows samples only.</span></div>
+      <div class="status"><b>Custody</b><span>None. Subscribers consume data, not hosted assets.</span></div>
     </div>
   </div>
 </header>
@@ -357,6 +358,7 @@
       Each feed item includes the predicate, subject, value, block number, state root,
       proof system, proof hash, Paxiom commitment, verification level, timestamp, and optional signature.
       Subscribers can store the feed item, verify its commitment, and decide how much trust depth their system requires.
+      Production API access is issued through subscriber onboarding.
     </p>
     <div class="grid">
       <div class="card">
@@ -413,8 +415,8 @@
   <section>
     <h2>Subscriber Endpoints</h2>
     <p>
-      The local feed server exposes the current subscriber API. It can sit behind an authenticated
-      reverse proxy for early subscribers.
+      The feed server exposes the current subscriber API. Production access is authenticated
+      and provisioned per subscriber; unauthenticated public access is not enabled.
     </p>
 <pre><code>GET /health
 GET /v1/feed/latest
@@ -422,21 +424,27 @@ GET /v1/feed/subjects
 GET /v1/feed/commitment/:commitment</code></pre>
     <p class="note">
       Paxiom data feeds are not custody, trade execution, or investment advice. They are proof-labeled records
-      that downstream systems can verify and consume according to their own risk policy.
+      that downstream systems can verify and consume according to their own risk policy. API keys are required
+      for live production feeds.
     </p>
   </section>
 
   <section id="feed-console">
     <h2>Live Feed Console</h2>
     <p>
-      Connect this page to a Paxiom feed API and inspect the latest proof-labeled records.
-      Use the API field for local testing or a public subscriber endpoint.
+      The console is for approved subscribers and local testing. Without an API key or private endpoint,
+      it shows a sample record so the feed shape is visible without exposing live data.
     </p>
     <div class="console">
       <div class="controls">
         <input id="apiBase" aria-label="Feed API base URL" placeholder="https://api.paxiom.org">
         <button type="button" onclick="refreshFeed()">Refresh</button>
         <button class="secondary" type="button" onclick="loadSubjects()">Subjects</button>
+      </div>
+      <div class="controls">
+        <input id="apiToken" aria-label="Feed API token" placeholder="Subscriber API token">
+        <button type="button" onclick="saveToken()">Save Token</button>
+        <button class="secondary" type="button" onclick="clearToken()">Clear Token</button>
       </div>
       <div class="controls">
         <input id="commitment" aria-label="Commitment lookup" placeholder="Paste Paxiom commitment or feed item hash">
@@ -446,6 +454,7 @@ GET /v1/feed/commitment/:commitment</code></pre>
       <div class="feed-status">
         <span class="pill warn" id="health">not connected</span>
         <span class="pill" id="apiLabel">api: unset</span>
+        <span class="pill" id="tokenLabel">token: not set</span>
         <span class="pill" id="countLabel">items: 0</span>
       </div>
       <div class="feed-list" id="feedList">
@@ -503,7 +512,10 @@ function configuredApiBase() {
 function initConsole() {
   const input = document.getElementById('apiBase');
   input.value = configuredApiBase();
+  const token = localStorage.getItem('paxiom.feedToken') || '';
+  document.getElementById('apiToken').value = token;
   document.getElementById('apiLabel').textContent = 'api: ' + input.value;
+  document.getElementById('tokenLabel').textContent = token ? 'token: set' : 'token: not set';
   renderItems([sampleItem], 'Sample record shown until the feed API is reachable.');
 }
 
@@ -514,10 +526,29 @@ function saveApiBase() {
   document.getElementById('apiLabel').textContent = 'api: ' + value;
 }
 
+function saveToken() {
+  const value = document.getElementById('apiToken').value.trim();
+  if (value) {
+    localStorage.setItem('paxiom.feedToken', value);
+    document.getElementById('tokenLabel').textContent = 'token: set';
+  } else {
+    clearToken();
+  }
+}
+
+function clearToken() {
+  localStorage.removeItem('paxiom.feedToken');
+  document.getElementById('apiToken').value = '';
+  document.getElementById('tokenLabel').textContent = 'token: not set';
+}
+
 async function fetchJson(path) {
   const base = document.getElementById('apiBase').value.trim().replace(/\/$/, '');
   document.getElementById('apiLabel').textContent = 'api: ' + base;
-  const res = await fetch(base + path, { headers: { accept: 'application/json' } });
+  const token = localStorage.getItem('paxiom.feedToken') || document.getElementById('apiToken').value.trim();
+  const headers = { accept: 'application/json' };
+  if (token) headers['x-paxiom-feed-token'] = token;
+  const res = await fetch(base + path, { headers });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   return res.json();
 }
@@ -543,7 +574,7 @@ async function refreshFeed() {
     const data = await fetchJson('/v1/feed/latest?limit=10');
     renderItems(data.items || [], ok ? '' : 'Feed health failed, but latest endpoint returned data.');
   } catch (err) {
-    renderItems([sampleItem], 'Could not reach feed API. Showing a sample record.');
+    renderItems([sampleItem], 'Subscriber API unavailable or unauthorized. Showing a sample record.');
   }
 }
 
@@ -554,7 +585,7 @@ async function loadSubjects() {
     const data = await fetchJson('/v1/feed/subjects');
     renderItems(data.items || [], 'Latest record by subject.');
   } catch (err) {
-    renderItems([sampleItem], 'Could not reach feed API. Showing a sample subject.');
+    renderItems([sampleItem], 'Subscriber API unavailable or unauthorized. Showing a sample subject.');
   }
 }
 

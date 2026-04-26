@@ -23,3 +23,5 @@ https://api.paxiom.org
 ```
 
 Change `site-config.js` if the public feed API uses a different origin. For local testing, enter a different API base URL in the page and click "Save API".
+
+Live production access is subscriber-gated. The public page shows sample records unless a subscriber API endpoint and token are configured.
