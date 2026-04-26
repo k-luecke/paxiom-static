@@ -25,20 +25,21 @@
     color: var(--text);
   }
   header {
-    min-height: 76vh;
+    min-height: 72vh;
     display: grid;
     align-content: center;
-    padding: 28px clamp(20px, 5vw, 72px) 44px;
+    padding: 112px clamp(20px, 5vw, 72px) 42px;
     border-bottom: 1px solid var(--line);
   }
   nav {
     position: absolute;
-    top: 24px;
+    top: 22px;
     left: clamp(20px, 5vw, 72px);
     right: clamp(20px, 5vw, 72px);
     display: flex;
     align-items: center;
     gap: 18px;
+    min-height: 38px;
   }
   .mark {
     display: flex;
@@ -47,8 +48,13 @@
     font-weight: 700;
     letter-spacing: .08em;
     color: var(--ink);
+    white-space: nowrap;
   }
-  .mark svg { width: 32px; height: 32px; }
+  .mark svg {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+  }
   .links {
     margin-left: auto;
     display: flex;
@@ -62,12 +68,12 @@
   }
   a:hover { text-decoration: underline; }
   .hero {
-    max-width: 980px;
+    max-width: 920px;
   }
   .eyebrow {
     margin: 0 0 18px;
     color: var(--green);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: .16em;
     text-transform: uppercase;
@@ -75,41 +81,41 @@
   h1 {
     margin: 0;
     color: var(--ink);
-    font-size: clamp(44px, 8vw, 96px);
-    line-height: .95;
+    font-size: clamp(40px, 5.8vw, 72px);
+    line-height: 1.02;
     letter-spacing: 0;
-    max-width: 920px;
+    max-width: 820px;
   }
   .lead {
-    margin: 26px 0 0;
-    max-width: 760px;
-    font-size: clamp(19px, 2.1vw, 25px);
-    line-height: 1.45;
+    margin: 22px 0 0;
+    max-width: 700px;
+    font-size: clamp(17px, 1.7vw, 21px);
+    line-height: 1.5;
     color: var(--text);
   }
   .status-strip {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1px;
-    margin-top: 44px;
+    margin-top: 34px;
     border: 1px solid var(--line);
     background: var(--line);
     max-width: 980px;
   }
   .status {
     background: rgba(255,255,255,.72);
-    padding: 16px;
-    min-height: 86px;
+    padding: 14px;
+    min-height: 78px;
   }
   .status b {
     display: block;
     color: var(--ink);
     margin-bottom: 8px;
-    font-size: 13px;
+    font-size: 12px;
   }
   .status span {
     color: var(--muted);
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.4;
   }
   main {
@@ -302,8 +308,10 @@
     border-radius: 8px;
   }
   @media (max-width: 760px) {
-    header { min-height: 84vh; padding-top: 96px; }
-    nav { align-items: flex-start; }
+    header { min-height: auto; padding-top: 104px; }
+    nav { align-items: flex-start; gap: 12px; }
+    .mark { font-size: 13px; }
+    .mark svg { width: 26px; height: 26px; }
     .links { gap: 10px; font-size: 13px; }
     .status-strip, .grid { grid-template-columns: 1fr; }
     .level { grid-template-columns: 1fr; gap: 4px; }
@@ -335,7 +343,7 @@
 
   <div class="hero">
     <p class="eyebrow">Verified Ethereum data feeds</p>
-    <h1>Paxiom turns Ethereum state into subscriber-grade proof records.</h1>
+    <h1>Subscriber-grade Ethereum facts, backed by proofs.</h1>
     <p class="lead">
       The first product is not custody. It is a feed of machine-readable Ethereum facts,
       verified from Merkle Patricia proofs, committed through Paxiom, and labeled by verification depth.
