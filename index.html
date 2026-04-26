@@ -203,14 +203,116 @@
     gap: 18px;
     margin-top: 22px;
   }
+  .console {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    margin-top: 24px;
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font: inherit;
+    background: #fff;
+    color: var(--ink);
+  }
+  button {
+    border: 1px solid var(--ink);
+    border-radius: 6px;
+    background: var(--ink);
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    padding: 10px 14px;
+    cursor: pointer;
+  }
+  button.secondary {
+    background: #fff;
+    color: var(--ink);
+  }
+  .feed-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0 16px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #eef3ef;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .pill.ok { color: var(--green); background: #e7f5ee; }
+  .pill.warn { color: var(--amber); background: #fff4d8; }
+  .feed-list {
+    display: grid;
+    gap: 10px;
+  }
+  .feed-item {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    background: #fff;
+  }
+  .feed-head {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .feed-title {
+    color: var(--ink);
+    font-weight: 800;
+    overflow-wrap: anywhere;
+  }
+  .feed-meta {
+    color: var(--muted);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .kv {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 8px;
+    padding: 4px 0;
+    border-top: 1px solid #edf0ed;
+    font-size: 13px;
+  }
+  .kv b { color: var(--muted); }
+  .kv span { overflow-wrap: anywhere; }
+  .empty {
+    color: var(--muted);
+    padding: 16px;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+  }
   @media (max-width: 760px) {
     header { min-height: 84vh; padding-top: 96px; }
     nav { align-items: flex-start; }
     .links { gap: 10px; font-size: 13px; }
     .status-strip, .grid { grid-template-columns: 1fr; }
     .level { grid-template-columns: 1fr; gap: 4px; }
+    .controls { grid-template-columns: 1fr; }
+    .feed-head, .kv { display: block; }
+    .feed-meta { margin-top: 4px; }
   }
 </style>
+<script src="site-config.js"></script>
 </head>
 <body>
 <header>
@@ -225,6 +327,7 @@
       PAXIOM
     </div>
     <div class="links">
+      <a href="#feed-console">Live feed</a>
       <a href="spec/proof-corpus.md">Spec</a>
       <a href="https://github.com/k-luecke/paxiom-static" target="_blank" rel="noreferrer">GitHub</a>
     </div>
@@ -323,6 +426,34 @@ GET /v1/feed/commitment/:commitment</code></pre>
     </p>
   </section>
 
+  <section id="feed-console">
+    <h2>Live Feed Console</h2>
+    <p>
+      Connect this page to a Paxiom feed API and inspect the latest proof-labeled records.
+      Use the API field for local testing or a public subscriber endpoint.
+    </p>
+    <div class="console">
+      <div class="controls">
+        <input id="apiBase" aria-label="Feed API base URL" placeholder="https://api.paxiom.org">
+        <button type="button" onclick="refreshFeed()">Refresh</button>
+        <button class="secondary" type="button" onclick="loadSubjects()">Subjects</button>
+      </div>
+      <div class="controls">
+        <input id="commitment" aria-label="Commitment lookup" placeholder="Paste Paxiom commitment or feed item hash">
+        <button type="button" onclick="lookupCommitment()">Lookup</button>
+        <button class="secondary" type="button" onclick="saveApiBase()">Save API</button>
+      </div>
+      <div class="feed-status">
+        <span class="pill warn" id="health">not connected</span>
+        <span class="pill" id="apiLabel">api: unset</span>
+        <span class="pill" id="countLabel">items: 0</span>
+      </div>
+      <div class="feed-list" id="feedList">
+        <div class="empty">No feed records loaded yet.</div>
+      </div>
+    </div>
+  </section>
+
   <section>
     <h2>Current Commands</h2>
 <pre><code>npm run proof:uniswap-v3-slot0 -- \
@@ -344,5 +475,152 @@ npm run feed:server</code></pre>
     </div>
   </section>
 </main>
+<script>
+const sampleItem = {
+  schema: 'paxiom.feed.v1',
+  feed_id: 'ethereum.uniswap_v3_slot0',
+  predicate: 'uniswap_v3_slot0',
+  subject: 'ethereum:0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640:slot0',
+  block_number: 24961660,
+  state_root: '0x40e907bd3becec6fae4d5f10c4c19bdc8a34f79b8cb2907820330453bf2e42d5',
+  proof_system: 'eip1186-mpt+uniswap-v3-slot0',
+  verification_level: 'mpt_verified',
+  custody: 'none',
+  paxiom_commitment: '2e3850623970bf9af5c4cc460bc6c7cddd093530b951f86c259fac9ea2d9b8c3',
+  feed_item_hash: '84691bdfae08dedb6767a6805f6a85abd9285470d5026a9d0b2fcebf701ba022',
+  value: {
+    decoded: { tick: '198871' },
+    token1PerToken0: 0.000432938269562708
+  }
+};
+
+function configuredApiBase() {
+  return localStorage.getItem('paxiom.feedApiBase') ||
+    window.PAXIOM_SITE_CONFIG?.feedApiBase ||
+    'https://api.paxiom.org';
+}
+
+function initConsole() {
+  const input = document.getElementById('apiBase');
+  input.value = configuredApiBase();
+  document.getElementById('apiLabel').textContent = 'api: ' + input.value;
+  renderItems([sampleItem], 'Sample record shown until the feed API is reachable.');
+}
+
+function saveApiBase() {
+  const value = document.getElementById('apiBase').value.trim().replace(/\/$/, '');
+  if (!value) return;
+  localStorage.setItem('paxiom.feedApiBase', value);
+  document.getElementById('apiLabel').textContent = 'api: ' + value;
+}
+
+async function fetchJson(path) {
+  const base = document.getElementById('apiBase').value.trim().replace(/\/$/, '');
+  document.getElementById('apiLabel').textContent = 'api: ' + base;
+  const res = await fetch(base + path, { headers: { accept: 'application/json' } });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+async function checkHealth() {
+  const health = document.getElementById('health');
+  try {
+    const data = await fetchJson('/health');
+    health.textContent = data.status === 'ok' ? 'feed online' : 'feed reachable';
+    health.className = 'pill ok';
+    return true;
+  } catch (err) {
+    health.textContent = 'feed offline';
+    health.className = 'pill warn';
+    return false;
+  }
+}
+
+async function refreshFeed() {
+  saveApiBase();
+  const ok = await checkHealth();
+  try {
+    const data = await fetchJson('/v1/feed/latest?limit=10');
+    renderItems(data.items || [], ok ? '' : 'Feed health failed, but latest endpoint returned data.');
+  } catch (err) {
+    renderItems([sampleItem], 'Could not reach feed API. Showing a sample record.');
+  }
+}
+
+async function loadSubjects() {
+  saveApiBase();
+  await checkHealth();
+  try {
+    const data = await fetchJson('/v1/feed/subjects');
+    renderItems(data.items || [], 'Latest record by subject.');
+  } catch (err) {
+    renderItems([sampleItem], 'Could not reach feed API. Showing a sample subject.');
+  }
+}
+
+async function lookupCommitment() {
+  saveApiBase();
+  const value = document.getElementById('commitment').value.trim();
+  if (!value) return;
+  await checkHealth();
+  try {
+    const item = await fetchJson('/v1/feed/commitment/' + encodeURIComponent(value));
+    renderItems([item], 'Commitment lookup result.');
+  } catch (err) {
+    renderItems([], 'No record found for that commitment.');
+  }
+}
+
+function renderItems(items, message) {
+  document.getElementById('countLabel').textContent = 'items: ' + items.length;
+  const list = document.getElementById('feedList');
+  if (!items.length) {
+    list.innerHTML = '<div class="empty">' + escapeHtml(message || 'No feed records found.') + '</div>';
+    return;
+  }
+  const note = message ? '<div class="empty">' + escapeHtml(message) + '</div>' : '';
+  list.innerHTML = note + items.map(renderItem).join('');
+}
+
+function renderItem(item) {
+  const tick = item.value?.decoded?.tick || item.value?.tick || '';
+  const price = item.value?.token1PerToken0;
+  return `
+    <article class="feed-item">
+      <div class="feed-head">
+        <div class="feed-title">${escapeHtml(item.feed_id || item.predicate || 'feed item')}</div>
+        <div class="feed-meta">block ${escapeHtml(String(item.block_number || '--'))}</div>
+      </div>
+      ${kv('Predicate', item.predicate)}
+      ${kv('Subject', item.subject)}
+      ${tick ? kv('Tick', tick) : ''}
+      ${price !== undefined ? kv('Token1/token0', String(price)) : ''}
+      ${kv('Verification', item.verification_level)}
+      ${kv('Custody', item.custody)}
+      ${kv('Proof system', item.proof_system)}
+      ${kv('State root', item.state_root)}
+      ${kv('Commitment', item.paxiom_commitment)}
+      ${kv('Feed hash', item.feed_item_hash)}
+    </article>
+  `;
+}
+
+function kv(label, value) {
+  if (value === undefined || value === null || value === '') return '';
+  return '<div class="kv"><b>' + escapeHtml(label) + '</b><span>' + escapeHtml(String(value)) + '</span></div>';
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
+}
+
+initConsole();
+</script>
 </body>
 </html>

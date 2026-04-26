@@ -13,3 +13,13 @@ This repository is intentionally separate from the private Paxiom core repo. It 
 5. Confirm the custom domain is `paxiom.org`.
 
 The `CNAME` file is already included.
+
+## Feed Console
+
+The homepage includes a live feed console. By default it calls:
+
+```text
+https://api.paxiom.org
+```
+
+Change `site-config.js` if the public feed API uses a different origin. For local testing, enter a different API base URL in the page and click "Save API".
