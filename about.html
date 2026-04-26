@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom — How It Works</title>
+<style>
+  :root {
+    --bg: #f7f8f6;
+    --ink: #101312;
+    --text: #222826;
+    --muted: #64706a;
+    --line: #d8ded9;
+    --panel: #ffffff;
+    --green: #136f4a;
+    --blue: #234f7d;
+    --amber: #8a5a08;
+    --code: #111817;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  main {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 34px clamp(20px, 5vw, 56px) 70px;
+  }
+  nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 54px;
+  }
+  a { color: var(--blue); font-weight: 700; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .mark {
+    color: var(--ink);
+    font-weight: 800;
+    letter-spacing: .08em;
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: flex-end;
+  }
+  section {
+    padding: 42px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  h1 {
+    margin: 0;
+    color: var(--ink);
+    font-size: clamp(38px, 5vw, 64px);
+    line-height: 1.04;
+    letter-spacing: 0;
+    max-width: 840px;
+  }
+  h2 {
+    margin: 0 0 14px;
+    color: var(--ink);
+    font-size: clamp(25px, 3vw, 38px);
+    letter-spacing: 0;
+  }
+  h3 {
+    margin: 0 0 8px;
+    color: var(--ink);
+    font-size: 18px;
+  }
+  p {
+    font-size: 17px;
+    line-height: 1.65;
+    max-width: 800px;
+  }
+  .lead {
+    color: var(--text);
+    font-size: 20px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 22px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+  }
+  .card p, li {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  ul { margin: 10px 0 0; padding-left: 18px; }
+  .steps {
+    display: grid;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .step {
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    gap: 18px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .step b { color: var(--ink); }
+  .step span {
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  pre {
+    margin: 18px 0 0;
+    padding: 18px;
+    overflow-x: auto;
+    background: var(--code);
+    color: #e9f0ec;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  code { font-family: "SFMono-Regular", Consolas, monospace; }
+  .note {
+    border-left: 4px solid var(--amber);
+    padding: 12px 16px;
+    background: #fff9ea;
+    color: #4a3920;
+    max-width: 820px;
+    line-height: 1.55;
+  }
+  .action {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 0 16px;
+    border: 1px solid var(--ink);
+    border-radius: 6px;
+    color: #fff;
+    background: var(--ink);
+    font-weight: 800;
+    margin-top: 10px;
+  }
+  @media (max-width: 760px) {
+    nav { display: block; }
+    .links { justify-content: flex-start; margin-top: 14px; }
+    .grid, .step { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <nav>
+    <a class="mark" href="index.html">PAXIOM</a>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="not-chainlink.html">Not Chainlink</a>
+      <a href="api.html">API docs</a>
+      <a href="index.html#request-access">Request access</a>
+    </div>
+  </nav>
+
+  <section>
+    <h1>How Paxiom turns Ethereum state into subscriber-grade facts.</h1>
+    <p class="lead">
+      Paxiom packages verifiable claims about Ethereum into API records that trading, risk,
+      monitoring, and settlement systems can consume without trusting a hosted indexer as the
+      final source of truth.
+    </p>
+  </section>
+
+  <section>
+    <h2>The Consumer Workflow</h2>
+    <div class="steps">
+      <div class="step"><b>1. Choose a predicate</b><span>A predicate is the exact claim a subscriber wants: pool state, storage value, event inclusion, account condition, or a higher-level protocol assertion.</span></div>
+      <div class="step"><b>2. Paxiom verifies the fact</b><span>The current feed verifies Ethereum storage proofs locally against the block state root, decodes protocol-specific values, and labels the verification level.</span></div>
+      <div class="step"><b>3. The feed emits a record</b><span>Each record carries the value plus block number, state root, proof system, proof hash, Paxiom commitment, feed hash, and custody label.</span></div>
+      <div class="step"><b>4. Subscribers act or archive</b><span>Downstream systems can gate alerts, store evidence, compare facts across feeds, and look up commitments later.</span></div>
+      <div class="step"><b>5. Proof depth increases</b><span>The roadmap moves from MPT-verified facts to AO-committed receipts, recursive aggregation, and eventually live ZK proofs for Ethereum inclusion and state continuity.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What A Subscriber Receives</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Machine-readable facts</h3>
+        <p>Compact records that can plug into trading systems, dashboards, risk engines, or archival pipelines.</p>
+      </div>
+      <div class="card">
+        <h3>Proof context</h3>
+        <p>The record includes enough context to understand how the value was verified and what trust assumptions remain.</p>
+      </div>
+      <div class="card">
+        <h3>Scoped access</h3>
+        <p>API keys can be limited by predicate, feed, or subject so consumers only receive approved feeds.</p>
+      </div>
+    </div>
+<pre><code>{
+  "predicate": "uniswap_v3_slot0",
+  "subject": "ethereum:0x88e6...f5640:slot0",
+  "verification_level": "mpt_verified",
+  "proof_system": "eip1186-mpt+uniswap-v3-slot0",
+  "custody": "none",
+  "paxiom_commitment": "..."
+}</code></pre>
+  </section>
+
+  <section>
+    <h2>Verification Levels</h2>
+    <p>
+      Paxiom is explicit about proof depth. Early feeds are useful because they already verify Ethereum
+      storage openings; later feeds become stronger as state roots and historical continuity are proven
+      with less operator trust.
+    </p>
+    <p class="note">
+      Today, <code>mpt_verified</code> records verify against finalized Ethereum state roots sourced from
+      external Ethereum infrastructure. That root source is the remaining trust boundary. AO commitments,
+      recursive aggregation, and beaconless proving are the planned steps for reducing it.
+    </p>
+    <div class="steps">
+      <div class="step"><b><code>mpt_verified</code></b><span>Storage or account data is verified against an Ethereum state root using a Merkle Patricia proof.</span></div>
+      <div class="step"><b><code>ao_committed</code></b><span>The verified fact is committed through an AO proof-corpus process for shared coordination and retrieval.</span></div>
+      <div class="step"><b><code>zk_inclusion</code></b><span>Keccak, RLP, and MPT inclusion move into a proving backend so the inclusion check is compactly verifiable.</span></div>
+      <div class="step"><b><code>recursive_history</code></b><span>Segment proofs aggregate toward a genesis-to-present corpus, reducing reliance on trusted state-root beacons.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Latency And Fit</h2>
+    <p>
+      The first Paxiom package is strongest where evidence matters: audit trails, signal review,
+      risk controls, post-trade analysis, and monitors that can tolerate finalized-block latency.
+      Safe and latest block modes are future product tiers with different settlement assumptions.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3>Best first fit</h3>
+        <p>Evidence and monitoring workflows where a replayable proof-labeled fact is more valuable than raw speed.</p>
+      </div>
+      <div class="card">
+        <h3>Measure per predicate</h3>
+        <p>Paxiom should publish observed latency by predicate, subject, block mode, and RPC/prover backend.</p>
+      </div>
+      <div class="card">
+        <h3>Not magic speed</h3>
+        <p>MPT proof fetch and verification have a floor. Buyers should match feeds to their decision window.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What Paxiom Does Not Do</h2>
+    <p class="note">
+      Paxiom does not custody funds, execute trades, provide investment advice, or promise that a feed
+      consumer will make profitable decisions. It provides proof-labeled Ethereum facts that subscribers
+      can verify and use according to their own risk policy.
+    </p>
+    <a class="action" href="index.html#request-access">Request pilot access</a>
+  </section>
+</main>
+</body>
+</html>

@@ -135,6 +135,10 @@
   <nav>
     <a class="mark" href="index.html">PAXIOM</a>
     <div>
+      <a href="about.html">How it works</a>
+      &nbsp;&nbsp;
+      <a href="not-chainlink.html">Not Chainlink</a>
+      &nbsp;&nbsp;
       <a href="index.html#feed-console">Console</a>
       &nbsp;&nbsp;
       <a href="index.html#request-access">Request access</a>
@@ -210,6 +214,25 @@ Header:   x-paxiom-feed-token: &lt;subscriber-token&gt;</code></pre>
         </ul>
       </div>
     </div>
+  </section>
+
+  <section>
+    <h2>Latency Disclosure</h2>
+    <p>
+      Paxiom records should be evaluated by predicate, block mode, and verification level. Finalized
+      records prioritize stronger settlement assumptions; safe or latest records can be faster but carry
+      different trust and reorg assumptions.
+    </p>
+<pre><code>{
+  "predicate": "uniswap_v3_slot0",
+  "block_mode": "finalized",
+  "verification_level": "mpt_verified",
+  "latency_observed_ms": 1840,
+  "latency_label": "demo"
+}</code></pre>
+    <p class="note">
+      Public demo latency values are illustrative until pilots publish measured predicate-level numbers.
+    </p>
   </section>
 
   <section>

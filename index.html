@@ -257,6 +257,12 @@
     max-width: 780px;
     line-height: 1.55;
   }
+  .proof-note {
+    margin-top: 24px;
+    border-left-color: var(--green);
+    background: #edf8f2;
+    color: #173b2c;
+  }
   .footer-links {
     display: flex;
     flex-wrap: wrap;
@@ -390,7 +396,9 @@
       PAXIOM
     </div>
     <div class="links">
-      <a href="#feed-console">Live feed</a>
+      <a href="about.html">How it works</a>
+      <a href="not-chainlink.html">Not Chainlink</a>
+      <a href="#feed-console">Console</a>
       <a href="api.html">API docs</a>
       <a href="#request-access">Request access</a>
       <a href="spec/proof-corpus.md">Spec</a>
@@ -400,22 +408,27 @@
 
   <div class="hero">
     <p class="eyebrow">Verified Ethereum data feeds</p>
-    <h1>Proof-backed market data for systems that cannot afford to trust an indexer.</h1>
+    <h1>Ethereum facts your trading and risk systems can verify.</h1>
     <p class="lead">
-      Paxiom turns Ethereum state into subscriber-ready facts for trading desks, risk engines,
-      liquidation monitors, and settlement systems. Each record ships with its proof context,
-      verification level, and commitment trail. Live feed access is subscriber-gated.
+      Paxiom gives subscribers proof-labeled state records for pools, protocols, and accounts.
+      Use them to gate alerts, monitor markets, audit model decisions, and build toward
+      trust-minimized execution without handing Paxiom custody or trade control.
+    </p>
+    <p class="note proof-note">
+      Current feeds verify Ethereum Merkle Patricia proofs against sourced finalized state roots.
+      The recursive and beaconless roadmap is designed to reduce that remaining state-root trust dependency.
     </p>
     <div class="actions">
       <a class="action primary" href="#request-access">Request pilot access</a>
+      <a class="action" href="about.html">See how it works</a>
       <a class="action" href="api.html">Read API docs</a>
     </div>
 
     <div class="status-strip">
-      <div class="status"><b>Use now</b><span>Verified Uniswap V3 pool state and storage facts.</span></div>
-      <div class="status"><b>Reduce risk</b><span>Check feed data against proof-labeled Ethereum state.</span></div>
-      <div class="status"><b>Move faster</b><span>Consume compact records instead of rebuilding witnesses.</span></div>
-      <div class="status"><b>No custody</b><span>Paxiom serves facts, not hosted assets or trade control.</span></div>
+      <div class="status"><b>For consumers</b><span>APIs for verified pool state, storage facts, and commitment lookup.</span></div>
+      <div class="status"><b>For capital</b><span>Use proof-labeled facts before alerts, routes, liquidations, or settlement checks.</span></div>
+      <div class="status"><b>For audit</b><span>Archive why a system acted, with state root, proof hash, and feed hash.</span></div>
+      <div class="status"><b>No custody</b><span>Paxiom sells verified data records, not asset custody or execution.</span></div>
     </div>
   </div>
 </header>
@@ -455,6 +468,56 @@
           <li>No custody or execution dependency</li>
         </ul>
       </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The First Buyer Use Case</h2>
+    <p>
+      The cleanest first use is not “beat every price feed on latency.” It is evidence: proof-labeled
+      records for alerts, risk decisions, post-trade review, divergence monitoring, and systems where
+      the cost of trusting incorrect state is higher than the cost of verification.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3>Audit and replay</h3>
+        <p>Store the exact state fact behind a model decision, route, liquidation alert, or settlement check.</p>
+      </div>
+      <div class="card">
+        <h3>Freshness tiers</h3>
+        <p>Finalized state is strongest. Safe and latest state are roadmap tiers with clearer latency tradeoffs.</p>
+      </div>
+      <div class="card">
+        <h3>Latency disclosure</h3>
+        <p>Paxiom will publish predicate-level latency numbers as pilots run. Buyers should choose feeds by decision window.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What You Can Buy First</h2>
+    <p>
+      The first subscriber package is a verified Ethereum state feed for market and risk systems.
+      It is designed for teams that need better evidence than a price API, indexer row, or RPC response,
+      but do not want to operate a proving pipeline themselves.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3>Verified pool state</h3>
+        <p>Uniswap V3 <code>slot0</code> facts with block number, state root, proof system, and commitment fields.</p>
+      </div>
+      <div class="card">
+        <h3>Commitment lookup</h3>
+        <p>Subscriber systems can retrieve the exact record behind a signal, alert, or decision.</p>
+      </div>
+      <div class="card">
+        <h3>Scoped API keys</h3>
+        <p>Access is gated by predicate, feed, and subject. There is no free production API surface.</p>
+      </div>
+    </div>
+    <div class="actions">
+      <a class="action primary" href="#request-access">Request pilot access</a>
+      <a class="action" href="not-chainlink.html">Why this is not Chainlink</a>
     </div>
   </section>
 
@@ -540,6 +603,29 @@
   </section>
 
   <section>
+    <h2>What Paxiom Is Not</h2>
+    <p>
+      Paxiom is not a low-latency price oracle, a subgraph replacement, or a hosted archive node.
+      It is a verification layer for Ethereum facts: state-root-bound records, proof context,
+      commitment lookup, and a path toward recursive proof depth.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3>Not Pyth or Chainlink</h3>
+        <p>Paxiom does not begin by reporting prices into contracts. It begins by proving what Ethereum state said.</p>
+      </div>
+      <div class="card">
+        <h3>Not a subgraph</h3>
+        <p>Indexers optimize queryability. Paxiom optimizes evidence that a specific fact opened under a specific root.</p>
+      </div>
+      <div class="card">
+        <h3>Not your node team</h3>
+        <p>Running Erigon gives control. Paxiom gives productized proof records and subscriber-grade commitments.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
     <h2>What Each Record Carries</h2>
     <p>
       Every item is built to be consumed by machines and reviewed by humans. The value is not just
@@ -610,7 +696,8 @@ GET /v1/feed/commitment/:commitment</code></pre>
     <h2>Live Feed Console</h2>
     <p>
       The console is for approved subscribers and local testing. Without an API key or private endpoint,
-      it shows a sample record so the feed shape is visible without exposing live data.
+      it shows a demo-mode feed with recent-looking sample records so the proof context is visible without
+      exposing live subscriber data.
     </p>
     <div class="console">
       <div class="controls">
@@ -629,7 +716,7 @@ GET /v1/feed/commitment/:commitment</code></pre>
         <button class="secondary" type="button" onclick="saveApiBase()">Save API</button>
       </div>
       <div class="feed-status">
-        <span class="pill warn" id="health">not connected</span>
+        <span class="pill ok" id="health">demo mode</span>
         <span class="pill" id="apiLabel">api: unset</span>
         <span class="pill" id="tokenLabel">token: not set</span>
         <span class="pill" id="countLabel">items: 0</span>
@@ -656,6 +743,8 @@ npm run proof:live
 
 npm run feed:server</code></pre>
     <div class="footer-links">
+      <a href="about.html">How it works</a>
+      <a href="not-chainlink.html">Not a Chainlink copy</a>
       <a href="api.html">API docs</a>
       <a href="spec/proof-corpus.md">Proof corpus spec</a>
       <a href="https://github.com/k-luecke/paxiom-static" target="_blank" rel="noreferrer">Static site repository</a>
@@ -663,23 +752,44 @@ npm run feed:server</code></pre>
   </section>
 </main>
 <script>
-const sampleItem = {
-  schema: 'paxiom.feed.v1',
-  feed_id: 'ethereum.uniswap_v3_slot0',
-  predicate: 'uniswap_v3_slot0',
-  subject: 'ethereum:0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640:slot0',
-  block_number: 24961660,
-  state_root: '0x40e907bd3becec6fae4d5f10c4c19bdc8a34f79b8cb2907820330453bf2e42d5',
-  proof_system: 'eip1186-mpt+uniswap-v3-slot0',
-  verification_level: 'mpt_verified',
-  custody: 'none',
-  paxiom_commitment: '2e3850623970bf9af5c4cc460bc6c7cddd093530b951f86c259fac9ea2d9b8c3',
-  feed_item_hash: '84691bdfae08dedb6767a6805f6a85abd9285470d5026a9d0b2fcebf701ba022',
-  value: {
-    decoded: { tick: '198871' },
-    token1PerToken0: 0.000432938269562708
+const sampleItems = [
+  {
+    schema: 'paxiom.feed.v1',
+    feed_id: 'ethereum.uniswap_v3_slot0',
+    predicate: 'uniswap_v3_slot0',
+    subject: 'ethereum:0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640:slot0',
+    block_number: 24961660,
+    state_root: '0x40e907bd3becec6fae4d5f10c4c19bdc8a34f79b8cb2907820330453bf2e42d5',
+    proof_system: 'eip1186-mpt+uniswap-v3-slot0',
+    verification_level: 'mpt_verified',
+    custody: 'none',
+    latency_observed_ms: 1840,
+    paxiom_commitment: '2e3850623970bf9af5c4cc460bc6c7cddd093530b951f86c259fac9ea2d9b8c3',
+    feed_item_hash: '84691bdfae08dedb6767a6805f6a85abd9285470d5026a9d0b2fcebf701ba022',
+    value: {
+      decoded: { tick: '198871' },
+      token1PerToken0: 0.000432938269562708
+    }
+  },
+  {
+    schema: 'paxiom.feed.v1',
+    feed_id: 'ethereum.storage_equals',
+    predicate: 'storage_equals',
+    subject: 'ethereum:0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2:slot:0x0',
+    block_number: 24961660,
+    state_root: '0x40e907bd3becec6fae4d5f10c4c19bdc8a34f79b8cb2907820330453bf2e42d5',
+    proof_system: 'eip1186-mpt',
+    verification_level: 'mpt_verified',
+    custody: 'none',
+    latency_observed_ms: 1290,
+    paxiom_commitment: '775ca05c9a8b2bc6ffb6e0d1119d0f55383f9e2a74a5ecf1df27756bb4e78f61',
+    feed_item_hash: '52a9ea3a1b59ec206b57f6f21e48d4c1a75c0e821a59e677e25fdb316fcf5a00',
+    value: {
+      slot: '0x0',
+      storage_value: '0x0000000000000000000000000000000000000000000000000000000000000000'
+    }
   }
-};
+];
 
 function configuredApiBase() {
   return localStorage.getItem('paxiom.feedApiBase') ||
@@ -694,7 +804,7 @@ function initConsole() {
   document.getElementById('apiToken').value = token;
   document.getElementById('apiLabel').textContent = 'api: ' + input.value;
   document.getElementById('tokenLabel').textContent = token ? 'token: set' : 'token: not set';
-  renderItems([sampleItem], 'Sample record shown until the feed API is reachable.');
+  renderItems(sampleItems, 'Demo-mode records shown until the subscriber feed is reachable.');
 }
 
 function saveApiBase() {
@@ -752,7 +862,7 @@ async function refreshFeed() {
     const data = await fetchJson('/v1/feed/latest?limit=10');
     renderItems(data.items || [], ok ? '' : 'Feed health failed, but latest endpoint returned data.');
   } catch (err) {
-    renderItems([sampleItem], 'Subscriber API unavailable or unauthorized. Showing a sample record.');
+    renderItems(sampleItems, 'Subscriber API unavailable or unauthorized. Showing demo-mode records.');
   }
 }
 
@@ -763,7 +873,7 @@ async function loadSubjects() {
     const data = await fetchJson('/v1/feed/subjects');
     renderItems(data.items || [], 'Latest record by subject.');
   } catch (err) {
-    renderItems([sampleItem], 'Subscriber API unavailable or unauthorized. Showing a sample subject.');
+    renderItems(sampleItems, 'Subscriber API unavailable or unauthorized. Showing demo-mode subjects.');
   }
 }
 
@@ -794,6 +904,7 @@ function renderItems(items, message) {
 function renderItem(item) {
   const tick = item.value?.decoded?.tick || item.value?.tick || '';
   const price = item.value?.token1PerToken0;
+  const latency = item.latency_observed_ms;
   return `
     <article class="feed-item">
       <div class="feed-head">
@@ -804,7 +915,9 @@ function renderItem(item) {
       ${kv('Subject', item.subject)}
       ${tick ? kv('Tick', tick) : ''}
       ${price !== undefined ? kv('Token1/token0', String(price)) : ''}
+      ${item.value?.storage_value ? kv('Storage value', item.value.storage_value) : ''}
       ${kv('Verification', item.verification_level)}
+      ${latency !== undefined ? kv('Observed latency', String(latency) + ' ms demo') : ''}
       ${kv('Custody', item.custody)}
       ${kv('Proof system', item.proof_system)}
       ${kv('State root', item.state_root)}
