@@ -118,6 +118,27 @@
     font-size: 12px;
     line-height: 1.4;
   }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 26px;
+  }
+  .action {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 0 16px;
+    border: 1px solid var(--ink);
+    border-radius: 6px;
+    color: var(--ink);
+    background: transparent;
+    font-weight: 800;
+  }
+  .action.primary {
+    background: var(--ink);
+    color: #fff;
+  }
   main {
     padding: 0 clamp(20px, 5vw, 72px) 64px;
   }
@@ -160,6 +181,39 @@
     color: var(--muted);
     font-size: 14px;
     line-height: 1.55;
+  }
+  .card ul {
+    margin: 12px 0 0;
+    padding-left: 18px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(320px, 1.1fr);
+    gap: 28px;
+    align-items: start;
+  }
+  .rail {
+    display: grid;
+    gap: 10px;
+  }
+  .step {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .step b {
+    display: block;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .step span {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
   }
   .levels {
     display: grid;
@@ -314,6 +368,7 @@
     .mark svg { width: 26px; height: 26px; }
     .links { gap: 10px; font-size: 13px; }
     .status-strip, .grid { grid-template-columns: 1fr; }
+    .split { grid-template-columns: 1fr; }
     .level { grid-template-columns: 1fr; gap: 4px; }
     .controls { grid-template-columns: 1fr; }
     .feed-head, .kv { display: block; }
@@ -343,67 +398,108 @@
 
   <div class="hero">
     <p class="eyebrow">Verified Ethereum data feeds</p>
-    <h1>Subscriber-grade Ethereum facts, backed by proofs.</h1>
+    <h1>Proof-backed market data for systems that cannot afford to trust an indexer.</h1>
     <p class="lead">
-      The first product is not custody. It is a feed of machine-readable Ethereum facts,
-      verified from Merkle Patricia proofs, committed through Paxiom, and labeled by verification depth.
-      Live feed access is subscriber-gated.
+      Paxiom turns Ethereum state into subscriber-ready facts for trading desks, risk engines,
+      liquidation monitors, and settlement systems. Each record ships with its proof context,
+      verification level, and commitment trail. Live feed access is subscriber-gated.
     </p>
+    <div class="actions">
+      <a class="action primary" href="#feed-console">Inspect sample feed</a>
+      <a class="action" href="spec/proof-corpus.md">Read proof spec</a>
+    </div>
 
     <div class="status-strip">
-      <div class="status"><b>Live predicate</b><span>Uniswap V3 pool <code>slot0</code> state for approved feeds.</span></div>
-      <div class="status"><b>Current proof level</b><span><code>mpt_verified</code> against Ethereum state roots.</span></div>
-      <div class="status"><b>Access model</b><span>Subscriber API keys. Public page shows samples only.</span></div>
-      <div class="status"><b>Custody</b><span>None. Subscribers consume data, not hosted assets.</span></div>
+      <div class="status"><b>Use now</b><span>Verified Uniswap V3 pool state and storage facts.</span></div>
+      <div class="status"><b>Reduce risk</b><span>Check feed data against proof-labeled Ethereum state.</span></div>
+      <div class="status"><b>Move faster</b><span>Consume compact records instead of rebuilding witnesses.</span></div>
+      <div class="status"><b>No custody</b><span>Paxiom serves facts, not hosted assets or trade control.</span></div>
     </div>
   </div>
 </header>
 
 <main>
   <section>
-    <h2>What Subscribers Receive</h2>
+    <h2>What Proofs Let You Do</h2>
     <p>
-      Each feed item includes the predicate, subject, value, block number, state root,
-      proof system, proof hash, Paxiom commitment, verification level, timestamp, and optional signature.
-      Subscribers can store the feed item, verify its commitment, and decide how much trust depth their system requires.
-      Production API access is issued through subscriber onboarding.
+      Paxiom feeds are designed for teams that already act on on-chain data but want stronger guarantees
+      than a raw RPC response, subgraph, or hosted indexer can provide.
     </p>
     <div class="grid">
       <div class="card">
-        <h3>Canonical pool state</h3>
-        <p>Verified Uniswap V3 <code>slot0</code> facts with decoded tick and price fields.</p>
+        <h3>Trade on cleaner state</h3>
+        <p>Subscribe to verified pool facts before routing, hedging, or flagging opportunities.</p>
+        <ul>
+          <li>Uniswap V3 <code>slot0</code> tick and price state</li>
+          <li>Block, state root, proof hash, and commitment included</li>
+          <li>Freshness and verification depth labeled per item</li>
+        </ul>
       </div>
       <div class="card">
-        <h3>Storage facts</h3>
-        <p>Generic <code>storage_equals</code> records for Ethereum contracts and slots.</p>
+        <h3>Audit signals after the fact</h3>
+        <p>Keep proof-labeled records for why a model, alert, liquidation, or risk decision fired.</p>
+        <ul>
+          <li>Replayable commitment lookup</li>
+          <li>Subscriber-side evidence archive</li>
+          <li>Clear chain of custody for data, not assets</li>
+        </ul>
       </div>
       <div class="card">
-        <h3>Commitment lookup</h3>
-        <p>Feed items can be retrieved by Paxiom commitment or feed item hash.</p>
+        <h3>Build toward trustless automation</h3>
+        <p>Start with feed consumption now; migrate to AO-committed and recursive verification as depth improves.</p>
+        <ul>
+          <li>Same feed shape across verification levels</li>
+          <li>Designed for solvers, monitors, and settlement checks</li>
+          <li>No custody or execution dependency</li>
+        </ul>
       </div>
     </div>
   </section>
 
   <section>
-    <h2>Verification Levels</h2>
+    <div class="split">
+      <div>
+        <h2>Why It Matters</h2>
+        <p>
+          Most market infrastructure treats Ethereum state as something a service provider reports.
+          Paxiom treats it as something a subscriber can verify, store, and compare across time.
+        </p>
+        <p>
+          That creates a stronger primitive for arbitrage monitoring, liquidation readiness,
+          risk controls, bridge checks, and any workflow where the cost of trusting stale or incorrect
+          state is higher than the cost of verifying a proof-backed record.
+        </p>
+      </div>
+      <div class="rail">
+        <div class="step"><b>For trading desks</b><span>Verified pool state can gate signals before capital moves.</span></div>
+        <div class="step"><b>For risk systems</b><span>State facts arrive with proof context and commitment lookup.</span></div>
+        <div class="step"><b>For protocols</b><span>External monitors can consume facts without giving Paxiom custody.</span></div>
+        <div class="step"><b>For future automation</b><span>The same records become inputs to AO and recursive proof workflows.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Where The Roadmap Goes</h2>
     <p>
-      Paxiom feed records are explicit about their trust depth. This keeps the product useful now
-      while preserving the path to beaconless recursive verification.
+      The feed starts with real Ethereum storage proof verification and grows toward a broader
+      proof-native coordination layer. Subscribers do not need to wait for the full end state:
+      each stage adds a stricter guarantee to the same data surface.
     </p>
     <div class="levels">
-      <div class="level"><b>rpc_observed</b><span>Seen from an RPC source but not independently proven.</span></div>
-      <div class="level"><b>mpt_verified</b><span>Ethereum account/storage proof verified locally against a block state root.</span></div>
-      <div class="level"><b>ao_committed</b><span>The verified fact has been submitted to the AO proof-corpus process.</span></div>
-      <div class="level"><b>recursive_verified</b><span>The fact binds to a recursive history corpus.</span></div>
-      <div class="level"><b>zk_verified</b><span>The fact binds to a succinct ZK proof of the relevant history and predicate.</span></div>
+      <div class="level"><b>Now</b><span><code>mpt_verified</code> feeds for Uniswap V3 pool state and contract storage facts.</span></div>
+      <div class="level"><b>Next</b><span>More predicates: pool reserves, oracle values, lending health inputs, liquidation eligibility, event/log inclusion.</span></div>
+      <div class="level"><b>AO committed</b><span>Facts are submitted to an AO proof-corpus process for durable public coordination.</span></div>
+      <div class="level"><b>Recursive history</b><span>Segments aggregate toward a genesis-to-present Ethereum corpus.</span></div>
+      <div class="level"><b>Beaconless proof layer</b><span>Consensus and execution proofs reduce reliance on trusted checkpoints and oracle-style beacons.</span></div>
     </div>
   </section>
 
   <section>
-    <h2>Feed Shape</h2>
+    <h2>What Each Record Carries</h2>
     <p>
-      The feed is built for subscribers who need auditable market state, not custody.
-      A typical item looks like this:
+      Every item is built to be consumed by machines and reviewed by humans. The value is not just
+      the field value; it is the proof context around that value.
     </p>
 <pre><code>{
   "schema": "paxiom.feed.v1",
@@ -421,10 +517,10 @@
   </section>
 
   <section>
-    <h2>Subscriber Endpoints</h2>
+    <h2>Subscriber Access</h2>
     <p>
-      The feed server exposes the current subscriber API. Production access is authenticated
-      and provisioned per subscriber; unauthenticated public access is not enabled.
+      Production access is authenticated and provisioned per subscriber. Scopes can be limited
+      by predicate, feed, or subject so early customers only receive the feeds they are approved to use.
     </p>
 <pre><code>GET /health
 GET /v1/feed/latest
