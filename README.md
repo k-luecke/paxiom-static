@@ -25,3 +25,11 @@ https://api.paxiom.org
 Change `site-config.js` if the public feed API uses a different origin. For local testing, enter a different API base URL in the page and click "Save API".
 
 Live production access is subscriber-gated. The public page shows sample records unless a subscriber API endpoint and token are configured.
+
+## Product Pages
+
+- `index.html` — homepage, demo console, latency benchmark, and pilot funnel.
+- `about.html` — consumer workflow and verification levels.
+- `where-paxiom-fits.html` — oracle/indexer positioning.
+- `pricing.html` — public tiers for schema, developer, pilot, and production access.
+- `api.html` — feed API surface and predicate documentation.
