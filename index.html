@@ -397,7 +397,7 @@
     </div>
     <div class="links">
       <a href="about.html">How it works</a>
-      <a href="not-chainlink.html">Not Chainlink</a>
+      <a href="not-chainlink.html">Where Paxiom Fits</a>
       <a href="#feed-console">Console</a>
       <a href="api.html">API docs</a>
       <a href="#request-access">Request access</a>
@@ -435,43 +435,6 @@
 
 <main>
   <section>
-    <h2>What Proofs Let You Do</h2>
-    <p>
-      Paxiom feeds are designed for teams that already act on on-chain data but want stronger guarantees
-      than a raw RPC response, subgraph, or hosted indexer can provide.
-    </p>
-    <div class="grid">
-      <div class="card">
-        <h3>Trade on cleaner state</h3>
-        <p>Subscribe to verified pool facts before routing, hedging, or flagging opportunities.</p>
-        <ul>
-          <li>Uniswap V3 <code>slot0</code> tick and price state</li>
-          <li>Block, state root, proof hash, and commitment included</li>
-          <li>Freshness and verification depth labeled per item</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Audit signals after the fact</h3>
-        <p>Keep proof-labeled records for why a model, alert, liquidation, or risk decision fired.</p>
-        <ul>
-          <li>Replayable commitment lookup</li>
-          <li>Subscriber-side evidence archive</li>
-          <li>Clear chain of custody for data, not assets</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Build toward trustless automation</h3>
-        <p>Start with feed consumption now; migrate to AO-committed and recursive verification as depth improves.</p>
-        <ul>
-          <li>Same feed shape across verification levels</li>
-          <li>Designed for solvers, monitors, and settlement checks</li>
-          <li>No custody or execution dependency</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <section>
     <h2>The First Buyer Use Case</h2>
     <p>
       The cleanest first use is not “beat every price feed on latency.” It is evidence: proof-labeled
@@ -489,7 +452,7 @@
       </div>
       <div class="card">
         <h3>Latency disclosure</h3>
-        <p>Paxiom will publish predicate-level latency numbers as pilots run. Buyers should choose feeds by decision window.</p>
+        <p>Current finalized <code>uniswap_v3_slot0</code> proof generation measured p50 0.69s and p95 1.22s across 10 local runs on April 26, 2026.</p>
       </div>
     </div>
   </section>
@@ -504,20 +467,35 @@
     <div class="grid">
       <div class="card">
         <h3>Verified pool state</h3>
-        <p>Uniswap V3 <code>slot0</code> facts with block number, state root, proof system, and commitment fields.</p>
+        <p>Uniswap V3 <code>slot0</code> facts with block number, state root, proof system, commitment fields, and observed latency.</p>
+        <ul>
+          <li>Use before routing, hedging, or flagging opportunities</li>
+          <li>Freshness and verification depth labeled per item</li>
+          <li>Measured finalized proof latency: p50 0.69s, p95 1.22s</li>
+        </ul>
       </div>
       <div class="card">
         <h3>Commitment lookup</h3>
-        <p>Subscriber systems can retrieve the exact record behind a signal, alert, or decision.</p>
+        <p>Subscriber systems can retrieve the exact record behind a signal, alert, model decision, or post-trade review.</p>
+        <ul>
+          <li>Replayable commitment lookup</li>
+          <li>Subscriber-side evidence archive</li>
+          <li>Proof hash, feed hash, state root, and subject included</li>
+        </ul>
       </div>
       <div class="card">
         <h3>Scoped API keys</h3>
         <p>Access is gated by predicate, feed, and subject. There is no free production API surface.</p>
+        <ul>
+          <li>Start with selected predicates and subjects</li>
+          <li>Expand to AO-committed and recursive levels as depth improves</li>
+          <li>No custody or execution dependency</li>
+        </ul>
       </div>
     </div>
     <div class="actions">
       <a class="action primary" href="#request-access">Request pilot access</a>
-      <a class="action" href="not-chainlink.html">Why this is not Chainlink</a>
+      <a class="action" href="not-chainlink.html">Where Paxiom fits</a>
     </div>
   </section>
 
@@ -719,10 +697,43 @@ GET /v1/feed/commitment/:commitment</code></pre>
         <span class="pill ok" id="health">demo mode</span>
         <span class="pill" id="apiLabel">api: unset</span>
         <span class="pill" id="tokenLabel">token: not set</span>
-        <span class="pill" id="countLabel">items: 0</span>
+        <span class="pill" id="countLabel">items: 2</span>
       </div>
       <div class="feed-list" id="feedList">
-        <div class="empty">No feed records loaded yet.</div>
+        <div class="empty">Demo-mode records shown until the subscriber feed is reachable.</div>
+        <article class="feed-item">
+          <div class="feed-head">
+            <div class="feed-title">ethereum.uniswap_v3_slot0</div>
+            <div class="feed-meta">block 24961660</div>
+          </div>
+          <div class="kv"><b>Predicate</b><span>uniswap_v3_slot0</span></div>
+          <div class="kv"><b>Subject</b><span>ethereum:0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640:slot0</span></div>
+          <div class="kv"><b>Tick</b><span>198871</span></div>
+          <div class="kv"><b>Token1/token0</b><span>0.000432938269562708</span></div>
+          <div class="kv"><b>Verification</b><span>mpt_verified</span></div>
+          <div class="kv"><b>Observed latency</b><span>1840 ms demo</span></div>
+          <div class="kv"><b>Custody</b><span>none</span></div>
+          <div class="kv"><b>Proof system</b><span>eip1186-mpt+uniswap-v3-slot0</span></div>
+          <div class="kv"><b>State root</b><span>0x40e907bd3becec6fae4d5f10c4c19bdc8a34f79b8cb2907820330453bf2e42d5</span></div>
+          <div class="kv"><b>Commitment</b><span>2e3850623970bf9af5c4cc460bc6c7cddd093530b951f86c259fac9ea2d9b8c3</span></div>
+          <div class="kv"><b>Feed hash</b><span>84691bdfae08dedb6767a6805f6a85abd9285470d5026a9d0b2fcebf701ba022</span></div>
+        </article>
+        <article class="feed-item">
+          <div class="feed-head">
+            <div class="feed-title">ethereum.storage_equals</div>
+            <div class="feed-meta">block 24961660</div>
+          </div>
+          <div class="kv"><b>Predicate</b><span>storage_equals</span></div>
+          <div class="kv"><b>Subject</b><span>ethereum:0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2:slot:0x0</span></div>
+          <div class="kv"><b>Storage value</b><span>0x0000000000000000000000000000000000000000000000000000000000000000</span></div>
+          <div class="kv"><b>Verification</b><span>mpt_verified</span></div>
+          <div class="kv"><b>Observed latency</b><span>1290 ms demo</span></div>
+          <div class="kv"><b>Custody</b><span>none</span></div>
+          <div class="kv"><b>Proof system</b><span>eip1186-mpt</span></div>
+          <div class="kv"><b>State root</b><span>0x40e907bd3becec6fae4d5f10c4c19bdc8a34f79b8cb2907820330453bf2e42d5</span></div>
+          <div class="kv"><b>Commitment</b><span>775ca05c9a8b2bc6ffb6e0d1119d0f55383f9e2a74a5ecf1df27756bb4e78f61</span></div>
+          <div class="kv"><b>Feed hash</b><span>52a9ea3a1b59ec206b57f6f21e48d4c1a75c0e821a59e677e25fdb316fcf5a00</span></div>
+        </article>
       </div>
     </div>
   </section>
@@ -744,7 +755,7 @@ npm run proof:live
 npm run feed:server</code></pre>
     <div class="footer-links">
       <a href="about.html">How it works</a>
-      <a href="not-chainlink.html">Not a Chainlink copy</a>
+      <a href="not-chainlink.html">Where Paxiom fits</a>
       <a href="api.html">API docs</a>
       <a href="spec/proof-corpus.md">Proof corpus spec</a>
       <a href="https://github.com/k-luecke/paxiom-static" target="_blank" rel="noreferrer">Static site repository</a>
