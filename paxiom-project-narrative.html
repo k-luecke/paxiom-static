@@ -643,9 +643,58 @@ a:hover { color: var(--red); }
   .sheet { border: 2px solid black; }
   .page-break { page-break-before: always; }
 }
+
+.paxiom-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(245, 241, 232, 0.88);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule-faint);
+}
+.paxiom-bar-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 10px 18px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.paxiom-bar-mark {
+  display: inline-flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--ink);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  transition: color 0.15s ease;
+}
+.paxiom-bar-mark svg { width: 22px; height: 22px; display: block; }
+.paxiom-bar-mark:hover { color: var(--blue); }
+.paxiom-bar-nav {
+  display: flex; gap: 18px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; transition: color 0.15s ease; padding-bottom: 2px; }
+.paxiom-bar-nav a:hover { color: var(--ink); }
+.paxiom-bar-nav a.active { color: var(--ink); border-bottom: 1.5px solid var(--ink); }
+@media (max-width: 600px) {
+  .paxiom-bar-inner { padding: 8px 14px; }
+  .paxiom-bar-mark span { display: none; }
+  .paxiom-bar-nav { gap: 14px; font-size: 9.5px; letter-spacing: 0.12em; }
+}
 </style>
 </head>
 <body>
+<div class="paxiom-bar">
+  <div class="paxiom-bar-inner">
+    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
+      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg>
+      <span>Paxiom</span>
+    </a>
+    <nav class="paxiom-bar-nav" aria-label="Primary">
+      <a href="/docs.html">Docs</a>
+      <a href="/services.html">Services</a>
+      <a href="/status.html">Status</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </div>
+</div>
 
 <div class="sheet">
 
