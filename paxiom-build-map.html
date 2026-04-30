@@ -403,6 +403,22 @@ body::before {
 .page > *:nth-child(3) { animation-delay: 0.25s; }
 .page > *:nth-child(n+4) { animation-delay: 0.35s; }
 
+.home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--amber);
+  margin-bottom: 32px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: color 0.15s ease;
+}
+.home-link svg { width: 28px; height: 28px; display: block; }
+.home-link:hover { color: var(--ink); }
+
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -412,6 +428,17 @@ body::before {
 <body>
 
 <div class="page">
+
+<a class="home-link" href="/" aria-label="paxiom.org — home">
+  <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true">
+    <circle cx="50" cy="50" r="40"/>
+    <path d="M50 14 L76 64 L24 64 Z"/>
+    <line x1="50" y1="30" x2="50" y2="80"/>
+    <line x1="38" y1="80" x2="62" y2="80"/>
+    <circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/>
+  </svg>
+  <span>paxiom.org</span>
+</a>
 
 <div class="eyebrow">Paxiom · Operational Plan</div>
 
