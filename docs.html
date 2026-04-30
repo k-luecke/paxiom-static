@@ -6,9 +6,10 @@
 <title>Paxiom · Drawing Set</title>
 <meta name="description" content="The Paxiom drawing set — Project Narrative, Phase 1 Blueprint, Audit Relay, Key Custody, Operations Runbook, Build Map.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --paper: #F5F1E8; --paper-dark: #EDE6D3; --ink: #1A2332; --ink-mid: #3A4555;
@@ -18,7 +19,7 @@
 html { scroll-behavior: smooth; }
 body {
   background: var(--paper); color: var(--ink);
-  font-family: 'IBM Plex Sans', sans-serif; font-size: 15px; line-height: 1.6;
+  font-family: 'Neutraface Text', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.6;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 .frame { max-width: 1080px; margin: 0 auto; padding: 20px 18px 32px; }
@@ -27,21 +28,21 @@ body {
 .title-mark { display: block; margin-bottom: 12px; }
 .paxiom-mark { width: 42px; height: 42px; color: var(--ink); display: block; }
 .title-block .project-mark {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
   color: var(--ink-faint); margin-bottom: 4px;
 }
 .title-block .project-title {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 28px; font-weight: 500; line-height: 1.1;
   letter-spacing: -0.01em; color: var(--ink);
 }
 .title-block .project-subtitle {
-  font-family: 'IBM Plex Serif', serif; font-style: italic;
+  font-family: 'Times New Roman', Times, serif; font-style: italic;
   font-size: 14px; color: var(--ink-mid); margin-top: 4px; max-width: 36ch;
 }
 .title-block .meta {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px; letter-spacing: 0.04em; color: var(--ink-faint);
   margin-top: 12px; line-height: 1.7;
 }
@@ -53,7 +54,7 @@ nav.primary {
 }
 nav.primary ul {
   list-style: none; display: flex; gap: 22px; padding: 12px 0;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
 }
 nav.primary a { color: var(--ink-mid); text-decoration: none; padding-bottom: 4px; }
@@ -62,20 +63,20 @@ nav.primary a:hover { color: var(--blue); }
 
 .page-header { margin-bottom: 32px; padding: 8px 0 16px; }
 .page-header .mark {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--blue); margin-bottom: 8px;
   display: flex; align-items: center; gap: 12px;
 }
 .page-header .mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
 .page-header h1 {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-weight: 500; font-size: clamp(32px, 6vw, 44px); line-height: 1.05;
   letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px;
 }
 .page-header h1 em { font-style: italic; color: var(--ink-mid); font-weight: 400; }
 .page-header .strap {
-  font-family: 'IBM Plex Serif', serif; font-style: italic;
+  font-family: 'Times New Roman', Times, serif; font-style: italic;
   font-size: 17px; color: var(--ink-mid); max-width: 60ch; line-height: 1.5;
 }
 
@@ -91,7 +92,7 @@ nav.primary a:hover { color: var(--blue); }
   display: grid; grid-template-columns: auto 1fr;
   gap: 16px; padding: 12px 16px;
   background: var(--ink); color: var(--paper);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   align-items: center;
 }
@@ -99,17 +100,17 @@ nav.primary a:hover { color: var(--blue); }
 .doc-card-header .status { text-align: right; opacity: 0.7; font-size: 9px; }
 .doc-card-body { padding: 18px 18px 20px; }
 .doc-card-body .title {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 22px; font-weight: 500; letter-spacing: -0.005em;
   margin-bottom: 8px; color: var(--ink); line-height: 1.2;
 }
 .doc-card-body .title em { font-style: italic; color: var(--ink-mid); }
 .doc-card-body .purpose {
-  font-family: 'IBM Plex Serif', serif; font-size: 15px; line-height: 1.55;
+  font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55;
   color: var(--ink-mid); margin-bottom: 12px; max-width: 56ch;
 }
 .doc-card-body .open {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--blue);
 }
@@ -123,38 +124,38 @@ nav.primary a:hover { color: var(--blue); }
   background: var(--paper-dark); margin-bottom: 28px;
 }
 .note-block .note-label {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--amber); margin-bottom: 6px;
 }
 .note-block p {
-  font-family: 'IBM Plex Serif', serif; font-size: 15px; line-height: 1.55;
+  font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55;
   color: var(--ink); max-width: 64ch;
 }
 
 /* Subsection */
 .subsection { margin-bottom: 32px; }
 .subsection-mark {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--blue); margin-bottom: 8px;
   display: flex; align-items: center; gap: 12px;
 }
 .subsection-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
 .subsection h2 {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-weight: 500; font-size: 22px; letter-spacing: -0.01em;
   margin-bottom: 12px; color: var(--ink);
 }
 .subsection p {
-  font-family: 'IBM Plex Serif', serif; font-size: 16px; line-height: 1.6;
+  font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6;
   color: var(--ink); max-width: 64ch; margin-bottom: 12px;
 }
 
 /* Footer */
 .sheet-footer {
   border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--ink-faint);
   display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;
@@ -198,7 +199,7 @@ a:hover { color: var(--red); }
 .paxiom-bar-mark {
   display: inline-flex; align-items: center; gap: 10px;
   text-decoration: none; color: var(--ink);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
   transition: color 0.15s ease;
 }
@@ -206,7 +207,7 @@ a:hover { color: var(--red); }
 .paxiom-bar-mark:hover { color: var(--blue); }
 .paxiom-bar-nav {
   display: flex; gap: 18px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
 }
 .paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; transition: color 0.15s ease; padding-bottom: 2px; }
@@ -217,6 +218,31 @@ a:hover { color: var(--red); }
   .paxiom-bar-mark span { display: none; }
   .paxiom-bar-nav { gap: 14px; font-size: 9.5px; letter-spacing: 0.12em; }
 }
+
+/* Softened corners — binder pages only */
+.btn,
+.doc-card, .doc-card-header,
+.build-state, .build-state-header, .build-cell,
+.status-banner,
+.service-card, .service-card-header,
+.status-key, .status-key-header, .status-key-cell,
+.list-block,
+.build-log, .build-log-header, .log-entry,
+.channel,
+.note-block {
+  border-radius: 8px;
+}
+.doc-card, .build-state, .service-card, .status-key, .build-log {
+  overflow: hidden;
+}
+.doc-card-header,
+.build-state-header,
+.service-card-header,
+.status-key-header,
+.build-log-header {
+  border-radius: 8px 8px 0 0;
+}
+.paxiom-bar { border-radius: 0; }
 </style>
 </head>
 <body>

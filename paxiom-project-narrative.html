@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Paxiom · Project Narrative</title>
+<link rel="stylesheet" href="/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --paper: #F5F1E8;
@@ -30,7 +31,7 @@ html { scroll-behavior: smooth; }
 body {
   background: var(--paper);
   color: var(--ink);
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: 'Neutraface Text', system-ui, -apple-system, sans-serif;
   font-size: 14px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -83,7 +84,7 @@ body {
 .sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
 
 .sheet-project {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -91,7 +92,7 @@ body {
 }
 
 .sheet-title {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-weight: 500;
   font-size: 28px;
   line-height: 1.1;
@@ -100,7 +101,7 @@ body {
 }
 
 .sheet-subtitle {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-style: italic;
   font-size: 15px;
   color: var(--ink-mid);
@@ -111,7 +112,7 @@ body {
   display: grid;
   grid-template-columns: repeat(2, auto);
   gap: 4px 16px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px;
   letter-spacing: 0.04em;
   text-align: right;
@@ -132,7 +133,7 @@ body {
 }
 
 .cover-mark {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -150,7 +151,7 @@ body {
 }
 
 .cover-title {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-weight: 400;
   font-size: clamp(48px, 7.5vw, 88px);
   line-height: 0.96;
@@ -166,7 +167,7 @@ body {
 }
 
 .cover-strap {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-style: italic;
   font-size: 22px;
   line-height: 1.45;
@@ -199,7 +200,7 @@ body {
 }
 
 .cover-cell-label {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -208,7 +209,7 @@ body {
 }
 
 .cover-cell-value {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 17px;
   color: var(--ink);
   line-height: 1.35;
@@ -217,7 +218,7 @@ body {
 .cover-cell-value em { font-style: italic; color: var(--ink-mid); }
 
 .toc-section-label {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -242,7 +243,7 @@ body {
 .toc-row:last-of-type { border-bottom: none; }
 
 .toc-num {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 13px;
   font-weight: 500;
   color: var(--blue);
@@ -250,7 +251,7 @@ body {
 }
 
 .toc-title {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 16px;
   color: var(--ink);
 }
@@ -264,14 +265,14 @@ body {
 }
 
 .toc-page {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 12px;
   color: var(--ink-faint);
   letter-spacing: 0.04em;
 }
 
 .section-mark {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -289,7 +290,7 @@ body {
 }
 
 .section-title {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-weight: 400;
   font-size: 40px;
   line-height: 1.05;
@@ -301,7 +302,7 @@ body {
 .section-title em { font-style: italic; color: var(--ink-mid); }
 
 .section-strap {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-style: italic;
   font-size: 18px;
   color: var(--ink-mid);
@@ -311,7 +312,7 @@ body {
 }
 
 .prose p {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 16px;
   line-height: 1.65;
   margin-bottom: 18px;
@@ -328,7 +329,7 @@ body {
 }
 
 .prose h3 {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-weight: 500;
   font-size: 22px;
   margin-top: 40px;
@@ -338,7 +339,7 @@ body {
 }
 
 .prose h4 {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -351,7 +352,7 @@ body {
 .prose em { font-style: italic; color: var(--ink-mid); }
 
 .prose code {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 13px;
   background: var(--paper-dark);
   padding: 1px 6px;
@@ -361,7 +362,7 @@ body {
 
 .prose ul, .prose ol {
   margin: 12px 0 22px 28px;
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 16px;
   line-height: 1.65;
   max-width: 68ch;
@@ -370,7 +371,7 @@ body {
 .prose li { margin-bottom: 8px; }
 
 .math {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 14.5px;
   background: var(--paper-dark);
   padding: 20px 26px;
@@ -383,7 +384,7 @@ body {
 }
 
 .math-reading {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-style: italic;
   font-size: 14.5px;
   color: var(--ink-mid);
@@ -397,7 +398,7 @@ body {
 
 .math-reading::before {
   content: 'Reading: ';
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-style: normal;
   font-size: 10px;
   letter-spacing: 0.16em;
@@ -419,7 +420,7 @@ body {
   padding: 9px 18px;
   background: var(--ink);
   color: var(--paper);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -432,7 +433,7 @@ body {
 .callout-body { padding: 20px 24px; }
 
 .callout-body p {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 16px;
   line-height: 1.6;
   color: var(--ink);
@@ -443,7 +444,7 @@ body {
 
 .callout-body ul {
   margin: 10px 0 6px 22px;
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 16px;
   line-height: 1.6;
 }
@@ -451,7 +452,7 @@ body {
 .callout-body li { margin-bottom: 6px; }
 
 .callout-body code {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 13px;
   background: var(--paper-dark);
   padding: 1px 6px;
@@ -493,7 +494,7 @@ body {
 }
 
 .numbers-figure {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 32px;
   font-weight: 500;
   color: var(--ink);
@@ -503,7 +504,7 @@ body {
 }
 
 .numbers-label {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 9px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -512,7 +513,7 @@ body {
 }
 
 .numbers-detail {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 13px;
   font-style: italic;
   color: var(--ink-mid);
@@ -529,7 +530,7 @@ body {
 .schedule th {
   background: var(--ink);
   color: var(--paper);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -542,7 +543,7 @@ body {
   padding: 12px;
   border-bottom: 1px solid var(--rule-faint);
   border-right: 1px solid var(--rule-faint);
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 14px;
   vertical-align: top;
   color: var(--ink);
@@ -558,13 +559,13 @@ body {
 }
 
 .schedule .num {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 13px;
   text-align: right;
 }
 
 .schedule .id {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 12px;
   color: var(--blue);
   font-weight: 500;
@@ -585,7 +586,7 @@ body {
   left: 72px;
   background: var(--paper);
   padding: 0 12px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -600,7 +601,7 @@ body {
 }
 
 .first-person p {
-  font-family: 'IBM Plex Serif', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 17px;
   line-height: 1.65;
   color: var(--ink);
@@ -617,7 +618,7 @@ body {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   gap: 24px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -659,7 +660,7 @@ a:hover { color: var(--red); }
 .paxiom-bar-mark {
   display: inline-flex; align-items: center; gap: 10px;
   text-decoration: none; color: var(--ink);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
   transition: color 0.15s ease;
 }
@@ -667,7 +668,7 @@ a:hover { color: var(--red); }
 .paxiom-bar-mark:hover { color: var(--blue); }
 .paxiom-bar-nav {
   display: flex; gap: 18px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
 }
 .paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; transition: color 0.15s ease; padding-bottom: 2px; }
