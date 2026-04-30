@@ -297,12 +297,37 @@
     color: var(--ink-faint);
     letter-spacing: 0.05em;
   }
+
+  .home-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: color 0.15s ease;
+  }
+  .home-link svg { width: 28px; height: 28px; display: block; }
+  .home-link:hover { color: var(--ink); }
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header>
+  <a class="home-link" href="/" aria-label="paxiom.org — home">
+    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true">
+      <circle cx="50" cy="50" r="40"/>
+      <path d="M50 14 L76 64 L24 64 Z"/>
+      <line x1="50" y1="30" x2="50" y2="80"/>
+      <line x1="38" y1="80" x2="62" y2="80"/>
+      <circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/>
+    </svg>
+    <span>paxiom.org</span>
+  </a>
   <div class="eyebrow">Architecture Reference · v0.1</div>
   <h1>AO as <em>distributed dispatcher</em><br>for verifiable Ethereum proof work</h1>
   <p class="lede">

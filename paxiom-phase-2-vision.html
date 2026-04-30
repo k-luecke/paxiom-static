@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom · Phase 2 Vision Brief</title>
+<meta name="description" content="Phase 2 Vision Brief — private data compute, healthcare and financial services verticals, commercial motion.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F1E8;
+  --paper-dark: #EDE6D3;
+  --ink: #1A2332;
+  --ink-mid: #3A4555;
+  --ink-faint: #6B7280;
+  --rule: #1A2332;
+  --rule-faint: #B8AE96;
+  --blue: #1E3A5F;
+  --blue-light: #4A6B8A;
+  --red: #8B2E1F;
+  --amber: #B8860B;
+  --green: #2D6A4F;
+  --grid: rgba(26, 35, 50, 0.04);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+.sheet { max-width: 1080px; margin: 40px auto; background: var(--paper); border: 2px solid var(--ink); position: relative; }
+@media (max-width: 900px) { .sheet { margin: 16px 8px; border-width: 1px; } }
+.sheet-header {
+  display: grid; grid-template-columns: auto 1fr auto;
+  border-bottom: 2px solid var(--ink);
+  padding: 16px 24px; align-items: end; gap: 24px;
+}
+.sheet-mark { width: 44px; height: 44px; color: var(--ink); display: block; flex-shrink: 0; }
+.sheet-mark-link { display: block; line-height: 0; transition: opacity 0.15s ease; }
+.sheet-mark-link:hover { opacity: 0.65; }
+.sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
+.sheet-project { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.sheet-title { font-family: 'IBM Plex Serif', serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
+.sheet-subtitle { font-family: 'IBM Plex Serif', serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
+.sheet-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.04em; text-align: right; }
+.sheet-meta dt { color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
+.sheet-meta dd { color: var(--ink); font-weight: 500; }
+.sheet-body { padding: 56px 72px; }
+@media (max-width: 700px) {
+  .sheet-body { padding: 32px 24px; }
+  .sheet-header { grid-template-columns: auto 1fr; }
+  .sheet-meta { grid-column: 1 / -1; text-align: left; padding-top: 8px; border-top: 1px solid var(--rule-faint); }
+}
+.cover-mark { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
+.cover-mark::after { content: ''; flex: 1; height: 1px; background: var(--rule-faint); }
+.cover-title { font-family: 'IBM Plex Serif', serif; font-weight: 400; font-size: clamp(48px, 7.5vw, 88px); line-height: 0.96; letter-spacing: -0.025em; color: var(--ink); margin-bottom: 28px; }
+.cover-title em { font-style: italic; font-weight: 400; color: var(--ink-mid); }
+.cover-strap { font-family: 'IBM Plex Serif', serif; font-style: italic; font-size: 22px; line-height: 1.45; color: var(--ink-mid); max-width: 60ch; margin-bottom: 64px; }
+.cover-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 56px; }
+@media (max-width: 700px) { .cover-grid { grid-template-columns: 1fr; } }
+.cover-cell { padding: 20px 24px; border-right: 1px solid var(--rule-faint); }
+.cover-cell:nth-child(2n) { border-right: none; }
+@media (max-width: 700px) { .cover-cell { border-right: none; border-bottom: 1px solid var(--rule-faint); } .cover-cell:last-child { border-bottom: none; } }
+.cover-cell-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+.cover-cell-value { font-family: 'IBM Plex Serif', serif; font-size: 17px; color: var(--ink); line-height: 1.35; }
+.cover-cell-value em { font-style: italic; color: var(--ink-mid); }
+.toc-section-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-top: 36px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-faint); }
+.toc-section-label:first-child { margin-top: 0; }
+.toc-row { display: grid; grid-template-columns: 80px 1fr auto; gap: 24px; padding: 10px 0; border-bottom: 1px dotted var(--rule-faint); align-items: baseline; }
+.toc-row:last-of-type { border-bottom: none; }
+.toc-num { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; color: var(--blue); letter-spacing: 0.04em; }
+.toc-title { font-family: 'IBM Plex Serif', serif; font-size: 16px; color: var(--ink); }
+.toc-title em { font-style: italic; color: var(--ink-mid); font-size: 14px; display: block; margin-top: 2px; }
+.toc-page { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-faint); letter-spacing: 0.04em; }
+.section-mark { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.section-title { font-family: 'IBM Plex Serif', serif; font-weight: 400; font-size: 40px; line-height: 1.05; letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px; }
+.section-title em { font-style: italic; color: var(--ink-mid); }
+.section-strap { font-family: 'IBM Plex Serif', serif; font-style: italic; font-size: 18px; color: var(--ink-mid); margin-bottom: 44px; max-width: 60ch; line-height: 1.5; }
+.subsection-title { font-family: 'IBM Plex Serif', serif; font-weight: 500; font-size: 24px; line-height: 1.15; color: var(--ink); margin-top: 44px; margin-bottom: 16px; letter-spacing: -0.01em; }
+.subsection-title em { font-style: italic; color: var(--ink-mid); }
+.prose p { font-family: 'IBM Plex Serif', serif; font-size: 16px; line-height: 1.65; margin-bottom: 18px; max-width: 68ch; color: var(--ink); }
+.prose p.lead { font-size: 19px; line-height: 1.55; color: var(--ink-mid); font-style: italic; margin-bottom: 28px; }
+.prose h3 { font-family: 'IBM Plex Serif', serif; font-weight: 500; font-size: 22px; margin-top: 40px; margin-bottom: 14px; color: var(--ink); letter-spacing: -0.005em; }
+.prose h4 { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); margin-top: 32px; margin-bottom: 10px; }
+.prose strong { font-weight: 600; color: var(--ink); }
+.prose em { font-style: italic; color: var(--ink-mid); }
+.prose code { font-family: 'IBM Plex Mono', monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); }
+.prose ul, .prose ol { margin: 12px 0 22px 28px; font-family: 'IBM Plex Serif', serif; font-size: 16px; line-height: 1.65; max-width: 68ch; }
+.prose li { margin-bottom: 8px; }
+.math { font-family: 'IBM Plex Mono', monospace; font-size: 14px; background: var(--paper-dark); padding: 18px 24px; margin: 22px 0; border-left: 3px solid var(--blue); line-height: 1.85; color: var(--ink); white-space: pre-wrap; }
+.math .var { font-style: italic; color: var(--blue); }
+.math .label { color: var(--ink-faint); font-size: 11px; }
+.math-read { font-family: 'IBM Plex Serif', serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin: -10px 0 24px 0; padding-left: 24px; line-height: 1.55; max-width: 68ch; }
+.math-read::before { content: '↳ '; color: var(--blue); font-style: normal; font-weight: 600; }
+.callout { border: 1px solid var(--ink); margin: 32px 0; background: var(--paper); }
+.callout-header { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; padding: 9px 18px; background: var(--ink); color: var(--paper); font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; align-items: center; }
+.callout-tag { font-weight: 600; }
+.callout-id { color: var(--paper-dark); opacity: 0.7; }
+.callout-body { padding: 20px 24px; }
+.callout-body p { font-family: 'IBM Plex Serif', serif; font-size: 16px; line-height: 1.6; color: var(--ink); margin-bottom: 12px; }
+.callout-body p:last-child { margin-bottom: 0; }
+.callout-body ul { margin: 10px 0 6px 22px; font-family: 'IBM Plex Serif', serif; font-size: 16px; line-height: 1.6; }
+.callout-body li { margin-bottom: 6px; }
+.callout-body code { font-family: 'IBM Plex Mono', monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); }
+.callout.note { border-style: dashed; border-color: var(--ink-faint); }
+.callout.note .callout-header { background: transparent; color: var(--ink-faint); border-bottom: 1px dashed var(--ink-faint); }
+.callout.note .callout-id { color: var(--ink-faint); }
+.callout.thesis { border-color: var(--red); border-width: 2px; }
+.callout.thesis .callout-header { background: var(--red); }
+.numbers-block { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1.5px solid var(--ink); margin: 32px 0; }
+@media (max-width: 700px) { .numbers-block { grid-template-columns: 1fr; } }
+.numbers-cell { padding: 22px 24px; border-right: 1px solid var(--rule-faint); }
+.numbers-cell:last-child { border-right: none; }
+@media (max-width: 700px) { .numbers-cell { border-right: none; border-bottom: 1px solid var(--rule-faint); } .numbers-cell:last-child { border-bottom: none; } }
+.numbers-figure { font-family: 'IBM Plex Serif', serif; font-size: 32px; font-weight: 500; color: var(--ink); letter-spacing: -0.02em; line-height: 1; margin-bottom: 6px; }
+.numbers-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; }
+.numbers-detail { font-family: 'IBM Plex Serif', serif; font-size: 13px; font-style: italic; color: var(--ink-mid); line-height: 1.4; }
+.schedule { margin: 24px 0; border: 1.5px solid var(--ink); width: 100%; border-collapse: collapse; }
+.schedule th { background: var(--ink); color: var(--paper); font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; text-align: left; padding: 10px 12px; font-weight: 500; }
+.schedule td { padding: 12px; border-bottom: 1px solid var(--rule-faint); border-right: 1px solid var(--rule-faint); font-family: 'IBM Plex Serif', serif; font-size: 14px; vertical-align: top; color: var(--ink); }
+.schedule td:last-child { border-right: none; }
+.schedule tr:last-child td { border-bottom: none; }
+.schedule tr.total td { background: var(--paper-dark); font-weight: 600; border-top: 2px solid var(--ink); }
+.schedule .num { font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-align: right; }
+.schedule .id { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--blue); font-weight: 500; }
+.page-break { border-top: 2px solid var(--ink); margin: 96px -72px 64px; position: relative; }
+@media (max-width: 700px) { .page-break { margin: 56px -24px 40px; } }
+.page-break::before { content: attr(data-sheet); position: absolute; top: -10px; left: 72px; background: var(--paper); padding: 0 12px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.sheet-footer { border-top: 1.5px solid var(--ink); padding: 14px 24px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); align-items: center; }
+.sheet-footer .center { text-align: center; }
+.sheet-footer .right { text-align: right; color: var(--ink); font-weight: 600; }
+a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--red); }
+@media print { body { background: white; } .sheet { border: 2px solid black; } .page-break { page-break-before: always; } }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+<div class="sheet-header">
+  <a class="sheet-mark-link" href="/" aria-label="Paxiom — home"><svg class="sheet-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50,14 L76,64 L24,64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg></a>
+  <div class="sheet-title-block">
+    <div class="sheet-project">Paxiom · Forward Plan · Drawing Set</div>
+    <div class="sheet-title">Phase 2 Vision Brief</div>
+    <div class="sheet-subtitle">Private data compute. Healthcare and financial services. The next phase, before it's a build.</div>
+  </div>
+  <dl class="sheet-meta">
+    <dt>Project No.</dt><dd>PXM-001-F</dd>
+    <dt>Issue</dt><dd>Vision / Rev. A</dd>
+    <dt>Date</dt><dd>2026.04.30</dd>
+    <dt>Drawn By</dt><dd>K. Luecke</dd>
+  </dl>
+</div>
+
+<div class="sheet-body">
+
+<div class="cover-mark">Sheet F-000 · Cover &amp; Index</div>
+
+<h1 class="cover-title">When data <em>can't move,</em><br>the proof can.</h1>
+
+<p class="cover-strap">
+A planning brief for what comes after Phase 1. Paxiom's second
+commercial phase is verified computation on data that can't leave the
+customer's perimeter — medical records, financial transactions,
+proprietary state. Same proof primitive as Phase 1, applied to a class
+of customer who cannot use Phase 1.
+</p>
+
+<div class="cover-grid">
+  <div class="cover-cell">
+    <div class="cover-cell-label">Document Type</div>
+    <div class="cover-cell-value">Vision Brief<em>planning, not blueprint</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Audience</div>
+    <div class="cover-cell-value">Founder &amp; advisors<em>and the future Paxiom team</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Status</div>
+    <div class="cover-cell-value">Forward-looking<em>Phase 2 not yet under construction</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Timing</div>
+    <div class="cover-cell-value">Months 12–30<em>from Phase 1 launch</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Companion Set</div>
+    <div class="cover-cell-value">B · A · M · E · O · T · R<em>see Project Narrative B-700 series</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">What This Is Not</div>
+    <div class="cover-cell-value">Not a build spec<em>blueprint comes later</em></div>
+  </div>
+</div>
+
+<div class="toc-section-label">Front Matter</div>
+<div class="toc-row"><div class="toc-num">F-000</div><div class="toc-title">Cover &amp; Index<em>this sheet</em></div><div class="toc-page">↑</div></div>
+<div class="toc-row"><div class="toc-num">F-010</div><div class="toc-title">How to Read This<em>vision is not blueprint</em></div><div class="toc-page"><a href="#f-010">F-010</a></div></div>
+
+<div class="toc-section-label">Section 1 — The Phase 2 Thesis</div>
+<div class="toc-row"><div class="toc-num">F-100</div><div class="toc-title">Why Private Data Compute<em>the gap Phase 1 cannot fill</em></div><div class="toc-page"><a href="#f-100">F-100</a></div></div>
+<div class="toc-row"><div class="toc-num">F-110</div><div class="toc-title">The Customer Pull<em>specific pain points being solved</em></div><div class="toc-page"><a href="#f-110">F-110</a></div></div>
+<div class="toc-row"><div class="toc-num">F-120</div><div class="toc-title">The Mathematical Foundation<em>ZK extended to private inputs</em></div><div class="toc-page"><a href="#f-120">F-120</a></div></div>
+
+<div class="toc-section-label">Section 2 — The Verticals</div>
+<div class="toc-row"><div class="toc-num">F-200</div><div class="toc-title">Healthcare<em>HIPAA, the structural opportunity</em></div><div class="toc-page"><a href="#f-200">F-200</a></div></div>
+<div class="toc-row"><div class="toc-num">F-210</div><div class="toc-title">Financial Services<em>regulatory transparency without disclosure</em></div><div class="toc-page"><a href="#f-210">F-210</a></div></div>
+<div class="toc-row"><div class="toc-num">F-220</div><div class="toc-title">Other Verticals<em>government, insurance, telecom, ESG</em></div><div class="toc-page"><a href="#f-220">F-220</a></div></div>
+
+<div class="toc-section-label">Section 3 — Architectural Foundations</div>
+<div class="toc-row"><div class="toc-num">F-300</div><div class="toc-title">What Phase 1 Already Provides<em>the substrate carries</em></div><div class="toc-page"><a href="#f-300">F-300</a></div></div>
+<div class="toc-row"><div class="toc-num">F-310</div><div class="toc-title">Compliance Infrastructure<em>SOC 2, HIPAA BAA, audit posture</em></div><div class="toc-page"><a href="#f-310">F-310</a></div></div>
+
+<div class="toc-section-label">Section 4 — Commercial Motion</div>
+<div class="toc-row"><div class="toc-num">F-400</div><div class="toc-title">B2B Sales Pattern<em>the procurement reality</em></div><div class="toc-page"><a href="#f-400">F-400</a></div></div>
+<div class="toc-row"><div class="toc-num">F-410</div><div class="toc-title">Pricing &amp; Economics<em>tier structure and deal sizes</em></div><div class="toc-page"><a href="#f-410">F-410</a></div></div>
+
+<div class="toc-section-label">Section 5 — Risks &amp; Gates</div>
+<div class="toc-row"><div class="toc-num">F-500</div><div class="toc-title">Risks &amp; Open Questions<em>what could break this</em></div><div class="toc-page"><a href="#f-500">F-500</a></div></div>
+<div class="toc-row"><div class="toc-num">F-510</div><div class="toc-title">Phase 1 → Phase 2 Bridge<em>prerequisites and gates</em></div><div class="toc-page"><a href="#f-510">F-510</a></div></div>
+
+<div class="toc-section-label">Section 6 — Forward</div>
+<div class="toc-row"><div class="toc-num">F-600</div><div class="toc-title">Phase 2 → Phase 3<em>verified inference on this substrate</em></div><div class="toc-page"><a href="#f-600">F-600</a></div></div>
+
+<div class="toc-section-label">Back Matter</div>
+<div class="toc-row"><div class="toc-num">F-700</div><div class="toc-title">Closing &amp; References<em>related documents, revision log</em></div><div class="toc-page"><a href="#f-700">F-700</a></div></div>
+
+<div class="page-break" data-sheet="Sheet F-010"></div>
+<div id="f-010">
+<div class="section-mark">F-010 · How to Read This</div>
+<h2 class="section-title">Vision is not <em>blueprint.</em></h2>
+<div class="prose">
+<p class="lead">A vision brief is the document type before a blueprint. It establishes the territory, the customer, the architectural enablers, the commercial motion. It does not specify build sequence, deployment topology, or pricing tiers with the precision a blueprint requires. Those come later.</p>
+
+<h3>What this is</h3>
+<p>A planning document for Phase 2 of the Paxiom build. Phase 2 is private data compute — ZK proofs of computation performed on inputs that cannot leave the customer's perimeter for regulatory or commercial reasons. The verticals that anchor it are healthcare and financial services. The customers are mid-size and enterprise B2B. The commercial motion is sales-led with long procurement cycles and sticky integrations.</p>
+<p>Phase 2 is not yet under construction. The substrate decisions in Phase 1 — HyperBEAM compute, AO/Arweave audit, Load Network state reconstruction, the proving stack — were made with Phase 2 in mind, and Phase 2 builds on that substrate rather than replacing it. But the specific Phase 2 work — ZK circuits for medical record schemas, compliance documentation packages, B2B sales infrastructure — has not begun. The realistic Phase 2 launch window is 12 to 18 months after Phase 1 services land at credible scale.</p>
+
+<h3>What this is not</h3>
+<p>Not a build spec. Detailed service specifications, build sequence, risk register, and deployment topology will appear in a Phase 2 Blueprint analogous to the A-series Phase 1 Blueprint when the time comes to build.</p>
+<p>Not a pitch deck. The audience is the founder, future advisors, and the future Paxiom team. The document is for thinking through Phase 2 honestly rather than selling it. Where there is genuine uncertainty — and there is plenty — that is what gets written.</p>
+<p>Not a fundraising document. Phase 2 may eventually require external capital; if so, fundraising materials will derive from this brief but will not replace it. The brief stays focused on what the platform should build and why, not what the funding round should look like.</p>
+
+<h3>Conventions</h3>
+<p>Same construction-document register as the rest of the drawing set. Sheets are numbered. Cross-references go to specific sheets. Mathematical notation uses the same set-theoretic conventions as the Project Narrative's B-500 series, with italicized "read this as" translations following each formal statement.</p>
+<p>Forward-looking claims are identified explicitly. Where a number, timeline, or customer specifics appear, they are estimates from the current understanding of the territory. Phase 2 reality will likely deviate from these estimates in directions that cannot be predicted from the current vantage point.</p>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-100"></div>
+<div id="f-100">
+<div class="section-mark">Section 1 · F-100</div>
+<h2 class="section-title">Why private data compute.<br><em>The gap Phase 1 cannot fill.</em></h2>
+<p class="section-strap">Phase 1 serves agents transacting over public chain state. Phase 2 serves customers who cannot use Phase 1 because their state is not public, cannot become public, and cannot leave their perimeter.</p>
+<div class="prose">
+<p class="lead">The structural property of Phase 1 is that everything it operates on is public. Ethereum chain state is public by construction. Cross-chain messages are public. Block headers, contract storage, transaction history — all visible to anyone with an Arweave gateway and time. The customers Phase 1 serves are operating against that public substrate.</p>
+
+<h3>The customer Phase 1 cannot serve</h3>
+<p>Consider a hospital that wants to use a third-party AI service to flag patients at risk for a specific condition. The hospital has the patient records. The AI service has the model. The useful computation requires combining them. Sharing patient records with the AI service is a HIPAA violation. Building the model in-house is beyond the hospital's expertise. The useful computation does not happen, and the patients who would have benefited do not benefit.</p>
+<p>Consider a hedge fund that needs to demonstrate its trading algorithm satisfies a specific regulatory constraint without exposing the algorithm to the regulator. The fund cannot show the code or the trades. The regulator cannot accept "trust us" as compliance evidence. The verification gap means either the fund operates with regulatory uncertainty, or the regulator forces disclosure that compromises the fund's competitive position. Both outcomes are bad for both parties.</p>
+<p>Consider a contract manufacturer producing components for multiple competing customers, each requiring proof that their data is not commingled with the others'. The manufacturer cannot show one customer's data to another customer's auditor. The auditors cannot accept attestations that don't carry cryptographic guarantees. The manufacturer either operates without the audit attestations the customers need or builds parallel verification systems for each customer at significant cost.</p>
+<p>These customers exist in large numbers. They are not edge cases. Healthcare, financial services, manufacturing, government, defense, insurance, telecom, education — every regulated industry has versions of the same structural problem. Their state is not public, cannot become public, and cannot leave their perimeter. They cannot use Phase 1 because Phase 1 only proves things about state that's already publicly observable.</p>
+
+<h3>What Phase 2 enables</h3>
+<p>Phase 2 extends the proof primitive to private inputs. The customer's data stays in the customer's perimeter. The platform supplies a verification primitive that the customer can run inside their perimeter, producing a ZK proof attesting that "this computation was performed correctly on inputs satisfying the policy" — without the platform ever seeing the data.</p>
+<p>For the hospital scenario: the platform ships a ZK circuit representing an audited diagnostic model. The hospital runs the circuit on patient records (which never leave the hospital), produces flagged-patient outputs, and provides cryptographic proof that the outputs came from the audited model on valid HIPAA-permitted inputs. The hospital learns who's at risk. The platform learns nothing about the patients. The audit trail proves the audited model was used correctly. The third-party AI capability that HIPAA prevented is now available without HIPAA being violated.</p>
+<p>For the hedge fund scenario: the fund computes ZK proofs that "all transactions in period P satisfy regulatory policy R" without revealing the transactions or the algorithm. The regulator verifies the proof and gains compliance assurance without seeing the trades. The fund's competitive position is preserved. The regulator's oversight is satisfied. Both outcomes are good for both parties.</p>
+<p>For the manufacturer scenario: each customer's data is processed in a separate verification context with cryptographic isolation. Auditors verify the isolation through the proof system. The manufacturer maintains one production environment instead of building parallel ones for each customer.</p>
+
+<h3>Why now</h3>
+<p>Three preconditions have been met that weren't met three years ago.</p>
+<p>The cryptographic primitives are mature enough. ZK systems for arbitrary computation became practical at production scale around 2023-2024. Proving costs have continued to drop. The specific work Phase 2 requires — ZK circuits for medical record schemas, financial transaction formats, common compliance policies — is now an applied engineering problem rather than a fundamental research problem.</p>
+<p>The regulatory frameworks are tightening. HIPAA enforcement intensified in 2024-2025 with the OCR's audit program and breach notification penalties. Sarbanes-Oxley compliance for AI-mediated decisions is being clarified. GDPR enforcement has reached the point where multi-billion-dollar fines are routine. The cost of non-compliance has crossed the threshold where customers will pay meaningfully for verification infrastructure that solves the problem structurally.</p>
+<p>The compute substrate exists. Phase 1's HyperBEAM/AO/Arweave/Load Network architecture provides the audit posture, deterministic compute, and permanent storage that Phase 2 customers need from a vendor. Building Phase 2 on a different substrate would require rebuilding the audit infrastructure, which is exactly what Phase 1 establishes.</p>
+
+<div class="callout thesis">
+  <div class="callout-header">
+    <span class="callout-tag">Thesis</span>
+    <span>The Phase 2 bet, in one sentence</span>
+    <span class="callout-id">F-100 / T.01</span>
+  </div>
+  <div class="callout-body">
+    <p>The customers regulated industries cannot afford to leave unserved are exactly the customers Phase 1 cannot serve, and exactly the customers whose procurement processes reward the kind of substrate Phase 1 establishes. Phase 2 is the commercial expression of the architectural choices that look like overinvestment in Phase 1 and pay off as moat in Phase 2.</p>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-110"></div>
+<div id="f-110">
+<div class="section-mark">Section 1 · F-110</div>
+<h2 class="section-title">The customer pull.<br><em>Specific pain points.</em></h2>
+<div class="prose">
+<p class="lead">Phase 2 customers do not buy verified computation as a curiosity. They buy it because a specific business problem has reached a specific threshold of cost. Naming the threshold is what makes the customer pull legible.</p>
+
+<h3>Healthcare AI deployment at scale</h3>
+<p>The bottleneck for healthcare AI deployment is not model quality. Models that beat human performance on specific diagnostic tasks have existed since 2020. The bottleneck is HIPAA. Hospitals cannot share patient records with model vendors. Vendors cannot easily ship models into hospitals' environments because deployment, support, and updating require ongoing access. The compromise — anonymized data, federated learning, on-prem deployment with limited support — produces worse models, slower update cycles, and weaker outcomes than the unbottled alternative would.</p>
+<p>The cost of this bottleneck, measured in foregone clinical value, is substantial and growing. Healthcare AI vendors who can offer "we never see your data and yet you get the latest model" through ZK-based deployment win against vendors who require data sharing or on-prem installs. The threshold has been crossed where the engineering cost of building the ZK pathway is less than the lost-deal cost of not having it.</p>
+
+<h3>Financial services regulatory reporting</h3>
+<p>Banks, broker-dealers, hedge funds, asset managers — every entity in financial services produces regulatory reports continuously. The reports certify that activity satisfies specific policies (capital adequacy, suitability, AML, market abuse rules, fiduciary obligations). The certifications are made by humans reviewing samples and signing attestations.</p>
+<p>The structural weaknesses of human-attested compliance are well-documented and increasingly costly. Sample-based review misses systematic violations. Attestations carry personal liability that pushes risk-averse behavior. The cost of compliance staff has grown 8-12% annually for a decade. Multiple major firms have paid nine-figure fines for compliance failures that a continuous proof-based system would have caught.</p>
+<p>Verified computation on private transaction data produces a different model. Continuous proofs that policy P is satisfied across all transactions in period N. The proof either verifies or it does not. If it verifies, the firm has cryptographic evidence of compliance. If it does not, the firm has cryptographic evidence of which transactions failed which policy and can remediate. The regulator, given access to verify the proofs, has continuous assurance rather than periodic attestations.</p>
+
+<h3>Cross-organization data collaboration</h3>
+<p>Many valuable computations require data from multiple organizations that cannot share data with each other. Two banks suspecting joint fraud schemes cannot share customer information. Multiple hospitals tracking outbreak patterns cannot share patient records. Competing manufacturers detecting supply chain anomalies cannot share procurement data. The valuable joint computation does not happen because the participants cannot trust each other with raw data.</p>
+<p>Verified computation on private inputs makes joint computation possible. Each participant runs the agreed-upon circuit on their own data, contributes the verified output to the joint result, and proves the contribution was correctly derived without exposing the underlying inputs. The joint computation completes. None of the participants learn anything about the others' data beyond what the agreed-upon output reveals.</p>
+<p>This pattern — sometimes called multi-party computation or federated computation — is well-understood theoretically and increasingly practical. The blocker has historically been verification: how does each participant trust the others to run the circuit honestly. Verifiable computation through ZK proofs solves the verification problem cleanly.</p>
+
+<h3>Verifiable consent and data lineage</h3>
+<p>GDPR, CCPA, and emerging data sovereignty frameworks impose obligations to track how customer data is used and to demonstrate that uses were consented to. The compliance overhead is substantial. Most organizations meet it through documentation systems that record what was supposed to happen, not what actually happened.</p>
+<p>The gap between "supposed to happen" and "actually happened" is the audit risk. A verified computation pathway closes the gap structurally: the computation either ran on consented data with the audited transformation, or the proof doesn't verify. The audit becomes a check of cryptographic evidence rather than a check of self-reported documentation.</p>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-120"></div>
+<div id="f-120">
+<div class="section-mark">Section 1 · F-120</div>
+<h2 class="section-title">The mathematical foundation.<br><em>ZK extended to private inputs.</em></h2>
+<div class="prose">
+<p class="lead">Phase 2 is not a new cryptographic primitive. It is the same ZK structure from the Project Narrative's B-500 series, applied to a relation R where the witness is private data and the public statement is the property being proven about that data.</p>
+
+<h3>The Phase 1 structure, recalled</h3>
+<p>Phase 1 services prove statements about public chain state. The witness in those proofs is the Merkle path through the state trie that demonstrates inclusion of a value. The public input is the value, the contract address, the slot, and the block. The relation R encodes "this value is what's stored at this slot in this contract at this block."</p>
+<div class="math">⟨ <span class="var">S</span>, <span class="var">P</span>, <span class="var">V</span> ⟩
+<span class="var">P</span>(<span class="var">pk</span>, <span class="var">x</span>, <span class="var">w</span>) → π
+where <span class="var">x</span> = (block, contract, slot, value) and <span class="var">w</span> = Merkle path
+<span class="label">// public inputs verifiable from chain consensus</span></div>
+<p class="math-read">Read this as: the prover takes a public input that anyone can independently verify against chain consensus, plus a witness (the Merkle path) that proves the public input is consistent with the canonical state, and produces a proof. The verifier confirms the proof against the public input alone — no private data is involved because none of the inputs are private.</p>
+
+<h3>Phase 2 structure</h3>
+<p>Phase 2 services prove statements about computations performed on private data. The witness is the private data itself, plus whatever auxiliary information is needed to demonstrate the computation was performed correctly. The public input is the property being attested — typically an output, a policy compliance assertion, or a statistical summary.</p>
+<div class="math">⟨ <span class="var">S</span>, <span class="var">P</span>, <span class="var">V</span> ⟩
+<span class="var">P</span>(<span class="var">pk</span>, <span class="var">x</span>, <span class="var">w</span>) → π
+where <span class="var">x</span> = (model_id, policy_id, output) and
+      <span class="var">w</span> = (private_input, computation_trace, model_params)
+<span class="label">// witness is private; public input attests to a property of computation</span></div>
+<p class="math-read">Read this as: the prover takes a public input describing what's being attested (which model, which policy, what output), plus a witness containing the actual private data and the trace of how the computation produced the output, and generates a proof. The verifier checks the proof against the public input. The verifier learns that some valid private input produced the claimed output through the audited model — and learns nothing about the private input itself.</p>
+
+<h3>What this enables</h3>
+<p>The same structural properties from B-500 carry forward. Completeness: honest proofs of true statements always verify. Soundness: false statements cannot produce verifying proofs. Zero-knowledge: the verifier learns nothing about the witness.</p>
+<p>The third property is what makes Phase 2 work commercially. The hospital's patients are protected because the verifier (auditor, regulator, downstream consumer) learns nothing about them from the proof. The hedge fund's transactions are protected because the verifier learns nothing about them from the proof. The manufacturer's customer data is protected because the verifier learns nothing about it from the proof. The math doesn't care what's being protected — the structure works for any computation that can be expressed as a relation R efficient to verify but private in its inputs.</p>
+
+<h3>The recursive composition for ML circuits</h3>
+<p>Phase 2's most demanding workloads — ML model inference on private data — produce relations R with hundreds of millions to billions of constraints. Direct proof generation at that scale is impractical. The recursive proving structure from B-510 becomes essential.</p>
+<div class="math"><span class="label">Recursive proof of ML inference:</span>
+<span class="var">P</span>(<span class="var">pk</span><sub>1</sub>, <span class="var">x</span><sub>1</sub>, <span class="var">w</span><sub>1</sub>) → π<sub>1</sub>   <span class="label">// per-layer proof</span>
+<span class="var">P</span>(<span class="var">pk</span><sub>2</sub>, <span class="var">x</span><sub>2</sub>, <span class="var">w</span><sub>2</sub>) → π<sub>2</sub>
+...
+<span class="var">P</span>(<span class="var">pk</span><sub>n</sub>, <span class="var">x</span><sub>n</sub>, <span class="var">w</span><sub>n</sub>) → π<sub>n</sub>
+
+<span class="var">P</span><sub>rec</sub>(<span class="var">pk</span>', {<span class="var">x</span><sub>i</sub>}, {π<sub>i</sub>}) → π'
+   <span class="label">// composes per-layer proofs into one verifiable artifact</span></div>
+<p class="math-read">Read this as: instead of generating one massive proof for the entire ML inference, the prover decomposes the inference into per-layer proofs (each layer of the neural network is its own proof), then composes them recursively into a single proof π' whose statement is "all the layer proofs verify and the layer outputs chain correctly." The recursive proof is much smaller than the sum of layer proofs and verifies in roughly the same time as a single proof. This is what makes ML inference at production scale economically viable.</p>
+<p>Polyhedra Expander, identified in B-510 as Phase 1's recursive proving target, is also the right substrate for Phase 2. The architectural decision to build with recursion in mind from Phase 1 is what makes Phase 2's ML-scale workloads feasible without an architectural rewrite.</p>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-200"></div>
+<div id="f-200">
+<div class="section-mark">Section 2 · F-200</div>
+<h2 class="section-title">Healthcare.<br><em>The HIPAA opportunity.</em></h2>
+<div class="prose">
+<p class="lead">Healthcare is one of the two anchor verticals for Phase 2. The structural fit is unusually clean: HIPAA's data-handling provisions don't apply to data that never moves, and ZK-based architectures are the cleanest way to perform useful third-party computation without moving the data.</p>
+
+<h3>The market structure</h3>
+<p>U.S. healthcare spending is roughly $4.5 trillion annually. Healthcare IT is roughly 6-8% of that — call it $300 billion. Healthcare AI specifically is a fast-growing slice, estimated at $20-30 billion currently and projected to reach $150-200 billion by 2030. The growth bottleneck is not technology, it is data access. Models that work on training data fail in deployment because deployment-stage data access is constrained by HIPAA in ways the training stage was not.</p>
+<p>The customer base segments into three tiers worth distinguishing.</p>
+
+<h3>Tier 1 — Healthcare AI vendors</h3>
+<p>Companies building AI products for healthcare. Komodo Health, Tempus, Owkin, Path AI, Aidoc, Viz.ai, dozens of smaller specialized firms. Their commercial bottleneck is the deployment contract — the hospital's procurement and security review processes. A vendor that can offer "we never see your data and yet you get the latest model" through ZK-based deployment moves through procurement faster than vendors who require data sharing or on-prem installs.</p>
+<p>The Phase 2 commercial relationship: the AI vendor licenses Paxiom's verification infrastructure as part of their deployment stack. The AI vendor sells their model to hospitals; Paxiom is the substrate that makes the deployment HIPAA-clean. Pricing is per-deployment or per-inference, with volume discounts negotiated in the AI vendor contract.</p>
+
+<h3>Tier 2 — Health systems and payers</h3>
+<p>Large hospital networks (HCA Healthcare, Mayo Clinic, Cleveland Clinic, UCSF, Kaiser Permanente), payers (UnitedHealth, Anthem, Aetna), and integrated delivery networks. These are the entities deploying healthcare AI internally and externally. They have data, they have IT staff, they have compliance teams, and they have procurement budgets.</p>
+<p>The Phase 2 commercial relationship: direct enterprise contracts. The health system uses Paxiom's verification infrastructure for internal AI projects (their own data scientists running models on their own data), for external vendor evaluations (verifying the vendor's claimed model performance on their data), and for cross-system collaboration (joint research initiatives with other systems where data sharing is constrained). Pricing is annual contracts, $100k-500k for mid-size systems, $500k-2M for large systems.</p>
+
+<h3>Tier 3 — Specialized firms</h3>
+<p>Pharmaceutical companies running real-world evidence studies. Medical device manufacturers tracking post-market surveillance. Public health agencies coordinating across jurisdictions. Clinical research organizations running multi-site trials. Each has specific use cases where verified computation on private data unlocks something the alternative does not.</p>
+<p>The Phase 2 commercial relationship: project-based contracts or specialized subscriptions. Smaller average deal size than Tier 2 ($25k-150k/year typical) but higher count of customers and faster procurement.</p>
+
+<div class="numbers-block">
+  <div class="numbers-cell">
+    <div class="numbers-label">Healthcare AI by 2030</div>
+    <div class="numbers-figure">$150-200B</div>
+    <div class="numbers-detail">market size; bottleneck is data access, not model quality</div>
+  </div>
+  <div class="numbers-cell">
+    <div class="numbers-label">tier 2 deal size</div>
+    <div class="numbers-figure">$100k-2M</div>
+    <div class="numbers-detail">per system per year, depending on scale</div>
+  </div>
+  <div class="numbers-cell">
+    <div class="numbers-label">tier 1 vendors</div>
+    <div class="numbers-figure">~150</div>
+    <div class="numbers-detail">healthcare AI companies in active commercial deployment</div>
+  </div>
+</div>
+
+<h3>Procurement reality</h3>
+<p>Healthcare procurement is slow. The honest expectation: 9-18 month sales cycles for Tier 2, 3-6 months for Tier 1, 6-12 months for Tier 3. Pilots before contracts. Security reviews that take weeks. Legal redlines on contracts that take more weeks. Every gate is a real gate.</p>
+<p>The mitigation is not speed; it is patience plus pipeline depth. Paxiom should not depend on any single Tier 2 deal closing on any specific timeline. Phase 2 economics work with 8-15 customers across tiers in the first 18 months of Phase 2 selling, not with two whales who become the entire revenue base.</p>
+
+<h3>The reference customer dynamic</h3>
+<p>The first major Tier 2 customer is the unlock for the second through tenth. Healthcare procurement is a network industry — the same compliance officers, the same procurement consultants, the same security reviewers, the same conferences. A single named reference customer (especially a known-brand academic medical center or large national system) does more for sales velocity than any amount of marketing spend.</p>
+<p>The first reference customer is therefore an asymmetric investment. Concessions on price, contract terms, support depth, and feature roadmap that wouldn't be sustainable for the tenth customer are sustainable and correct for the first. The reference value of the first customer pays back through the next several years of customer acquisition.</p>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-210"></div>
+<div id="f-210">
+<div class="section-mark">Section 2 · F-210</div>
+<h2 class="section-title">Financial services.<br><em>Regulatory transparency without disclosure.</em></h2>
+<div class="prose">
+<p class="lead">The other anchor vertical. The structural fit is different from healthcare but equally clean: financial regulators want continuous evidence of compliance, financial firms want competitive privacy preserved, and ZK proofs satisfy both.</p>
+
+<h3>The market structure</h3>
+<p>U.S. financial services compliance spend is roughly $50 billion annually across banks, broker-dealers, asset managers, insurers, and fintechs. The spend has grown 8-12% per year for over a decade and shows no sign of slowing. The growth driver is not new regulation per se but the increasing complexity and granularity of existing regulation.</p>
+<p>The Phase 2 opportunity is not to displace existing compliance spend. It is to provide a new category of compliance infrastructure that converts attestation-based reporting into proof-based reporting. The customers who buy this are not buying it because it's cheaper — initially it is more expensive than the manual process. They buy it because it reduces risk in ways the manual process cannot.</p>
+
+<h3>Tier 1 — Hedge funds and proprietary trading firms</h3>
+<p>Specialized firms with substantial regulatory exposure relative to their headcount. Citadel, Two Sigma, Renaissance, DE Shaw at the top end; thousands of smaller firms below. Their compliance need is specific: prove that algorithmic trading satisfies regulatory constraints (best execution, market manipulation rules, position limits, suitability) without exposing the algorithm.</p>
+<p>The Phase 2 commercial relationship: subscription-based access to compliance proof generation. The firm runs the proofs internally on their own data; Paxiom supplies the verification infrastructure and the audited circuit library. Pricing is annual, $200k-2M depending on firm size and compliance scope.</p>
+
+<h3>Tier 2 — Banks and broker-dealers</h3>
+<p>Larger institutions with broader compliance scope. Banks (regional through national), broker-dealers, custody banks, prime brokers. Their compliance need spans more regulations (AML, KYC, suitability, capital, fiduciary, disclosure) and applies across more business lines.</p>
+<p>The Phase 2 commercial relationship: enterprise contracts with multiple business units. The bank uses Paxiom's verification infrastructure for AML transaction monitoring, suitability verification for advisory relationships, capital adequacy reporting, fraud pattern detection across customer cohorts, and inter-bank verification for joint operations. Pricing is annual enterprise contracts, $1-10M for mid-size banks, $10-50M for major banks.</p>
+
+<h3>Tier 3 — Asset managers and insurers</h3>
+<p>Large pools of regulatory complexity in different shapes. Asset managers (BlackRock, Vanguard, Fidelity, plus thousands of mid-size firms) have suitability, fiduciary, and disclosure obligations. Insurers have actuarial reserve, claims handling, and consumer protection obligations. Both verticals have multi-decade trends toward more granular regulatory oversight.</p>
+<p>The Phase 2 commercial relationship: similar shape to Tier 2 but different specifics. Multi-year contracts, multiple business units, integration with existing compliance technology stacks.</p>
+
+<div class="numbers-block">
+  <div class="numbers-cell">
+    <div class="numbers-label">U.S. compliance spend</div>
+    <div class="numbers-figure">~$50B</div>
+    <div class="numbers-detail">annually across financial services</div>
+  </div>
+  <div class="numbers-cell">
+    <div class="numbers-label">tier 2 deal size</div>
+    <div class="numbers-figure">$1-50M</div>
+    <div class="numbers-detail">enterprise contracts, multiple business units</div>
+  </div>
+  <div class="numbers-cell">
+    <div class="numbers-label">growth rate</div>
+    <div class="numbers-figure">~10%</div>
+    <div class="numbers-detail">annual; sustained for over a decade</div>
+  </div>
+</div>
+
+<h3>Why financial services is harder than healthcare</h3>
+<p>Financial firms' technical evaluation is more sophisticated than healthcare's. The buyers in financial services include people who can read cryptographic primitives directly, understand the differences between proving systems, and probe the security model with depth that most healthcare buyers cannot match.</p>
+<p>This cuts both ways. The Paxiom architecture's actual depth — substrate decisions, post-quantum trajectory, audit posture — matters more in financial services because financial buyers can evaluate it directly. The buyers reward genuine architectural quality with faster procurement and better contract terms. They also punish architectural shortcuts with rejection.</p>
+<p>The mitigation is to be ready for the technical depth of evaluation. Documentation that a working cryptographer can verify rather than marketing copy. Reference implementations that financial engineering teams can run. Performance benchmarks that hold up to scrutiny. The construction-document register Paxiom is using is exactly the right register for these buyers.</p>
+
+<h3>Why financial services is easier than healthcare</h3>
+<p>Procurement cycles in financial services are typically faster than healthcare for similarly-sized deals. The buyers have more authority to make decisions on shorter timelines. The compliance reviews are more rigorous but more predictable.</p>
+<p>This means Phase 2 selling can probably lead with financial services and follow with healthcare. The earlier financial wins establish track record that helps healthcare procurement; healthcare's slower cycles benefit from accumulated evidence that financial services can produce sooner.</p>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-220"></div>
+<div id="f-220">
+<div class="section-mark">Section 2 · F-220</div>
+<h2 class="section-title">Other verticals.<br><em>Government, insurance, telecom, ESG.</em></h2>
+<div class="prose">
+<p class="lead">Healthcare and financial services are the anchor verticals because their regulatory pressure and procurement budgets are largest. Several adjacent categories matter less in Phase 2 but more in Phase 3-4 and are worth flagging now so the architecture stays compatible.</p>
+
+<h3>Government and federal contracting</h3>
+<p>Federal agencies, defense contractors, intelligence community vendors, and state/local governments handle classified and sensitive data with strict compliance overlays (FedRAMP, FISMA, ITAR, CMMC, FERPA in education contexts). The structural fit for ZK-based verification is good. The procurement reality is brutal — multi-year cycles, security clearances, contracting overhead that often exceeds the value of the contract for smaller vendors.</p>
+<p>Phase 2 strategy: do not actively pursue federal contracting in Phase 2. The bandwidth cost dominates the revenue benefit at the company's stage. Phase 3-4 is when government contracting becomes worth pursuing through partnership channels (federal contractors who incorporate Paxiom into their stacks) rather than direct sales.</p>
+
+<h3>Insurance</h3>
+<p>Insurers have actuarial models, claims handling decisions, and underwriting algorithms that face increasing regulatory scrutiny. Privacy obligations under state laws and emerging federal frameworks add to the compliance overhead. Verifiable computation on customer data — for fraud detection, claims adjudication, premium calculation, reinsurance verification — has clean fit.</p>
+<p>Phase 2 strategy: insurance is treated similarly to healthcare in approach. The procurement cycles are slower than financial services but the deal sizes and customer stickiness are real. A single major insurer relationship, if won, justifies the investment.</p>
+
+<h3>Telecom and infrastructure</h3>
+<p>Telecom operators handle metadata about every call, message, and data session. Network operators handle traffic patterns. Infrastructure operators handle operational telemetry. All of these contain sensitive information that the operators want to use commercially (analytics, capacity planning, network optimization) but cannot expose without privacy or competitive harm.</p>
+<p>Phase 2 strategy: not actively pursued in Phase 2. The use cases are real but the procurement cycles are slow and the customers are fewer. Phase 4 is the natural home for telecom and infrastructure verticals.</p>
+
+<h3>ESG and sustainability reporting</h3>
+<p>Companies face increasing pressure to report on environmental, social, and governance metrics with verifiable evidence. Greenwashing scandals have raised the cost of unverified claims. Major asset managers have committed to investing only in companies with credible ESG verification. Verifiable computation on operational data — emissions, supply chain practices, labor conditions — has direct fit.</p>
+<p>Phase 2 strategy: not pursued directly. The category is interesting but the buyers are not yet sophisticated enough about cryptographic verification to drive procurement. Phase 4-5 work.</p>
+
+<h3>Education and research</h3>
+<p>Universities and research institutions handle student data (FERPA), human subjects research data (IRB protocols), and shared research datasets that cannot be commingled across institutions. Multi-institution research collaborations face many of the same data-sharing constraints as healthcare and financial services.</p>
+<p>Phase 2 strategy: not pursued for revenue. The budgets are smaller than commercial verticals. The strategic value is reference and credibility — partnering with one or two prominent research institutions on a high-visibility verification project produces credibility downstream that pure commercial relationships cannot. Phase 2 may include opportunistic education partnerships if the right ones present themselves.</p>
+
+<h3>The principle</h3>
+<p>Phase 2 focuses on the two verticals where the customer pull is strongest and the procurement is most economically viable. Healthcare and financial services. The other verticals are real opportunities but they belong to Phase 3-4 selling, not Phase 2 launch. Trying to address all of them simultaneously dilutes the focused execution that Phase 2 requires.</p>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-300"></div>
+<div id="f-300">
+<div class="section-mark">Section 3 · F-300</div>
+<h2 class="section-title">Architectural foundations.<br><em>What Phase 1 already provides.</em></h2>
+<p class="section-strap">The substrate decisions in Phase 1 — the ones that look like overinvestment when Phase 1 is the only thing being built — are exactly what Phase 2 customers' procurement processes evaluate.</p>
+<div class="prose">
+<p class="lead">Phase 2 does not require building a new substrate. It requires building Phase-2-specific tooling on top of the substrate Phase 1 establishes. Several Phase 1 architectural choices are load-bearing for Phase 2 in ways that won't be obvious until the first major Phase 2 procurement evaluation.</p>
+
+<h3>Permanent audit trail through AO/Arweave</h3>
+<p>Phase 1 writes every service transaction to AO/Arweave permanently. The audit posture is structural rather than retrofit. Phase 2 customers — particularly in regulated industries — have audit retention requirements that span years to decades. HIPAA requires six years; SEC requires three to seven; SOX requires seven; NARA standards for federal contractors can require permanent retention.</p>
+<p>A vendor whose audit trail is structurally permanent has a procurement-friendly answer to retention requirements. A vendor whose audit trail is retention-policy-dependent has to demonstrate the retention policy works as designed and prove it has worked historically. The first answer is much shorter and much more credible. Phase 1's substrate decision pays off here.</p>
+
+<h3>Deterministic compute through HyperBEAM</h3>
+<p>Phase 1's HyperBEAM device model produces deterministic computation that can be replayed and verified independently. The same inputs produce the same outputs byte-for-byte. This property matters enormously for Phase 2 because regulated customers need to be able to reproduce computations during audits. A non-deterministic compute layer cannot be reproduced; a deterministic one can.</p>
+<p>The deterministic property also enables the trust-attested computation patterns that some Phase 2 customers will require. TEE-attested execution combined with deterministic compute means the customer can verify two independent properties: that the computation ran in trusted hardware (TEE attestation) and that the computation produced the correct output for the inputs (determinism + ZK proof). Either property alone is weaker than both together.</p>
+
+<h3>No-RPC architecture through Load Network</h3>
+<p>Phase 1's input data comes from Load Network rather than from RPC providers. The trust assumption is reduced from "the RPC provider is honest" to "Arweave's permanent storage is intact and Ethereum's consensus was correct." Both reduced assumptions are structural rather than operational.</p>
+<p>For Phase 2, the equivalent property is that any data the platform pulls from public sources during private-data computation comes through verifiable channels. This matters for compliance computations that combine private customer data with public reference data (interest rates, regulatory thresholds, market prices). The reference data must be verified not just self-attested. Phase 1's no-RPC discipline carries directly forward.</p>
+
+<h3>KYA-compatible identity primitive</h3>
+<p>Phase 1's identity primitive — signed responses with a published key, forward-compatible with ERC-8004 — provides the substrate for the more sophisticated identity binding that Phase 2 customers will require. Phase 2 will likely add specific KYA primitives for healthcare (provider identity verification, patient consent attestation) and financial services (firm identity, regulatory entity attestation). These additions build on the Phase 1 primitive rather than replacing it.</p>
+
+<h3>Pluggable proving stack</h3>
+<p>Phase 1's architectural commitment to keep the proving system pluggable means Phase 2 can use whatever proving system is most efficient for ML-scale workloads without an architectural rewrite. The Phase 1 services use SP1, RISC Zero, and Polyhedra Expander as appropriate. Phase 2 may add EZKL or similar specialized ML-proving systems. The platform's service layer doesn't change; the proving backend swaps per service.</p>
+<p>This is a non-obvious benefit. The temptation in early-stage architecture is to commit to one proving system and optimize for it. Doing so makes Phase 1 simpler but makes Phase 2 harder, sometimes prohibitively so. Phase 1's pluggability pays off when Phase 2 demands different proving characteristics that the original choice doesn't satisfy.</p>
+
+<h3>Operational track record and reputation</h3>
+<p>The least technical and most important Phase 1 contribution to Phase 2 is operational track record. Phase 2 customers do not buy from vendors with zero operational history regardless of architectural quality. The 12-18 months of Phase 1 operations that precede Phase 2 selling are the primary credibility input to every Phase 2 procurement evaluation.</p>
+<p>This is the most-easy-to-undervalue Phase 1 deliverable. Every uneventful day of Phase 1 operations adds to the track record that Phase 2 selling depends on. A spectacular Phase 1 incident — even one that is technically well-handled — sets the Phase 2 timeline back by months. Operational discipline in Phase 1 is the highest-leverage investment in Phase 2 success.</p>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-310"></div>
+<div id="f-310">
+<div class="section-mark">Section 3 · F-310</div>
+<h2 class="section-title">Compliance infrastructure.<br><em>SOC 2, HIPAA BAA, audit posture.</em></h2>
+<div class="prose">
+<p class="lead">Procurement evaluations in regulated industries have specific compliance gates. None are insurmountable; all take real time and money to clear. The work to clear them is part of Phase 2 build cost rather than something the platform can shortcut.</p>
+
+<h3>SOC 2 Type II</h3>
+<p>The standard auditing framework for B2B SaaS in any regulated context. SOC 2 Type II requires demonstrating that defined controls operate effectively over a period of time (typically 6-12 months). Without SOC 2 Type II, the platform fails procurement at most Tier 2 customers and many Tier 1.</p>
+<p>The work involves selecting an auditor (Big 4 firms, dedicated SOC firms like Schellman or Coalfire), defining the control framework (Trust Service Criteria for Security at minimum, often Confidentiality and Availability as well), implementing the controls in the platform's operations (the O-series Operations Runbook is most of the work), running the controls for the audit window, and undergoing the audit itself.</p>
+<p>Realistic timeline: 9-15 months from start to a clean Type II report. Cost: $50-200k for the audit plus internal staff time for control implementation. The audit becomes annually recurring once established.</p>
+<p>Recommendation: begin SOC 2 Type II preparation in Phase 1, late stage. The control framework is mostly already in place via the operations runbook discipline; the formal audit work is selecting an auditor, scoping the audit, and running through one full cycle. Achieving Type II readiness coincident with Phase 2 launch is realistic if started 12-15 months in advance.</p>
+
+<h3>HIPAA Business Associate Agreement (BAA)</h3>
+<p>Required for any healthcare customer engagement where Paxiom touches Protected Health Information (PHI), even if the touch is "verifying without seeing." HIPAA's definition of "use" of PHI is broad enough to require a BAA in most realistic Phase 2 healthcare engagements.</p>
+<p>The BAA itself is a contractual document with relatively standard terms. The harder work is achieving the operational posture that allows Paxiom to sign a BAA credibly. Encryption requirements, access controls, audit logging, breach notification procedures, employee training, business continuity planning. Many of these overlap with SOC 2 controls but a few are HIPAA-specific.</p>
+<p>Realistic timeline: 3-6 months from starting BAA preparation to BAA-signing-ready. Cost: $20-50k for legal review and policy drafting plus internal staff time.</p>
+<p>Recommendation: begin BAA preparation 6 months before the first healthcare prospect. The work cannot be rushed when a customer asks; it must already be done.</p>
+
+<h3>HITRUST CSF certification (optional)</h3>
+<p>Healthcare-specific certification framework that some larger health systems require above and beyond HIPAA BAA. More rigorous than SOC 2 in healthcare-specific dimensions. Not strictly required for healthcare engagement but makes procurement smoother at certain customers.</p>
+<p>Realistic timeline: 12-18 months. Cost: $100-300k. Recommendation: defer to Phase 2 mid-stage based on whether specific customer demand justifies the investment. Do not commit to HITRUST in Phase 2 launch budget.</p>
+
+<h3>Financial services compliance</h3>
+<p>Different framework than healthcare. The relevant standards are SOC 2 (already covered), ISO 27001 (similar scope to SOC 2 but international), and specific regulatory frameworks like NYDFS Cybersecurity Regulation for New York-regulated entities, FINRA WSP requirements for broker-dealer customers, and FedRAMP for federal financial customers.</p>
+<p>Recommendation: start with SOC 2 (covers most ground), add ISO 27001 if European customers materialize, defer the more specific regulatory frameworks to direct customer demand. Don't preemptively pursue NYDFS or FedRAMP without a specific customer requirement.</p>
+
+<h3>Penetration testing and security assessment</h3>
+<p>Required by most enterprise procurement processes. Annual third-party penetration test, ideally by a firm the customer recognizes (Bishop Fox, NCC Group, Trail of Bits for crypto-specific work, smaller firms for general application security). Findings remediation. Re-testing of remediated findings. Security questionnaire responses for procurement.</p>
+<p>Cost: $30-80k per annual test cycle. Recommendation: budget for an annual pentest beginning Phase 1 mid-stage so the first Type II audit and the first major Phase 2 procurement both have current pentest results to reference.</p>
+
+<h3>The aggregate cost</h3>
+<p>Compliance infrastructure for Phase 2 launch is a real budget item. Realistic range: $150-400k in Year 1 of preparation, $100-250k annually thereafter for maintenance audits, plus internal staff time. The investment is non-negotiable for Phase 2 customer access; without it, the platform's commercial reach is capped at customers who don't require it, which is mostly customers Phase 1 already reaches.</p>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-400"></div>
+<div id="f-400">
+<div class="section-mark">Section 4 · F-400</div>
+<h2 class="section-title">Commercial motion.<br><em>The procurement reality.</em></h2>
+<div class="prose">
+<p class="lead">Phase 1 is product-led: agents discover the platform through metadata in registries and transact through x402 without human involvement on either side. Phase 2 is sales-led: humans talk to humans, contracts get redlined, procurement processes take months, and integrations are bespoke. The motion is fundamentally different.</p>
+
+<h3>The sales motion shape</h3>
+<p>Phase 2 sales is conventional B2B enterprise selling, with the specific shape that regulated industries demand.</p>
+<p>Lead generation comes from referrals, conference presence, technical content, and direct outbound to specific named accounts. The quality of Paxiom's documentation set — particularly the Project Narrative and the Phase 2 Vision Brief — matters here because regulated industry buyers research vendors before they accept calls, and the documentation either passes the research filter or it doesn't.</p>
+<p>Discovery conversations focus on the customer's specific compliance pain. Each Phase 2 customer has a particular reason they're considering verified compute infrastructure: an audit finding, a new regulation, a vendor evaluation that flagged a gap, a competitive pressure to deploy AI capabilities the privacy posture currently prevents. The discovery work is identifying which specific pain anchors the deal.</p>
+<p>Solution shaping is technical-led but commercial-influenced. The Paxiom team needs to demonstrate that the platform's capabilities map to the customer's specific use case, often involving custom proof-of-concept work. The procurement process simultaneously evaluates contract terms, security posture, support commitments, and pricing.</p>
+<p>Procurement and contracting is lawyer-heavy and slow. Master services agreements take 4-12 weeks to negotiate. SOWs for specific engagements take additional weeks. Security questionnaires require dedicated response time. Integration timelines are negotiated alongside contract terms.</p>
+<p>Implementation and go-live is typically 60-180 days from contract signature, longer for larger customers. Many Phase 2 deals will have phased rollouts: pilot deployment, expanded deployment, full production.</p>
+
+<h3>The honest cycle time</h3>
+<p>From first conversation to contract signature: typically 6-12 months for Tier 1, 9-18 months for Tier 2, varies widely for Tier 3. The cycle time cannot be compressed by working harder; it is gated by procurement processes that are external to the platform's control.</p>
+<p>The commercial implication is that Phase 2 revenue ramp is back-loaded. The first six months of Phase 2 selling produces almost no revenue. Months 7-12 produces the first contracts but at small dollar amounts due to pilot pricing. Year 2 of Phase 2 selling is when the contracts signed in Year 1 expand to production scope.</p>
+
+<div class="numbers-block">
+  <div class="numbers-cell">
+    <div class="numbers-label">Tier 1 cycle</div>
+    <div class="numbers-figure">6-12 mo</div>
+    <div class="numbers-detail">first conversation to signature</div>
+  </div>
+  <div class="numbers-cell">
+    <div class="numbers-label">Tier 2 cycle</div>
+    <div class="numbers-figure">9-18 mo</div>
+    <div class="numbers-detail">larger contracts, deeper procurement</div>
+  </div>
+  <div class="numbers-cell">
+    <div class="numbers-label">First production year</div>
+    <div class="numbers-figure">Year 2</div>
+    <div class="numbers-detail">of Phase 2 selling, when scaled revenue arrives</div>
+  </div>
+</div>
+
+<h3>The first sales hire</h3>
+<p>The founder cannot do all of Phase 2 selling solo and also build the platform. The first sales hire is a real Phase 2 prerequisite, with specific characteristics worth being explicit about.</p>
+<p>Profile: enterprise sales background in regulated industries (healthcare or financial services specifically), 7-15 years of experience, comfortable with technical depth but not a technical specialist, network in target customer accounts, comfortable with long sales cycles, willing to operate with the founder rather than independently. Compensation likely $200-350k OTE structure depending on geography and seniority. Hire timing: 6-9 months before first major Phase 2 customer prospect should be realistic, which means 6-9 months before Phase 2 launch.</p>
+<p>The first sales hire is high-leverage and high-risk. Wrong hire wastes 12-18 months and burns the candidate pool. Right hire transforms Phase 2 economics. The founder's instinct to do this hire personally rather than delegate is correct.</p>
+
+<h3>Channel and partnership motion</h3>
+<p>Direct sales is the primary motion. Channel sales (through systems integrators, consultancies, larger vendors who incorporate Paxiom into their stack) is a secondary motion that may emerge organically but should not be planned for in Phase 2.</p>
+<p>Specific partnership opportunities to watch: the Big Four consulting firms (Accenture, Deloitte, EY, KPMG) all have practices that consult to healthcare and financial services on technology adoption. They are typically late to recommend new categories but become important once a category is established. Phase 2 should not pursue these partnerships actively but should be ready when one of them initiates the conversation, which probably happens in Year 2-3 of Phase 2.</p>
+
+<h3>Marketing motion</h3>
+<p>Conventional B2B marketing for regulated industries: thought leadership content, conference presence, customer reference programs, analyst relations. The construction-document register and the public drawing set are the foundational thought leadership artifacts; Phase 2 marketing builds on them with vertical-specific case studies, white papers on specific compliance use cases, and conference talks at relevant events (HIMSS for healthcare, RSA for financial services, several others).</p>
+<p>The marketing budget is real but smaller than the sales budget. Phase 2 marketing investment likely $50-150k in Year 1 of selling, growing in subsequent years. The leverage points are reference customer case studies and analyst relations rather than broad-funnel lead generation.</p>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-410"></div>
+<div id="f-410">
+<div class="section-mark">Section 4 · F-410</div>
+<h2 class="section-title">Pricing &amp; economics.<br><em>Tier structure and deal sizes.</em></h2>
+<div class="prose">
+<p class="lead">Phase 1 pricing is per-call x402 economics measured in cents to dollars. Phase 2 pricing is enterprise B2B economics measured in tens to hundreds of thousands of dollars per customer per year. The pricing model is structurally different.</p>
+
+<h3>The tier structure</h3>
+<p>Phase 2 prices in three tiers, with custom enterprise pricing above the published tiers. The tiers are named for clarity; the actual customer experience is bespoke for any deal above the Pilot tier.</p>
+
+<table class="schedule">
+  <thead>
+    <tr>
+      <th style="width: 80px;">Tier</th>
+      <th>Customer Profile</th>
+      <th class="num">Annual</th>
+      <th class="num">Setup</th>
+      <th>Includes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="id">Pilot</td>
+      <td>Tier 3 customers; project-based engagements; reference deployments</td>
+      <td class="num">$25-75k</td>
+      <td class="num">Waived</td>
+      <td>Single use case, one circuit, basic support, 6-12 month term</td>
+    </tr>
+    <tr>
+      <td class="id">Production</td>
+      <td>Tier 2 mid-market; healthcare AI vendors; mid-size financial firms</td>
+      <td class="num">$100-500k</td>
+      <td class="num">$25-75k</td>
+      <td>Multiple use cases, custom circuits, named support, BAA, annual SOC 2 evidence, 12-36 month term</td>
+    </tr>
+    <tr>
+      <td class="id">Enterprise</td>
+      <td>Tier 2 large; major banks; large health systems; payers</td>
+      <td class="num">$500k-5M</td>
+      <td class="num">$100-300k</td>
+      <td>Multiple business units, custom integration, dedicated support engineering, SLA, full compliance package, 24-60 month term</td>
+    </tr>
+    <tr>
+      <td class="id">Custom</td>
+      <td>Tier 2 strategic; Tier 3 government; multi-region or multi-entity engagements</td>
+      <td class="num">$5M+</td>
+      <td class="num">Custom</td>
+      <td>Negotiated scope; may include exclusivity terms, custom development, on-prem components, multi-year roadmap commitments</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>What drives the pricing</h3>
+<p>Several factors push pricing up the tier structure for any specific customer.</p>
+<p>Number of distinct use cases. Each use case typically requires its own ZK circuit, its own integration work, and its own ongoing support. A customer with three use cases pays more than a customer with one, not just because they consume more service but because the platform's costs to serve them are genuinely higher.</p>
+<p>Regulatory scope. A customer requiring HIPAA BAA pays more than a customer requiring only a standard MSA. A customer requiring HITRUST or FedRAMP pays more again. Each layer of regulatory specificity requires platform-side investment that customers in lower-regulatory tiers don't need.</p>
+<p>Integration depth. A customer where the platform integrates with multiple internal systems (electronic health records, trading systems, compliance management platforms) pays more than a customer with simpler integration. Integration depth correlates with switching cost; customers expect to pay for the deeper integration.</p>
+<p>Volume of computations. Per-call pricing within enterprise contracts is often included as bands rather than charged separately, but customers with very high computation volumes pay more for the band that covers their volume.</p>
+<p>Support level. Standard support included with Production tier; named support engineering with Enterprise tier; dedicated support team with Custom tier. The differentiation reflects real cost-to-serve.</p>
+
+<h3>The economics under realistic assumptions</h3>
+<p>A realistic Phase 2 customer mix at month 24 of Phase 2 (so ~36 months from Phase 1 launch):</p>
+<ul>
+  <li>10-15 Pilot customers at $40k average annual = $400-600k ARR</li>
+  <li>4-8 Production customers at $250k average annual = $1.0-2.0M ARR</li>
+  <li>1-3 Enterprise customers at $1.5M average annual = $1.5-4.5M ARR</li>
+  <li>0-1 Custom customers at $5M+ = $0-5M ARR</li>
+</ul>
+<p>Aggregate realistic case at 36 months from Phase 1 launch: $3-8M ARR, with Year 3 of Phase 2 (~48 months from Phase 1 launch) potentially reaching $8-20M ARR depending on how Year 1 contracts expand and how the customer count grows.</p>
+<p>These are realistic-case numbers. Best case is meaningfully higher if multiple Custom-tier deals close. Worst case is meaningfully lower if procurement cycles slip or competitive losses concentrate in early target accounts.</p>
+
+<h3>Why Phase 2 economics work even with slow ramp</h3>
+<p>The aggregate Year 1 of Phase 2 selling probably produces $500k-2M in revenue. That's not a lot relative to the cost of Phase 2 build (compliance infrastructure, first sales hire, product development for vertical-specific tooling — easily $1.5-3M for the first year). Phase 2 Year 1 may run cash-flow negative.</p>
+<p>The economics work because Year 2 onwards expands sharply. Customers signed in Year 1 expand scope in Year 2 and 3. New customer acquisition compounds the existing base. Reference customer effects accelerate sales velocity. By Year 3 of Phase 2 selling, the run rate covers Phase 2 operating costs with meaningful margin and contributes to overall company economics.</p>
+<p>The capital implication is that Phase 2 likely requires either external capital between Phase 1 and Phase 2 launch, or sufficient Phase 1 surplus to fund the Phase 2 ramp from internal cash. The honest expectation is the former is more likely than the latter for a single founder.</p>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-500"></div>
+<div id="f-500">
+<div class="section-mark">Section 5 · F-500</div>
+<h2 class="section-title">Risks &amp; open questions.<br><em>What could break this.</em></h2>
+<div class="prose">
+<p class="lead">Phase 2 has more failure modes than Phase 1. The customer base is harder to reach, the build is more demanding, the capital requirements are higher, and the competitive landscape is denser. Naming the specific risks is the first step to defending against them.</p>
+
+<h3>Technical risk: ML-scale recursive proving</h3>
+<p>Phase 2's most demanding workloads — ML inference verification — push recursive proving to scales that haven't been demonstrated at production volumes. Current state-of-the-art recursive proving systems handle inference verification on smaller models (parameter counts in millions to low hundreds of millions). Production healthcare AI models often exceed a billion parameters. Proving inference verification at that scale economically is an open engineering problem.</p>
+<p>Mitigation: Phase 2 customers in healthcare can typically work with mid-size models that fit current proving capabilities. Large-model verification is a Phase 3 problem. Phase 2 explicitly scopes to model sizes where recursive proving is mature. Customers wanting larger-model verification get put on the roadmap rather than promised in Phase 2.</p>
+
+<h3>Competitive risk: specialized providers extending into the territory</h3>
+<p>EZKL, Modulus Labs, Giza, and similar specialized verified-inference providers may extend their offerings to compete directly with Phase 2's verified inference category. They have head-start expertise on ML-circuit-specific optimization that general-purpose verified compute providers don't have.</p>
+<p>Mitigation: Phase 2's competitive position is not "best ML proving" — that's a Phase 3 question. Phase 2's position is "verified compute for regulated industries with audit infrastructure, compliance posture, and operational track record." The architectural differentiation (no-RPC, AO/Arweave audit, compliance-native) is hard for the specialized players to retrofit. The customer relationships in regulated industries are slow to win but harder to lose once won.</p>
+
+<h3>Competitive risk: large players entering the verified compute category</h3>
+<p>Microsoft, Google, AWS could all build verified compute offerings as part of their existing enterprise cloud businesses. Their distribution advantage over a small company is substantial. The category is small enough today that they don't bother; if it grows fast, they will pay attention.</p>
+<p>Mitigation: large players entering a category typically do so 3-5 years after the category is established. Phase 2 is the establishment work. By the time large players are interested, Paxiom's accumulated customer relationships and architectural depth are real moats. The risk is real but on a longer timeline than Phase 2's commercial-success window.</p>
+
+<h3>Procurement risk: cycles slip, deals fall through</h3>
+<p>Enterprise B2B sales cycles slip routinely. A customer who looks 80% likely to close in three months may take twelve months and may not close at all. The aggregate revenue picture depends on a portfolio of opportunities; individual opportunity outcomes are unpredictable.</p>
+<p>Mitigation: pipeline depth. Phase 2 economics work if the platform has 20-40 active opportunities at various stages, not if it has 5 specific deals. The first sales hire's primary role in Year 1 of Phase 2 is building the pipeline, not closing the deals. Closing comes from pipeline maturation; pipeline comes from sustained outbound and inbound flow.</p>
+
+<h3>Regulatory risk: framework changes</h3>
+<p>HIPAA, SEC rules, and adjacent regulatory frameworks evolve. A regulatory change that disadvantages ZK-based compliance (unlikely but possible) would damage the Phase 2 thesis. A regulatory change that advantages ZK-based compliance (more likely given current trajectory) would accelerate it.</p>
+<p>Mitigation: track regulatory developments through industry associations (HIMSS, FINRA, etc.), engage with relevant working groups when they form, position the platform's capabilities to align with directional changes regulators signal. Don't bet on specific regulatory outcomes; build for the underlying trends regardless of specific framework changes.</p>
+
+<h3>Capital risk: Phase 2 funding gap</h3>
+<p>Phase 2 likely requires capital that Phase 1 surplus cannot cover. Either external capital (institutional or strategic) or internal patience longer than realistic for a single-founder runway. The timing of Phase 2 launch is partly determined by the capital availability rather than by build readiness alone.</p>
+<p>Mitigation: begin capital conversations 12-18 months before Phase 2 launch. The drawing set is substantial credibility infrastructure for these conversations. The realistic check size for the right capital is $3-10M from a sophisticated investor who understands the agent economy and the regulated-industry verification thesis. Smaller institutional rounds or strategic capital from a partner with vertical-specific reach are viable alternatives.</p>
+
+<h3>Execution risk: founder bandwidth</h3>
+<p>Phase 1 is a heavy build for one person; Phase 2 is heavier. The founder cannot personally execute Phase 1 operations, Phase 2 build, Phase 2 selling, compliance infrastructure preparation, and capital raising simultaneously. Some of these get delegated. Wrong delegation choices can damage the platform's substrate.</p>
+<p>Mitigation: hire the right first-three people, in order. First sales hire (Phase 2 prerequisite). First engineering hire (Phase 2 build). First operations hire (Phase 1 operations, freeing the founder for Phase 2). The order matters because the dependencies cascade — sales without product to sell is wasted; product without operations to support is fragile; operations without revenue to fund them is doomed.</p>
+
+<h3>Open questions</h3>
+<p>Several Phase 2 questions are genuinely open and worth being explicit about.</p>
+<ul>
+<li>Lead vertical: financial services first or healthcare first? Arguments exist on both sides; the decision likely hinges on the first reference customer the founder can plausibly close.</li>
+<li>Open-source posture: which Phase 2 components are open-source vs proprietary? Open-source increases ecosystem trust but reduces commercial defensibility.</li>
+<li>Geographic scope: U.S. only initially, or U.S. plus Europe? Europe has strong privacy frameworks (GDPR) but adds compliance complexity (multiple data residency requirements).</li>
+<li>Pricing flexibility: published list prices vs negotiated prices for every deal? Published prices accelerate sales but constrain optimization; negotiated prices are flexible but slow procurement.</li>
+<li>Direct vs partner-led for early Phase 2: should the platform pursue direct customer relationships or initially go through systems integrators? Direct preserves margin and customer intimacy; partner-led accelerates reach.</li>
+</ul>
+<p>None of these need to be resolved during Phase 1. All of them need to be resolved before Phase 2 selling begins in earnest.</p>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-510"></div>
+<div id="f-510">
+<div class="section-mark">Section 5 · F-510</div>
+<h2 class="section-title">Phase 1 → Phase 2 bridge.<br><em>Prerequisites and gates.</em></h2>
+<div class="prose">
+<p class="lead">Phase 2 launch is a gate, not a date. Specific conditions must be true before Phase 2 selling begins. Trying to launch Phase 2 before the gates are clear damages the substrate Phase 2 depends on.</p>
+
+<h3>Operational gates</h3>
+<p>The Phase 1 services must be operationally credible at scale. The honest threshold is roughly 12-18 months of all-five-services running with measured uptime above 99.5%, transaction volumes that demonstrate genuine demand (not just demo traffic), and a clean incident history with documented post-incident learning.</p>
+<p>The audit trail through AO/Arweave must be demonstrably continuous and cryptographically valid. A Phase 2 procurement evaluation will spot-check the audit trail; a gap or anomaly invalidates the marketing claim.</p>
+<p>The operations runbook procedures must have been actually exercised, not just documented. Several incidents resolved through O-series procedures, with post-incident write-ups available, build the operational track record that Phase 2 procurement values.</p>
+
+<h3>Compliance gates</h3>
+<p>SOC 2 Type II report in hand, with the audit window covering the most recent 12 months. Without this, most Tier 2 procurement evaluations halt at the security review.</p>
+<p>HIPAA BAA template ready, signed by counsel as ready-to-execute, with the operational backing (encryption posture, access controls, breach procedures) in place. Without these, healthcare engagement is blocked.</p>
+<p>Annual third-party penetration test completed within the last 12 months, with findings remediated and remediation verified. Procurement evaluations request the most recent pentest report.</p>
+<p>Privacy and security policies documented at the level of detail enterprise procurement expects. Privacy policy. Acceptable use policy. Data processing agreement. Information security policy. Business continuity policy. Vendor management policy. Each is a real document with real content, not boilerplate.</p>
+
+<h3>Commercial gates</h3>
+<p>First sales hire on board and ramped (typically 90-120 days from start to productive). Without a dedicated sales motion, Phase 2 selling does not happen at the velocity Phase 2 economics require.</p>
+<p>Legal entity formed (Delaware C-corp likely), with bank accounts, payroll infrastructure, and basic tax compliance in place. A handshake LLC is not adequate for $500k+ enterprise contracts.</p>
+<p>Master Services Agreement template developed and reviewed by counsel, with experience executing it on at least a Pilot-tier deal. The first $1M+ contract is not the time to discover gaps in the contract template.</p>
+<p>Pipeline of qualified prospects in active conversation, with realistic 30-90 day next steps. Phase 2 selling cannot start from zero pipeline; the pipeline development work happens in Phase 1 late stage.</p>
+
+<h3>Technical gates</h3>
+<p>Recursive proving stack ready for Phase 2 workload sizes. The integration of Polyhedra Expander or equivalent recursive system, tested on at least one realistic Phase 2 use case (e.g., a simple medical AI inference verification at modest scale).</p>
+<p>Vertical-specific tooling for at least one vertical. ZK circuits for FHIR healthcare data schemas, or ZK circuits for common financial transaction formats. Building both in parallel is too much; one of them in usable form is the launch threshold.</p>
+<p>Compliance documentation packages drafted for the lead vertical. Healthcare-specific compliance overview, financial-specific compliance overview, depending on which leads.</p>
+
+<h3>The gate sequence</h3>
+<p>The gates are not all at the same stage of completion. Some clear early in Phase 1 operations; others clear at Phase 2 launch. The realistic sequence:</p>
+<ul>
+<li><strong>Months 6-12 of Phase 1:</strong> SOC 2 Type II preparation begins. Pentest cycle established. First operational incident response cycle completes (assuming the operational maturity the runbook describes).</li>
+<li><strong>Months 12-18 of Phase 1:</strong> SOC 2 Type II audit window opens. Capital conversations begin. Vertical-specific tooling research starts. Lead vertical decision made.</li>
+<li><strong>Months 18-24 of Phase 1:</strong> SOC 2 Type II report finalized. First sales hire begins ramp. HIPAA BAA template completed. First Phase 2 prospect conversations initiated.</li>
+<li><strong>Months 24-30 of Phase 1:</strong> Sales hire fully ramped. Legal entity and MSA template established. First Phase 2 pilot deal signs (typically Tier 3 customer). Phase 2 launch is now realistic.</li>
+</ul>
+<p>This is a 24-30 month bridge from Phase 1 launch to Phase 2 launch. It is not the dramatic ramp founders often imagine. The bridge is the work that makes Phase 2 a credible commercial offering when it launches; trying to compress it generally fails.</p>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-600"></div>
+<div id="f-600">
+<div class="section-mark">Section 6 · F-600</div>
+<h2 class="section-title">Phase 2 → Phase 3.<br><em>Verified inference on this substrate.</em></h2>
+<div class="prose">
+<p class="lead">Phase 3 is verified AI inference at scale. The bridge from Phase 2 to Phase 3 is the natural one — Phase 2 establishes private-data primitives, Phase 3 layers full ML inference verification on top, using the same customer relationships and the same compliance posture.</p>
+
+<h3>What Phase 3 adds</h3>
+<p>Phase 2's private data compute handles inference verification at small to mid scale and other private-data computations of moderate complexity. Phase 3 extends to large-model inference verification — the billion-parameter and beyond regime — and adds inference-specific tooling that Phase 2 doesn't carry.</p>
+<p>The technical work is recursive proving at much larger scale, specialized circuit optimization for common ML operations (matrix multiplication, attention, normalization), and integration with the major ML frameworks (PyTorch, TensorFlow, Hugging Face) so customers can verify inference on models trained in those frameworks without manual circuit construction.</p>
+<p>The commercial work is extending existing Phase 2 customer relationships into ML-heavy use cases, plus new customer acquisition in segments where ML inference verification is the primary use case (Tier 1 healthcare AI vendors, fintech firms running ML-driven trading or risk models, content moderation services with regulatory exposure).</p>
+
+<h3>The customer continuity</h3>
+<p>Many Phase 2 customers are natural Phase 3 customers. The healthcare AI vendor running inference verification on a 100M-parameter model in Phase 2 will want to verify their next-generation 1B-parameter model in Phase 3. The financial services customer using compliance proofs in Phase 2 will want to verify their ML-driven risk models in Phase 3. The procurement gate has already been cleared; the integration is already in place. Adding new use cases on existing customer relationships is much faster than acquiring new customers.</p>
+<p>This is the structural advantage of the phased approach. Phase 3's customer acquisition cost is much lower than it would be for a Phase 1-equivalent cold start, because most Phase 3 customers already know the platform from Phase 2.</p>
+
+<h3>The competitive position</h3>
+<p>Phase 3 enters a category — verified AI inference — where specialized players have been working for years. EZKL, Modulus Labs, Giza, Inference Labs each have specific expertise. Phase 3's competitive position is not "best ML proving"; it is "verified ML inference for the regulated industries we already serve, with the audit posture and compliance infrastructure they require."</p>
+<p>This is a focused position. Specialized verified-inference players who don't have the regulated-industry compliance work cannot easily reach those customers. Cloud platforms who build verified inference don't have the architectural depth that compliance-mature buyers require. Paxiom's Phase 2 work creates the position that Phase 3 capabilities populate.</p>
+
+<h3>The timing</h3>
+<p>Phase 3 launches realistically 24-36 months after Phase 2 launches, which is 48-66 months after Phase 1 launches. The timeline can be compressed if Phase 2 wins big customers fast and the ML inference work matures faster than expected; it can extend if Phase 2 takes longer to ramp than the realistic case suggests.</p>
+<p>Phase 3 vision will be its own brief when Phase 2 is a year or two into operations. This document is the Phase 2 vision; Phase 3 vision should not be written until Phase 2 reality is informing it.</p>
+
+<h3>The longer arc</h3>
+<p>Phase 4 (IoT and telemetry) and Phase 5 (post-quantum migration) follow Phase 3 in the trajectory. Each builds on the substrate that prior phases establish. Each has its own customer base, its own commercial motion, its own pricing structure. None of them need to be planned in detail in this document; the Project Narrative B-1000 sketches them at the level of detail that's currently appropriate.</p>
+<p>The discipline is to stay focused on Phase 2 while keeping the architecture compatible with later phases. Architectural decisions made in Phase 2 that work for Phase 2 specifically but break Phase 3 enablement are bad decisions. The pluggable proving stack, the audit posture, the compliance infrastructure — all are Phase 2 work that pays forward into Phase 3-5. Maintaining this discipline is what makes the trajectory durable rather than a sequence of disconnected commercial bets.</p>
+</div>
+</div>
+
+<div class="page-break" data-sheet="Sheet F-700"></div>
+<div id="f-700">
+<div class="section-mark">F-700 · Closing &amp; References</div>
+<h2 class="section-title">Closing.<br><em>What this document is for.</em></h2>
+<div class="prose">
+<p class="lead">A vision brief is a document for thinking. It is the planning record that a future Phase 2 build will reference, the commercial framing that capital conversations will work from, and the public artifact that signals to potential customers and partners what the platform is becoming.</p>
+
+<h3>Related documents</h3>
+<p><strong>B-Series Project Narrative.</strong> The broader project context. Phase 2 is one of five phases in the trajectory. The B-700 series in the narrative covers the same territory as this brief at lower resolution; this brief is the higher-resolution Phase 2-specific treatment. <a href="/paxiom-project-narrative.html">Open the Project Narrative</a>.</p>
+<p><strong>A-Series Phase 1 Blueprint.</strong> The current phase under construction. Phase 2 builds on Phase 1's substrate; Phase 1 should be operational at credible scale before Phase 2 launches. <a href="/paxiom-phase-1-blueprint.html">Open the Phase 1 Blueprint</a>.</p>
+<p><strong>R-Series Build Map.</strong> The strategic positioning across all phases. Useful for understanding where Phase 2 sits in the longer arc. <a href="/paxiom-build-map.html">Open the Build Map</a>.</p>
+<p><strong>O-Series Operations Runbook.</strong> The operational substrate that supports Phase 2 selling. Most of the SOC 2 control framework is already documented here. <a href="/paxiom-operations-runbook.html">Open the Operations Runbook</a>.</p>
+<p><strong>E-Series Key Custody &amp; Identity.</strong> Phase 2's identity primitives extend the Phase 1 architecture documented here. <a href="/paxiom-key-identity-blueprint.html">Open the Key Custody Blueprint</a>.</p>
+
+<h3>Documents that don't yet exist</h3>
+<p>Several Phase 2 documents will be needed when Phase 2 build begins, but are not part of this brief.</p>
+<ul>
+<li><strong>Phase 2 Blueprint (future A-Series sheet or new dedicated series).</strong> The detailed build specification — services, build sequence, deployment topology, risk register. Analogous to A-Series Phase 1 Blueprint.</li>
+<li><strong>Compliance Documentation Package.</strong> SOC 2 control narrative, HIPAA BAA template, security policies, privacy policies. The procurement-ready compliance evidence.</li>
+<li><strong>Vertical-Specific Briefs.</strong> Healthcare-specific use case documentation, financial services-specific use case documentation, with circuit specifications and integration patterns.</li>
+<li><strong>Sales Playbook.</strong> The internal selling guide for the first sales hire. Discovery questions, qualification criteria, objection handling, contracting playbook. Internal document, not part of the public drawing set.</li>
+</ul>
+
+<h3>Revision log</h3>
+<p><strong>Rev. A — 2026.04.30.</strong> Initial issue. Six sections covering the Phase 2 thesis, the verticals (healthcare, financial services, others), architectural foundations, commercial motion, risks and gates, and the connection to Phase 3.</p>
+<p>Subsequent revisions will likely happen as Phase 1 operations produce data that informs Phase 2 planning, and as capital conversations refine the financial picture. Rev. B is expected approximately 12 months from this issue, with substantial updates to F-410 (pricing) and F-510 (gate timing) based on observed Phase 1 reality.</p>
+
+<h3>One last thing</h3>
+<p>Phase 2 is not Phase 1. The motion is different, the customers are different, the timeline is longer, and the capital requirements are higher. Treating Phase 2 as "Phase 1 but bigger" is the most predictable way to fail Phase 2.</p>
+<p>The work this brief tries to do is name what's actually different so that the build for Phase 2, when it begins, is built for the reality of Phase 2 rather than a generalization of Phase 1. Customer access in regulated industries is the bottleneck. Compliance infrastructure is the cost. Sales velocity is the variable. Architectural depth is the moat. Operational track record is the credibility input. None of these are Phase 1 concerns at the same scale; all of them are Phase 2 concerns at a scale that demands deliberate planning.</p>
+<p>This document is the planning. The build comes later.</p>
+</div>
+</div>
+
+<div class="sheet-footer">
+  <div>Paxiom · paxiom.org</div>
+  <div class="center">Vision · Rev. A · 2026.04.30</div>
+  <div class="right">Sheet Set F-000 / 16</div>
+</div>
+
+</div>
+</body>
+</html>
