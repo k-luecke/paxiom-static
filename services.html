@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom · Services</title>
+<meta name="description" content="Paxiom Phase 1 Service Schedule — draft pricing assumptions, target volumes, and what each service does.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F1E8; --paper-dark: #EDE6D3; --ink: #1A2332; --ink-mid: #3A4555;
+  --ink-faint: #6B7280; --rule-faint: #B8AE96; --blue: #1E3A5F; --red: #8B2E1F; --amber: #B8860B;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 15px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.frame { max-width: 1080px; margin: 0 auto; padding: 20px 18px 32px; }
+
+.title-block { border-bottom: 2px solid var(--ink); padding-bottom: 16px; margin-bottom: 14px; }
+.title-mark { display: block; margin-bottom: 12px; }
+.paxiom-mark { width: 42px; height: 42px; color: var(--ink); display: block; }
+.title-block .project-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: 4px;
+}
+.title-block .project-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 28px; font-weight: 500; line-height: 1.1;
+  letter-spacing: -0.01em; color: var(--ink);
+}
+.title-block .project-subtitle {
+  font-family: 'IBM Plex Serif', serif; font-style: italic;
+  font-size: 14px; color: var(--ink-mid); margin-top: 4px; max-width: 36ch;
+}
+.title-block .meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.04em; color: var(--ink-faint);
+  margin-top: 12px; line-height: 1.7;
+}
+.title-block .meta .sep { margin: 0 6px; color: var(--rule-faint); }
+
+nav.primary {
+  border-bottom: 1px solid var(--rule-faint); margin-bottom: 28px;
+  overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;
+}
+nav.primary ul {
+  list-style: none; display: flex; gap: 22px; padding: 12px 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+}
+nav.primary a { color: var(--ink-mid); text-decoration: none; padding-bottom: 4px; }
+nav.primary a.active { color: var(--ink); border-bottom: 2px solid var(--ink); }
+nav.primary a:hover { color: var(--blue); }
+
+.page-header { margin-bottom: 24px; padding: 8px 0 16px; }
+.page-header .mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.page-header .mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.page-header h1 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500; font-size: clamp(32px, 6vw, 44px); line-height: 1.05;
+  letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px;
+}
+.page-header h1 em { font-style: italic; color: var(--ink-mid); font-weight: 400; }
+.page-header .strap {
+  font-family: 'IBM Plex Serif', serif; font-style: italic;
+  font-size: 17px; color: var(--ink-mid); max-width: 60ch; line-height: 1.5;
+}
+
+.status-banner {
+  border: 1.5px solid var(--amber);
+  background: var(--paper-dark);
+  padding: 14px 18px;
+  margin-bottom: 28px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.status-banner .label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--amber); font-weight: 600;
+}
+.status-banner .text {
+  font-family: 'IBM Plex Serif', serif; font-size: 15px; color: var(--ink);
+}
+.status-banner .text em { font-style: italic; color: var(--ink-mid); }
+
+.schedule { margin-bottom: 32px; }
+.service-card {
+  border: 1.5px solid var(--ink); background: var(--paper);
+  margin-bottom: 14px;
+}
+.service-card-header {
+  background: var(--ink); color: var(--paper);
+  padding: 10px 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+}
+.service-card-header .id { font-weight: 600; }
+.service-card-header .pending { color: var(--amber); }
+.service-card-body { padding: 16px 18px 18px; }
+.service-card-body .title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 22px; font-weight: 500; letter-spacing: -0.005em;
+  color: var(--ink); margin-bottom: 10px; line-height: 1.2;
+}
+.service-card-body .desc {
+  font-family: 'IBM Plex Serif', serif; font-size: 15px; line-height: 1.55;
+  color: var(--ink); margin-bottom: 14px; max-width: 56ch;
+}
+.service-card-meta {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  border-top: 1px solid var(--rule-faint);
+  padding-top: 14px;
+}
+.service-card-meta .cell { display: flex; flex-direction: column; gap: 4px; }
+.service-card-meta .label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.service-card-meta .value {
+  font-family: 'IBM Plex Serif', serif; font-size: 16px;
+  color: var(--ink); font-weight: 500;
+}
+.service-card-meta .value.price {
+  font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--blue);
+}
+
+.subsection { margin-bottom: 32px; }
+.subsection-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.subsection-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.subsection h2 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500; font-size: 22px; letter-spacing: -0.01em;
+  margin-bottom: 12px; color: var(--ink);
+}
+.subsection h2 em { font-style: italic; color: var(--ink-mid); }
+.subsection p {
+  font-family: 'IBM Plex Serif', serif; font-size: 16px; line-height: 1.6;
+  color: var(--ink); max-width: 64ch; margin-bottom: 12px;
+}
+.subsection ul {
+  font-family: 'IBM Plex Serif', serif; font-size: 15px; line-height: 1.55;
+  color: var(--ink); max-width: 64ch; margin: 8px 0 16px 22px;
+}
+.subsection li { margin-bottom: 6px; }
+
+.sheet-footer {
+  border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-faint);
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;
+}
+.sheet-footer .sheet-id { color: var(--ink); font-weight: 600; }
+
+a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--red); }
+
+@media (min-width: 768px) {
+  .frame { padding: 40px 32px 48px; }
+  body {
+    background-image:
+      linear-gradient(rgba(26, 35, 50, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26, 35, 50, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .title-block { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 24px; padding-bottom: 20px; }
+  .title-mark { margin-bottom: 0; }
+  .paxiom-mark { width: 54px; height: 54px; }
+  .title-block .project-title { font-size: 36px; }
+  .title-block .meta { text-align: right; margin-top: 0; }
+  .service-card-meta { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .service-card-body .title { font-size: 24px; }
+}
+
+@media print { body { background: white; background-image: none; } }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <header class="title-block">
+    <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg></div>
+    <div>
+      <div class="project-mark">Paxiom · Services</div>
+      <div class="project-title">Phase 1 Service Schedule</div>
+      <div class="project-subtitle">Five services. Draft pricing. Pending Phase 1 launch.</div>
+    </div>
+    <div class="meta">
+      <span>Project No. PXM-001</span><span class="sep">·</span>
+      <span>Sheet PXM-V-100</span><span class="sep">·</span>
+      <span>Updated 2026.04.30</span>
+    </div>
+  </header>
+
+  <nav class="primary" aria-label="Primary">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/docs.html">Docs</a></li>
+      <li><a href="/services.html" class="active">Services</a></li>
+      <li><a href="/status.html">Status</a></li>
+      <li><a href="/contact.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <section class="page-header">
+    <div class="mark">Sheet PXM-V-100</div>
+    <h1>What ships <em>in Phase 1.</em></h1>
+    <p class="strap">Five services that land first. Each one targets a specific use case in agent commerce, has a working price assumption, and a target volume that informs the cost model. None are live yet. The schedule below is the published intent, not a production offer.</p>
+  </section>
+
+  <div class="status-banner" role="note">
+    <span class="label">Status · Draft pricing assumptions, not production offer</span>
+    <span class="text">All five services are <em>pending Phase 1 launch.</em> Prices below are the working numbers used in the project's cost model. They will be revised after live workload data is observed. The schedule is published so operators evaluating the platform can compare against alternatives, not as a binding price list.</span>
+  </div>
+
+  <section class="schedule" aria-label="Phase 1 service schedule">
+
+    <article class="service-card">
+      <div class="service-card-header">
+        <span class="id">Service 01 · A-201</span>
+        <span class="pending">Pending Phase 1 Launch</span>
+      </div>
+      <div class="service-card-body">
+        <div class="title">Slot Storage Proofs</div>
+        <p class="desc">A ZK proof that a specific contract storage slot held a specific value at a specific block. The canonical "verified state" service, with input witness data sourced from Load Network archive rather than from RPC.</p>
+        <div class="service-card-meta">
+          <div class="cell"><span class="label">Price (draft)</span><span class="value price">$1.00 / proof</span></div>
+          <div class="cell"><span class="label">Target Volume</span><span class="value">~800 / mo</span></div>
+          <div class="cell"><span class="label">Settlement</span><span class="value">x402 / Base / USDC</span></div>
+          <div class="cell"><span class="label">Verifier Cost</span><span class="value">~400k gas</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="service-card">
+      <div class="service-card-header">
+        <span class="id">Service 02 · A-202</span>
+        <span class="pending">Pending Phase 1 Launch</span>
+      </div>
+      <div class="service-card-body">
+        <div class="title">Sync Committee Verification</div>
+        <p class="desc">A proof that the Ethereum beacon chain sync committee for a given slot signed a specific header. Lower complexity than slot storage proofs, faster path to launch, broad applicability across cross-chain applications and light clients.</p>
+        <div class="service-card-meta">
+          <div class="cell"><span class="label">Price (draft)</span><span class="value price">$0.50 / verification</span></div>
+          <div class="cell"><span class="label">Target Volume</span><span class="value">~1,500 / mo</span></div>
+          <div class="cell"><span class="label">Settlement</span><span class="value">x402 / Base / USDC</span></div>
+          <div class="cell"><span class="label">Build Order</span><span class="value">First service to ship</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="service-card">
+      <div class="service-card-header">
+        <span class="id">Service 03 · A-203</span>
+        <span class="pending">Pending Phase 1 Launch</span>
+      </div>
+      <div class="service-card-body">
+        <div class="title">Cross-Chain Message Verification</div>
+        <p class="desc">Bridge-grade verification of messages originating on chain A, with proofs verifiable on chain B. The Kelp DAO incident is the reference case — what would have prevented that attack is what this service provides.</p>
+        <div class="service-card-meta">
+          <div class="cell"><span class="label">Price (draft)</span><span class="value price">$3.00 / attestation</span></div>
+          <div class="cell"><span class="label">Target Volume</span><span class="value">~200 / mo</span></div>
+          <div class="cell"><span class="label">Settlement</span><span class="value">x402 / Base / USDC</span></div>
+          <div class="cell"><span class="label">Use Case</span><span class="value">Bridges, cross-chain DeFi</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="service-card">
+      <div class="service-card-header">
+        <span class="id">Service 04 · A-204</span>
+        <span class="pending">Pending Phase 1 Launch</span>
+      </div>
+      <div class="service-card-body">
+        <div class="title">Simulation as a Service</div>
+        <p class="desc">Transaction simulation against current chain state with optional TEE attestation that the simulation ran in trusted hardware. High-volume, low-margin, wide net. The base of the volume curve in the cost model.</p>
+        <div class="service-card-meta">
+          <div class="cell"><span class="label">Price (draft)</span><span class="value price">$0.05 / simulation</span></div>
+          <div class="cell"><span class="label">Target Volume</span><span class="value">~8,000 / mo</span></div>
+          <div class="cell"><span class="label">Settlement</span><span class="value">x402 / Base / USDC</span></div>
+          <div class="cell"><span class="label">TEE Tier</span><span class="value">Premium pricing tbd</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="service-card">
+      <div class="service-card-header">
+        <span class="id">Service 05 · A-205</span>
+        <span class="pending">Pending Phase 1 Launch</span>
+      </div>
+      <div class="service-card-body">
+        <div class="title">Verified Historical State</div>
+        <p class="desc">"What was the state of contract X at block N six months ago?" Verified answers using Load Network's archive reconstruction. Most existing providers focus on recent state because that's what's easily available; historical state with verification is rare in the existing landscape.</p>
+        <div class="service-card-meta">
+          <div class="cell"><span class="label">Price (draft)</span><span class="value price">$2.00 / query</span></div>
+          <div class="cell"><span class="label">Target Volume</span><span class="value">~300 / mo</span></div>
+          <div class="cell"><span class="label">Settlement</span><span class="value">x402 / Base / USDC</span></div>
+          <div class="cell"><span class="label">Differentiator</span><span class="value">No-RPC architecture</span></div>
+        </div>
+      </div>
+    </article>
+
+  </section>
+
+  <section class="subsection">
+    <div class="subsection-mark">V-200 · What's included</div>
+    <h2>What you get with every service.</h2>
+    <ul>
+      <li>A signed response from the platform's published key, allowing independent verification that the response originated from Paxiom.</li>
+      <li>A permanent audit record written to AO/Arweave, retrievable by any party for the life of the network.</li>
+      <li>The verification artifact (ZK proof, attestation, simulation receipt) in the format specified for the service.</li>
+      <li>x402-native payment flow with no API key provisioning, no contract negotiation, and no relationship requirement.</li>
+    </ul>
+  </section>
+
+  <section class="subsection">
+    <div class="subsection-mark">V-300 · What's not included</div>
+    <h2>What the platform <em>doesn't</em> do.</h2>
+    <ul>
+      <li>No custody of customer assets. The platform holds no wallets, balances, or tokens belonging to customers.</li>
+      <li>No SLA in v1. Service level commitments will be added as Phase 1 services accumulate operational track record.</li>
+      <li>No enterprise features (single sign-on, dedicated tenancy, custom retention) at the launch tier. These belong to later phases.</li>
+      <li>No chargebacks or dispute resolution. Settlement is final at the protocol level.</li>
+      <li>No off-x402 billing rails in v1. Customers pay through standard x402 flows; invoiced billing is a Phase 2+ consideration for B2B contracts.</li>
+    </ul>
+  </section>
+
+  <section class="subsection">
+    <div class="subsection-mark">V-400 · Beyond Phase 1</div>
+    <h2>What's coming, but not yet.</h2>
+    <p>Phase 2 expands into ZK proofs of computation on private data — HIPAA-compliant medical workflows, financial-data verification with regulatory transparency. Phase 3 adds verified AI inference. Phase 4 extends into IoT telemetry. Phase 5 completes the migration to post-quantum proving systems.</p>
+    <p>None of these are part of the schedule above. Each comes online in its own phase, with its own pricing model, on its own timeline. The <a href="/paxiom-project-narrative.html">Project Narrative</a> covers the longer arc; this page covers what ships first.</p>
+  </section>
+
+  <footer class="sheet-footer">
+    <div>Paxiom · paxiom.org</div>
+    <div>Public · Rev. A · 2026.04.30</div>
+    <div class="sheet-id">PXM-V-100 · Service Schedule</div>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,2526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom · Operations Runbook · Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F1E8;
+  --paper-dark: #EDE6D3;
+  --ink: #1A2332;
+  --ink-mid: #3A4555;
+  --ink-faint: #6B7280;
+  --rule: #1A2332;
+  --rule-faint: #B8AE96;
+  --blue: #1E3A5F;
+  --blue-light: #4A6B8A;
+  --red: #8B2E1F;
+  --amber: #B8860B;
+  --green: #4A6B3A;
+  --grid: rgba(26, 35, 50, 0.04);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+
+.sheet {
+  max-width: 1080px;
+  margin: 40px auto;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  position: relative;
+}
+
+@media (max-width: 900px) {
+  .sheet { margin: 16px 8px; border-width: 1px; }
+}
+
+.sheet-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border-bottom: 2px solid var(--ink);
+  padding: 16px 24px;
+  align-items: end;
+  gap: 24px;
+}
+
+.sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
+
+.sheet-project {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.sheet-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.sheet-subtitle {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-mid);
+  margin-top: 2px;
+}
+
+.sheet-meta {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 4px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+.sheet-meta dt {
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.sheet-meta dd { color: var(--ink); font-weight: 500; }
+
+.sheet-body { padding: 48px 64px; }
+
+@media (max-width: 700px) {
+  .sheet-body { padding: 32px 24px; }
+}
+
+/* ─── Cover ──────────────────────────────────────────── */
+
+.cover-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cover-mark::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule-faint);
+}
+
+.cover-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 400;
+  font-size: clamp(44px, 6.5vw, 76px);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+
+.cover-title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-mid);
+}
+
+.cover-strap {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 21px;
+  line-height: 1.4;
+  color: var(--ink-mid);
+  max-width: 60ch;
+  margin-bottom: 56px;
+}
+
+.cover-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 48px;
+}
+
+@media (max-width: 700px) {
+  .cover-grid { grid-template-columns: 1fr; }
+}
+
+.cover-cell {
+  padding: 20px 24px;
+  border-right: 1px solid var(--rule-faint);
+}
+
+.cover-cell:nth-child(2n) { border-right: none; }
+
+@media (max-width: 700px) {
+  .cover-cell {
+    border-right: none;
+    border-bottom: 1px solid var(--rule-faint);
+  }
+  .cover-cell:last-child { border-bottom: none; }
+}
+
+.cover-cell-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+}
+
+.cover-cell-value {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 18px;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.cover-cell-value em {
+  font-style: italic;
+  color: var(--ink-mid);
+}
+
+/* ─── TOC ────────────────────────────────────────────── */
+
+.toc-section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 40px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule-faint);
+}
+
+.toc-section-label:first-child { margin-top: 0; }
+
+.toc-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 24px;
+  padding: 10px 0;
+  border-bottom: 1px dotted var(--rule-faint);
+  align-items: baseline;
+}
+
+.toc-row:last-of-type { border-bottom: none; }
+
+.toc-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--blue);
+  letter-spacing: 0.04em;
+}
+
+.toc-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.toc-title em {
+  font-style: italic;
+  color: var(--ink-mid);
+  font-size: 14px;
+  display: block;
+  margin-top: 2px;
+}
+
+.toc-page {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+
+/* ─── Section Headers ────────────────────────────────── */
+
+.section-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-mark::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--blue);
+}
+
+.section-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.section-title em { font-style: italic; color: var(--ink-mid); }
+
+.section-strap {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--ink-mid);
+  margin-bottom: 40px;
+  max-width: 60ch;
+  line-height: 1.5;
+}
+
+/* ─── Body ────────────────────────────────────────────── */
+
+.prose p {
+  margin-bottom: 18px;
+  max-width: 70ch;
+}
+
+.prose h3 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 20px;
+  margin-top: 36px;
+  margin-bottom: 14px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.prose h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-top: 28px;
+  margin-bottom: 10px;
+}
+
+.prose strong { font-weight: 600; color: var(--ink); }
+.prose em { font-style: italic; color: var(--ink-mid); }
+
+.prose code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--paper-dark);
+  padding: 1px 6px;
+  border-radius: 2px;
+  color: var(--blue);
+}
+
+/* ─── Callouts ────────────────────────────────────────── */
+
+.callout {
+  border: 1px solid var(--ink);
+  margin: 32px 0;
+  background: var(--paper);
+}
+
+.callout-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  padding: 8px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  align-items: center;
+}
+
+.callout-tag { font-weight: 600; }
+
+.callout-id { color: var(--paper-dark); opacity: 0.7; }
+
+.callout-body { padding: 18px 20px; }
+
+.callout-body p {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.callout-body p:last-child { margin-bottom: 0; }
+
+.callout-body ul {
+  margin: 8px 0 4px 18px;
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.callout-body li { margin-bottom: 4px; }
+
+.callout-body code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--paper-dark);
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: var(--blue);
+}
+
+.callout.ref { border-color: var(--blue); }
+.callout.ref .callout-header { background: var(--blue); }
+
+.callout.spec { border-color: var(--ink); }
+
+.callout.note { border-style: dashed; border-color: var(--ink-faint); }
+.callout.note .callout-header {
+  background: transparent;
+  color: var(--ink-faint);
+  border-bottom: 1px dashed var(--ink-faint);
+}
+.callout.note .callout-id { color: var(--ink-faint); }
+
+.callout.warn { border-color: var(--red); }
+.callout.warn .callout-header { background: var(--red); }
+
+.callout.routine { border-color: var(--green); }
+.callout.routine .callout-header { background: var(--green); }
+
+/* ─── Procedure Sheets ────────────────────────────────── */
+
+.procedure {
+  margin: 36px 0;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+}
+
+.procedure.incident { border-color: var(--red); }
+.procedure.routine { border-color: var(--green); }
+
+.procedure-header {
+  padding: 18px 24px;
+  background: var(--paper-dark);
+  border-bottom: 1.5px solid var(--ink);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: baseline;
+}
+
+.procedure.incident .procedure-header {
+  border-bottom-color: var(--red);
+}
+
+.procedure.routine .procedure-header {
+  border-bottom-color: var(--green);
+}
+
+@media (max-width: 700px) {
+  .procedure-header {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
+.procedure-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--blue);
+  letter-spacing: 0.02em;
+}
+
+.procedure.incident .procedure-num { color: var(--red); }
+.procedure.routine .procedure-num { color: var(--green); }
+
+.procedure-name {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.2;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.procedure-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  border: 1px solid var(--ink-mid);
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+
+.procedure-tag.incident { color: var(--red); border-color: var(--red); }
+.procedure-tag.routine { color: var(--green); border-color: var(--green); }
+
+.procedure-body { padding: 24px; }
+
+.procedure-body h5 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+
+.procedure-body h5:first-child { margin-top: 0; }
+
+.procedure-body p {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.procedure-body ul, .procedure-body ol {
+  margin: 8px 0 12px 24px;
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.procedure-body li { margin-bottom: 5px; }
+
+.procedure-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border: 1px solid var(--rule-faint);
+  margin: 0 0 18px;
+}
+
+@media (max-width: 700px) {
+  .procedure-meta { grid-template-columns: 1fr; }
+}
+
+.procedure-meta-cell {
+  padding: 10px 14px;
+  border-right: 1px solid var(--rule-faint);
+}
+
+.procedure-meta-cell:last-child { border-right: none; }
+
+@media (max-width: 700px) {
+  .procedure-meta-cell {
+    border-right: none;
+    border-bottom: 1px solid var(--rule-faint);
+  }
+  .procedure-meta-cell:last-child { border-bottom: none; }
+}
+
+.procedure-meta-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 4px;
+}
+
+.procedure-meta-value {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 14px;
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* ─── Numbered Steps ─────────────────────────────────── */
+
+.steps {
+  margin: 16px 0;
+  counter-reset: step;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px dotted var(--rule-faint);
+  align-items: start;
+}
+
+.step:last-child { border-bottom: none; }
+
+.step::before {
+  counter-increment: step;
+  content: counter(step, decimal-leading-zero);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--blue);
+  padding-top: 2px;
+  letter-spacing: 0.04em;
+}
+
+.procedure.incident .step::before { color: var(--red); }
+.procedure.routine .step::before { color: var(--green); }
+
+.step-text {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.step-text strong { font-weight: 600; }
+
+.step-text em {
+  font-style: italic;
+  color: var(--ink-mid);
+  font-size: 13px;
+  display: block;
+  margin-top: 3px;
+}
+
+.step-text code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--paper-dark);
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: var(--blue);
+}
+
+/* ─── Severity Indicator ─────────────────────────────── */
+
+.severity-key {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border: 1px solid var(--ink);
+  margin: 24px 0 36px;
+}
+
+@media (max-width: 700px) {
+  .severity-key { grid-template-columns: 1fr; }
+}
+
+.severity-cell {
+  padding: 14px 18px;
+  border-right: 1px solid var(--rule-faint);
+}
+
+.severity-cell:last-child { border-right: none; }
+
+@media (max-width: 700px) {
+  .severity-cell {
+    border-right: none;
+    border-bottom: 1px solid var(--rule-faint);
+  }
+  .severity-cell:last-child { border-bottom: none; }
+}
+
+.severity-cell-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.severity-cell.sev1 .severity-cell-label { color: var(--red); }
+.severity-cell.sev2 .severity-cell-label { color: var(--amber); }
+.severity-cell.sev3 .severity-cell-label { color: var(--blue); }
+
+.severity-cell-text {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.45;
+}
+
+/* ─── Page Break ─────────────────────────────────────── */
+
+.page-break {
+  border-top: 2px solid var(--ink);
+  margin: 96px -64px 64px;
+  position: relative;
+}
+
+@media (max-width: 700px) {
+  .page-break { margin: 56px -24px 40px; }
+}
+
+.page-break::before {
+  content: attr(data-sheet);
+  position: absolute;
+  top: -10px;
+  left: 64px;
+  background: var(--paper);
+  padding: 0 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ─── Footer ─────────────────────────────────────────── */
+
+.sheet-footer {
+  border-top: 1.5px solid var(--ink);
+  padding: 14px 24px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  align-items: center;
+}
+
+.sheet-footer .center { text-align: center; }
+
+.sheet-footer .right {
+  text-align: right;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+a {
+  color: var(--blue);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+a:hover { color: var(--red); }
+
+@media print {
+  body { background: white; }
+  .sheet { border: 2px solid black; }
+  .page-break { page-break-before: always; }
+}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+<div class="sheet-header">
+  <div class="sheet-title-block">
+    <div class="sheet-project">Paxiom · Operations · Drawing Set</div>
+    <div class="sheet-title">Operations Runbook</div>
+    <div class="sheet-subtitle">Procedures for the day things go wrong, and the days they go right.</div>
+  </div>
+  <dl class="sheet-meta">
+    <dt>Project No.</dt><dd>PXM-001-O</dd>
+    <dt>Issue</dt><dd>Operations / Rev. A</dd>
+    <dt>Date</dt><dd>2026.04.29</dd>
+    <dt>Drawn By</dt><dd>K. Luecke</dd>
+  </dl>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-000 · COVER & INDEX
+     ═════════════════════════════════════════════ -->
+
+<div class="sheet-body">
+
+<div class="cover-mark">Sheet O-000 · Cover &amp; Index</div>
+
+<h1 class="cover-title">The runbook.<br><em>For the bad days,<br>and the good ones.</em></h1>
+
+<p class="cover-strap">
+A book of procedures. Incidents above the line — what to do when something
+breaks. Routines below — what to do on the days nothing's broken. Written
+calmly so it can be followed under pressure.
+</p>
+
+<div class="cover-grid">
+  <div class="cover-cell">
+    <div class="cover-cell-label">Audience</div>
+    <div class="cover-cell-value">The operator at 3am<em>or whoever is conscious</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Tone</div>
+    <div class="cover-cell-value">Calm imperatives<em>no jargon, no assumptions</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Coverage</div>
+    <div class="cover-cell-value">Phase 1 services<em>expand as the platform grows</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Companion Docs</div>
+    <div class="cover-cell-value">A · M · E series<em>cross-referenced where relevant</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Severity Triage</div>
+    <div class="cover-cell-value">Three levels<em>SEV-1, SEV-2, SEV-3</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Update Cadence</div>
+    <div class="cover-cell-value">After every incident<em>even small ones</em></div>
+  </div>
+</div>
+
+<div class="severity-key">
+  <div class="severity-cell sev1">
+    <div class="severity-cell-label">SEV-1 · Critical</div>
+    <div class="severity-cell-text">
+      Customer-facing service is down or producing wrong outputs. Money or
+      identity at risk. Drop everything else. Response in minutes.
+    </div>
+  </div>
+  <div class="severity-cell sev2">
+    <div class="severity-cell-label">SEV-2 · Significant</div>
+    <div class="severity-cell-text">
+      Service is degraded but functional. Revenue impact is bounded. Customer
+      experience is compromised. Response in hours.
+    </div>
+  </div>
+  <div class="severity-cell sev3">
+    <div class="severity-cell-label">SEV-3 · Routine</div>
+    <div class="severity-cell-text">
+      Operational issue without immediate customer impact. Investigation
+      and fix can wait for normal working hours.
+    </div>
+  </div>
+</div>
+
+<div class="toc-section-label">Front Matter</div>
+
+<div class="toc-row">
+  <div class="toc-num">O-000</div>
+  <div class="toc-title">Cover, Index &amp; Severity Key<em>this sheet</em></div>
+  <div class="toc-page">↑</div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">O-010</div>
+  <div class="toc-title">Project Narrative<em>what this is, how to use it</em></div>
+  <div class="toc-page"><a href="#o-010">O-010</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">O-020</div>
+  <div class="toc-title">First Response Discipline<em>what to do before opening any procedure</em></div>
+  <div class="toc-page"><a href="#o-020">O-020</a></div>
+</div>
+
+<div class="toc-section-label">Incident Procedures</div>
+
+<div class="toc-row">
+  <div class="toc-num">O-101</div>
+  <div class="toc-title">Service Endpoint Down<em>x402 endpoint not responding</em></div>
+  <div class="toc-page"><a href="#o-101">O-101</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">O-102</div>
+  <div class="toc-title">Proof Generation Failing<em>verification produces wrong or missing outputs</em></div>
+  <div class="toc-page"><a href="#o-102">O-102</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">O-103</div>
+  <div class="toc-title">Facilitator Misbehaving<em>x402 settlement fails or stalls</em></div>
+  <div class="toc-page"><a href="#o-103">O-103</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">O-104</div>
+  <div class="toc-title">AO Process Unresponsive<em>compliance log not accepting writes</em></div>
+  <div class="toc-page"><a href="#o-104">O-104</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">O-105</div>
+  <div class="toc-title">Hot Key Compromise Suspected<em>K-001 or K-002 may be exposed</em></div>
+  <div class="toc-page"><a href="#o-105">O-105</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">O-106</div>
+  <div class="toc-title">Customer Dispute About a Proof<em>customer claims output is wrong</em></div>
+  <div class="toc-page"><a href="#o-106">O-106</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">O-107</div>
+  <div class="toc-title">Anomalous Traffic Pattern<em>unexpected volume or pattern</em></div>
+  <div class="toc-page"><a href="#o-107">O-107</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">O-108</div>
+  <div class="toc-title">Production Server Inaccessible<em>can't SSH, can't deploy, can't reach</em></div>
+  <div class="toc-page"><a href="#o-108">O-108</a></div>
+</div>
+
+<div class="toc-section-label">Routine Procedures</div>
+
+<div class="toc-row">
+  <div class="toc-num">O-201</div>
+  <div class="toc-title">Service Deployment<em>shipping a code change</em></div>
+  <div class="toc-page"><a href="#o-201">O-201</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">O-202</div>
+  <div class="toc-title">Treasury Sweep<em>moving operational funds to cold storage</em></div>
+  <div class="toc-page"><a href="#o-202">O-202</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">O-203</div>
+  <div class="toc-title">Daily Health Check<em>five minute morning ritual</em></div>
+  <div class="toc-page"><a href="#o-203">O-203</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">O-204</div>
+  <div class="toc-title">Monthly Review<em>reputation, revenue, capacity</em></div>
+  <div class="toc-page"><a href="#o-204">O-204</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">O-205</div>
+  <div class="toc-title">Adding a New Service<em>ramp from prototype to public</em></div>
+  <div class="toc-page"><a href="#o-205">O-205</a></div>
+</div>
+
+<div class="toc-section-label">Back Matter</div>
+
+<div class="toc-row">
+  <div class="toc-num">O-900</div>
+  <div class="toc-title">Post-Incident Discipline<em>writing the runbook entry that wasn't there</em></div>
+  <div class="toc-page"><a href="#o-900">O-900</a></div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-010 · PROJECT NARRATIVE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-010"></div>
+
+<div id="o-010">
+<div class="section-mark">O-010 · Project Narrative</div>
+<h2 class="section-title">What this <em>is.</em></h2>
+<p class="section-strap">
+A book to grab when something goes wrong, and a checklist to follow on
+the days it doesn't. Procedural, not narrative. Written so it can be
+followed by a tired person under pressure without requiring fresh thinking
+about what the right thing to do is.
+</p>
+
+<div class="prose">
+
+<p>
+The runbook is procedural infrastructure. Its value comes from existing
+before it's needed. A procedure written calmly during a 40-minute window
+on a Wednesday afternoon is much better than the same procedure invented
+at 3am while a customer is complaining and the platform is down. This
+document captures the thinking now so the operator doesn't have to do it
+under pressure later.
+</p>
+
+<p>
+Two categories of procedure live here. <strong>Incident procedures</strong>
+are bordered red and address things that go wrong. They follow a consistent
+shape — symptoms, severity, immediate actions, diagnosis, resolution,
+post-incident steps. <strong>Routine procedures</strong> are bordered green
+and address the operations that recur. Daily health checks, deployments,
+treasury sweeps, monthly reviews. Both are equally important; they just
+get used at different moments.
+</p>
+
+<h3>How to use this document</h3>
+
+<p>
+When something goes wrong, do not start by reading the relevant procedure
+carefully. Start by reading <strong>O-020 First Response Discipline</strong>,
+which captures the actions that come before any specific procedure.
+Stabilize, communicate, observe — then open the relevant runbook.
+</p>
+
+<p>
+For routine operations, the procedure can be followed top to bottom without
+preamble. The numbered steps are designed to be executable in order without
+requiring inference about what comes next.
+</p>
+
+<h3>What this document is not</h3>
+
+<p>
+Not a list of every possible failure. Failures that haven't happened yet
+won't be in here. After any incident not covered, write a new procedure
+based on what was actually done. The runbook grows by accretion, not by
+upfront completeness.
+</p>
+
+<p>
+Not a substitute for understanding the systems. The procedures assume the
+operator knows what x402, AO, HyperBEAM, and the audit relay are. They
+do not re-explain architectural concepts. Reference the A-series, M-series,
+or E-series blueprints when context is needed.
+</p>
+
+<p>
+Not a deployment automation tool. The procedures describe what the operator
+does; many steps invoke tools (the audit relay, deployment scripts, AO
+message senders) that handle the actual mechanics. The runbook coordinates
+the operator's actions; it does not replace the tools.
+</p>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-020 · FIRST RESPONSE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-020"></div>
+
+<div id="o-020">
+<div class="section-mark">O-020 · First Response Discipline</div>
+<h2 class="section-title">Before the procedure, <em>the discipline.</em></h2>
+<p class="section-strap">
+What every incident response begins with, regardless of which procedure
+applies afterward. Three minutes of discipline buys the rest of the response.
+</p>
+
+<div class="prose">
+
+<h4>Step Zero — Breathe</h4>
+
+<p>
+Whatever just happened, taking 30 seconds before doing anything makes
+the next decision better. Bad responses come from panic responses. Most
+incidents are not as time-critical as they feel in the first minute.
+Even a SEV-1 generally tolerates 30 seconds of operator composure before
+the response begins.
+</p>
+
+<h4>Step One — Determine severity</h4>
+
+<p>
+Use the SEV-1 / SEV-2 / SEV-3 framework on the cover sheet. The severity
+determines the response cadence. Wrong-severity assessments are common
+and costly in both directions: SEV-1 treated as SEV-3 leaves customers
+exposed; SEV-3 treated as SEV-1 burns operator time on something that
+could have waited until morning.
+</p>
+
+<p>
+Test for severity by asking: is a customer being harmed right now? Is
+money or identity at risk? Are downstream systems making decisions based
+on bad output from Paxiom? Yes to any → SEV-1. Service degraded but no
+immediate harm → SEV-2. Internal-only issue → SEV-3.
+</p>
+
+<h4>Step Two — Stabilize before diagnosing</h4>
+
+<p>
+For SEV-1 specifically: the priority is stopping the harm, not understanding
+the cause. If a service is producing wrong outputs, take it offline before
+investigating. If the settlement wallet is leaking, freeze it before forensics.
+If a key may be compromised, rotate before tracing. Diagnosis happens
+after the bleeding stops.
+</p>
+
+<p>
+This feels backwards to engineers who want to understand before acting.
+The instinct is wrong for incident response. Customers can wait an hour
+for a service that's offline; they cannot recover from an hour of bad
+outputs that they relied on.
+</p>
+
+<h4>Step Three — Open the relevant procedure</h4>
+
+<p>
+Open the specific runbook entry. Read it through once before starting.
+Note any preconditions or assumptions. Then execute step by step. Don't
+skip steps even if they seem unnecessary. The procedure is written to
+work for the tired operator at 3am; what seems unnecessary at 2pm may
+be load-bearing in the actual incident.
+</p>
+
+<h4>Step Four — Document while you work</h4>
+
+<p>
+Keep a scratch file open during incident response. Note timestamps,
+observations, actions taken, and anything surprising. This file becomes
+the source for the post-incident write-up (O-900). Without it, the
+write-up reconstructs from memory and misses the details that mattered.
+</p>
+
+<p>
+Format does not matter. Plain text in a terminal, notes in vim, scrawled
+on paper if necessary. The discipline of writing while acting matters
+more than the format.
+</p>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">CRITICAL</span>
+    <span>Do not delete evidence</span>
+    <span class="callout-id">O-020 / W.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      During incident response, do not clean up logs, restart processes,
+      delete files, or make any change that destroys evidence of what
+      happened. Stabilizing the service does not require destroying the
+      evidence trail.
+    </p>
+    <p>
+      Take the service offline by setting it to refuse new requests. Do
+      not <code>rm -rf</code> the working directory. Capture log files
+      before any restart that would rotate them. The post-incident review
+      depends on having the evidence; an incident that fixes itself
+      without leaving evidence is an incident that will recur unexplained.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-101 · SERVICE ENDPOINT DOWN
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-101"></div>
+
+<div id="o-101">
+<div class="section-mark">O-101 · Incident Procedure</div>
+<h2 class="section-title">Service Endpoint <em>Down.</em></h2>
+
+<div class="procedure incident">
+  <div class="procedure-header">
+    <div class="procedure-num">O-101</div>
+    <div class="procedure-name">x402 endpoint not responding</div>
+    <div class="procedure-tag incident">SEV-1 if customer-facing</div>
+  </div>
+  <div class="procedure-body">
+
+    <div class="procedure-meta">
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Symptoms</div>
+        <div class="procedure-meta-value">HTTP 5xx, timeouts, customer reports of failed calls</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Severity</div>
+        <div class="procedure-meta-value">SEV-1 (in production); SEV-3 (in dev)</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Response Time</div>
+        <div class="procedure-meta-value">Within minutes</div>
+      </div>
+    </div>
+
+    <h5>Immediate actions</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Confirm scope.</strong> Is one service down, all services down,
+        or only some requests failing?
+        <em>One service: probably service-specific issue. All services: infrastructure issue. Selective: probably routing or rate-limit related.</em>
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check status indicators.</strong> Run <code>relay status</code>,
+        check <code>.relay/queue.md</code>, check the production server's
+        process status if accessible.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Confirm not a network blip.</strong> Try the endpoint from
+        a different network. If reachable from elsewhere, the issue may
+        be local-only.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check facilitator status.</strong> If the issue correlates
+        with facilitator outages, jump to <a href="#o-103">O-103</a>.
+      </div></div>
+    </div>
+
+    <h5>Diagnosis</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>SSH to production server.</strong> Confirm the service
+        process is running. <code>ps aux | grep paxiom</code> or equivalent.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check service logs.</strong> Last 5 minutes of output. Look
+        for panics, exception traces, repeated errors.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check resource exhaustion.</strong> Memory, disk, file
+        descriptors. <code>df -h</code>, <code>free -m</code>,
+        <code>ulimit -n</code>. Resource exhaustion is the most common
+        cause of "service stopped responding."
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check upstream dependencies.</strong> Beacon endpoint,
+        Load Network, AO process, RunPod GPU availability. Service can
+        appear "down" when an upstream dependency is the actual problem.
+      </div></div>
+    </div>
+
+    <h5>Resolution paths</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Process crashed:</strong> capture core dump if available,
+        restart process, monitor for repeat. If restart succeeds, schedule
+        SEV-3 follow-up to investigate cause.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Resource exhausted:</strong> free resources (kill leaked
+        processes, expand disk, raise ulimits), restart service, schedule
+        SEV-2 to address resource leak.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Upstream dependency down:</strong> set service to return
+        503 with explanatory message rather than timing out. Wait for
+        upstream recovery. Update status page if one exists.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Cause unknown after 15 minutes:</strong> escalate by setting
+        all customer-facing endpoints to maintenance mode. Then continue
+        investigation without time pressure.
+      </div></div>
+    </div>
+
+    <h5>Post-incident</h5>
+
+    <p>
+      Write the incident summary per O-900. If the cause was a class of
+      problem not covered by an existing procedure, write a new procedure.
+      If the cause was covered but the procedure was incomplete or
+      misleading, revise it.
+    </p>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-102 · PROOF GENERATION FAILING
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-102"></div>
+
+<div id="o-102">
+<div class="section-mark">O-102 · Incident Procedure</div>
+<h2 class="section-title">Proof Generation <em>Failing.</em></h2>
+
+<div class="procedure incident">
+  <div class="procedure-header">
+    <div class="procedure-num">O-102</div>
+    <div class="procedure-name">Verification produces wrong or missing outputs</div>
+    <div class="procedure-tag incident">SEV-1 always</div>
+  </div>
+  <div class="procedure-body">
+
+    <div class="procedure-meta">
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Symptoms</div>
+        <div class="procedure-meta-value">Proofs fail to verify; wrong values returned; customer dispute</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Severity</div>
+        <div class="procedure-meta-value">SEV-1 always — wrong outputs erode the platform's reason to exist</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Response Time</div>
+        <div class="procedure-meta-value">Within minutes</div>
+      </div>
+    </div>
+
+    <h5>Immediate actions</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Take the affected service offline immediately.</strong>
+        Set the endpoint to return 503 with maintenance message. Wrong
+        outputs harm customers and the platform's identity; service
+        downtime does not.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Snapshot the current state.</strong> Capture the inputs
+        and outputs of the most recent failing requests. Save logs from
+        the past hour. Do not restart anything yet.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check whether other services are affected.</strong> If
+        the failure pattern correlates across services, infrastructure
+        issue. If isolated, service-specific bug.
+      </div></div>
+    </div>
+
+    <h5>Diagnosis</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Reproduce the failure.</strong> Take a failing input from
+        the captured logs and run it through the service in isolation.
+        Confirm the failure is reproducible before continuing.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check upstream data integrity.</strong> If the service
+        depends on Load Network state or beacon chain data, verify the
+        source data is correct. The service can fail because the data
+        feeding it is wrong.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check the verifier itself.</strong> Run the verifier with
+        a known-good test vector that has previously verified successfully.
+        If known-good vectors fail, the verifier is broken. If they succeed,
+        the issue is input-specific.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check for recent changes.</strong> Was anything deployed
+        recently? Did a dependency update? Did upstream chain state change
+        in a relevant way (fork, hard fork, sync committee transition)?
+      </div></div>
+    </div>
+
+    <h5>Resolution paths</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Verifier broken:</strong> revert to last known-good version.
+        Service stays offline until verifier is confirmed correct.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Upstream data wrong:</strong> contact upstream provider,
+        switch to alternate source if available, surface the issue to
+        affected customers.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Customer-specific failure:</strong> isolate the failing
+        input pattern, fix the handling, deploy. Monitor for recurrence
+        before bringing service back online.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Cause unknown after 30 minutes:</strong> service stays
+        offline. This is the right answer. Wrong outputs are worse than
+        no outputs.
+      </div></div>
+    </div>
+
+    <h5>Customer communication</h5>
+
+    <p>
+      Customers who paid for failed proofs get refunded. Customers who
+      relied on wrong outputs get notified. Communication is direct and
+      honest about what happened. Hiding incidents that affected customers
+      damages trust more than the incidents themselves.
+    </p>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-103 · FACILITATOR
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-103"></div>
+
+<div id="o-103">
+<div class="section-mark">O-103 · Incident Procedure</div>
+<h2 class="section-title">Facilitator <em>Misbehaving.</em></h2>
+
+<div class="procedure incident">
+  <div class="procedure-header">
+    <div class="procedure-num">O-103</div>
+    <div class="procedure-name">x402 settlement fails or stalls</div>
+    <div class="procedure-tag incident">SEV-1 or SEV-2 depending on impact</div>
+  </div>
+  <div class="procedure-body">
+
+    <div class="procedure-meta">
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Symptoms</div>
+        <div class="procedure-meta-value">Payments not settling; verify or settle calls failing</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Severity</div>
+        <div class="procedure-meta-value">SEV-1 if revenue blocked; SEV-2 if delays only</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Response Time</div>
+        <div class="procedure-meta-value">15-30 minutes</div>
+      </div>
+    </div>
+
+    <h5>Diagnosis</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Check facilitator's status page.</strong> Coinbase publishes
+        x402 facilitator status. If the issue is on their side, response
+        is communication, not technical fix.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Test with known-good signature.</strong> Send a test x402
+        request with a signature that should succeed. If verify fails,
+        confirm the issue is facilitator-side.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check Base mainnet status.</strong> Block production
+        delays affect settlement timing. If Base is degraded, settlements
+        will stall regardless of facilitator behavior.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check own settlement wallet (K-002).</strong> Has the
+        wallet been blocked, blacklisted, or had its funds frozen? Rare
+        but possible.
+      </div></div>
+    </div>
+
+    <h5>Resolution paths</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Facilitator outage:</strong> notify customers, set service
+        to deferred-settlement mode if supported, wait for recovery. Do
+        not switch facilitators mid-outage — adds operational complexity
+        without fixing the immediate problem.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Base mainnet delays:</strong> communicate expected
+        settlement times. Service can continue accepting requests; settlement
+        catches up when Base recovers.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Wallet issue (K-002 affected):</strong> escalate to E-302
+        compromise response. New wallet generated and brought online.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Sustained facilitator failures (&gt; 24 hours):</strong>
+        evaluate switching to alternate facilitator (x402-rs self-hosted,
+        or another commercial provider). This is a planned migration,
+        not an emergency response.
+      </div></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-104 · AO PROCESS
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-104"></div>
+
+<div id="o-104">
+<div class="section-mark">O-104 · Incident Procedure</div>
+<h2 class="section-title">AO Process <em>Unresponsive.</em></h2>
+
+<div class="procedure incident">
+  <div class="procedure-header">
+    <div class="procedure-num">O-104</div>
+    <div class="procedure-name">Compliance log not accepting writes</div>
+    <div class="procedure-tag incident">SEV-2 typically</div>
+  </div>
+  <div class="procedure-body">
+
+    <div class="procedure-meta">
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Symptoms</div>
+        <div class="procedure-meta-value">Audit log writes failing; AO messages not confirming</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Severity</div>
+        <div class="procedure-meta-value">SEV-2 — service can continue with degraded audit; SEV-1 if extended</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Response Time</div>
+        <div class="procedure-meta-value">Hours, not minutes</div>
+      </div>
+    </div>
+
+    <h5>Diagnosis</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Check AO network status.</strong> The wider AO network's
+        health affects all processes. Check ao.link or community status
+        channels.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Try messaging the process directly.</strong> Use
+        <code>aos</code> CLI to send a no-op message. Confirm whether
+        the issue is process-specific or network-wide.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check Arweave gateway availability.</strong> AO depends on
+        Arweave for persistence; gateway issues cascade.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check process state.</strong> Has the process accumulated
+        too much state? Memory exhaustion in AO processes is real and
+        recovers only by spawning a successor.
+      </div></div>
+    </div>
+
+    <h5>Resolution paths</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Service can continue with deferred logging.</strong> Audit
+        records queued locally, drained to AO when network recovers. Do
+        not stop serving customers because audit logging is delayed.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>AO network outage:</strong> wait for recovery. Communicate
+        with affected customers about audit log delay. Audit eventually
+        catches up because the queue is preserved.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Process-specific failure:</strong> spawn successor process,
+        migrate references, transfer ownership through cold-tier ceremony
+        (E-301).
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Sustained outage (&gt; 6 hours):</strong> the audit-trail
+        property is core to the platform's identity. Surface the issue to
+        customers, indicate what records will eventually be persisted,
+        and offer transparency about the delay.
+      </div></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-105 · KEY COMPROMISE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-105"></div>
+
+<div id="o-105">
+<div class="section-mark">O-105 · Incident Procedure</div>
+<h2 class="section-title">Hot Key <em>Compromise Suspected.</em></h2>
+
+<div class="procedure incident">
+  <div class="procedure-header">
+    <div class="procedure-num">O-105</div>
+    <div class="procedure-name">K-001 or K-002 may be exposed</div>
+    <div class="procedure-tag incident">SEV-1 always</div>
+  </div>
+  <div class="procedure-body">
+
+    <div class="procedure-meta">
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Symptoms</div>
+        <div class="procedure-meta-value">Unauthorized signatures; unexpected wallet activity; system intrusion evidence</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Severity</div>
+        <div class="procedure-meta-value">SEV-1 — drop everything</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Response Time</div>
+        <div class="procedure-meta-value">Within minutes</div>
+      </div>
+    </div>
+
+    <h5>Immediate actions (in this order)</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Stop all signing operations immediately.</strong> Set the
+        production server to refuse new requests. Every signature produced
+        during the response window is potential damage.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>If K-002 (settlement wallet) is compromised:</strong> immediately
+        sweep all funds to recovery destination per E-302. Time matters
+        — attacker may be racing to drain.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>If K-001 (KYA platform identity) is compromised:</strong>
+        do not yet rotate. The cold-tier ceremony for KYA rotation is
+        deliberate, not panic. Continue to step 4 first.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Capture forensic evidence.</strong> Production server
+        process state, recent logs, network connection records, any
+        evidence of how the compromise occurred. Do this before any
+        cleanup.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Initiate cold-tier rotation ceremony per E-302.</strong>
+        K-008 signs the K-001 succession; new K-001 brought online; old
+        K-001 revoked through KYA registry update.
+      </div></div>
+    </div>
+
+    <h5>Diagnosis (after immediate actions)</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Reconstruct the attack timeline.</strong> When did access
+        occur? What was signed during the compromise window? Which signatures
+        were legitimate and which weren't?
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Identify the entry point.</strong> Compromised credential?
+        Code execution vulnerability? Supply chain? Each implies different
+        downstream concerns.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Estimate blast radius.</strong> What other systems share
+        any credentials, network paths, or trust relationships with the
+        compromised key?
+      </div></div>
+    </div>
+
+    <h5>Customer communication</h5>
+
+    <p>
+      Customers who received signatures during the compromise window need
+      to know which signatures may be untrustworthy. The platform's audit
+      trail on AO/Arweave shows every signature; customers can verify
+      independently which were legitimate and which weren't.
+    </p>
+
+    <p>
+      Communication is direct, factual, and timely. Customers tolerate
+      incidents handled transparently; they do not tolerate incidents
+      hidden until later disclosed.
+    </p>
+
+    <h5>Recovery completion</h5>
+
+    <p>
+      Once new keys are operational, the recovery is not complete until
+      the entry-point vulnerability is fixed. Otherwise the new keys are
+      compromised by the same vector that compromised the old ones.
+      Address the vulnerability before bringing the platform fully back
+      online.
+    </p>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-106 · CUSTOMER DISPUTE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-106"></div>
+
+<div id="o-106">
+<div class="section-mark">O-106 · Incident Procedure</div>
+<h2 class="section-title">Customer Dispute <em>About a Proof.</em></h2>
+
+<div class="procedure incident">
+  <div class="procedure-header">
+    <div class="procedure-num">O-106</div>
+    <div class="procedure-name">Customer claims output is wrong</div>
+    <div class="procedure-tag incident">SEV-2 typically</div>
+  </div>
+  <div class="procedure-body">
+
+    <div class="procedure-meta">
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Symptoms</div>
+        <div class="procedure-meta-value">Customer claims a paid proof is incorrect or didn't verify</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Severity</div>
+        <div class="procedure-meta-value">SEV-2 if isolated; escalates to SEV-1 if pattern emerges</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Response Time</div>
+        <div class="procedure-meta-value">Hours, not days</div>
+      </div>
+    </div>
+
+    <h5>Investigation</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Locate the disputed transaction.</strong> Use the customer's
+        transaction ID or payment hash to find the corresponding audit
+        record in the AO compliance log. Every transaction is preserved.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Reproduce the verification.</strong> Take the same inputs
+        and run them through the verifier independently. Confirm whether
+        the original output was correct or incorrect.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check the customer's verification process.</strong> Often
+        the dispute is the customer's verification failing rather than
+        the proof being wrong. Walk through their verification steps;
+        most disputes resolve at this step.
+      </div></div>
+    </div>
+
+    <h5>Resolution paths</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Proof was correct, customer's verification was wrong:</strong>
+        explain the verification process. Provide reference implementation.
+        Refund as goodwill if appropriate; the customer's confusion is
+        their problem but goodwill costs little.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Proof was correct, customer relied on it for the wrong
+        purpose:</strong> clarify the proof's actual scope. Service
+        descriptions should be clear enough to prevent this; if they
+        weren't, this is documentation work to do.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Proof was wrong:</strong> escalate to O-102. Refund the
+        customer. Investigate whether the failure pattern is isolated or
+        systematic. If systematic, take service offline and investigate
+        as SEV-1.
+      </div></div>
+    </div>
+
+    <h5>Reputation discipline</h5>
+
+    <p>
+      Disputes are public information once they enter discovery layers
+      and reputation systems. Handle them carefully. A correctly resolved
+      dispute (proof was right, explained patiently, customer satisfied)
+      is reputation-positive. A poorly handled dispute (defensive,
+      slow, hidden) is reputation-negative regardless of who was technically
+      correct.
+    </p>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-107 · ANOMALOUS TRAFFIC
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-107"></div>
+
+<div id="o-107">
+<div class="section-mark">O-107 · Incident Procedure</div>
+<h2 class="section-title">Anomalous Traffic <em>Pattern.</em></h2>
+
+<div class="procedure incident">
+  <div class="procedure-header">
+    <div class="procedure-num">O-107</div>
+    <div class="procedure-name">Unexpected volume or pattern</div>
+    <div class="procedure-tag incident">SEV-2 if not actively harmful</div>
+  </div>
+  <div class="procedure-body">
+
+    <div class="procedure-meta">
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Symptoms</div>
+        <div class="procedure-meta-value">Traffic spike, unusual request patterns, suspicious source distribution</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Severity</div>
+        <div class="procedure-meta-value">SEV-3 if just unusual; SEV-2 if suspected attack; SEV-1 if causing harm</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Response Time</div>
+        <div class="procedure-meta-value">Minutes for assessment, hours for action</div>
+      </div>
+    </div>
+
+    <h5>Assessment</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Characterize the pattern.</strong> What's anomalous specifically?
+        Volume spike? New source? Unusual request shape? Each implies
+        different responses.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check for legitimate explanation.</strong> New customer
+        ramping up? Marketing-driven traffic? Adjacent ecosystem event
+        (lookalike attack on a competitor driving traffic to alternatives)?
+        Most anomalies are legitimate.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check for harm.</strong> Is the platform serving the
+        traffic successfully or is it degrading service for other customers?
+        Spike that everyone gets served fine is good news; spike that's
+        causing failures is the actual problem.
+      </div></div>
+    </div>
+
+    <h5>Response options</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Legitimate spike:</strong> celebrate. Make sure infrastructure
+        scales. Schedule capacity review.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Suspected attack, no harm yet:</strong> apply rate limiting
+        per source. Watch for evolution. Document the pattern for future
+        detection.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Active attack causing harm:</strong> aggressive rate limits,
+        block suspected attacker patterns, escalate to SEV-1 if customer-facing
+        impact continues.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Pattern unclear after 1 hour:</strong> conservative rate
+        limits in place, continue monitoring, schedule SEV-2 follow-up
+        for fuller analysis.
+      </div></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-108 · SERVER INACCESSIBLE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-108"></div>
+
+<div id="o-108">
+<div class="section-mark">O-108 · Incident Procedure</div>
+<h2 class="section-title">Production Server <em>Inaccessible.</em></h2>
+
+<div class="procedure incident">
+  <div class="procedure-header">
+    <div class="procedure-num">O-108</div>
+    <div class="procedure-name">Can't SSH, can't deploy, can't reach</div>
+    <div class="procedure-tag incident">SEV-1 if customer-facing affected</div>
+  </div>
+  <div class="procedure-body">
+
+    <div class="procedure-meta">
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Symptoms</div>
+        <div class="procedure-meta-value">SSH timeouts, ping failures, host unreachable</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Severity</div>
+        <div class="procedure-meta-value">SEV-1 if services affected; SEV-2 if services running but ops blocked</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Response Time</div>
+        <div class="procedure-meta-value">15 minutes to assess</div>
+      </div>
+    </div>
+
+    <h5>Diagnosis</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Check whether services are responding to customers.</strong>
+        Ops access blocked but customer-facing services running is SEV-2.
+        Both blocked is SEV-1.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check from a different network.</strong> The issue may be
+        operator's network or VPN, not the server.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check cloud provider status.</strong> Region outage affects
+        many things; specific instance issue is different.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Use cloud provider's console access.</strong> Most providers
+        offer serial console or VNC even when SSH is unreachable. Use
+        this to inspect the running state.
+      </div></div>
+    </div>
+
+    <h5>Resolution paths</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Network issue, services still serving:</strong> wait for
+        network recovery. Avoid panic decisions like rebooting the instance
+        which can make things worse.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Server unreachable, services not serving:</strong> this is
+        SEV-1. Through cloud console, attempt to diagnose. If unreachable
+        through console too, instance reboot via cloud provider API.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Suspect compromise (not a network issue but host
+        compromised):</strong> escalate to O-105. Do not reboot through
+        cloud console — it destroys forensic evidence. Capture instance
+        snapshot for forensics, provision new instance, migrate.
+      </div></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-201 · DEPLOYMENT
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-201"></div>
+
+<div id="o-201">
+<div class="section-mark">O-201 · Routine Procedure</div>
+<h2 class="section-title">Service <em>Deployment.</em></h2>
+
+<div class="procedure routine">
+  <div class="procedure-header">
+    <div class="procedure-num">O-201</div>
+    <div class="procedure-name">Shipping a code change</div>
+    <div class="procedure-tag routine">Per-change</div>
+  </div>
+  <div class="procedure-body">
+
+    <div class="procedure-meta">
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">When</div>
+        <div class="procedure-meta-value">Whenever a service change is ready for production</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Frequency</div>
+        <div class="procedure-meta-value">Per change; daily during active development</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Duration</div>
+        <div class="procedure-meta-value">15-30 minutes typical</div>
+      </div>
+    </div>
+
+    <h5>Pre-deployment</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Confirm the change passed audit relay.</strong> The relay's
+        plan was reviewed and the revision was accepted. Tests passed.
+        See M-series.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Check current production state.</strong> Service responding
+        normally? No active incidents? Traffic at normal levels? Deploy
+        into calm seas, not storms.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Identify the rollback path.</strong> What's the previous
+        version? How long does rollback take? Confirm before deploying.
+      </div></div>
+    </div>
+
+    <h5>Deployment</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Tag the new version.</strong> Git tag, version number, or
+        whatever the project uses for release identification.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Push to production.</strong> Through the deployment script
+        or process for the specific service.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Verify the service is running new code.</strong> Health
+        check, version endpoint, log inspection — confirm the new version
+        is actually serving requests, not just installed.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Run smoke tests.</strong> A handful of test requests against
+        the new version. Confirm responses look correct.
+      </div></div>
+    </div>
+
+    <h5>Post-deployment</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Watch for 15 minutes.</strong> Monitor logs, error rates,
+        and customer-facing health. Most deployment failures show up
+        within minutes.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>If issues appear:</strong> rollback to the previous version
+        immediately. Investigate the issue without time pressure once
+        production is back to a known-good state.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>If smooth:</strong> record the deployment in the build
+        journal. Note version, time, what changed.
+      </div></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-202 · TREASURY SWEEP
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-202"></div>
+
+<div id="o-202">
+<div class="section-mark">O-202 · Routine Procedure</div>
+<h2 class="section-title">Treasury <em>Sweep.</em></h2>
+
+<div class="procedure routine">
+  <div class="procedure-header">
+    <div class="procedure-num">O-202</div>
+    <div class="procedure-name">Moving operational funds to cold storage</div>
+    <div class="procedure-tag routine">Periodic</div>
+  </div>
+  <div class="procedure-body">
+
+    <div class="procedure-meta">
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">When</div>
+        <div class="procedure-meta-value">Operational wallet (K-002) exceeds defined threshold</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Frequency</div>
+        <div class="procedure-meta-value">Weekly to monthly depending on revenue volume</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Duration</div>
+        <div class="procedure-meta-value">10-15 minutes plus cold-tier ceremony</div>
+      </div>
+    </div>
+
+    <h5>Why this exists</h5>
+
+    <p>
+      The hot-tier settlement wallet (K-002) is exposed to internet attack
+      surface and is the most likely compromise target. Keeping its balance
+      bounded means a successful compromise loses operational balance, not
+      platform reserves. The sweep maintains this property by moving funds
+      to the cold-tier treasury wallet (K-006) on a defined cadence.
+    </p>
+
+    <h5>Procedure</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Check K-002 balance.</strong> Confirm it exceeds the sweep
+        threshold (defined in operational document, not here).
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Calculate sweep amount.</strong> Total balance minus the
+        operational reserve to keep in K-002 for ongoing settlement.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Construct the sweep transaction.</strong> Send from K-002
+        to K-006. Transaction prepared on networked workstation; not yet
+        signed.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Hot-tier signs the sweep.</strong> K-002's signing happens
+        on the production server through the standard signing mechanism.
+        This is the simple part.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Submit, confirm.</strong> Wait for chain confirmation.
+        Verify K-006 received the expected amount.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Record in financial log.</strong> Date, amount, source
+        balance, destination balance, transaction hash. This trail matters
+        for tax accounting and for the platform's own reporting.
+      </div></div>
+    </div>
+
+    <h5>What this procedure is not</h5>
+
+    <p>
+      This is not a treasury disbursement. Sweeping funds <em>into</em>
+      K-006 is routine and uses the hot-tier signing of K-002. Disbursing
+      funds <em>out of</em> K-006 (paying expenses, transferring to
+      personal accounts, paying down obligations) requires cold-tier
+      ceremony per E-301. Different procedure, different security posture.
+    </p>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-203 · DAILY HEALTH CHECK
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-203"></div>
+
+<div id="o-203">
+<div class="section-mark">O-203 · Routine Procedure</div>
+<h2 class="section-title">Daily <em>Health Check.</em></h2>
+
+<div class="procedure routine">
+  <div class="procedure-header">
+    <div class="procedure-num">O-203</div>
+    <div class="procedure-name">Five minute morning ritual</div>
+    <div class="procedure-tag routine">Daily</div>
+  </div>
+  <div class="procedure-body">
+
+    <div class="procedure-meta">
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">When</div>
+        <div class="procedure-meta-value">Morning, before any other platform work</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Frequency</div>
+        <div class="procedure-meta-value">Daily</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Duration</div>
+        <div class="procedure-meta-value">5 minutes if smooth; longer if issues found</div>
+      </div>
+    </div>
+
+    <h5>The check</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Service uptime.</strong> All five services responding to
+        health checks. If any are not, jump to O-101 immediately.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Yesterday's transaction count and revenue.</strong> Did
+        the platform serve traffic? At what volume? Note any anomalies.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>K-002 wallet balance.</strong> Within expected range? Above
+        sweep threshold? Schedule O-202 if needed.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>AO compliance log writing successfully.</strong> Recent
+        entries present? No gaps?
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Audit relay queue.</strong> Anything awaiting review? Any
+        cycles abandoned overnight?
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Customer support inbox.</strong> Any disputes or questions
+        overnight? Any repeating themes?
+      </div></div>
+    </div>
+
+    <h5>Why daily</h5>
+
+    <p>
+      Daily cadence catches issues while they're small. A wallet balance
+      that's off by 10% is a bookkeeping mistake; the same gap discovered
+      after a month is a compliance problem. A service that's slow today
+      is a routine investigation; the same slowness that's been happening
+      for three weeks is reputation damage.
+    </p>
+
+    <p>
+      The five-minute commitment keeps the ritual sustainable. If it grows
+      to 30 minutes regularly, something is off — either too many fires,
+      or the check is being padded with non-essential work.
+    </p>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-204 · MONTHLY REVIEW
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-204"></div>
+
+<div id="o-204">
+<div class="section-mark">O-204 · Routine Procedure</div>
+<h2 class="section-title">Monthly <em>Review.</em></h2>
+
+<div class="procedure routine">
+  <div class="procedure-header">
+    <div class="procedure-num">O-204</div>
+    <div class="procedure-name">Reputation, revenue, capacity</div>
+    <div class="procedure-tag routine">Monthly</div>
+  </div>
+  <div class="procedure-body">
+
+    <div class="procedure-meta">
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">When</div>
+        <div class="procedure-meta-value">First weekend of the month</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Frequency</div>
+        <div class="procedure-meta-value">Monthly</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Duration</div>
+        <div class="procedure-meta-value">2-4 hours</div>
+      </div>
+    </div>
+
+    <h5>Revenue and economics</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Per-service transaction volume and revenue.</strong> Compare
+        to A-300 pro forma projections. Note services performing above
+        and below projection.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Per-service costs.</strong> GPU compute, gas, Arweave,
+        infrastructure. Confirm gross margins are healthy.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Trajectory.</strong> Is the platform tracking toward the
+        $30k/year floor and the all-five-earning trigger? Or diverging?
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Pricing review.</strong> Customer behavior since launch.
+        Adjust prices if data justifies — see A-300 / N.01 sensitivity
+        notes.
+      </div></div>
+    </div>
+
+    <h5>Reputation and ecosystem</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Discovery layer presence.</strong> Are registrations
+        current? Any new directories worth registering on?
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Customer feedback themes.</strong> Recurring praise, recurring
+        complaints, recurring confusion points.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Competitive landscape.</strong> Have existing providers
+        shipped x402-native versions? New entrants? Pricing changes? See
+        A-320 / R.05.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Ecosystem catalysts.</strong> Any RPC trust failures,
+        lookalike incidents, or KYA standards developments worth marketing
+        against?
+      </div></div>
+    </div>
+
+    <h5>Capacity and pace</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Operator hours sustained.</strong> Honest assessment of
+        the past month's working hours. Sustainable? Compromising health,
+        relationships, or judgment? See A-320 / R.04.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Build progress.</strong> Where are the Phase 1 services in
+        their build sequence? Tracking against blueprint estimates?
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Day-job-quit decision check.</strong> If all five services
+        are operational, run the decision matrix in A-310 / W.01. Otherwise,
+        confirm continuing the side-pace plan.
+      </div></div>
+    </div>
+
+    <h5>Output</h5>
+
+    <p>
+      Monthly review produces a written summary preserved in the build
+      journal. Decisions made are noted. Adjustments to subsequent months
+      are noted. Concerns surfaced are noted with planned response.
+    </p>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-205 · ADDING NEW SERVICE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-205"></div>
+
+<div id="o-205">
+<div class="section-mark">O-205 · Routine Procedure</div>
+<h2 class="section-title">Adding a <em>New Service.</em></h2>
+
+<div class="procedure routine">
+  <div class="procedure-header">
+    <div class="procedure-num">O-205</div>
+    <div class="procedure-name">Ramp from prototype to public</div>
+    <div class="procedure-tag routine">Per-launch</div>
+  </div>
+  <div class="procedure-body">
+
+    <div class="procedure-meta">
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">When</div>
+        <div class="procedure-meta-value">Each Phase 1 service launch; each Phase 2 expansion</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Frequency</div>
+        <div class="procedure-meta-value">5 times in Phase 1; ongoing afterward</div>
+      </div>
+      <div class="procedure-meta-cell">
+        <div class="procedure-meta-label">Duration</div>
+        <div class="procedure-meta-value">Spans days; checkpoint procedure not single-session</div>
+      </div>
+    </div>
+
+    <h5>Pre-launch (services already feature-complete)</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Service spec finalized.</strong> Phase 1 blueprint elevation
+        sheet matches the implementation. Discrepancies resolved.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Test vectors documented.</strong> Known-good inputs and
+        expected outputs preserved. Used for ongoing health checks.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Pricing decided.</strong> Per A-300 schedule or revised
+        based on competitive analysis.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>AO process for the service deployed.</strong> K-005 generated
+        per E-300. Process operational on AO.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Audit relay configured for the service.</strong> Per-service
+        config in <code>config/services/A-2NN.yaml</code>.
+      </div></div>
+    </div>
+
+    <h5>Soft launch</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Service live but not yet announced.</strong> Endpoint
+        responding, payment flow tested, audit logging confirmed, but
+        not yet registered in any discovery layer.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Run synthetic transactions.</strong> Operator-driven test
+        traffic to confirm everything works under realistic conditions.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Monitor for 24-48 hours.</strong> Catch any issues that
+        only show up under sustained operation.
+      </div></div>
+    </div>
+
+    <h5>Public launch</h5>
+
+    <div class="steps">
+      <div class="step"><div class="step-text">
+        <strong>Register on discovery layers.</strong> MCP registries, x402
+        service indexes, agent framework plugin lists. Per A-330 schedule
+        when that document is complete.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Update landing page.</strong> Add to the services list,
+        update any metrics, link to documentation.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Notify outbound prospects.</strong> Specific organizations
+        that expressed interest. Per A-340 schedule when complete.
+      </div></div>
+      <div class="step"><div class="step-text">
+        <strong>Monitor traffic ramp.</strong> First 30 days produce most
+        of the data. Adjust pricing, capacity, documentation based on
+        what shows up.
+      </div></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     O-900 · POST-INCIDENT DISCIPLINE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-900"></div>
+
+<div id="o-900">
+<div class="section-mark">O-900 · Post-Incident Discipline</div>
+<h2 class="section-title">Writing the runbook entry <em>that wasn't there.</em></h2>
+<p class="section-strap">
+The runbook grows by use. Every incident not covered should add a procedure.
+Every procedure that worked badly should be revised. The work after the
+incident is as important as the work during it.
+</p>
+
+<div class="prose">
+
+<h3>Within 24 hours</h3>
+
+<p>
+While the incident is fresh, capture what happened. Format:
+</p>
+
+<ul>
+  <li><strong>Summary.</strong> One paragraph: what broke, what the impact was,
+  how it was resolved.</li>
+  <li><strong>Timeline.</strong> Timestamped sequence of events. When detected,
+  when escalated, what was tried, what worked.</li>
+  <li><strong>Root cause.</strong> The underlying reason, not just the proximate
+  symptom. Five whys if necessary.</li>
+  <li><strong>What worked.</strong> Procedures that helped, instincts that were
+  right, tools that performed well.</li>
+  <li><strong>What didn't.</strong> Confusions, dead ends, missing procedures,
+  tools that failed.</li>
+  <li><strong>Customer impact.</strong> Who was affected, how, what
+  communication occurred.</li>
+  <li><strong>Action items.</strong> Specific changes to procedures, code,
+  monitoring, or operations to prevent recurrence.</li>
+</ul>
+
+<h3>Within a week</h3>
+
+<p>
+Update the runbook. New procedures for incident classes that weren't
+covered. Revisions to procedures that worked badly. Add to the risk register
+if the incident exposed a previously unidentified failure mode.
+</p>
+
+<p>
+Build journal entry that links to the post-incident summary. The journal's
+narrative gives context; the summary provides detail.
+</p>
+
+<h3>Within a month</h3>
+
+<p>
+Close the action items. If the incident exposed a class of problem that
+needs systemic response (architectural change, monitoring upgrade, key
+rotation, dependency replacement), schedule the work and execute it.
+Open action items beyond 30 days are a sign that the lesson hasn't been
+absorbed.
+</p>
+
+<h3>The discipline this requires</h3>
+
+<p>
+Post-incident work is unglamorous and easily skipped. The fire is out;
+moving on feels good. But incidents that aren't documented recur unexplained,
+and procedures that aren't updated stay subtly broken.
+</p>
+
+<p>
+The platform's compounding advantage in operational reliability comes from
+this discipline specifically. Every incident handled well is a reduction
+in the probability of similar incidents in the future. Every procedure
+written calmly is a 3am decision that doesn't have to be made under pressure.
+The runbook itself is infrastructure that earns its keep across the
+operational lifetime of the platform.
+</p>
+
+<h3>Related documents</h3>
+
+<p>
+<strong>A-series Phase 1 Blueprint</strong> — service specifications and
+build context that incident procedures reference.
+</p>
+
+<p>
+<strong>M-series Audit Relay Blueprint</strong> — tooling that several
+incident procedures invoke.
+</p>
+
+<p>
+<strong>E-series Key Custody &amp; Identity</strong> — referenced by O-105
+(key compromise) and O-202 (treasury sweep).
+</p>
+
+<p>
+<strong>Build Journal</strong> — narrative record of platform history.
+Post-incident summaries link from journal entries.
+</p>
+
+<h3>Revision log</h3>
+
+<p>
+<strong>Rev. A — 2026.04.29.</strong> Initial issue. Eight incident
+procedures (O-101 through O-108). Five routine procedures (O-201 through
+O-205). First response discipline (O-020) and post-incident discipline
+(O-900). Severity framework (SEV-1, SEV-2, SEV-3) established.
+</p>
+
+<p>
+<em>Subsequent revisions will add procedures as incidents reveal gaps.
+The runbook is expected to grow by 1-3 procedures per quarter during
+active operation. Rev. B expected after first SEV-1 incident.</em>
+</p>
+
+<h3>One last thing</h3>
+
+<p>
+This document exists to be opened in moments when calm thinking is hard.
+Every word in it was written assuming the reader is tired, stressed,
+and possibly facing something unfamiliar. The procedures don't make
+the operator brilliant; they let an ordinarily competent operator
+respond well even when conditions are bad.
+</p>
+
+<p>
+Use it. Update it. Keep it close.
+</p>
+
+<p>
+<em>Build the engine first. The moats come later. The runbook is what
+keeps both running.</em>
+</p>
+
+</div>
+</div>
+
+</div>
+
+<div class="sheet-footer">
+  <div>Paxiom · paxiom.org</div>
+  <div class="center">Operations · Rev. A · 2026.04.29</div>
+  <div class="right">Sheet Set O-000 / 16</div>
+</div>
+
+</div>
+
+</body>
+</html>

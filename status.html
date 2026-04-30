@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom · Status</title>
+<meta name="description" content="Current state, build log, known constraints, and open questions for the Paxiom build.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F1E8; --paper-dark: #EDE6D3; --ink: #1A2332; --ink-mid: #3A4555;
+  --ink-faint: #6B7280; --rule-faint: #B8AE96; --blue: #1E3A5F; --red: #8B2E1F; --amber: #B8860B;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 15px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.frame { max-width: 1080px; margin: 0 auto; padding: 20px 18px 32px; }
+
+.title-block { border-bottom: 2px solid var(--ink); padding-bottom: 16px; margin-bottom: 14px; }
+.title-mark { display: block; margin-bottom: 12px; }
+.paxiom-mark { width: 42px; height: 42px; color: var(--ink); display: block; }
+.title-block .project-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: 4px;
+}
+.title-block .project-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 28px; font-weight: 500; line-height: 1.1;
+  letter-spacing: -0.01em; color: var(--ink);
+}
+.title-block .project-subtitle {
+  font-family: 'IBM Plex Serif', serif; font-style: italic;
+  font-size: 14px; color: var(--ink-mid); margin-top: 4px; max-width: 36ch;
+}
+.title-block .meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.04em; color: var(--ink-faint);
+  margin-top: 12px; line-height: 1.7;
+}
+.title-block .meta .sep { margin: 0 6px; color: var(--rule-faint); }
+
+nav.primary {
+  border-bottom: 1px solid var(--rule-faint); margin-bottom: 28px;
+  overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;
+}
+nav.primary ul {
+  list-style: none; display: flex; gap: 22px; padding: 12px 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+}
+nav.primary a { color: var(--ink-mid); text-decoration: none; padding-bottom: 4px; }
+nav.primary a.active { color: var(--ink); border-bottom: 2px solid var(--ink); }
+nav.primary a:hover { color: var(--blue); }
+
+/* Page header */
+.page-header { margin-bottom: 32px; padding: 8px 0 16px; }
+.page-header .mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.page-header .mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.page-header h1 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500; font-size: clamp(32px, 6vw, 44px); line-height: 1.05;
+  letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px;
+}
+.page-header h1 em { font-style: italic; color: var(--ink-mid); font-weight: 400; }
+.page-header .strap {
+  font-family: 'IBM Plex Serif', serif; font-style: italic;
+  font-size: 17px; color: var(--ink-mid); max-width: 56ch; line-height: 1.5;
+}
+
+/* Status block */
+.status-key {
+  border: 1.5px solid var(--ink); margin-bottom: 32px; background: var(--paper);
+}
+.status-key-header {
+  background: var(--ink); color: var(--paper); padding: 10px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+}
+.status-key-grid { display: grid; grid-template-columns: 1fr; }
+.status-key-cell { padding: 16px 18px; border-bottom: 1px solid var(--rule-faint); }
+.status-key-cell:last-child { border-bottom: none; }
+.status-key-cell .label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: 4px;
+}
+.status-key-cell .value {
+  font-family: 'IBM Plex Serif', serif; font-size: 16px; color: var(--ink);
+}
+.status-key-cell .value strong { font-weight: 600; }
+
+/* Sub-section */
+.subsection { margin-bottom: 36px; }
+.subsection-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.subsection-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.subsection h2 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500; font-size: 24px; letter-spacing: -0.01em;
+  margin-bottom: 14px; color: var(--ink);
+}
+.subsection h2 em { font-style: italic; color: var(--ink-mid); }
+.subsection p {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px; line-height: 1.6; color: var(--ink);
+  max-width: 64ch; margin-bottom: 14px;
+}
+
+/* List blocks */
+.list-block {
+  border: 1px solid var(--rule-faint); padding: 16px 18px;
+  background: var(--paper); margin-bottom: 16px;
+}
+.list-block .list-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.list-block .list-label::before {
+  content: ''; width: 8px; height: 8px; background: var(--blue); border-radius: 50%;
+}
+.list-block.in-progress .list-label { color: var(--amber); }
+.list-block.in-progress .list-label::before { background: var(--amber); }
+.list-block.constraints .list-label { color: var(--red); }
+.list-block.constraints .list-label::before { background: var(--red); }
+.list-block.questions .list-label { color: var(--ink-mid); }
+.list-block.questions .list-label::before {
+  background: transparent; border: 1.5px solid var(--ink-mid);
+  width: 6px; height: 6px;
+}
+.list-block ul { list-style: none; font-family: 'IBM Plex Serif', serif; font-size: 15px; line-height: 1.55; }
+.list-block li { padding: 4px 0 4px 14px; position: relative; color: var(--ink); }
+.list-block li::before { content: '·'; position: absolute; left: 0; color: var(--rule-faint); font-weight: bold; }
+.list-block li code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px; background: var(--paper-dark);
+  padding: 1px 5px; border-radius: 2px; color: var(--blue); font-weight: 500;
+}
+
+/* Build log */
+.build-log { border: 1.5px solid var(--ink); background: var(--paper); }
+.build-log-header {
+  background: var(--ink); color: var(--paper); padding: 10px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.log-entry { padding: 16px 18px; border-bottom: 1px solid var(--rule-faint); }
+.log-entry:last-child { border-bottom: none; }
+.log-entry .log-date {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.12em; color: var(--blue);
+  font-weight: 600; margin-bottom: 6px;
+}
+.log-entry ul { list-style: none; font-family: 'IBM Plex Serif', serif; font-size: 15px; line-height: 1.55; }
+.log-entry li { padding: 3px 0 3px 14px; position: relative; color: var(--ink); }
+.log-entry li::before { content: '·'; position: absolute; left: 0; color: var(--rule-faint); font-weight: bold; }
+.log-note {
+  padding: 12px 18px;
+  font-family: 'IBM Plex Serif', serif; font-style: italic;
+  font-size: 13px; color: var(--ink-faint); border-top: 1px solid var(--rule-faint);
+}
+
+/* Footer */
+.sheet-footer {
+  border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-faint);
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;
+}
+.sheet-footer .sheet-id { color: var(--ink); font-weight: 600; }
+
+a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--red); }
+
+@media (min-width: 768px) {
+  .frame { padding: 40px 32px 48px; }
+  body {
+    background-image:
+      linear-gradient(rgba(26, 35, 50, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26, 35, 50, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .title-block { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 24px; padding-bottom: 20px; }
+  .title-mark { margin-bottom: 0; }
+  .paxiom-mark { width: 54px; height: 54px; }
+  .title-block .project-title { font-size: 36px; }
+  .title-block .meta { text-align: right; margin-top: 0; }
+  .status-key-grid { grid-template-columns: repeat(3, 1fr); }
+  .status-key-cell { border-bottom: none; border-right: 1px solid var(--rule-faint); }
+  .status-key-cell:last-child { border-right: none; }
+  .subsection h2 { font-size: 28px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+}
+
+@media print { body { background: white; background-image: none; } }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <header class="title-block">
+    <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg></div>
+    <div>
+      <div class="project-mark">Paxiom · Status</div>
+      <div class="project-title">Status</div>
+      <div class="project-subtitle">Where the build is. What's open. What isn't claimed.</div>
+    </div>
+    <div class="meta">
+      <span>Project No. PXM-001</span><span class="sep">·</span>
+      <span>Sheet PXM-S-100</span><span class="sep">·</span>
+      <span>Last Updated 2026.04.30</span>
+    </div>
+  </header>
+
+  <nav class="primary" aria-label="Primary">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/docs.html">Docs</a></li>
+      <li><a href="/services.html">Services</a></li>
+      <li><a href="/status.html" class="active">Status</a></li>
+      <li><a href="/contact.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <section class="page-header">
+    <div class="mark">Sheet PXM-S-100</div>
+    <h1>Current state. <em>No hype. Just receipts.</em></h1>
+    <p class="strap">Most projects hide their stage. This page does the opposite. The work is in progress; the constraints are real; the open questions are honest. The build log appears further down — sparse, dated, written when something material ships.</p>
+  </section>
+
+  <section class="status-key" aria-labelledby="key-status">
+    <div class="status-key-header">
+      <span id="key-status">Key Status</span>
+      <span>2026.04.30</span>
+    </div>
+    <div class="status-key-grid">
+      <div class="status-key-cell">
+        <div class="label">Phase</div>
+        <div class="value"><strong>Phase 0 → Phase 1 transition</strong></div>
+      </div>
+      <div class="status-key-cell">
+        <div class="label">Primary Objective</div>
+        <div class="value">A working reference path for proof work, audit relay, and service settlement.</div>
+      </div>
+      <div class="status-key-cell">
+        <div class="label">Funding</div>
+        <div class="value">Self-funded. Day job pays the rent.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="subsection">
+    <div class="subsection-mark">S-110 · What exists, what's in flight</div>
+    <h2>What's done. <em>What's being built.</em></h2>
+
+    <div class="list-block designed">
+      <div class="list-label">Completed</div>
+      <ul>
+        <li>Public drawing set (six documents, construction-document register)</li>
+        <li>Phase 1 service map and reference architecture</li>
+        <li>Audit relay blueprint with operator-controlled review loop</li>
+        <li>Three-tier key custody model (hot, warm, cold)</li>
+        <li>Operations runbook with severity framework and incident procedures</li>
+        <li>OApp contracts deployed on Optimism and Base testnets, peered, message delivery confirmed</li>
+        <li>AO compliance process loaded with real events and seeded with test data</li>
+        <li>First mainnet AO process storing real Ethereum consensus data</li>
+        <li>Working proof generation for slot storage and Uniswap V3 pool state predicates (substrate work for Phase 1 Service 01)</li>
+      </ul>
+    </div>
+
+    <div class="list-block in-progress">
+      <div class="list-label">In Progress</div>
+      <ul>
+        <li>Reference implementation of Phase 1 services</li>
+        <li>AO dispatcher experiments and proof job routing</li>
+        <li>Public repository structure and service metadata</li>
+        <li>Sync committee verifier rebuild after laptop migration</li>
+        <li>Site v1 — public binder structure (this page is part of that work)</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="subsection">
+    <div class="subsection-mark">S-120 · Open questions</div>
+    <h2>What hasn't been decided.</h2>
+    <p>The platform has open architectural questions that remain genuinely undecided rather than provisionally settled. Naming them publicly is part of the discipline.</p>
+
+    <div class="list-block questions">
+      <div class="list-label">Open Questions</div>
+      <ul>
+        <li>Final proof system selection across the service catalog</li>
+        <li>Settlement chain default — Base remains the working assumption</li>
+        <li>Facilitator integration strategy (hosted Coinbase versus self-hosted x402-rs)</li>
+        <li>Pricing under real workload — the current numbers are draft assumptions</li>
+        <li>Which KYA standard to align with as the category consolidates</li>
+        <li>Order of Phase 2 customer expansion (financial services first, healthcare second, or vice versa)</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="subsection">
+    <div class="subsection-mark">S-130 · Known constraints</div>
+    <h2>What isn't claimed. <em>And why.</em></h2>
+    <p>Every claim the platform doesn't make is a claim it could be tempted to make later. Listing the non-claims explicitly keeps the temptation at the surface where it can be checked rather than buried where it can drift.</p>
+
+    <div class="list-block constraints">
+      <div class="list-label">Not Claimed</div>
+      <ul>
+        <li>No production deployment yet — testnet and reference work only</li>
+        <li>No custody offering — the platform does not hold customer assets</li>
+        <li>No mainnet-scale reliability — load characteristics are unverified at production volume</li>
+        <li>No regulated custody attestations or third-party security audit</li>
+        <li>No enterprise SLA — service level commitments will be added as Phase 1 services mature</li>
+        <li>No fully autonomous service market participation — ERC-8183 marketplace integration is forward-compatible but not active</li>
+        <li>No guarantees beyond prototype scope — the documents describe what's intended, not what's certified</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="subsection">
+    <div class="subsection-mark">S-200 · Build log</div>
+    <h2>Receipts.</h2>
+    <p>Sparse by design. Entries appear when something material ships, not on a fixed cadence. Silence means the build is heads-down rather than newsworthy.</p>
+
+    <div class="build-log" aria-labelledby="log-heading">
+      <div class="build-log-header">
+        <span id="log-heading">Build Log</span>
+        <span>Most recent first</span>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">2026.04.30</div>
+        <ul>
+          <li>Public site v1 structure — Home, Docs, Services, Status, Contact</li>
+          <li>Drawing-set visual language extended to public surfaces</li>
+          <li>Build log added under Status; receipts cadence established</li>
+          <li>Mobile layout rules committed for the binder pages</li>
+        </ul>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">2026.04.29</div>
+        <ul>
+          <li>Project Narrative (B-series) issued to the drawing set, 26 sheets</li>
+          <li>Construction-document register applied to founder-context material</li>
+          <li>Phase 1 → Phase 5 trajectory documented with moats per phase</li>
+        </ul>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">2026.04.28</div>
+        <ul>
+          <li>Operations Runbook (O-series) issued — incident and routine procedures</li>
+          <li>Key Custody &amp; Identity Blueprint (E-series) issued — three-tier architecture</li>
+          <li>Audit Relay Blueprint (M-series) issued — operator-controlled review loop</li>
+        </ul>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">2026.04.27</div>
+        <ul>
+          <li>Phase 1 Blueprint (A-series) issued — five services, reference architecture</li>
+          <li>mk19 archive recovered from prior development environment</li>
+          <li>Sync committee verifier rebuild plan downgraded from open risk to partially mitigated</li>
+        </ul>
+      </div>
+
+      <div class="log-note">
+        Entries before 2026.04.27 live in the public repo commit history. The build log surfaces what's notable from a public reader's perspective; the full record is in version control.
+      </div>
+    </div>
+  </section>
+
+  <footer class="sheet-footer">
+    <div>Paxiom · paxiom.org</div>
+    <div>Public · Rev. A · 2026.04.30</div>
+    <div class="sheet-id">PXM-S-100 · Status</div>
+  </footer>
+
+</div>
+</body>
+</html>

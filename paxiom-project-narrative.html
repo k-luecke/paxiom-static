@@ -1,0 +1,4393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom · Project Narrative</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F1E8;
+  --paper-dark: #EDE6D3;
+  --ink: #1A2332;
+  --ink-mid: #3A4555;
+  --ink-faint: #6B7280;
+  --rule: #1A2332;
+  --rule-faint: #B8AE96;
+  --blue: #1E3A5F;
+  --blue-light: #4A6B8A;
+  --red: #8B2E1F;
+  --amber: #B8860B;
+  --grid: rgba(26, 35, 50, 0.04);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+
+.sheet {
+  max-width: 1080px;
+  margin: 40px auto;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  position: relative;
+}
+
+@media (max-width: 900px) {
+  .sheet { margin: 16px 8px; border-width: 1px; }
+}
+
+.sheet-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border-bottom: 2px solid var(--ink);
+  padding: 16px 24px;
+  align-items: end;
+  gap: 24px;
+}
+
+.sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
+
+.sheet-project {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.sheet-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.sheet-subtitle {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-mid);
+  margin-top: 2px;
+}
+
+.sheet-meta {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 4px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+.sheet-meta dt {
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.sheet-meta dd { color: var(--ink); font-weight: 500; }
+
+.sheet-body { padding: 56px 72px; }
+
+@media (max-width: 700px) {
+  .sheet-body { padding: 32px 24px; }
+}
+
+.cover-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cover-mark::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule-faint);
+}
+
+.cover-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 400;
+  font-size: clamp(48px, 7.5vw, 88px);
+  line-height: 0.96;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin-bottom: 28px;
+}
+
+.cover-title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-mid);
+}
+
+.cover-strap {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.45;
+  color: var(--ink-mid);
+  max-width: 60ch;
+  margin-bottom: 64px;
+}
+
+.cover-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 56px;
+}
+
+@media (max-width: 700px) { .cover-grid { grid-template-columns: 1fr; } }
+
+.cover-cell {
+  padding: 20px 24px;
+  border-right: 1px solid var(--rule-faint);
+}
+
+.cover-cell:nth-child(2n) { border-right: none; }
+
+@media (max-width: 700px) {
+  .cover-cell { border-right: none; border-bottom: 1px solid var(--rule-faint); }
+  .cover-cell:last-child { border-bottom: none; }
+}
+
+.cover-cell-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+}
+
+.cover-cell-value {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 17px;
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+.cover-cell-value em { font-style: italic; color: var(--ink-mid); }
+
+.toc-section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 36px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule-faint);
+}
+
+.toc-section-label:first-child { margin-top: 0; }
+
+.toc-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 24px;
+  padding: 10px 0;
+  border-bottom: 1px dotted var(--rule-faint);
+  align-items: baseline;
+}
+
+.toc-row:last-of-type { border-bottom: none; }
+
+.toc-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--blue);
+  letter-spacing: 0.04em;
+}
+
+.toc-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.toc-title em {
+  font-style: italic;
+  color: var(--ink-mid);
+  font-size: 14px;
+  display: block;
+  margin-top: 2px;
+}
+
+.toc-page {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+
+.section-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-mark::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--blue);
+}
+
+.section-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 400;
+  font-size: 40px;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+
+.section-title em { font-style: italic; color: var(--ink-mid); }
+
+.section-strap {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--ink-mid);
+  margin-bottom: 44px;
+  max-width: 60ch;
+  line-height: 1.5;
+}
+
+.prose p {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px;
+  line-height: 1.65;
+  margin-bottom: 18px;
+  max-width: 68ch;
+  color: var(--ink);
+}
+
+.prose p.lead {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink-mid);
+  font-style: italic;
+  margin-bottom: 28px;
+}
+
+.prose h3 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 22px;
+  margin-top: 40px;
+  margin-bottom: 14px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.prose h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-top: 32px;
+  margin-bottom: 10px;
+}
+
+.prose strong { font-weight: 600; color: var(--ink); }
+.prose em { font-style: italic; color: var(--ink-mid); }
+
+.prose code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  background: var(--paper-dark);
+  padding: 1px 6px;
+  border-radius: 2px;
+  color: var(--blue);
+}
+
+.prose ul, .prose ol {
+  margin: 12px 0 22px 28px;
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 68ch;
+}
+
+.prose li { margin-bottom: 8px; }
+
+.math {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14.5px;
+  background: var(--paper-dark);
+  padding: 20px 26px;
+  margin: 22px 0;
+  border-left: 3px solid var(--blue);
+  line-height: 1.8;
+  color: var(--ink);
+  white-space: pre-wrap;
+  max-width: 68ch;
+}
+
+.math-reading {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 14.5px;
+  color: var(--ink-mid);
+  margin-top: -14px;
+  margin-bottom: 22px;
+  padding-left: 26px;
+  border-left: 3px solid var(--rule-faint);
+  line-height: 1.55;
+  max-width: 68ch;
+}
+
+.math-reading::before {
+  content: 'Reading: ';
+  font-family: 'IBM Plex Mono', monospace;
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-right: 4px;
+}
+
+.callout {
+  border: 1px solid var(--ink);
+  margin: 32px 0;
+  background: var(--paper);
+}
+
+.callout-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  padding: 9px 18px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  align-items: center;
+}
+
+.callout-tag { font-weight: 600; }
+.callout-id { color: var(--paper-dark); opacity: 0.7; }
+
+.callout-body { padding: 20px 24px; }
+
+.callout-body p {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.callout-body p:last-child { margin-bottom: 0; }
+
+.callout-body ul {
+  margin: 10px 0 6px 22px;
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.callout-body li { margin-bottom: 6px; }
+
+.callout-body code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  background: var(--paper-dark);
+  padding: 1px 6px;
+  border-radius: 2px;
+  color: var(--blue);
+}
+
+.callout.note { border-style: dashed; border-color: var(--ink-faint); }
+.callout.note .callout-header {
+  background: transparent;
+  color: var(--ink-faint);
+  border-bottom: 1px dashed var(--ink-faint);
+}
+.callout.note .callout-id { color: var(--ink-faint); }
+
+.callout.cite { border-color: var(--amber); }
+.callout.cite .callout-header { background: var(--amber); }
+
+.numbers-block {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border: 1.5px solid var(--ink);
+  margin: 32px 0;
+}
+
+@media (max-width: 700px) { .numbers-block { grid-template-columns: 1fr; } }
+
+.numbers-cell {
+  padding: 22px 24px;
+  border-right: 1px solid var(--rule-faint);
+}
+
+.numbers-cell:last-child { border-right: none; }
+
+@media (max-width: 700px) {
+  .numbers-cell { border-right: none; border-bottom: 1px solid var(--rule-faint); }
+  .numbers-cell:last-child { border-bottom: none; }
+}
+
+.numbers-figure {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.numbers-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 10px;
+}
+
+.numbers-detail {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-mid);
+  line-height: 1.4;
+}
+
+.schedule {
+  margin: 24px 0;
+  border: 1.5px solid var(--ink);
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.schedule th {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 10px 12px;
+  font-weight: 500;
+}
+
+.schedule td {
+  padding: 12px;
+  border-bottom: 1px solid var(--rule-faint);
+  border-right: 1px solid var(--rule-faint);
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 14px;
+  vertical-align: top;
+  color: var(--ink);
+}
+
+.schedule td:last-child { border-right: none; }
+.schedule tr:last-child td { border-bottom: none; }
+
+.schedule tr.total td {
+  background: var(--paper-dark);
+  font-weight: 600;
+  border-top: 2px solid var(--ink);
+}
+
+.schedule .num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  text-align: right;
+}
+
+.schedule .id {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--blue);
+  font-weight: 500;
+}
+
+.page-break {
+  border-top: 2px solid var(--ink);
+  margin: 96px -72px 64px;
+  position: relative;
+}
+
+@media (max-width: 700px) { .page-break { margin: 56px -24px 40px; } }
+
+.page-break::before {
+  content: attr(data-sheet);
+  position: absolute;
+  top: -10px;
+  left: 72px;
+  background: var(--paper);
+  padding: 0 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.first-person {
+  border-left: 3px solid var(--amber);
+  padding-left: 28px;
+  margin: 32px 0;
+  background: var(--paper);
+}
+
+.first-person p {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--ink);
+  margin-bottom: 18px;
+  max-width: 64ch;
+}
+
+.first-person em { color: var(--ink-mid); font-style: italic; }
+.first-person strong { font-weight: 600; }
+
+.sheet-footer {
+  border-top: 1.5px solid var(--ink);
+  padding: 14px 24px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  align-items: center;
+}
+
+.sheet-footer .center { text-align: center; }
+
+.sheet-footer .right { text-align: right; color: var(--ink); font-weight: 600; }
+
+a {
+  color: var(--blue);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+a:hover { color: var(--red); }
+
+@media print {
+  body { background: white; }
+  .sheet { border: 2px solid black; }
+  .page-break { page-break-before: always; }
+}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+<div class="sheet-header">
+  <div class="sheet-title-block">
+    <div class="sheet-project">Paxiom · Narrative · Drawing Set</div>
+    <div class="sheet-title">Project Narrative</div>
+    <div class="sheet-subtitle">A founder's account of the territory, the bet, and what it takes to build the platform.</div>
+  </div>
+  <dl class="sheet-meta">
+    <dt>Project No.</dt><dd>PXM-001-B</dd>
+    <dt>Issue</dt><dd>Narrative / Rev. A</dd>
+    <dt>Date</dt><dd>2026.04.29</dd>
+    <dt>Drawn By</dt><dd>K. Luecke</dd>
+  </dl>
+</div>
+
+<div class="sheet-body">
+
+<div class="cover-mark">Sheet B-000 · Cover &amp; Index</div>
+
+<h1 class="cover-title">The substrate is being laid<br><em>right now.</em></h1>
+
+<p class="cover-strap">
+A document for the reader who wants to understand the territory before
+they evaluate the bet. The agentic economy is forming, the infrastructure
+for trustworthy machine-to-machine commerce does not fully exist, and
+Paxiom is one specific bet on what part of that infrastructure should
+look like.
+</p>
+
+<div class="cover-grid">
+  <div class="cover-cell">
+    <div class="cover-cell-label">Document Type</div>
+    <div class="cover-cell-value">Project Narrative<em>founder's thinking, fully laid out</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Audience</div>
+    <div class="cover-cell-value">Technical &amp; novice<em>both should land somewhere useful</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Tone</div>
+    <div class="cover-cell-value">Honest, not promotional<em>arguments and constraints</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Length</div>
+    <div class="cover-cell-value">Substantive<em>read in one sitting if possible</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Companion Set</div>
+    <div class="cover-cell-value">A · M · E · O series<em>technical detail lives there</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">What This Is Not</div>
+    <div class="cover-cell-value">Not a pitch deck<em>not investor material, not advertising</em></div>
+  </div>
+</div>
+
+<div class="toc-section-label">Front Matter</div>
+<div class="toc-row"><div class="toc-num">B-000</div><div class="toc-title">Cover &amp; Index<em>this sheet</em></div><div class="toc-page">↑</div></div>
+<div class="toc-row"><div class="toc-num">B-010</div><div class="toc-title">How to Read This<em>structure, conventions, what you'll find</em></div><div class="toc-page"><a href="#b-010">B-010</a></div></div>
+
+<div class="toc-section-label">Section 1 — The World This Exists In</div>
+<div class="toc-row"><div class="toc-num">B-100</div><div class="toc-title">The Agentic Economy<em>where it stands, where it's going, why now</em></div><div class="toc-page"><a href="#b-100">B-100</a></div></div>
+
+<div class="toc-section-label">Section 2 — The x402 Protocol</div>
+<div class="toc-row"><div class="toc-num">B-200</div><div class="toc-title">Protocol Mechanics<em>the round trip, the headers, the facilitator</em></div><div class="toc-page"><a href="#b-200">B-200</a></div></div>
+<div class="toc-row"><div class="toc-num">B-210</div><div class="toc-title">Wallet as Identity<em>why x402 looks like cash, not credit</em></div><div class="toc-page"><a href="#b-210">B-210</a></div></div>
+<div class="toc-row"><div class="toc-num">B-220</div><div class="toc-title">Discovery &amp; Reputation<em>how agents find services</em></div><div class="toc-page"><a href="#b-220">B-220</a></div></div>
+<div class="toc-row"><div class="toc-num">B-230</div><div class="toc-title">The Stack Above x402<em>MCP, ERC-8004, ERC-8183, KYA</em></div><div class="toc-page"><a href="#b-230">B-230</a></div></div>
+
+<div class="toc-section-label">Section 3 — The Threat Surface</div>
+<div class="toc-row"><div class="toc-num">B-300</div><div class="toc-title">RPC Trust Collapse<em>what Kelp DAO showed</em></div><div class="toc-page"><a href="#b-300">B-300</a></div></div>
+<div class="toc-row"><div class="toc-num">B-310</div><div class="toc-title">Lookalikes &amp; Verifiable Artifacts<em>fraud, competition, and the line between</em></div><div class="toc-page"><a href="#b-310">B-310</a></div></div>
+<div class="toc-row"><div class="toc-num">B-320</div><div class="toc-title">Legitimate Competition<em>the existing landscape</em></div><div class="toc-page"><a href="#b-320">B-320</a></div></div>
+
+<div class="toc-section-label">Section 4 — What Paxiom Is</div>
+<div class="toc-row"><div class="toc-num">B-400</div><div class="toc-title">The Platform<em>five Phase 1 services; cross-chain settlement reference</em></div><div class="toc-page"><a href="#b-400">B-400</a></div></div>
+
+<div class="toc-section-label">Section 5 — How It Actually Works</div>
+<div class="toc-row"><div class="toc-num">B-500</div><div class="toc-title">Zero-Knowledge Proofs<em>real math, plain explanation</em></div><div class="toc-page"><a href="#b-500">B-500</a></div></div>
+<div class="toc-row"><div class="toc-num">B-510</div><div class="toc-title">Recursive Proving<em>Polyhedra Expander; why composition matters</em></div><div class="toc-page"><a href="#b-510">B-510</a></div></div>
+<div class="toc-row"><div class="toc-num">B-520</div><div class="toc-title">Quantum Readiness<em>NIST, Google, the migration coming</em></div><div class="toc-page"><a href="#b-520">B-520</a></div></div>
+<div class="toc-row"><div class="toc-num">B-530</div><div class="toc-title">HyperBEAM &amp; Devices<em>where compute happens</em></div><div class="toc-page"><a href="#b-530">B-530</a></div></div>
+<div class="toc-row"><div class="toc-num">B-540</div><div class="toc-title">AO &amp; Arweave<em>audit as native property</em></div><div class="toc-page"><a href="#b-540">B-540</a></div></div>
+<div class="toc-row"><div class="toc-num">B-550</div><div class="toc-title">Load Network<em>state without RPCs</em></div><div class="toc-page"><a href="#b-550">B-550</a></div></div>
+
+<div class="toc-section-label">Section 6 — The Economics</div>
+<div class="toc-row"><div class="toc-num">B-600</div><div class="toc-title">Phase 1 Pro Forma<em>per-service unit economics</em></div><div class="toc-page"><a href="#b-600">B-600</a></div></div>
+<div class="toc-row"><div class="toc-num">B-610</div><div class="toc-title">Addressable Market<em>trajectory matters more than today</em></div><div class="toc-page"><a href="#b-610">B-610</a></div></div>
+
+<div class="toc-section-label">Section 7 — What This Enables Beyond Phase 1</div>
+<div class="toc-row"><div class="toc-num">B-700</div><div class="toc-title">AI Verified Inference<em>what it is, why later</em></div><div class="toc-page"><a href="#b-700">B-700</a></div></div>
+<div class="toc-row"><div class="toc-num">B-710</div><div class="toc-title">Private Data Compute<em>HIPAA, financial, the ZK pivot</em></div><div class="toc-page"><a href="#b-710">B-710</a></div></div>
+<div class="toc-row"><div class="toc-num">B-720</div><div class="toc-title">Telemetry &amp; IoT<em>verifiable physical-world feeds</em></div><div class="toc-page"><a href="#b-720">B-720</a></div></div>
+
+<div class="toc-section-label">Section 8 — Who's Building It</div>
+<div class="toc-row"><div class="toc-num">B-800</div><div class="toc-title">Founder Context<em>infrastructure background, audit discipline, iteration</em></div><div class="toc-page"><a href="#b-800">B-800</a></div></div>
+<div class="toc-row"><div class="toc-num">B-810</div><div class="toc-title">Why This, Why Now<em>the industrial revolution comparison</em></div><div class="toc-page"><a href="#b-810">B-810</a></div></div>
+
+<div class="toc-section-label">Section 9 — What's Outside the Founder's Control</div>
+<div class="toc-row"><div class="toc-num">B-900</div><div class="toc-title">Ecosystem Dependencies<em>partners, standards, regulatory, AI labs</em></div><div class="toc-page"><a href="#b-900">B-900</a></div></div>
+
+<div class="toc-section-label">Section 10 — What Comes Next</div>
+<div class="toc-row"><div class="toc-num">B-1000</div><div class="toc-title">The Trajectory<em>Phase 1 through Phase 5; being early</em></div><div class="toc-page"><a href="#b-1000">B-1000</a></div></div>
+
+<div class="toc-section-label">Back Matter</div>
+<div class="toc-row"><div class="toc-num">B-1100</div><div class="toc-title">Closing &amp; References<em>related documents, revision log</em></div><div class="toc-page"><a href="#b-1100">B-1100</a></div></div>
+
+<!-- B-010 -->
+<div class="page-break" data-sheet="Sheet B-010"></div>
+
+<div id="b-010">
+<div class="section-mark">B-010 · How to Read This</div>
+<h2 class="section-title">A short note <em>before the long argument.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+This document is the founder's thinking on Paxiom, laid out fully and
+honestly. It is not a pitch. It is what would have helped to read six
+months ago, when figuring out the shape of the territory was the
+actual work. The hope is that it serves the same purpose for someone
+else.
+</p>
+
+<h3>What you'll find</h3>
+
+<p>
+Ten sections, roughly in order. The world the platform exists in. The
+protocol it builds on. The threats it responds to. What the platform
+actually is. How the technical pieces work. What the economics look
+like. What the platform enables beyond its first version. Who is
+building it and why. What lies outside the builder's control. What
+comes next.
+</p>
+
+<p>
+Section 5, on the technical pieces, is the longest and hardest. It
+contains real mathematics where the math clarifies an idea, and prose
+where prose serves better. The mathematics is presented in a specific
+form. A statement is given in standard set-theoretic notation, and
+then the next paragraph reads the statement back in plain English. A
+reader without a cryptography background can use the prose translations
+as a ladder up to the notation. A reader with a cryptography background
+can skip the translations.
+</p>
+
+<h3>What this is not</h3>
+
+<p>
+Not a marketing document. The reader is presumed to be present in
+good faith and capable of evaluating arguments. Where the platform's
+positioning is honest and the numbers support it, that is what is
+written. Where there is real uncertainty, that is also what is
+written.
+</p>
+
+<p>
+Not a substitute for the technical documentation. The companion
+documents in this set — the Phase 1 Blueprint, the Audit Relay
+Blueprint, the Key Custody Blueprint, the Operations Runbook — go
+deeper into specific technical and operational details. This document
+references them where relevant; it does not duplicate them.
+</p>
+
+<h3>Conventions</h3>
+
+<p>
+The construction-document register used throughout this set continues
+here. Sheets are numbered. Cross-references go to specific sheets.
+Mathematical notation uses standard conventions and is always followed
+by a reading translation in italic. Citations are footnoted in the
+body or marked as callouts.
+</p>
+
+<p>
+Where the document shifts to first person, that shift is marked
+visually with an amber rule on the left margin. Most of the text is
+third person about the platform. The founder's voice appears
+specifically in the sections about motivation and trajectory, where
+third person would read strangely.
+</p>
+
+</div>
+</div>
+
+<!-- B-100 -->
+<div class="page-break" data-sheet="Sheet B-100"></div>
+
+<div id="b-100">
+<div class="section-mark">Section 1 · B-100</div>
+<h2 class="section-title">The agentic economy.<br><em>Where it stands, where it's going.</em></h2>
+<p class="section-strap">
+Software agents are starting to transact with each other, with
+services, and with the world. The infrastructure for this commerce is
+being built right now, and the institutional embedding is real.
+</p>
+
+<div class="prose">
+
+<p class="lead">
+An autonomous software agent is a program that takes a goal, makes
+decisions, and acts in the world without a human approving each step.
+These have existed for years in narrow forms. What is new is the
+combination of capable language models, standardized payment rails,
+and identity infrastructure that lets agents transact at scale across
+organizations they do not share trust relationships with.
+</p>
+
+<h3>Where it stands now</h3>
+
+<p>
+The numbers, where they can be measured. The x402 protocol — the
+specific payment rail this document spends a section on — is currently
+processing roughly $28,000 per day in genuine on-chain settlements
+across a population of services that has grown from essentially zero
+in mid-2025 to several hundred today. The annualized figure that gets
+reported as "$600M" is a projection from current growth; the realized
+volume is much smaller.
+</p>
+
+<p>
+Average transaction size is roughly twenty cents. This is not a typo.
+The agent economy at the protocol level is dominated by tiny payments.
+Agents call services thousands of times per day at fractions of a cent
+to a few dollars per call. The volume comes from frequency, not from
+magnitude.
+</p>
+
+<div class="numbers-block">
+  <div class="numbers-cell">
+    <div class="numbers-label">x402 daily volume</div>
+    <div class="numbers-figure">$28k</div>
+    <div class="numbers-detail">on-chain genuine, March 2026 baseline</div>
+  </div>
+  <div class="numbers-cell">
+    <div class="numbers-label">avg. transaction</div>
+    <div class="numbers-figure">$0.20</div>
+    <div class="numbers-detail">per call; frequency, not magnitude</div>
+  </div>
+  <div class="numbers-cell">
+    <div class="numbers-label">growth rate</div>
+    <div class="numbers-figure">~5×</div>
+    <div class="numbers-detail">year over year, projected forward</div>
+  </div>
+</div>
+
+<h3>The institutional signal</h3>
+
+<p>
+Numbers describe the floor. The ceiling is harder to estimate, but the
+institutional behavior around the agentic economy suggests it is far
+above where the floor sits today. Several specific developments
+matter.
+</p>
+
+<p>
+Stripe integrated x402 in February 2026. AWS published a reference
+architecture for agent commerce on top of the same protocol.
+Cloudflare shipped agent-payment primitives natively in their Workers
+and Agents SDK. The Linux Foundation chartered an x402 Foundation
+with Coinbase, Stripe, AWS, American Express, and Cloudflare as
+founding members. None of these are speculative. All of them
+happened.
+</p>
+
+<p>
+Circle — the issuer of USDC, which is the predominant settlement asset
+in agent transactions — has been actively positioning at the highest
+levels of institutional finance. Jeremy Allaire has spoken at the
+World Economic Forum on agent-mediated stablecoin payments. The Davos
+agenda has included multiple sessions on autonomous commerce since
+2024. McKinsey projects three to five trillion dollars in agentic
+commerce by 2030 across all categories. Gartner projects fifteen
+trillion in B2B agent transactions by 2028.
+</p>
+
+<div class="callout cite">
+  <div class="callout-header">
+    <span class="callout-tag">Cite</span>
+    <span>Institutional embedding</span>
+    <span class="callout-id">B-100 / C.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Allaire and Circle have been explicit at WEF and Davos that
+      stablecoin settlement is the substrate for agent-mediated
+      commerce at scale. The framing has been treated as economic
+      policy infrastructure, not crypto curiosity. That framing
+      matters. Institutional finance does not embed something it
+      considers curious.
+    </p>
+  </div>
+</div>
+
+<p>
+Visa announced its Trusted Agent Protocol in early 2026, citing a
+477% year-over-year surge in AI-driven payment fraud as part of its
+rationale. The same announcement noted that conventional card networks
+are not positioned for the per-call pricing the agent economy demands.
+Visa is betting that the substrate has to be different. So is Stripe.
+So is Cloudflare. The bet is consensus among the entities whose
+business models would be most disrupted if the bet turned out wrong.
+</p>
+
+<h3>Why now</h3>
+
+<p>
+Three preconditions have been met that were not met three years ago.
+They combine, and the combination is what makes the agentic economy
+actually work rather than aspirationally exist.
+</p>
+
+<p>
+The first precondition is capable language models. Agents that can
+reason about what they need, evaluate options, recover from errors,
+and operate without constant human oversight require model
+capabilities that did not exist at production scale until 2024. The
+cost curve on those capabilities continues to drop, which means more
+tasks become economically viable to delegate to agents.
+</p>
+
+<p>
+The second precondition is standardized payment rails. Without x402
+or something like it, every agent-service interaction would require
+custom payment integration. That overhead crushes the per-call
+economics that make agent commerce viable. Standardization is the
+unlock.
+</p>
+
+<p>
+The third precondition is identity infrastructure. Wallets,
+signatures, and the early forms of agent identity verification — KYA
+frameworks, the ERC-8004 reputation registry, Trulioo's Digital Agent
+Passport, Sumsub's human-binding approach. None of these are mature,
+but the existence of the category enables institutional embedding to
+proceed. Banks and merchants can plan around an identity layer that
+is emerging even if it isn't finished.
+</p>
+
+<h3>What this means</h3>
+
+<p>
+The agentic economy is not a future bet. It is a present reality that
+is small but growing, with institutional embedding that suggests the
+growth is durable rather than speculative. The infrastructure being
+built right now will be the substrate of how machines transact for
+the next several decades. That substrate is being built unevenly,
+with gaps, with parts of it more mature than others. Paxiom is one
+specific bet on which gap matters and how to fill it.
+</p>
+
+<p>
+The next section explains the protocol that anchors this economy.
+</p>
+
+</div>
+</div>
+
+<!-- B-200 -->
+<div class="page-break" data-sheet="Sheet B-200"></div>
+
+<div id="b-200">
+<div class="section-mark">Section 2 · B-200</div>
+<h2 class="section-title">The x402 protocol.<br><em>Mechanics.</em></h2>
+<p class="section-strap">
+The protocol is straightforward at the surface. The implications are
+not. This sheet covers the surface. The next three sheets cover what
+the protocol implies.
+</p>
+
+<div class="prose">
+
+<p class="lead">
+HTTP status code 402 has existed in the specification since the
+original HTTP standard, marked as "reserved for future use." The
+future use arrived in 2025 when Coinbase, Cloudflare, and a handful
+of other parties published x402 — a concrete protocol for HTTP-native
+machine payments using the long-reserved code.
+</p>
+
+<h3>The round trip</h3>
+
+<p>
+An agent requests a resource from a service. The service responds
+with status 402 and a header describing what payment is required —
+which chain, which asset, what amount, where to settle. The agent's
+wallet signs a payment authorization for the specified amount. The
+agent retries the request with the signed authorization attached.
+The service forwards the signature to a facilitator, which verifies
+the signature is valid and the wallet has funds. On verify success,
+the service performs the work, returns the result, and either settles
+immediately or batches settlement for later. The customer gets the
+resource. The service gets paid. The chain records the transaction.
+</p>
+
+<p>
+That is the entire protocol. The round trip is on the order of
+seconds, sometimes sub-second. There is no account creation, no API
+key provisioning, no contract negotiation. The service does not know
+who the agent is. The agent does not need a relationship with the
+service. Both sides simply transact.
+</p>
+
+<h3>The facilitator pattern</h3>
+
+<p>
+The facilitator is the trusted party that handles cryptographic
+verification and on-chain settlement. The original x402 deployments
+use Coinbase's hosted facilitator, which is free for users. Other
+facilitators exist. <code>x402-rs</code> is an open-source
+implementation in Rust that any service operator can self-host. The
+facilitator pattern is what lets services accept x402 payments
+without running their own chain infrastructure.
+</p>
+
+<p>
+The facilitator does not know what the service is doing. It only
+verifies that the customer's signature is valid, the wallet has the
+required funds, and the settlement transaction goes through. This
+separation matters because it means services can be small specialized
+operations without taking on the operational complexity of running
+chain infrastructure themselves.
+</p>
+
+<h3>The settlement layer</h3>
+
+<p>
+x402 settles primarily on Base — Coinbase's Layer 2 — using USDC.
+Base is the default because Coinbase's facilitator is the default
+and because Base produces blocks fast enough that settlement latency
+is acceptable for agent commerce. USDC is the default because it is
+the most institutionally embedded stablecoin with the cleanest
+regulatory posture and the deepest liquidity.
+</p>
+
+<p>
+x402 is chain-agnostic at the protocol level. The same protocol can
+settle on Ethereum mainnet, on other Layer 2s, on Solana, on
+alternate stablecoins. The default is what most operators use today.
+The ecosystem is multi-chain by design. Future facilitator
+implementations will support more chains as adoption broadens.
+</p>
+
+<p>
+The deferred settlement scheme is a notable variant worth
+understanding. In normal x402, settlement is immediate — the funds
+move on-chain at the time of payment. In deferred settlement, the
+customer's signature authorizes payment but the actual settlement
+happens later, usually in a batched window. This reduces gas costs
+substantially for high-frequency services and creates a structurally
+cleaner failure mode for compute that fails after charging — if the
+work fails, the settlement simply is not executed. Cloudflare proposed
+this scheme. It is gradually being adopted across the ecosystem.
+</p>
+
+<h3>What x402 is not</h3>
+
+<p>
+Not a payment processor. The protocol does not handle currency
+conversion, dispute resolution, chargebacks, or fraud monitoring.
+Those functions live above the protocol if they exist at all.
+</p>
+
+<p>
+Not an identity system. The protocol verifies the wallet has funds
+and the signature is valid. It does not verify who the agent is or
+who operates it. Identity layers exist above the protocol; they are
+covered later.
+</p>
+
+<p>
+Not a discovery system. The protocol is what happens once an agent
+has already decided to call a specific service. How the agent found
+the service in the first place is a different layer; that layer is
+also covered later.
+</p>
+
+</div>
+</div>
+
+<!-- B-210 -->
+<div class="page-break" data-sheet="Sheet B-210"></div>
+
+<div id="b-210">
+<div class="section-mark">Section 2 · B-210</div>
+<h2 class="section-title">Wallet as identity.<br><em>Why x402 looks like cash.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+The single largest mental shift required to understand the agentic
+economy is this: at the protocol level, the wallet is the entire
+identity. There is no agent identity, no user identity, no
+organizational identity. The wallet has funds, the signature is
+valid, the transaction proceeds.
+</p>
+
+<h3>The cash analogy, made precise</h3>
+
+<p>
+When a person walks into a store with a twenty-dollar bill and buys
+a sandwich, the store does not verify who the person is. The store
+verifies that the bill is genuine and the change is correct. The
+person's identity is irrelevant to the transaction. The store has no
+relationship with the person before, during, or after the exchange.
+</p>
+
+<p>
+x402 works the same way. The wallet is genuine if the cryptographic
+signature checks out. The wallet has funds if the chain says it
+does. The transaction proceeds. No relationship is established. No
+identity is verified. The agent gets the resource. The service gets
+the payment. The chain records the transfer.
+</p>
+
+<p>
+The credit card model is structurally different and worth contrasting.
+A credit card is identity-bound. The card belongs to a specific
+person. The merchant has obligations to verify the cardholder, to
+handle disputes, to participate in fraud monitoring. The card network
+mediates the entire relationship and bears risk. None of that is
+true of x402.
+</p>
+
+<h3>What this means in practice</h3>
+
+<p>
+The wallet operator is implicitly the commercial actor. If a company
+deploys an agent with a wallet that has ten thousand dollars in it
+and a daily spending limit, the agent operates within that envelope
+and the company's exposure is bounded by the wallet's contents. The
+wallet is the identity for spending purposes. The agent is just the
+program operating the wallet.
+</p>
+
+<p>
+This is the structural property that lets agent commerce scale. If
+the protocol required identity verification for every transaction,
+the overhead would crush the per-call economics. Cash-equivalent
+settlement is what makes twenty-cent transactions viable. Adding
+identity to the protocol layer would defeat the purpose.
+</p>
+
+<h3>Where identity does come in</h3>
+
+<p>
+At the wallet level, the operator decides what the wallet can spend
+on. This is internal to the operator, not part of the protocol.
+</p>
+
+<p>
+At the agent level, the operator configures the agent's permissions.
+What services it can call, what amounts it can spend, what categories
+of decisions it can make autonomously. These guardrails are
+implemented at the agent's reasoning layer or its tool-use
+configuration, not at the payment protocol.
+</p>
+
+<p>
+At the merchant level, some services want to verify who they're
+dealing with for their own reasons. A high-value service might
+require authentication beyond the wallet signature. This is
+implemented through optional layers — API keys, JWTs, attestations
+from agent platforms, emerging KYA frameworks — that sit alongside
+x402 but are not part of it.
+</p>
+
+<p>
+At the regulatory level, identity requirements are coming for
+transactions above certain thresholds. Financial services,
+healthcare, anything with money laundering implications. The
+framework hasn't fully formed, but the direction is clear:
+high-value agent transactions will face KYC-like requirements
+applied to the wallet operator, even though the protocol itself
+stays neutral.
+</p>
+
+<h3>The structural implication</h3>
+
+<p>
+Identity in agent commerce will live in layers above the protocol,
+not in the protocol itself. This is the same architecture as the
+credit card system — Visa's network does not care who is swiping the
+card; the identity verification happens at the issuing bank, the
+cardholder agreement, and the regulatory framework around them.
+x402 mirrors this design.
+</p>
+
+<p>
+For Paxiom specifically: the platform offers a naive identity
+primitive in v1 — signed responses, public key published in
+canonical locations — that allows customers to verify the platform
+they are paying is legitimately Paxiom rather than a lookalike.
+This is forward-compatible with whatever standards consolidate over
+the next several years (ERC-8004 in particular). It is not a full
+identity system. It is the minimum viable identity primitive that
+solves the immediate problem.
+</p>
+
+</div>
+</div>
+
+<!-- B-220 -->
+<div class="page-break" data-sheet="Sheet B-220"></div>
+
+<div id="b-220">
+<div class="section-mark">Section 2 · B-220</div>
+<h2 class="section-title">Discovery and reputation.<br><em>How agents find services.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+The most underappreciated property of agent commerce is that
+traditional marketing does not reach the customer. The customer is
+software. Software does not read advertisements, does not respond to
+brand, does not skim landing pages. The discovery mechanisms that
+emerged for human commerce are essentially absent here.
+</p>
+
+<h3>How discovery actually works</h3>
+
+<p>
+Agents find services through structured metadata in registries,
+specifically through several distinct types of registry that have
+emerged in parallel.
+</p>
+
+<p>
+Anthropic's Model Context Protocol (MCP) provides a registry of
+tools that agents can use, with structured descriptions of what each
+tool does, what inputs it accepts, what outputs it returns. Claude,
+GPT, and the major agent frameworks read MCP registrations natively.
+A service that does not have an MCP server is largely invisible to
+agents using those frameworks.
+</p>
+
+<p>
+x402 service indexes catalog services by capability and price.
+Bazaar, the x402 directory operated by Coinbase, is one example.
+Other indexes exist and are emerging. Agents query these indexes by
+capability requirement and budget; the index returns matching
+services ranked by some combination of capability fit, price, and
+reputation.
+</p>
+
+<p>
+Agent framework plugin lists are framework-specific. Each major
+agent operator — Anthropic, OpenAI, Cloudflare's Agent SDK, AWS
+Bedrock, others — maintains a curated list of services that
+integrate with that framework's tooling. Inclusion in these lists
+drives meaningful discovery for agents using that framework.
+</p>
+
+<h3>How discovery does not work</h3>
+
+<p>
+Search engine optimization is irrelevant. Agents do not query
+Google. The crawl-and-rank model that built the human web's
+discovery layer plays no role in how agents find services.
+</p>
+
+<p>
+Content marketing aimed at human readers does not reach agents. A
+blog post about how a service works will be read by humans evaluating
+the service for their organization, but the agent that ultimately
+calls the service will encounter the service through structured
+metadata rather than through prose.
+</p>
+
+<p>
+Brand recognition does not transfer. An agent comparing two services
+with similar capabilities does not weight which has better marketing.
+It weights which has better metadata, which has cheaper pricing,
+which has higher reputation scores from previous use.
+</p>
+
+<h3>The reputation dynamics</h3>
+
+<p>
+Reputation in agent discovery is observable and aggregated. Did the
+service deliver what it claimed? Were the outputs correct? Was
+latency acceptable? Was uptime reliable? These properties are
+measurable from transactions, and reputation systems aggregate the
+measurements across the agent population that has used the service.
+</p>
+
+<p>
+The structural implication is that reputation accumulates from the
+first transaction. Every successful service call adds to the
+platform's track record. Every failed call subtracts. There is no
+equivalent of "first impressions" that can be marketed; the
+impressions are performance data.
+</p>
+
+<p>
+This dynamic defeats certain attack patterns that work in human
+commerce. Spam-the-registry attacks fail because failed services get
+demoted by reputation systems faster than spammers can replace them
+with new registrations. The economic equation does not work.
+</p>
+
+<h3>What this means for marketing</h3>
+
+<p>
+Marketing to agents is operational excellence. Documentation quality
+at the MCP level. Structured metadata accuracy. Service descriptions
+that match what the service actually does. Reliable uptime. Fast
+response times. Transparent pricing. These are what move the
+discovery and reputation layers in your favor.
+</p>
+
+<p>
+Marketing to operators — the humans who configure agents and decide
+which services to allow — is more conventional. Landing pages,
+technical content, conference engagement, B2B outreach. This work is
+real and necessary, but it is a different motion from the
+agent-facing work and serves a different purpose.
+</p>
+
+<p>
+A platform that does the agent-facing work well but neglects the
+operator-facing work will have agents that can use it but operators
+who never approve it. A platform that does the operator-facing work
+well but neglects the agent-facing work will have approval but no
+discovery. Both motions are required.
+</p>
+
+<div class="callout note">
+  <div class="callout-header">
+    <span class="callout-tag">Note</span>
+    <span></span>
+    <span class="callout-id">B-220 / N.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      The lookalike attack — services that mimic legitimate providers,
+      copy capability descriptions, undercut on price, serve plausible
+      but fake outputs — is the discovery-layer attack that does work,
+      at least for service categories where outputs cannot be verified.
+      For verified compute specifically, the lookalike attack fails
+      structurally because the outputs are themselves verification
+      artifacts. This is covered in section B-310.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- B-230 -->
+<div class="page-break" data-sheet="Sheet B-230"></div>
+
+<div id="b-230">
+<div class="section-mark">Section 2 · B-230</div>
+<h2 class="section-title">The stack above x402.<br><em>MCP, ERC-8004, ERC-8183, KYA.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+x402 is the payment layer. It is one of several layers in the agent
+commerce stack, and the layers above it are forming in parallel. A
+service that engages only with x402 and ignores the layers above
+optimizes for a partial picture.
+</p>
+
+<h3>MCP — the discovery and tool layer</h3>
+
+<p>
+The Model Context Protocol, announced by Anthropic in late 2024 and
+now the de facto standard, defines how AI models discover and call
+external tools. An MCP server exposes a structured description of
+the tools it offers, the parameters each tool accepts, and the
+outputs each tool returns. AI models running in MCP-aware frameworks
+read these descriptions to decide which tools to call for a given
+task.
+</p>
+
+<p>
+The relationship between MCP and x402 is layered rather than
+overlapping. MCP handles tool discovery and invocation; x402 handles
+payment for the invocation. A Paxiom service is typically wrapped in
+an MCP server that describes its capabilities, and the underlying
+HTTP endpoint is x402-gated for payment. The agent uses MCP to find
+and call the service, and the call triggers the x402 payment flow.
+</p>
+
+<p>
+For platform operators, the practical implication is that an MCP
+wrapper is not optional. Agents using Claude, GPT, Cursor, the
+agentic features in major editors, AWS Bedrock's agent infrastructure,
+and Cloudflare's Agent SDK will not find a service that lacks MCP
+metadata. The wrapper is the bridge between the protocol-layer x402
+endpoint and the application-layer agent reasoning.
+</p>
+
+<h3>ERC-8004 — agent identity and reputation</h3>
+
+<p>
+ERC-8004 is an Ethereum standard for agent identity and reputation
+that emerged through the Ethereum Foundation in late 2025 and 2026.
+It defines an on-chain registry where agents and the services they
+call can publish identity attestations and reputation records. The
+registry is read by KYA frameworks, agent operator policies, and
+discovery layers that weight reputation in their ranking.
+</p>
+
+<p>
+ERC-8004 is forward-compatible with the naive identity primitive
+that Paxiom uses in v1. The platform's signed responses and
+published public key map directly onto the kind of attestation
+ERC-8004 expects. As the standard matures and registry adoption
+grows, Paxiom's identity primitive can extend into ERC-8004
+participation without architectural change. Building on the
+standard early — even before the standard is finished — positions
+the platform to benefit as the standard consolidates.
+</p>
+
+<h3>ERC-8183 — trustless escrow for agent jobs</h3>
+
+<p>
+ERC-8183 is the Ethereum Foundation's standard for trustless escrow
+of agent-to-agent work. It defines a job primitive with three
+roles. The Client posts a job and funds an escrow. The Provider
+performs the work and submits a result. The Evaluator examines the
+result and either releases the escrow to the Provider or rejects
+the work and returns the funds to the Client.
+</p>
+
+<p>
+The standard explicitly contemplates verified compute services as
+candidate Evaluators. A job that requires verifiable work — a proof
+of state, a verified computation, a cryptographic attestation — can
+designate Paxiom as the Evaluator. The Evaluator examines whether
+the proof verifies. If it does, escrow releases. If it does not,
+escrow returns. The Evaluator never holds funds and never makes
+discretionary judgments. The verification is mechanical.
+</p>
+
+<p>
+This is a meaningful future revenue stream. Phase 1 services serve
+agents directly. Phase 3 and beyond positions Paxiom as an Evaluator
+in ERC-8183 marketplaces, where the platform earns fees for
+verification work in addition to direct service revenue. The
+architectural choices in Phase 1 — verifiable outputs, signed
+artifacts, audit trail — make the platform a natural Evaluator
+candidate without additional engineering.
+</p>
+
+<h3>KYA — the broader category</h3>
+
+<p>
+KYA stands for Know Your Agent. It is the broader category framing
+for agent identity and authorization, analogous to KYC for human
+identity. Multiple frameworks are competing to define what KYA
+means in practice.
+</p>
+
+<p>
+RNWY operates a soulbound-token approach on Base, with non-transferable
+identity NFTs that bind reputation to specific wallets. AgentFacts
+proposes a metadata standard with ten categories of agent description.
+Trulioo and PayOS published a Digital Agent Passport white paper that
+treats agent identity as a verifiable credential bound to a verified
+human operator. Sumsub frames KYA around human-in-the-loop
+accountability, where every agent action is bound to a real,
+verified human identity.
+</p>
+
+<p>
+None of these frameworks has won. The standards are still being
+negotiated. The right strategic posture for a platform building
+into this uncertainty is to implement the underlying primitive that
+all KYA frameworks assume — cryptographically signed responses with
+publicly verifiable public keys — and remain forward-compatible with
+whichever specific framework consolidates. Paxiom's v1 KYA primitive
+is exactly this: signed responses, public key on
+<code>paxiom.org</code> and in canonical registries, no commitment
+to any specific framework's schema.
+</p>
+
+<h3>The composition</h3>
+
+<p>
+The Ethereum Foundation has effectively defined the agent commerce
+stack as the composition of x402 (payment), ERC-8004 (identity and
+reputation), and ERC-8183 (trustless escrow), with KYA frameworks
+as the broader application layer above them. A service that engages
+with this entire stack — payable through x402, identified through
+ERC-8004-compatible attestation, callable as an Evaluator under
+ERC-8183, registered in KYA frameworks — has the broadest possible
+surface area for discovery and use.
+</p>
+
+<p>
+Paxiom's v1 architecture engages with x402 directly, with
+ERC-8004 through forward-compatible primitive, with ERC-8183 through
+positioning rather than integration, and with KYA through the same
+forward-compatible primitive. Phase 2 and beyond deepen each
+engagement as the standards mature and the markets demand it.
+</p>
+
+</div>
+</div>
+
+<!-- B-300 -->
+<div class="page-break" data-sheet="Sheet B-300"></div>
+
+<div id="b-300">
+<div class="section-mark">Section 3 · B-300</div>
+<h2 class="section-title">RPC trust collapse.<br><em>What Kelp DAO showed.</em></h2>
+<p class="section-strap">
+Verified compute exists because the trust assumptions in the
+existing infrastructure are breaking. The clearest demonstration is
+also the most recent.
+</p>
+
+<div class="prose">
+
+<p class="lead">
+On April 18, 2026, a coordinated attack drained roughly 292 million
+dollars from Kelp DAO. The attack worked. The funds were taken. The
+recovery was substantial — Arbitrum's Security Council froze 71
+million dollars of attacker funds, lending positions yielded
+recoveries through controlled liquidation, and a coalition called
+DeFi United raised 303 million dollars in pledged capital to plug
+the remaining hole — but the attack itself succeeded mechanically.
+The defense was reactive, not preventive. The incident demonstrates
+exactly what verified compute is designed to prevent.
+</p>
+
+<h3>What happened, mechanically</h3>
+
+<p>
+The attribution went to Lazarus Group, specifically the TraderTraitor
+subunit. Same actors as the Drift exploit on April 1 ($285 million),
+same actors as a long history of DeFi compromises that western law
+enforcement cannot prosecute because the operators are state-protected
+in North Korea. The attribution is well-established. The prosecution
+is impossible. The recovery work is what matters.
+</p>
+
+<p>
+The mechanism is the part that matters for verified compute. The
+attack did not exploit a smart contract bug. The contracts behaved
+correctly given the inputs they received. The inputs were the
+problem.
+</p>
+
+<p>
+Kelp DAO's bridge used LayerZero with a one-of-one DVN
+configuration. A DVN — Decentralized Verifier Network — verifies
+cross-chain messages by checking the source chain's state and
+attesting that a claimed message actually originated there. The
+DVN was supposed to be the trust anchor.
+</p>
+
+<p>
+The attackers compromised the RPC infrastructure that the DVN used
+to read source-chain state. They fed false data through the
+compromised RPC nodes. They DDoS'd the legitimate RPC nodes to
+prevent the DVN from getting correct data. The DVN saw what looked
+like legitimate state on the source chain and attested that a
+message — a phantom message that did not actually exist on the
+source chain — was real. The destination chain accepted the
+attestation and released the funds.
+</p>
+
+<p>
+Chainalysis described the technical pattern this way:
+</p>
+
+<div class="callout cite">
+  <div class="callout-header">
+    <span class="callout-tag">Cite</span>
+    <span>Chainalysis post-mortem</span>
+    <span class="callout-id">B-300 / C.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      The attackers compromised internal RPC nodes and DDoS'd
+      external nodes to feed false data to a single-point-of-failure
+      verification network. This tricked the Ethereum contract into
+      releasing funds based on a phantom token burn on the source
+      chain. The technical pattern was not a smart contract hack but
+      a sophisticated attack on off-chain infrastructure.
+    </p>
+  </div>
+</div>
+
+<h3>Why this generalizes</h3>
+
+<p>
+The Kelp DAO attack is not unique. It is the visible case of a
+general class. Any verification infrastructure that depends on RPC
+providers for input data inherits the trust assumptions of those
+providers. The verifier proves that, given input X, computation Y
+produced output Z. The X comes from an RPC provider. If the X is
+wrong, the proof is correct but the conclusion is wrong.
+</p>
+
+<p>
+RPC providers — Alchemy, Infura, QuickNode, ChainStack, Pocket
+Network — are not malicious. They run legitimate infrastructure for
+legitimate customers. But they are centralized parties with the
+ability to return wrong data, intentionally or because they
+themselves were compromised. The verification systems built on top
+of them treat them as trusted. That trust is the attack surface.
+</p>
+
+<p>
+For most agent applications today, this trust assumption is invisible
+because the use cases are low-stakes enough that occasional bad data
+does not matter much. An agent that misses a price by 0.1% loses a
+small amount of money on a single trade and moves on. But the trust
+assumption becomes critical in specific situations. When the data is
+the basis for a consequential decision. When the agent operates in
+adversarial conditions where the RPC provider might have incentive
+to return wrong data. When regulatory or audit requirements demand
+that the input data chain be verifiable.
+</p>
+
+<h3>What replacing RPCs looks like</h3>
+
+<p>
+Paxiom's architectural answer is to replace the RPC trust assumption
+with cryptographic state reconstruction from Arweave archives. The
+mechanism is Load Network — an Arweave-based archive of Ethereum
+transaction data, deterministically reconstructible into any
+historical state without depending on any single party.
+</p>
+
+<p>
+The full mechanics are covered in section B-550. The structural
+property worth establishing here is this: a verification proof
+generated against Load Network state has no RPC trust assumption to
+break. The state is reconstructed from data that is permanently
+archived on Arweave with cryptographic integrity. There is no
+centralized party to compromise. The Kelp DAO attack class becomes
+mathematically impossible against this architecture.
+</p>
+
+<p>
+That is the Paxiom thesis in one sentence. Verification that does
+not depend on the trust assumption that just failed.
+</p>
+
+</div>
+</div>
+
+<!-- B-310 -->
+<div class="page-break" data-sheet="Sheet B-310"></div>
+
+<div id="b-310">
+<div class="section-mark">Section 3 · B-310</div>
+<h2 class="section-title">Lookalikes and verifiable artifacts.<br><em>Fraud, competition, and the line between.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+Most agent service categories will face a specific class of attack
+as they scale: lookalike services that mimic legitimate providers,
+copy capability descriptions, undercut on price, and serve plausible
+but fake outputs. The structural defense, where one exists, is that
+the service's output is itself a verification artifact. Verified
+compute has this property. Most other agent service categories do
+not.
+</p>
+
+<h3>The naive fraud case</h3>
+
+<p>
+A naive fraudulent service registers in agent discovery layers,
+copies the capability description of a legitimate provider, sets a
+slightly lower price, accepts payment, and returns plausible random
+data. The agent receives the response, has no easy way to verify
+correctness, uses the data, and discovers the fraud only when
+downstream actions based on the data fail.
+</p>
+
+<p>
+This pattern is straightforwardly illegal in most jurisdictions
+under fraud statutes that predate agent commerce by decades. It also
+fails operationally because reputation systems detect the failures
+and demote the service quickly. The naive version is not a durable
+strategy.
+</p>
+
+<h3>The sophisticated fraud case</h3>
+
+<p>
+A sophisticated version frames the service differently. The
+description claims to provide "synthetic" or "estimated" data with
+appropriate disclaimers. The disclaimers are buried in fine print.
+The agent reads the structured capability description and matches
+it as legitimate; the human operator reviewing service registrations
+might not notice the disclaimer; the downstream effect is the same
+as the naive case but with legal cover.
+</p>
+
+<p>
+This pattern is murkier. The legal defense is real — the service
+disclosed that its outputs were synthetic — even when the practical
+effect is identical to fraud. Customers harmed by such a service
+have weaker recourse. The sophisticated lookalike is a real
+competitive concern in agent commerce.
+</p>
+
+<h3>The structural defense</h3>
+
+<p>
+For verified compute specifically, the lookalike attack fails because
+the deliverable is its own integrity check. A Paxiom proof of
+Ethereum state at a specific block can be verified independently by
+the customer. The customer takes the proof and the public inputs,
+runs the verifier, and either the verification passes or it does
+not. There is no plausible middle ground where the proof seems to
+verify but actually does not. The verification is mechanical.
+</p>
+
+<p>
+A lookalike service can copy the description and undercut on price,
+but it cannot serve fake outputs that pass verification. To compete
+on the same surface as Paxiom, a competitor must actually do the
+work — generate real proofs of real state with real cryptographic
+integrity. That is not fraud. That is competition.
+</p>
+
+<p>
+This is the property that makes verified compute a structurally
+defensible category. The fraud line is bright. There is no plausible
+gray zone where a service can charge for verification without
+actually verifying.
+</p>
+
+<h3>Where this property is absent</h3>
+
+<p>
+Most other agent service categories do not have this property.
+Consider three examples.
+</p>
+
+<p>
+AI inference services. The output is a model prediction. There is
+no cheap way for the customer to verify whether the prediction came
+from the claimed model or from a smaller cheaper model that produces
+plausible-looking output. EZKL, Modulus Labs, and a handful of
+others are building verified inference specifically because the
+unverified version is structurally vulnerable.
+</p>
+
+<p>
+Data feeds. The output is a number — a price, a measurement, a
+count. The customer cannot easily distinguish a correct number from
+a fabricated one. Oracles solve part of this through aggregation
+and reputation, but per-call verification of individual data points
+is a hard problem.
+</p>
+
+<p>
+Translation services. The output is text. A bad translation is
+indistinguishable from a good one without independent expertise.
+Quality is subjective. Reputation accumulates slowly because errors
+are hard to detect.
+</p>
+
+<p>
+Each of these categories will go through the eBay arc — fraud
+emerges as the category scales, defenses develop reactively,
+trust infrastructure matures, the category eventually stabilizes.
+Verified compute skips the arc because the property that makes
+fraud detectable is built in from the start.
+</p>
+
+<h3>The competitive read</h3>
+
+<p>
+The strategic implication is direct. Paxiom competes legitimately
+on operational properties — reliability, latency, audit trail,
+architectural advantages — because the deliverable is verifiable
+and the fraud line is structurally bright. The platform does not
+need to defend against snake oil; the snake oil cannot pass
+verification.
+</p>
+
+<p>
+This is a meaningful structural advantage. Most software businesses
+spend significant resources defending against confused-deputy
+attacks, social engineering, and fraud. Verified compute exists in
+a category where those classes of attack do not work against the
+core service.
+</p>
+
+</div>
+</div>
+
+<!-- B-320 -->
+<div class="page-break" data-sheet="Sheet B-320"></div>
+
+<div id="b-320">
+<div class="section-mark">Section 3 · B-320</div>
+<h2 class="section-title">Legitimate competition.<br><em>The existing landscape.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+The verified compute category is not empty. Several established
+providers operate in adjacent or overlapping spaces. Understanding
+who they are and where they sit clarifies where Paxiom fits.
+</p>
+
+<h3>The proving infrastructure providers</h3>
+
+<p>
+RISC Zero offers Bonsai, their hosted proving service. Submit a
+guest program written in Rust, receive a ZK proof. Pricing is
+opaque; production pricing requires a sales conversation. The
+customer base is primarily ZK-rollup teams and DeFi protocols that
+need ZK proofs as part of their infrastructure.
+</p>
+
+<p>
+Succinct operates SP1 and the Succinct Prover Network. The network
+is decentralized — provers stake collateral, accept proof generation
+jobs, and get paid in network tokens for completed work. The
+network generated 6 million proofs in 2025 across all customers.
+Telepathy, their cross-chain state proof product, is one of the
+canonical implementations of Ethereum sync committee verification.
+</p>
+
+<p>
+Boundless is RISC Zero's decentralized proving marketplace.
+Permissionless prover participation. Provers compete on price and
+speed for proof generation jobs. The marketplace handles routing
+and verification.
+</p>
+
+<p>
+Aligned Layer aggregates proofs from multiple proving systems for
+cheaper on-chain verification. They are middleware rather than a
+primary proving service.
+</p>
+
+<p>
+Lagrange operates a ZK coprocessor specifically for cross-chain
+state proofs. Customers integrate the coprocessor into their DeFi
+protocols. Lagrange overlaps directly with parts of what Paxiom
+will build but targets different customers — protocol integration
+teams rather than autonomous agents.
+</p>
+
+<h3>The verified inference providers</h3>
+
+<p>
+EZKL turns ML models into ZK circuits. Open-source library plus
+commercial offerings. Used by several projects building verified AI
+applications.
+</p>
+
+<p>
+Modulus Labs builds verified inference infrastructure with focus on
+DeFi and gaming applications. They have shipped products in
+production.
+</p>
+
+<p>
+Giza is in similar territory, focused on agent-relevant inference
+verification.
+</p>
+
+<p>
+Ritual is building broader verified AI compute infrastructure with
+coordination across multiple proving systems.
+</p>
+
+<p>
+Inference Labs (the TruthTensor authors) sits adjacent. Their
+primary product is an evaluation and benchmarking framework with
+verification properties.
+</p>
+
+<h3>The state proof and bridge providers</h3>
+
+<p>
+Polyhedra Network operates zkBridge for cross-chain state proofs.
+Live, in production, used by several DeFi protocols. Polyhedra's
+Expander proving system is also of direct interest to Paxiom for
+recursive proving — see B-510.
+</p>
+
+<p>
+Telepathy by Succinct does Ethereum sync committee verification
+specifically. Open-source. Adopted by multiple cross-chain protocols.
+</p>
+
+<p>
+Helios is a light client implementation. Not a paid service, but
+the open-source reference implementation that establishes the
+correctness baseline for what Paxiom's sync committee service will do.
+</p>
+
+<p>
+LayerZero with various DVN implementations does verified message
+passing. Not a ZK system per se but adjacent to verified compute in
+its trust model.
+</p>
+
+<h3>What is missing from this landscape</h3>
+
+<p>
+None of these providers are x402-native at the endpoint level. They
+integrate through SDKs, have B2B sales motions, and serve enterprise
+customers through traditional contracts. An autonomous agent cannot
+currently call any of them through a standardized x402 payment
+without custom integration work.
+</p>
+
+<p>
+Most of them serve specific verticals — bridges, DeFi protocols,
+ZK-rollups, AI inference, ML models — rather than offering
+general-purpose verified computation as a service for agent
+consumption.
+</p>
+
+<p>
+Most of them depend on RPC providers for input data, which means
+their proofs inherit the RPC trust assumption. This is the gap
+B-300 covered. None of them have publicly committed to RPC-free
+architecture as a structural property.
+</p>
+
+<p>
+None of them publish service-level metrics in a way that lets agents
+do automated quality comparison. Reputation is established through
+enterprise sales relationships rather than observable performance
+data.
+</p>
+
+<h3>Paxiom's competitive position</h3>
+
+<p>
+The category is not empty but it is not crowded either. The existing
+players are mostly building infrastructure for B2B integration with
+developer teams rather than agent-callable endpoints. Paxiom's
+position is "verified compute that an agent can discover, pay, and
+consume autonomously" rather than "verified compute that a
+development team integrates into their application." That is a
+meaningful niche.
+</p>
+
+<p>
+Several of the existing players might extend into the agent-native
+niche eventually. Boundless adding x402 support. EZKL exposing
+agent-callable endpoints. Lagrange building agent-facing tooling.
+The competitive risk is not that the category is empty but that
+existing players notice the agent-native opportunity and bring their
+existing customer base and operational scale with them.
+</p>
+
+<p>
+Paxiom's defenses against that risk are not first-mover advantage
+alone. They are the architectural properties that are hard to
+retrofit.
+</p>
+
+<ul>
+  <li><strong>No-RPC architecture</strong> through Load Network state
+  reconstruction. Adding this to an existing RPC-dependent service is
+  not a feature flip; it is a redesign.</li>
+  <li><strong>AO-anchored audit trail</strong> as a native property
+  of the substrate. Bolting permanent public auditability onto a
+  service that wasn't built for it produces a different and weaker
+  property.</li>
+  <li><strong>Quantum-clean proving stack</strong> as a Phase 5
+  positioning. Existing providers have proving systems committed to;
+  migrating them to post-quantum primitives is a multi-year
+  undertaking.</li>
+  <li><strong>KYA-compatible identity</strong> from the start.
+  Existing services have customer relationships and integration
+  patterns that don't include cryptographic platform identity at the
+  per-response level.</li>
+</ul>
+
+<p>
+None of these are insurmountable for a well-funded competitor. All
+of them are real friction. A small team with operational discipline
+competing against larger teams with more resources by having
+architectural advantages those teams can't easily match — that is
+the competitive shape of the bet.
+</p>
+
+</div>
+</div>
+
+<!-- B-400 -->
+<div class="page-break" data-sheet="Sheet B-400"></div>
+
+<div id="b-400">
+<div class="section-mark">Section 4 · B-400</div>
+<h2 class="section-title">What Paxiom is.<br><em>The platform.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+Paxiom is a verified compute platform. Agent-callable services that
+return cryptographically verifiable outputs, settled through x402,
+anchored in HyperBEAM compute and AO/Arweave audit, with
+architectural properties that defeat the trust failures in adjacent
+categories.
+</p>
+
+<h3>The five Phase 1 services</h3>
+
+<p>
+Phase 1 launches five services that overlap deliberately with what
+existing verified compute providers already sell. The strategy is
+not to invent a new category. The strategy is to enter an
+established category with x402-native delivery and architectural
+properties that competitors cannot easily match.
+</p>
+
+<p>
+The five services, in summary:
+</p>
+
+<ul>
+  <li><strong>Service 1 — ZK proofs of Ethereum slot storage at any
+  block.</strong> Prove that a contract storage slot held a specific
+  value at a specific block. Direct competition with Lagrange, Axiom,
+  Herodotus.</li>
+  <li><strong>Service 2 — Ethereum sync committee verification.</strong>
+  Prove that the sync committee for a specific slot signed a specific
+  header. The fastest-launch service, building on existing verifier
+  infrastructure.</li>
+  <li><strong>Service 3 — Cross-chain message verification.</strong>
+  Prove that a message originated on one chain and is correctly
+  attestable on another. The bridge-grade service. Carries the Kelp
+  DAO marketing case study.</li>
+  <li><strong>Service 4 — Simulation as a service.</strong>
+  Verifiable transaction simulation with optional TEE attestation.
+  High volume, low margin, uses the HyperBEAM EVM device natively.</li>
+  <li><strong>Service 5 — Verified historical state queries.</strong>
+  Verifiable answers to questions about historical chain state. Where
+  the no-RPC architecture matters most. Where Paxiom's identity gets
+  established.</li>
+</ul>
+
+<p>
+Detailed service specifications live in the Phase 1 Blueprint
+(A-series). This document does not duplicate them.
+</p>
+
+<h3>Cross-chain settlement as reference application</h3>
+
+<p>
+Paxiom is a platform, not a single product. The five Phase 1
+services demonstrate the platform's capabilities. The first
+significant application built on top of the platform is cross-chain
+settlement — the broader use case that motivated the original
+arbitrage architecture and that the Phase 1 services collectively
+enable.
+</p>
+
+<p>
+Cross-chain settlement is the canonical case where every architectural
+property of the platform matters at once. It needs verified state
+proofs (Service 1, Service 5). It needs verified consensus
+attestation (Service 2). It needs verified cross-chain message
+passing (Service 3). It benefits from simulation for pre-flight
+checking (Service 4). It demands no-RPC architecture because the
+trust failures in cross-chain infrastructure are exactly what take
+out cross-chain protocols. It demands permanent audit because
+cross-chain operations are subject to regulatory scrutiny.
+</p>
+
+<p>
+The reference application is not the business. The platform is the
+business. Cross-chain settlement is the proof that the platform's
+capabilities compose into something useful.
+</p>
+
+<h3>The architectural manifest</h3>
+
+<p>
+The platform's distinguishing properties, named in plain language:
+</p>
+
+<ul>
+  <li><strong>No RPC dependence.</strong> State reconstruction from
+  Arweave archives via Load Network. The trust failures that took out
+  Kelp DAO are mathematically impossible against this architecture.</li>
+  <li><strong>Live recursive proofs</strong> via Polyhedra Expander.
+  Composable verification with bounded verification cost.</li>
+  <li><strong>Permanent public audit trail</strong> through AO and
+  Arweave. Every transaction logged immutably. Compliance posture is
+  structural, not bolt-on.</li>
+  <li><strong>HyperBEAM compute substrate.</strong> Erlang-based AO
+  node implementation with a device model that includes EVM execution,
+  RISC-V emulation, and TEE-attested workloads.</li>
+  <li><strong>x402-native delivery.</strong> Every service callable
+  by autonomous agents through standard payment protocol without
+  custom integration.</li>
+  <li><strong>KYA-compatible identity</strong> through signed
+  responses and published public keys. Forward-compatible with
+  ERC-8004 as the standard matures.</li>
+  <li><strong>Quantum-ready proving stack</strong> — see B-520.
+  Phase 5 positioning that responds to NIST and Google's
+  post-quantum migration trajectories.</li>
+  <li><strong>Publicly deliverable artifacts.</strong> Every service
+  output is itself a verification artifact. The structural defense
+  against lookalike attacks.</li>
+  <li><strong>ERC-8183 evaluator candidacy.</strong> Positioned as
+  a natural Evaluator in trustless escrow marketplaces.</li>
+</ul>
+
+<p>
+These are the architectural choices that make Paxiom Paxiom rather
+than another verified compute provider. The next section covers how
+each of them actually works.
+</p>
+
+</div>
+</div>
+
+<!-- B-500 -->
+<div class="page-break" data-sheet="Sheet B-500"></div>
+
+<div id="b-500">
+<div class="section-mark">Section 5 · B-500</div>
+<h2 class="section-title">Zero-knowledge proofs.<br><em>Real math, plain explanation.</em></h2>
+<p class="section-strap">
+What a zero-knowledge proof actually is, in set-theoretic notation
+with prose translation. The math is honest. The explanation is for
+the reader who has not seen this notation in a while.
+</p>
+
+<div class="prose">
+
+<p class="lead">
+A zero-knowledge proof lets one party convince another that a
+statement is true, without revealing why it is true. The cryptographic
+construction is intricate. The underlying idea is not.
+</p>
+
+<h3>The core relation</h3>
+
+<p>
+Start with the most basic structure. A statement that we want to
+prove is paired with a witness that proves it. The witness is the
+information that makes the statement true. The statement is what we
+want the verifier to believe.
+</p>
+
+<div class="math">
+R = { (x, w) : x is a public statement, w is a witness, and the predicate P(x, w) holds }</div>
+
+<p class="math-reading">
+R is the set of all pairs (x, w) such that x is a public statement
+that we want to prove, w is a witness that we possess, and the
+predicate P, applied to both x and w, returns true. R is the
+relation that defines what counts as a valid witness for a given
+statement.
+</p>
+
+<p>
+Concrete example. Suppose we want to prove that we know the
+preimage of a hash. The public statement x is the hash value. The
+witness w is the input we're hashing. The predicate P(x, w) holds
+when sha256(w) equals x. The relation R contains every pair
+(hash, input) such that hashing the input produces the hash.
+</p>
+
+<h3>The proof system</h3>
+
+<p>
+A zero-knowledge proof system is a triple of algorithms. A setup
+algorithm produces public parameters. A prover algorithm takes a
+statement, a witness, and the parameters, and produces a proof. A
+verifier algorithm takes a statement, a proof, and the parameters,
+and decides whether to accept the proof.
+</p>
+
+<div class="math">
+Setup     : 1^λ                  → pp
+Prover    : (x, w, pp)           → π
+Verifier  : (x, π, pp)           → {accept, reject}</div>
+
+<p class="math-reading">
+The setup algorithm takes a security parameter expressed in unary
+(1^λ means a string of λ ones, by convention) and produces the
+public parameters pp. The prover takes a statement x, a witness w,
+and the public parameters, and produces a proof π. The verifier
+takes a statement x, a proof π, and the public parameters, and
+returns either accept or reject.
+</p>
+
+<p>
+The intuition is straightforward. The prover has a secret (the
+witness) and wants to convince the verifier of something (the
+statement) without revealing the secret. The proof is the
+cryptographic artifact that accomplishes this.
+</p>
+
+<h3>The three properties</h3>
+
+<p>
+A zero-knowledge proof system satisfies three properties, each
+expressible as a mathematical claim about the algorithms.
+</p>
+
+<p>
+The first property is completeness. If the statement is true and
+the prover follows the protocol, the verifier accepts.
+</p>
+
+<div class="math">
+∀ (x, w) ∈ R :   Pr[ Verifier(x, Prover(x, w, pp), pp) = accept ]  =  1</div>
+
+<p class="math-reading">
+For every pair (x, w) in the relation R, the probability that the
+verifier accepts the proof produced by the prover is exactly 1.
+Honest proofs of true statements always verify.
+</p>
+
+<p>
+The second property is soundness. If the statement is false, the
+verifier rejects with overwhelming probability, no matter what the
+prover does.
+</p>
+
+<div class="math">
+∀ x ∉ L_R, ∀ adversary A :   Pr[ Verifier(x, A(x, pp), pp) = accept ]  ≤  negl(λ)</div>
+
+<p class="math-reading">
+For every statement x that is not in the language defined by R
+(meaning no valid witness w exists for x), and for every adversary
+A who tries to produce a fake proof, the probability that the
+verifier accepts is at most a negligible function of the security
+parameter. Soundness means that fake proofs of false statements
+almost never succeed.
+</p>
+
+<p>
+The third property is zero-knowledge. The proof reveals nothing
+about the witness beyond the truth of the statement.
+</p>
+
+<div class="math">
+∃ Simulator S :  ∀ (x, w) ∈ R :   { Prover(x, w, pp) }  ≈  { S(x, pp) }</div>
+
+<p class="math-reading">
+There exists a simulator S such that for every pair (x, w) in R,
+the distribution of proofs produced by the real prover with the
+witness is computationally indistinguishable from the distribution
+of proofs produced by the simulator without the witness. Zero-knowledge
+means that anything an observer could learn from a real proof, they
+could also have learned from a simulation that did not use the
+witness — therefore the proof leaks no useful information about
+the witness.
+</p>
+
+<p>
+These three properties together — completeness, soundness, and
+zero-knowledge — are what make ZK proofs cryptographically
+meaningful. The proof is convincing when the statement is true,
+unforgeable when the statement is false, and uninformative beyond
+the statement itself.
+</p>
+
+<h3>What gets proved in practice</h3>
+
+<p>
+For Paxiom's services, the statements are concrete and the witnesses
+are concrete. Service 1, ZK proofs of slot storage: the statement is
+"contract C had storage slot S equal to value V at block B," and
+the witness is the Merkle inclusion path from S to the block's state
+root. Service 2, sync committee verification: the statement is "the
+sync committee for slot N signed header H," and the witness is the
+aggregate BLS signature plus the participation bitfield. Service 5,
+verified historical state queries: the statement varies by query
+type, and the witness includes the relevant state-trie data
+reconstructed from Load Network archives.
+</p>
+
+<p>
+The customer receives the proof. The customer can run the verifier
+independently and check whether the statement is true. The customer
+never sees the witness. The proof is small (typically a few hundred
+bytes to a few kilobytes), the verification is fast (typically
+milliseconds), and the cryptographic guarantees are mathematical.
+</p>
+
+<h3>Why this matters for agent commerce</h3>
+
+<p>
+The structural property is that a ZK proof is itself a verifiable
+artifact. The customer does not have to trust the platform's claim
+that the statement is true; they can verify the proof. This is what
+makes verified compute a structurally honest category — the deliverable
+is its own integrity check.
+</p>
+
+<p>
+Most agent service categories cannot offer this. The output of an
+LLM inference call is text; verifying it requires another inference
+call, recursively. The output of a data feed is a number; verifying
+it requires consulting an authoritative source. The output of a
+translation is text in another language; verifying it requires
+linguistic expertise. None of these outputs are self-verifying.
+</p>
+
+<p>
+Verified compute is. That is the category Paxiom enters.
+</p>
+
+</div>
+</div>
+
+<!-- B-510 -->
+<div class="page-break" data-sheet="Sheet B-510"></div>
+
+<div id="b-510">
+<div class="section-mark">Section 5 · B-510</div>
+<h2 class="section-title">Recursive proving.<br><em>Why composition matters.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+Generating a single ZK proof is one thing. Generating a proof of a
+proof of a proof, with bounded verification cost, is what makes
+verified compute scale. The technique is called recursive proving.
+The proving system Paxiom targets is Polyhedra's Expander.
+</p>
+
+<h3>The composition problem</h3>
+
+<p>
+Suppose we have a proof π_1 that statement x_1 is true, and we want
+to combine it with a proof π_2 that statement x_2 is true, into a
+single proof π that both statements are true together. Naive
+composition has a cost: the combined proof grows in size with the
+number of constituent proofs, and verification cost grows linearly.
+</p>
+
+<p>
+This is fine when proofs are independent and small in number. It is
+not fine when we want to chain hundreds of state transitions, prove
+a long history of operations, or compose proofs across services
+without each verification step adding cost. Without recursion,
+verified compute is bounded to use cases where the proof count is
+small.
+</p>
+
+<h3>What recursion provides</h3>
+
+<p>
+A recursive proof is a proof about a proof. The prover runs the
+verification algorithm of the inner proof inside a ZK circuit, and
+proves that the verification accepted. The output is a single
+recursive proof that effectively says "the inner proof was valid."
+The recursive proof has bounded size and verification cost
+regardless of how complex the inner computation was.
+</p>
+
+<div class="math">
+π_inner   : proof of statement x_inner
+π_outer   : proof of statement "Verifier(x_inner, π_inner, pp) = accept"</div>
+
+<p class="math-reading">
+π_outer is a proof of a different statement than π_inner. The outer
+statement says that running the verifier on the inner statement and
+inner proof produces accept. Verifying π_outer therefore implicitly
+verifies π_inner, but the verification cost is the cost of verifying
+π_outer alone. The cost does not compound.
+</p>
+
+<p>
+Multiple proofs can be composed this way. Two proofs become one.
+That one combined with another proof becomes one again. A long
+chain of operations compresses into a single proof of bounded size.
+This is what makes verified rollups practical — the L2's entire
+operational history compresses into a single recursive proof
+verified on L1.
+</p>
+
+<h3>Why Polyhedra Expander</h3>
+
+<p>
+Several proving systems support recursion. Polyhedra Expander is
+notable for two properties relevant to Paxiom.
+</p>
+
+<p>
+First, Expander is designed for live recursive proving with low
+latency. The recursion can happen in real time as proofs are
+generated, rather than as a batched post-processing step. For
+agent-callable services that need to return verified results
+quickly, low-latency recursion matters.
+</p>
+
+<p>
+Second, Expander is post-quantum-clean by design. The underlying
+proving system uses hash-based and lattice-based primitives rather
+than elliptic-curve pairings. This is forward-compatible with the
+quantum readiness positioning covered in B-520.
+</p>
+
+<p>
+Other proving systems that Paxiom evaluates as alternatives — SP1,
+RISC Zero, Boundless — have different trade-offs. SP1 is mature and
+production-tested. RISC Zero has the largest ecosystem. Boundless
+is the decentralized prover marketplace. Each has its place. Phase 1
+chooses the system that fits each service's specific requirements;
+the platform is not religious about a single proving backend.
+</p>
+
+<h3>What this enables</h3>
+
+<p>
+Recursive proving is what makes the longer-horizon Paxiom
+capabilities actually work. Composable cross-chain settlement
+proofs. Proofs of historical state that span thousands of blocks.
+Verifiable inference where the model evaluation, the input
+attestation, and the output validation all compose into a single
+proof. Without recursion, each of these would either be impractical
+or would require trusting some intermediate party. With recursion,
+the trust assumptions collapse into the soundness of the proving
+system.
+</p>
+
+</div>
+</div>
+
+<!-- B-520 -->
+<div class="page-break" data-sheet="Sheet B-520"></div>
+
+<div id="b-520">
+<div class="section-mark">Section 5 · B-520</div>
+<h2 class="section-title">Quantum readiness.<br><em>NIST, Google, the migration coming.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+Most ZK proving systems in production today use cryptographic
+primitives that are not safe against a sufficiently large quantum
+computer. The migration to post-quantum primitives is underway at
+the institutional level. Paxiom's architecture is positioned to
+participate in that migration cleanly.
+</p>
+
+<h3>What NIST established</h3>
+
+<p>
+In August 2024, NIST finalized three post-quantum cryptographic
+standards. FIPS 203 (ML-KEM, derived from CRYSTALS-Kyber) for key
+encapsulation. FIPS 204 (ML-DSA, derived from CRYSTALS-Dilithium)
+for digital signatures. FIPS 205 (SLH-DSA, derived from SPHINCS+)
+for hash-based signatures. These are the first official US
+government standards for cryptography that resists quantum attack.
+</p>
+
+<p>
+The standards are not theoretical exercises. NIST and the broader
+US federal government have begun the multi-year process of migrating
+existing systems to post-quantum primitives. The CNSA 2.0 suite
+(Commercial National Security Algorithm Suite, version 2.0)
+mandates post-quantum migration for national security systems by
+specific deadlines. Civilian federal systems follow on a longer
+timeline but the trajectory is identical.
+</p>
+
+<h3>What Google has shipped</h3>
+
+<p>
+Google rolled out post-quantum cryptography in production in 2024
+and 2025. Chrome supports X25519Kyber768 hybrid key exchange in TLS
+connections. Google Cloud's KMS supports post-quantum signatures.
+The Google Account infrastructure that backs services like Gmail
+and YouTube has begun migrating its cryptographic primitives.
+</p>
+
+<p>
+The relevant signal is not that Google is interested in post-quantum
+cryptography. The relevant signal is that Google has shipped it in
+products serving billions of users. Production deployment by a
+major provider is a stronger commitment than research investment.
+The migration is real.
+</p>
+
+<h3>What this means for ZK proving systems</h3>
+
+<p>
+ZK proving systems vary in their post-quantum posture. Some are
+quantum-vulnerable by design — they use elliptic-curve pairings
+that are broken by Shor's algorithm. Groth16, the most widely
+deployed ZK system, falls in this category. Its proofs would be
+forgeable by a sufficiently large quantum computer.
+</p>
+
+<p>
+Other systems are quantum-resistant. STARK-based systems (used by
+StarkWare, RISC Zero, and others) are based on hash functions and
+are believed to be post-quantum secure. SP1's proving stack has
+similar properties.
+</p>
+
+<p>
+Polyhedra Expander, the proving system Paxiom targets for live
+recursive proving, is designed with post-quantum security in mind.
+Its underlying primitives are hash-based and lattice-based, both of
+which have post-quantum candidates.
+</p>
+
+<p>
+Paxiom's Phase 5 positioning is to operate proving infrastructure
+that is quantum-clean from the start. Other proving systems can be
+made quantum-resistant through migration, but the migration is
+expensive and disruptive. Building on a quantum-clean substrate
+from Phase 1 means there is no migration to perform when the
+broader cryptographic infrastructure transitions.
+</p>
+
+<h3>The timeline argument</h3>
+
+<p>
+Cryptographically relevant quantum computers — machines large
+enough to break current public-key cryptography in practice — do
+not exist today and will likely not exist for another decade or
+more. That timeline matters less than it might seem.
+</p>
+
+<p>
+The reason is the "harvest now, decrypt later" attack. Adversaries
+can record encrypted traffic today and decrypt it later when
+quantum computers become available. For data with long-term
+sensitivity — medical records, financial histories, identity
+documents, intellectual property — the relevant question is not
+"can someone decrypt this today?" but "can someone decrypt this
+within the data's relevant lifetime?" For many data types, the
+answer is yes, and the migration to post-quantum cryptography is
+already overdue.
+</p>
+
+<p>
+The same argument applies to ZK proofs that attest to facts with
+long-term consequence. A proof of compliance, an audit trail, an
+identity attestation — these may need to be verifiable decades from
+now. A proof generated today using quantum-vulnerable primitives is
+less durable than one generated using quantum-resistant primitives.
+The longer-horizon use cases that Paxiom is positioning for
+(HIPAA-grade compliance, financial audit, regulatory attestation)
+are exactly the cases where post-quantum security matters most.
+</p>
+
+<h3>The architectural choice</h3>
+
+<p>
+Phase 5 of the build map specifies that the platform's proving
+substrate is quantum-clean. The work in earlier phases positions
+this transition. Choosing Polyhedra Expander as the recursive
+proving target. Implementing the KYA primitive with primitives
+(Ed25519 for v1) that have well-defined post-quantum migration
+paths. Building the audit trail on hash functions that are
+post-quantum-secure. Avoiding architectural commitments to
+quantum-vulnerable primitives at the load-bearing layers.
+</p>
+
+<p>
+Phase 5 is years away in the build map. The architectural choices
+that enable Phase 5 are made in Phase 1. That is what makes the
+quantum readiness real rather than aspirational.
+</p>
+
+</div>
+</div>
+
+<!-- B-530 -->
+<div class="page-break" data-sheet="Sheet B-530"></div>
+
+<div id="b-530">
+<div class="section-mark">Section 5 · B-530</div>
+<h2 class="section-title">HyperBEAM and devices.<br><em>Where compute happens.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+HyperBEAM is the Erlang-based AO node implementation that provides
+the platform's compute substrate. The architecture is unusual enough
+to warrant explanation. The implications are useful enough to warrant
+the choice.
+</p>
+
+<h3>What AO is, briefly</h3>
+
+<p>
+AO — short for Actor-Oriented — is a hyper-parallel computing
+substrate built on top of Arweave. AO processes are independent
+actors that run code in response to messages. Each process has its
+own state, processes its own messages, and produces its own outputs.
+The processes are persistent — their state and message history live
+on Arweave permanently — and the computation is reproducible from
+the message log.
+</p>
+
+<p>
+The model is not a blockchain. There is no global consensus on a
+single state. Each process is its own independent execution
+environment. The unifying property is the message log, which is
+permanent and verifiable.
+</p>
+
+<h3>What HyperBEAM adds</h3>
+
+<p>
+HyperBEAM is the Erlang implementation of the AO node software. It
+extends the basic AO model with a device system — a way to attach
+specific computational capabilities to processes. A device exposes
+an API that processes can call. The device handles the actual
+execution; the process handles the orchestration.
+</p>
+
+<p>
+Several devices are relevant to Paxiom.
+</p>
+
+<p>
+The <code>~evm@1.0</code> device runs a full Ethereum Virtual
+Machine inside HyperBEAM. Processes can submit EVM transactions
+and receive execution results. This is the substrate for Service 4
+(simulation as a service) and is also a building block for
+verification work that needs to inspect EVM behavior.
+</p>
+
+<p>
+The <code>~riscv-em@1.0</code> device runs a RISC-V emulator. ZK
+proofs are generated by running computations through proving
+systems that target RISC-V (SP1 and RISC Zero are the major
+examples). The device lets HyperBEAM processes orchestrate proof
+generation directly.
+</p>
+
+<p>
+The <code>~greenzone@1.0</code> device runs computations inside
+trusted execution environments — Intel SGX, AMD SEV, or equivalent.
+The device produces attestation chains that prove the computation
+ran in genuine hardware running registered code. This is the
+substrate for TEE-attested simulation and for any service that
+needs hardware-rooted trust beyond cryptographic verification.
+</p>
+
+<h3>Why this architecture</h3>
+
+<p>
+HyperBEAM's combination of properties is what makes it the right
+substrate for Paxiom. Three properties matter.
+</p>
+
+<p>
+Permanence. Every process's state and message history lives on
+Arweave permanently. The audit trail that Paxiom's compliance
+posture depends on is structural rather than bolt-on.
+</p>
+
+<p>
+Composability. Devices compose. A process can use the EVM device
+to simulate a transaction, the RISC-V device to generate a ZK
+proof of the simulation, and the greenzone device to attest that
+the proof was produced in trusted hardware. The composition is
+clean because each device handles its specific concern.
+</p>
+
+<p>
+Independence. Processes are independent actors. There is no global
+consensus to coordinate. Multiple Paxiom services can run as
+independent processes that scale independently and recover
+independently from failures. The platform is naturally
+horizontally scalable.
+</p>
+
+<h3>What this means for Paxiom</h3>
+
+<p>
+The Phase 1 services are implemented as HyperBEAM processes that
+use the relevant devices for their specific work. Service 4 runs
+on the EVM device. Service 2 (and the proving infrastructure
+generally) uses the RISC-V device. Services that benefit from
+TEE attestation use the greenzone device.
+</p>
+
+<p>
+The platform's audit trail is the AO message log, which is
+permanently stored on Arweave. Every transaction Paxiom processes
+produces an entry in the log that any party can inspect at any
+future time. The compliance posture this gives is structural —
+the platform does not need to maintain an audit logging system
+because the substrate is already an audit logging system.
+</p>
+
+</div>
+</div>
+
+<!-- B-540 -->
+<div class="page-break" data-sheet="Sheet B-540"></div>
+
+<div id="b-540">
+<div class="section-mark">Section 5 · B-540</div>
+<h2 class="section-title">AO and Arweave.<br><em>Audit as native property.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+Most platforms add audit trails as a feature. Paxiom's audit trail
+is a native property of the substrate. This sheet explains the
+distinction and why it matters.
+</p>
+
+<h3>The shape of a typical audit trail</h3>
+
+<p>
+A typical software platform implements audit logging as application
+code. The application calls into a logging library, which writes
+records to a database or a log aggregator. Operators can query the
+logs to investigate events. The audit trail's properties depend on
+the logging system's properties — its durability, its query
+capabilities, its tamper-resistance.
+</p>
+
+<p>
+This works for many use cases. It has known limitations. The logs
+are controlled by the platform operator. The operator can modify or
+delete records. The logs are not externally verifiable — outside
+parties cannot independently confirm that a specific event happened
+or that the platform's account of events is complete. Compliance
+frameworks that depend on audit trails (SOC 2, HIPAA, financial
+regulations) typically require additional infrastructure to address
+these limitations.
+</p>
+
+<h3>The shape of the AO/Arweave audit trail</h3>
+
+<p>
+AO processes communicate by exchanging messages. Every message is
+permanently recorded on Arweave. The message log is the canonical
+record of what happened. It is not stored in a database controlled
+by the operator. It is stored on a permanent decentralized archive
+that the operator does not control.
+</p>
+
+<p>
+The implications are significant. The audit trail cannot be
+modified or deleted by the platform operator. It is independently
+queryable by any party that has the AO process identifier. It is
+cryptographically tied to the Arweave ledger, which has its own
+integrity guarantees.
+</p>
+
+<p>
+The compliance posture this gives is qualitatively different.
+Outside parties — regulators, auditors, customers — can independently
+verify the platform's behavior without relying on the platform's
+self-reporting. The audit trail is structural rather than reported.
+</p>
+
+<h3>What this enables</h3>
+
+<p>
+Three specific compliance use cases benefit from this property.
+</p>
+
+<p>
+Regulated industries with audit requirements. Financial services,
+healthcare, and similar industries require platforms they use to
+maintain auditable records of operations. The standard approach
+is to deploy bespoke audit infrastructure and pay for compliance
+audits. A platform whose audit trail is structurally verifiable
+reduces the cost and complexity of compliance for its customers.
+</p>
+
+<p>
+Cross-organizational disputes. When two parties disagree about
+what happened — did Service A actually perform the work it
+claims? — the AO/Arweave audit trail is the canonical record.
+Both parties can query it independently. The dispute reduces to
+verification rather than negotiation.
+</p>
+
+<p>
+Long-horizon verification. Some claims need to remain verifiable
+for years or decades. A signed attestation today that a specific
+operation occurred at a specific time, anchored to the AO/Arweave
+record, remains verifiable as long as the substrate persists.
+This matters for legal documents, medical records, and any other
+artifact whose verifiability has long-term consequence.
+</p>
+
+<h3>What this does not enable</h3>
+
+<p>
+Privacy. Public audit trails are public. Operations that need to
+remain confidential are not appropriate for direct logging. The
+platform's solution is to log cryptographic commitments rather
+than raw data — the existence and shape of an operation is
+recorded, but the contents remain private. ZK proofs enable
+verification of the operation's correctness without revealing its
+contents. This is the substrate for the private-data compute
+applications covered in B-710.
+</p>
+
+<p>
+Selective disclosure. The AO/Arweave audit trail is all-or-nothing
+visible. Selective disclosure — showing some data to some parties
+and not others — requires additional cryptographic infrastructure
+on top of the audit trail. This is straightforward to build but is
+not a property of the substrate itself.
+</p>
+
+<p>
+Real-time queryability. Arweave's confirmation latency means that
+audit records are not instantly globally visible. The records are
+queued and confirmed within minutes to hours. For real-time
+operational monitoring, the platform maintains its own short-term
+log. The AO/Arweave trail is the durable record, not the live
+monitoring surface.
+</p>
+
+</div>
+</div>
+
+<!-- B-550 -->
+<div class="page-break" data-sheet="Sheet B-550"></div>
+
+<div id="b-550">
+<div class="section-mark">Section 5 · B-550</div>
+<h2 class="section-title">Load Network.<br><em>State without RPCs.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+Load Network is the piece that makes Paxiom's no-RPC architecture
+real. The previous sections argued why replacing RPCs matters. This
+section explains how it actually works.
+</p>
+
+<h3>What Load Network archives</h3>
+
+<p>
+Load Network operates a permanent archive of Ethereum transaction
+data on Arweave. Every Ethereum block, every transaction, every
+state change since genesis is preserved on the Arweave ledger. The
+archive is decentralized, immutable, and independently verifiable
+through Arweave's own integrity guarantees.
+</p>
+
+<p>
+The size of the archive is substantial — Ethereum's history
+through the current block is measured in terabytes — but Arweave's
+economic model is designed for permanent storage at predictable
+cost. The archive is paid for once and persists indefinitely. This
+is structurally different from RPC providers, who maintain state
+data for a window (typically the recent blocks) and either prune
+older data or charge premium for archive node access.
+</p>
+
+<h3>What state reconstruction means</h3>
+
+<p>
+Given the full transaction history, the Ethereum state at any
+historical block can be deterministically reconstructed. Apply the
+Ethereum state transition function to each transaction in order,
+starting from genesis. After applying the transactions in block N,
+the resulting state is exactly the state at block N. The
+computation is deterministic — anyone with the transaction history
+arrives at the same state.
+</p>
+
+<p>
+This is computationally expensive in the naive case. Reconstructing
+state from genesis to a recent block requires processing every
+historical transaction. Load Network optimizes this by maintaining
+checkpoints — periodic snapshots of state that can be used as
+starting points for reconstruction. Reconstructing state at a
+target block requires processing transactions only between the
+nearest checkpoint and the target.
+</p>
+
+<h3>The trust property</h3>
+
+<p>
+The structural property is that this reconstruction has no trust
+assumption. The archive is permanently stored on Arweave with
+Arweave's integrity guarantees. The state transition function is
+the public Ethereum specification. The reconstruction is
+deterministic. There is no centralized party whose word the
+reconstruction depends on.
+</p>
+
+<p>
+Compare to the alternative. An RPC provider returns "the state at
+block N is X." The verifier has to trust that the RPC provider
+read the state correctly, returned the unmodified value, and is
+not colluding with anyone. The Kelp DAO attack exploited exactly
+this trust assumption. Load Network reconstruction does not have
+this assumption to break.
+</p>
+
+<h3>What this enables for Paxiom</h3>
+
+<p>
+Service 5 (verified historical state queries) depends entirely on
+Load Network. The customer asks "what was the value of contract C
+at block N?" The platform reconstructs state from Load Network,
+extracts the requested value, and produces a ZK proof of the
+extraction. The customer verifies the proof. No RPC was consulted.
+The trust chain ends at Arweave's integrity guarantees and the
+correctness of the Ethereum state transition function.
+</p>
+
+<p>
+Services 1 (slot storage proofs) and 3 (cross-chain message
+verification) optionally use Load Network in the same way. The v1
+versions of these services may use RPC for witness data initially
+because the Load Network integration is not yet mature for
+real-time use. The v1.5 or Phase 2 versions migrate to Load
+Network as the integration matures, eliminating RPC trust from
+those services as well.
+</p>
+
+<h3>Why this is the architectural moat</h3>
+
+<p>
+Most existing verified compute providers depend on RPC providers
+for witness data. They could in principle migrate to Load Network
+or equivalent archive-based reconstruction, but the migration is
+not a feature flip. It is a fundamental change to how their
+service obtains its inputs. The integration work is meaningful and
+the testing is extensive.
+</p>
+
+<p>
+Paxiom's architecture is built around Load Network from the start.
+The integration pattern, the witness format, the proof generation
+pipeline — all of these are designed for archive-based input.
+There is no migration required because there is no RPC dependency
+to migrate from.
+</p>
+
+<p>
+This is the structural moat that B-320 referenced. A competitor
+who notices the no-RPC opportunity and decides to extend their
+service in that direction is undertaking a multi-quarter
+engineering effort. A startup that builds on this substrate from
+the start ships the property natively. The advantage is not
+inventing the technique; it is committing to it from Phase 1.
+</p>
+
+</div>
+</div>
+
+<!-- B-600 -->
+<div class="page-break" data-sheet="Sheet B-600"></div>
+
+<div id="b-600">
+<div class="section-mark">Section 6 · B-600</div>
+<h2 class="section-title">Phase 1 pro forma.<br><em>Per-service unit economics.</em></h2>
+<p class="section-strap">
+The economics of the platform's first version. Numbers are realistic
+case at month 9 of operation. Detail in the Phase 1 Blueprint
+(A-300).
+</p>
+
+<div class="prose">
+
+<table class="schedule">
+  <thead>
+    <tr>
+      <th style="width: 60px;">ID</th>
+      <th>Service</th>
+      <th class="num">Vol/Mo</th>
+      <th class="num">Price</th>
+      <th class="num">Gross</th>
+      <th class="num">Var. Cost</th>
+      <th class="num">Net</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="id">A-201</td>
+      <td>Slot Storage Proofs</td>
+      <td class="num">800</td>
+      <td class="num">$1.00</td>
+      <td class="num">$800</td>
+      <td class="num">$246</td>
+      <td class="num">$554</td>
+    </tr>
+    <tr>
+      <td class="id">A-202</td>
+      <td>Sync Committee Verification</td>
+      <td class="num">1,500</td>
+      <td class="num">$0.50</td>
+      <td class="num">$750</td>
+      <td class="num">$159</td>
+      <td class="num">$591</td>
+    </tr>
+    <tr>
+      <td class="id">A-203</td>
+      <td>Cross-Chain Message Verification</td>
+      <td class="num">200</td>
+      <td class="num">$3.00</td>
+      <td class="num">$600</td>
+      <td class="num">$122</td>
+      <td class="num">$478</td>
+    </tr>
+    <tr>
+      <td class="id">A-204</td>
+      <td>Simulation as a Service</td>
+      <td class="num">8,000</td>
+      <td class="num">$0.05</td>
+      <td class="num">$400</td>
+      <td class="num">$56</td>
+      <td class="num">$344</td>
+    </tr>
+    <tr>
+      <td class="id">A-205</td>
+      <td>Verified Historical State</td>
+      <td class="num">300</td>
+      <td class="num">$2.00</td>
+      <td class="num">$600</td>
+      <td class="num">$122</td>
+      <td class="num">$478</td>
+    </tr>
+    <tr class="total">
+      <td>—</td>
+      <td>Phase 1 Total</td>
+      <td class="num">10,800</td>
+      <td class="num">—</td>
+      <td class="num">$3,150</td>
+      <td class="num">$705</td>
+      <td class="num">$2,445</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+Fixed monthly infrastructure: $100. Net monthly profit at this
+scenario: $2,345. Annualized run rate: roughly $28k per year.
+</p>
+
+<h3>What the numbers describe</h3>
+
+<p>
+The realistic case at month 9 of operation. Not best case. Not
+worst case. Realistic assumes operational reliability through
+Phase 0 setup, modest outbound effort during Phase 1 build,
+discovery layer presence on the major surfaces, and traffic that
+matches the projection from comparable existing services.
+</p>
+
+<p>
+The blended cost-to-revenue ratio is 22%. Gross margin on Phase 1
+services is 78%. The economics work. The volume is small.
+</p>
+
+<p>
+This run rate sits at the floor for what justifies leaving the day
+job. Comfortable margin above the floor requires either traffic
+growth above the realistic case, the addition of B2B contracts,
+or expansion into Phase 2 services.
+</p>
+
+<h3>What drives the upside</h3>
+
+<p>
+Three variables move the projections meaningfully.
+</p>
+
+<p>
+High-volume services. Sync committee verification at 1,500 calls
+per month and simulation at 8,000 are the volume drivers. If
+these double, monthly gross approaches $4,500. Discovery layer
+presence and operational reliability are the levers that move
+these numbers.
+</p>
+
+<p>
+Pricing. Phase 1 prices are middle-of-the-range based on competitive
+landscape research. After 30-60 days of operation, real customer
+behavior reveals which services support higher pricing. Prices
+adjust based on observed willingness to pay rather than launch
+guesses.
+</p>
+
+<p>
+B2B contracts. A single enterprise customer at $5-15k per month
+substantially exceeds the Phase 1 retail revenue. Outbound effort
+toward specific organizations during the build is what produces
+these contracts. The Phase 1 pro forma does not include B2B
+revenue; B2B is upside.
+</p>
+
+<h3>What this means for the founder's timeline</h3>
+
+<p>
+The platform's economics support continued operation but do not
+support immediate transition to full-time work on Paxiom alone.
+The discipline that emerges from the numbers is to ship all five
+Phase 1 services, observe real revenue for several months, and
+make the day-job-quit decision based on observed run rate against
+the $30k/year floor. The Phase 1 Blueprint (A-310) specifies the
+decision matrix.
+</p>
+
+<p>
+Phase 2 expansion is what raises the run rate above the floor.
+Catalog breadth, multi-chain support, deeper integration with
+agent frameworks. Phase 4 enterprise contracts are what add the
+margin above the floor that makes the platform a genuine primary
+income source rather than a sustainable side operation. The
+trajectory is realistic but it requires sustained execution
+across multiple phases. The Phase 1 numbers are the validation
+of the engine, not the destination.
+</p>
+
+</div>
+</div>
+
+<!-- B-610 -->
+<div class="page-break" data-sheet="Sheet B-610"></div>
+
+<div id="b-610">
+<div class="section-mark">Section 6 · B-610</div>
+<h2 class="section-title">Addressable market.<br><em>The trajectory matters more than today.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+The platform's revenue trajectory depends on the addressable market
+trajectory. Today's market is small. The growth multipliers stack.
+</p>
+
+<h3>The current addressable market</h3>
+
+<p>
+Total agent-economy x402 transaction volume is roughly $28k per day
+genuine, $600M annualized at projected growth. The fraction
+involving high-stakes financial decisions is probably 5-15% based
+on observable patterns. The fraction of those that would benefit
+from verified state proofs versus accepting RPC trust is maybe
+10-30% — most current decisions are low-enough stakes that
+verification overhead is not justified, but the high-value tail is
+real.
+</p>
+
+<p>
+The arithmetic gives an addressable market for agent-native
+verified compute today of roughly $3-25M annualized. Small but not
+zero. Growing fast.
+</p>
+
+<h3>The growth multipliers</h3>
+
+<p>
+Three multipliers stack into the addressable market trajectory.
+</p>
+
+<p>
+Total agent economy growth. The base layer. McKinsey projects $3-5
+trillion by 2030 across all categories. Gartner projects $15
+trillion B2B by 2028. Even the conservative end of these projections
+implies the agent economy grows by an order of magnitude or more
+over the next 5 years from current volumes.
+</p>
+
+<p>
+Share that is high-stakes. The fraction of agent transactions that
+involve consequential decisions grows as agents are deployed for
+more meaningful tasks. Routine tasks stay routine. New deployments
+take on more responsibility. The high-stakes fraction grows from
+5-15% today toward 30-50% as the technology matures.
+</p>
+
+<p>
+Share that recognizes RPC trust as a problem. Today most agent
+applications do not consider RPC trust. As trust failures
+accumulate — Kelp DAO is one example, others will follow — more
+applications recognize that RPC trust is something they need to
+solve. The fraction grows from 10-30% today toward majority over
+the next 3-5 years.
+</p>
+
+<p>
+Each multiplier compounds with the others. If each grows 3-5x over
+the next 5 years, the addressable market grows 27-125x. That is
+not a forecast; it is the structural trajectory of stacked
+multipliers in a category that institutional behavior suggests is
+real.
+</p>
+
+<h3>What the platform does with this</h3>
+
+<p>
+The platform's revenue trajectory is calibrated to the addressable
+market trajectory. Phase 1 captures a small share of a small
+market. Phase 2 captures a small share of a growing market. Phase
+3 and beyond capture a growing share of a large market.
+</p>
+
+<p>
+The compounding properties of reputation and integration matter
+here. A platform that has been operating reliably for two years
+when the market grows 10x captures more of the new market than a
+new entrant with no track record. The early operational work that
+generates relatively small revenue today compounds into market
+position when the market matures.
+</p>
+
+<p>
+This is the strategic argument for entering the category now
+rather than later. Today's revenue is modest. Today's market
+position has long-term value that today's revenue does not
+capture.
+</p>
+
+<h3>The catalysts</h3>
+
+<p>
+Two specific catalysts could meaningfully accelerate the trajectory
+beyond the realistic case.
+</p>
+
+<p>
+Visible RPC trust failures. Kelp DAO is the recent example. Others
+will follow because the underlying trust assumption is structurally
+broken across the ecosystem. Each visible failure drives demand
+toward verified alternatives. A platform that is operationally
+ready when a visible failure occurs absorbs disproportionate
+demand. A platform that is still in build does not.
+</p>
+
+<p>
+Major agent framework integrations. If Anthropic, Cloudflare,
+OpenAI, or AWS decides their default agent toolchain should
+include verified compute and chooses a specific provider as the
+default, that provider's traffic increases by orders of magnitude
+overnight. These decisions are made by relationship-building rather
+than direct sales, and a platform that engages with the framework
+ecosystem actively positions to be the chosen default.
+</p>
+
+<p>
+Neither catalyst is fully under the platform's control. Both are
+positionable. The platform's posture toward both is to be
+operationally ready and ecosystem-engaged, so that when the
+catalysts occur, the platform benefits.
+</p>
+
+</div>
+</div>
+
+<!-- B-700 -->
+<div class="page-break" data-sheet="Sheet B-700"></div>
+
+<div id="b-700">
+<div class="section-mark">Section 7 · B-700</div>
+<h2 class="section-title">AI verified inference.<br><em>What it is, why later.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+Verified inference is the application of zero-knowledge proofs to
+machine learning model execution. It is a real category with real
+demand, and Paxiom will eventually serve it. The question is when.
+</p>
+
+<h3>What verified inference is</h3>
+
+<p>
+A verified inference proof attests to a specific claim: the model
+M, applied to input x, produced output y. The customer can verify
+that the output came from the claimed model rather than from a
+substituted cheaper or different model, and that the input was
+processed correctly.
+</p>
+
+<p>
+The mathematical structure mirrors what B-500 established. The
+statement is "M(x) = y." The witness is the model's weights and
+the intermediate activations. The relation is the model's forward
+pass. A ZK proof of the inference convinces the verifier that the
+output is genuine without revealing the weights or the input
+beyond what the customer chose to disclose.
+</p>
+
+<p>
+Variants exist. Privacy-preserving inference proves the output is
+correct without revealing the input. Model-private inference
+proves the output came from the claimed model without revealing
+the model's weights. Both variants are useful for different
+applications.
+</p>
+
+<h3>What verified inference enables</h3>
+
+<p>
+Several application categories benefit from verified inference in
+ways that unverified inference cannot satisfy.
+</p>
+
+<p>
+Medical AI. A diagnosis or treatment recommendation generated by
+an AI model carries weight only if the model can be audited. A
+verified inference proof attests that the diagnosis came from a
+specific approved model running on the specific patient data,
+without exposing the patient data or the model's proprietary
+weights to third parties. Regulatory frameworks for medical AI
+are moving in this direction.
+</p>
+
+<p>
+Financial models. A credit decision, an investment recommendation,
+or a fraud assessment generated by an AI model needs to be
+defensible if challenged. A verified inference proof gives
+auditors the evidence chain. Regulatory frameworks for financial
+AI are moving in this direction as well.
+</p>
+
+<p>
+Content moderation. A takedown decision based on automated
+classification needs to be reviewable. A verified inference proof
+demonstrates that the takedown came from the registered policy
+applied to the registered content. Platforms that operate at
+scale and face regulatory scrutiny benefit from this property.
+</p>
+
+<p>
+Agent-to-agent decision verification. When agent A relies on
+agent B's output for a consequential decision, agent A's operator
+may want verifiable evidence that agent B actually consulted its
+intended model rather than substituting a cheaper one. Verified
+inference provides this evidence.
+</p>
+
+<h3>Why this is later, not now</h3>
+
+<p>
+Verified inference is a real category with real demand and
+established players. EZKL, Modulus Labs, Giza, Inference Labs,
+Ritual all operate in it. Each has deep specialization in the
+specific problems of compiling ML models into ZK circuits,
+optimizing the proving process for inference workloads, and
+serving the specific buyers (often regulated industries) who need
+the property.
+</p>
+
+<p>
+Paxiom entering verified inference as a generalist in Phase 1
+would compete against specialists in their established field.
+That is the worse competitive position. The platform's strategic
+posture is to enter verified compute as a generalist (where the
+existing players are not agent-native) and expand into specific
+application categories later when the platform's substrate makes
+the entry advantageous.
+</p>
+
+<p>
+Verified inference is one such category. Phase 3 or Phase 4 of the
+build adds verified inference services on top of the existing
+substrate. The HyperBEAM device system supports the inference
+workloads (the RISC-V device for ZK proving, the greenzone device
+for TEE-attested inference). The Load Network audit trail extends
+naturally to inference attestations. The KYA primitive provides
+platform identity for inference results. The substrate is ready;
+the entry is timing.
+</p>
+
+<p>
+The advantage of waiting is that the verified inference market
+will be larger and more mature when Phase 3 arrives than it is
+today. The disadvantage is that specialists may have entrenched
+positions by then. The strategic bet is that agent-native delivery
+matters enough to justify entering against established specialists,
+because the specialists are not currently building agent-callable
+endpoints.
+</p>
+
+<p>
+This is the same competitive shape as Phase 1's entry into the
+broader verified compute category. Existing players are not
+serving the agent-native niche. Paxiom enters that niche. The
+platform's structural advantages compound.
+</p>
+
+</div>
+</div>
+
+<!-- B-710 -->
+<div class="page-break" data-sheet="Sheet B-710"></div>
+
+<div id="b-710">
+<div class="section-mark">Section 7 · B-710</div>
+<h2 class="section-title">Private data compute.<br><em>HIPAA, financial, the ZK pivot.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+The application that may matter most over the longer horizon is
+verified computation on private data. Healthcare, finance, and any
+domain where the data carries regulatory weight. ZK proofs are the
+only known cryptographic primitive that solves this cleanly.
+</p>
+
+<h3>The structural problem</h3>
+
+<p>
+Many computations need to happen on data that cannot be exposed.
+Patient records cannot be sent to a third party for analysis.
+Financial portfolios cannot be exposed for compliance evaluation.
+Trade secrets cannot be revealed for verification of derivative
+work. Identity documents cannot be shared with arbitrary verifiers.
+The list is long.
+</p>
+
+<p>
+The conventional approach is to do the computation in-house and
+have the third party trust the result. This is unsatisfactory.
+The third party cannot verify the computation. Errors and
+manipulation are undetectable. Compliance becomes a matter of
+attestation rather than verification.
+</p>
+
+<p>
+The alternative — sharing the data with the third party — is
+forbidden by regulation, contract, or competitive position. There
+is no satisfactory conventional solution.
+</p>
+
+<h3>What ZK proofs offer</h3>
+
+<p>
+A ZK proof of a computation on private data lets the data owner
+demonstrate the computation's correctness without revealing the
+data. The owner runs the computation, generates a proof, and
+provides the proof to the third party. The third party verifies
+the proof. The data never leaves the owner's control. The
+computation is verifiable.
+</p>
+
+<p>
+The structure mirrors B-500. The statement is "the computation
+produced output y." The witness includes the private data plus
+the intermediate values of the computation. The proof attests to
+correctness without revealing the witness.
+</p>
+
+<h3>The applications that matter</h3>
+
+<p>
+Healthcare compliance. HIPAA and similar frameworks require that
+patient data not be shared inappropriately. Verified computation
+on patient data lets healthcare providers demonstrate compliance
+to auditors without exposing patient records. A hospital can
+prove its diagnostic AI hits target accuracy on its patient
+population without showing the auditor a single patient's
+information.
+</p>
+
+<p>
+Financial regulation. Banks and asset managers face compliance
+requirements about portfolio composition, risk exposure, and
+trading patterns. Verified computation lets them demonstrate
+compliance without exposing the underlying positions to regulators
+or auditors. A bank can prove its capital ratios meet requirements
+without revealing the specific holdings.
+</p>
+
+<p>
+Identity verification. KYC and similar identity processes require
+verifying personal information without storing it permanently or
+exposing it to additional parties. Verified computation on
+identity data lets a person prove they are over 18, lived at a
+specific address for the required period, or meet other criteria
+without disclosing the underlying documents to every verifier.
+</p>
+
+<p>
+Audit and compliance broadly. Any regulatory framework that
+requires a third party to verify properties of private data is a
+candidate for verified computation. The current approach involves
+sharing data with auditors under NDA. The verified computation
+approach replaces that with cryptographic proofs.
+</p>
+
+<h3>Why this is the moat work, not Phase 1</h3>
+
+<p>
+The market for private-data verified computation is large but
+demanding. Healthcare compliance has specific requirements that
+take years to navigate. Financial regulators have detailed
+expectations that require dedicated regulatory engagement.
+Identity verification involves consumer-facing products with
+their own complexity.
+</p>
+
+<p>
+Phase 1 establishes the platform's substrate, builds operational
+track record, and generates revenue from less-demanding services.
+Phase 3 and beyond add the regulated-industry products on top of
+the substrate. The substrate is ready — HyperBEAM, AO/Arweave
+audit, ZK proving stack, KYA identity primitive — but the
+regulated-industry sales motion and compliance certification are
+multi-year work that Phase 1 does not undertake.
+</p>
+
+<p>
+The architectural choices in Phase 1 enable Phase 3+. The audit
+trail's structural verifiability matches what HIPAA wants. The
+ZK proving stack's quantum readiness matches what long-horizon
+financial records need. The KYA primitive's forward-compatibility
+matches what identity verification frameworks are converging on.
+None of these are accidental; all of them are positioning.
+</p>
+
+</div>
+</div>
+
+<!-- B-720 -->
+<div class="page-break" data-sheet="Sheet B-720"></div>
+
+<div id="b-720">
+<div class="section-mark">Section 7 · B-720</div>
+<h2 class="section-title">Telemetry and IoT.<br><em>Verifiable physical-world data feeds.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+The platform's substrate extends beyond transactions on chains to
+data from physical-world sources. Verifiable telemetry, supply
+chain attestations, sensor networks. The applications are real
+and the architecture supports them natively.
+</p>
+
+<h3>The category</h3>
+
+<p>
+Many decisions in the physical world depend on data from sensors
+that cannot be independently verified. Supply chain provenance —
+where did this material originate? Environmental monitoring — what
+were the air quality readings at this location and time? Industrial
+control — what were the equipment parameters during this operation?
+The standard approach is to trust the sensor operator's
+self-reported data. The trust is often misplaced.
+</p>
+
+<p>
+Verifiable telemetry attaches cryptographic attestation to sensor
+readings at the source. The sensor signs its readings. The signatures
+form an unbroken chain from the physical measurement to the
+downstream consumer. Tampering is detectable.
+</p>
+
+<p>
+For agent-mediated commerce, this matters because agents
+increasingly make decisions based on physical-world data. An agent
+optimizing a supply chain needs verifiable provenance. An agent
+managing energy usage needs verifiable consumption data. An agent
+auditing environmental compliance needs verifiable readings. The
+unverified versions of these data feeds are not adequate for the
+decisions agents are starting to make.
+</p>
+
+<h3>The SDF connection</h3>
+
+<p>
+RFC 9880 defines the Semantic Definition Format, an IETF standard
+for describing IoT devices and their capabilities. SDF is not a
+data protocol; it is a description language. It lets a device's
+capabilities be advertised in a machine-readable form that agents
+and other systems can reason about.
+</p>
+
+<p>
+SDF intersects Paxiom's positioning in a specific way. A platform
+that natively supports SDF descriptions of the data sources it
+verifies can serve agents that need to reason about physical-world
+sensors. The agent encounters an SDF description, identifies the
+sensor's capabilities, and queries Paxiom for verified attestation
+of the sensor's recent output. The result is an agent-callable
+verified telemetry feed with capability metadata that integrates
+with broader IoT infrastructure.
+</p>
+
+<p>
+This is forward-looking. Phase 1 does not include IoT services.
+The architectural choices that enable them are Phase 3+ work. The
+substrate supports them. The path is clear.
+</p>
+
+<h3>Why this is the longer arc</h3>
+
+<p>
+The IoT data category is large and fragmented. There is no single
+buyer or use case. The applications span supply chain, environmental
+monitoring, industrial automation, smart cities, and agriculture,
+each with its own ecosystem and standards. Entering as a generalist
+requires either picking a vertical to specialize in or building
+horizontal infrastructure that serves multiple verticals.
+</p>
+
+<p>
+Paxiom's substrate is the horizontal infrastructure case. The
+platform offers verified compute and audit trail; specific verticals
+build their applications on top. The platform earns transaction
+fees from all verticals without specializing in any. This is the
+AWS pattern applied to IoT-derived agent commerce.
+</p>
+
+<p>
+The category is not yet ready for a horizontal platform. The
+agent-economy use cases for IoT data are early. The standards (SDF
+among them) are still being adopted. The integration patterns are
+still being established. Phase 3 or Phase 4 enters the category
+when the substrate is ready, the demand is established, and the
+agent-mediated decision-making at scale makes verification
+genuinely necessary.
+</p>
+
+<p>
+For now, this is positioning rather than product. The architectural
+manifest names SDF native support for future IoT agentic
+interactions because the platform's substrate enables it without
+additional engineering. The platform is not selling IoT services
+in v1. It will be selling them in v3 or v4 when the conditions
+support it.
+</p>
+
+</div>
+</div>
+
+<!-- B-800 -->
+<div class="page-break" data-sheet="Sheet B-800"></div>
+
+<div id="b-800">
+<div class="section-mark">Section 8 · B-800</div>
+<h2 class="section-title">Founder context.<br><em>Background, discipline, iteration.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+Who is building this. What they bring. What they have built and
+what they have learned. The factual record relevant to evaluating
+the bet.
+</p>
+
+<h3>Background</h3>
+
+<p>
+Kyle Luecke. Twenty-nine. Self-taught across Solidity, JavaScript,
+Rust, Lua. Background in construction project management,
+specifically as an Assistant Project Manager on prime-contractor
+work. Currently the APM on the Google Fiber Greater Nashville
+buildout — coordinating subcontractors, managing schedule
+dependencies, handling hard problems with ambiguous information
+under time pressure.
+</p>
+
+<p>
+The relevance of construction PM background to platform building
+is not always obvious. Several specific properties transfer.
+Operational discipline — large construction projects fail
+predictably when discipline lapses; the same is true of platforms.
+Comfort with construction-document conventions — the blueprint
+register that this document set uses is a register the founder
+worked in daily for years. Willingness to do unglamorous
+infrastructure work — most of platform building is the unglamorous
+work, and most VC-backed founders are bad at it. Ability to
+coordinate complex builds with hard dependencies — Phase 1 has
+five services with overlapping dependencies and the audit relay
+build that runs alongside them.
+</p>
+
+<p>
+These are not theoretical claims. They are properties already
+demonstrated by the existing infrastructure — the executor, the
+OApp deployments, the AO compliance process, the PaxiomPool
+contract — that has been built and deployed during evenings and
+weekends while holding a 58-hour-per-week APM role. The track
+record is the evidence.
+</p>
+
+<h3>Audit discipline</h3>
+
+<p>
+A specific demonstration worth surfacing. During the development
+of the earlier arbitrage architecture, a serious code audit was
+conducted before the system went anywhere near mainnet. The audit
+caught real bugs that would have caused real losses.
+</p>
+
+<p>
+A hardcoded fabricated opportunity that bypassed actual price
+comparison. A chain-routing bug that would have sent transactions
+to the wrong network. A sell-leg bug where the input amount was
+zero, which would have produced confusing transaction failures. A
+fail-open quote logic that would have returned permissive results
+when the underlying quote infrastructure failed. Shell injection
+surfaces in the orchestration scripts that an attacker could have
+exploited to compromise the system.
+</p>
+
+<p>
+None of these were minor. Each was the kind of bug that, in
+production, costs money or compromises operations. All were caught
+by deliberate audit before deployment. The discipline that produces
+this outcome — taking the time to actually look hard at code before
+shipping it — is what distinguishes solo founders who ship working
+software from solo founders who ship buggy software.
+</p>
+
+<h3>Iteration</h3>
+
+<p>
+The current Paxiom thesis is the third version, not the first one.
+The territory has been clear from the start: zero-knowledge proving,
+the agentic economy, blockchain infrastructure. What has changed
+across iterations is the specific shape of the bet, in response to
+what each iteration's work taught.
+</p>
+
+<p>
+The first version targeted a genesis ZK proof of Ethereum consensus
+as the primary product. The work on this established familiarity
+with sync committee verification, BLS signatures, and the proving
+stack. It also revealed that the genesis proof itself was not the
+durable advantage — the permissionless prover network and
+integration ecosystem around it would be. The work was not
+abandoned; it was repositioned as one capability among several.
+</p>
+
+<p>
+The second version pivoted toward flash loan arbitrage as a
+near-term funding mechanism. The work on this established
+familiarity with cross-chain operations, LayerZero OApp
+deployment, and the operational realities of running execution
+infrastructure. It also revealed that flash loan atomicity was not
+the right execution model for the longer-horizon platform — the
+architectural choices that made arbitrage work created friction
+for the platform thesis. The execution infrastructure was kept;
+the arbitrage focus was repositioned.
+</p>
+
+<p>
+The current version is the platform thesis as articulated
+throughout this document. Verified compute as a category, x402-native
+delivery, AO/Arweave audit, no-RPC architecture. Cross-chain
+settlement as the reference application. The five Phase 1 services
+as the engine that funds the moat work. This thesis incorporates
+what the earlier iterations established and responds to the
+landscape that emerged around the work — x402's institutional
+embedding, KYA's category formation, the Kelp DAO incident's
+demonstration of RPC trust failure.
+</p>
+
+<p>
+What ties the iterations together is the territory. Building
+infrastructure for the agent economy. The territory has been
+constant. The bet on what specifically to build within the
+territory has refined as evidence accumulated.
+</p>
+
+<h3>Tools and resources</h3>
+
+<p>
+Active across Solidity, JavaScript, Rust, Lua, with growing comfort
+in Erlang for HyperBEAM work. Building on Arbitrum, Optimism, and
+Base. Cross-chain messaging via LayerZero. Persistent storage and
+compute via AO and Arweave. ZK proving stack tracking Polyhedra
+Expander, with SP1 and RISC Zero as alternatives evaluated.
+</p>
+
+<p>
+Development environment is WSL2 Ubuntu on a Windows Yoga i9 laptop,
+with an HP ProDesk for always-on infrastructure work. Cloud GPU
+through RunPod. Public presence on GitHub at
+<code>github.com/k-luecke</code> and at <code>paxiom.org</code>.
+</p>
+
+<p>
+Solo founder. No team yet. The platform's discipline is the
+operator's discipline. This is the constraint that shapes Phase 1's
+scope and the platform's pace.
+</p>
+
+</div>
+</div>
+
+<!-- B-810 -->
+<div class="page-break" data-sheet="Sheet B-810"></div>
+
+<div id="b-810">
+<div class="section-mark">Section 8 · B-810</div>
+<h2 class="section-title">Why this, why now.<br><em>The industrial revolution comparison.</em></h2>
+
+<div class="first-person">
+
+<p>
+There are easier ways to make money. I could go deeper on construction
+PM work and earn more. I could take a senior dev role at an existing
+crypto project and earn meaningfully more. I could build something
+less technically ambitious and probably ship it faster. The reasonable
+question is: why this specifically?
+</p>
+
+<p>
+The honest answer is that I have watched the pattern before. I was
+there for early Ethereum mining, when the equation between hash rate
+and what was actually getting built was visible to anyone paying
+attention. I was there for the Mt. Gox collapse and the lessons it
+taught about counterparty risk in nascent infrastructure. I was there
+for the Bitcoin Cash split and the political dynamics of who gets to
+define what counts as the canonical chain. I was there for enough
+cycles of crypto building, breaking, and rebuilding to recognize what
+that pattern looks like when it is happening to a different category.
+</p>
+
+<p>
+The agentic economy is that pattern, in the most consequential
+category I have seen it apply to. The substrate is being laid right
+now. The standards are being negotiated. The institutional
+embedding is real but unfinished. The infrastructure that will be
+the backbone of how machines transact for the next several decades
+is being built piece by piece by people who are early enough to be
+shaping it rather than buying tickets to ride someone else's.
+</p>
+
+<p>
+I have a lot of respect for the people who built the infrastructure
+of previous industrial revolutions. Vanderbilt and the railroads.
+Carnegie and the steel. Rockefeller and the oil pipelines. Morgan
+and the financial plumbing. The Rothschilds across centuries of it.
+Bezos and the cloud. These are not all morally clean stories — some
+of them are quite the opposite — but they share a structural feature.
+The people who built the infrastructure of their era captured a
+disproportionate share of the value created by the era. The reason
+is not that they were uniquely brilliant or uniquely virtuous. The
+reason is that they showed up early to build the substrate, and the
+substrate compounded.
+</p>
+
+<p>
+I want to participate in the building of the substrate of the agent
+economy. Not because I think I am Vanderbilt. Not because I expect
+to be Bezos. Because the only way to participate in the substrate of
+this era is to be early and stay disciplined, and "early" is a
+window that closes rather than a status that endures. The window is
+open right now.
+</p>
+
+<p>
+The specific bet — verified compute, x402-native delivery, no-RPC
+architecture, AO-anchored audit — is one specific way to participate.
+There are other valid bets. Other people are making them. The
+ecosystem will need many of them. What matters is that the bet I am
+making is grounded in real architectural advantages, fits a real
+gap in the existing landscape, and compounds in the directions the
+ecosystem is actually moving.
+</p>
+
+<p>
+That is the answer to "why this." Not because it is easy. Not
+because it is the most lucrative path on a one-year horizon. Because
+it is the shape of the world I see being built, and I would rather
+build a piece of that world than buy a ticket to someone else's
+version of it.
+</p>
+
+</div>
+</div>
+
+<!-- B-900 -->
+<div class="page-break" data-sheet="Sheet B-900"></div>
+
+<div id="b-900">
+<div class="section-mark">Section 9 · B-900</div>
+<h2 class="section-title">Ecosystem dependencies.<br><em>What lies outside the founder's control.</em></h2>
+
+<div class="prose">
+
+<p class="lead">
+The platform's success depends partly on bets about ecosystem
+evolution that the founder does not control. Honesty about these
+dependencies matters more than pretending they don't exist.
+</p>
+
+<h3>Protocol layer dependencies</h3>
+
+<p>
+x402's continued adoption is the foundation. If the protocol
+stagnates, if Visa's Trusted Agent Protocol or some alternative
+displaces it, if a critical security flaw forces a rewrite — any
+of these would change the substrate the platform is built on. The
+platform's mitigation is that the architectural advantages
+(no-RPC, audit trail, KYA primitive) are not specific to x402. The
+verified compute capabilities translate to whatever payment
+protocol the ecosystem consolidates around. The migration cost is
+real but the platform survives.
+</p>
+
+<p>
+Coinbase's facilitator pricing and policies. The default
+facilitator is currently free for users. If Coinbase changes
+pricing aggressively, the economics shift. The platform's mitigation
+is the optionality of self-hosted facilitators (x402-rs) and
+alternate commercial providers. The dependency is real but
+substitutable.
+</p>
+
+<p>
+Base's continued operation as the dominant settlement chain. If
+Base degrades materially, if its governance produces hostile
+changes, if a competing L2 takes meaningful share, the platform
+adjusts. The dependency is real but the protocol's chain-agnostic
+design provides genuine flexibility.
+</p>
+
+<h3>Standards layer dependencies</h3>
+
+<p>
+KYA framework consolidation. Multiple frameworks are competing.
+None has won. The platform's v1 implementation is forward-compatible
+with all of them through the naive primitive (signed responses,
+public key published). When a framework consolidates as dominant,
+the platform adapts. The cost is integration work, not architectural
+change.
+</p>
+
+<p>
+ERC-8004 and ERC-8183 adoption rates. The Ethereum Foundation has
+positioned these as the agent commerce stack, but adoption depends
+on the broader ecosystem participating. If adoption is slow, the
+platform's positioning around them produces less value than the
+realistic case projects. If adoption accelerates, the positioning
+produces more value. Neither outcome is fully under the platform's
+control.
+</p>
+
+<p>
+MCP's continued role as the de facto tool discovery standard.
+Anthropic's introduction of MCP has driven its adoption. If a
+competing standard emerges and captures share, the platform's
+MCP-wrapper investment produces less value. The mitigation is that
+agent discovery generally is structured-metadata matching; the
+specific format is replaceable.
+</p>
+
+<h3>Regulatory dependencies</h3>
+
+<p>
+KYA mandates. Regulators may eventually require specific KYA
+properties for transactions above certain thresholds. The shape and
+timing of these requirements is uncertain. The platform's mitigation
+is that the audit trail and identity primitive are already aligned
+with what regulators are likely to want. Compliance cost may be
+higher than projected, but the architecture is on the right side
+of the trajectory.
+</p>
+
+<p>
+Stablecoin regulation. USDC's regulatory status affects the entire
+x402 ecosystem. If USDC faces material restrictions, the settlement
+substrate shifts. The mitigation is the protocol's chain and asset
+agnosticism. The disruption would be real but bounded.
+</p>
+
+<p>
+Securities and CFTC jurisdiction. Verified compute services may
+eventually face questions about whether their outputs constitute
+regulated activity. The platform's mitigation is staying clearly
+within the verified-compute category and avoiding services that
+could be construed as financial advice or investment management.
+The boundary is real but navigable.
+</p>
+
+<h3>AI lab dependencies</h3>
+
+<p>
+Anthropic, OpenAI, Google, and Cloudflare's framework decisions.
+These entities are not customers — they don't pay for verified
+compute — and they're not direct competitors — they don't sell
+verified compute either. They're the entities whose tooling
+decisions determine whether agents using their frameworks find the
+platform. Their choices about default toolchains, integration
+patterns, and ecosystem partnerships affect Paxiom's traffic
+substantially.
+</p>
+
+<p>
+This is a different kind of stakeholder than most businesses have.
+The mitigation is engaging directly with the framework ecosystems
+where possible — contributing to MCP, registering on framework
+plugin lists, participating in technical communities — and
+building services that fit naturally into their patterns. The
+platform's success depends partly on these relationships, and the
+relationships are built rather than purchased.
+</p>
+
+<h3>Existing competitor dependencies</h3>
+
+<p>
+RISC Zero, Succinct, Boundless, EZKL, Lagrange, Polyhedra, and the
+broader verified compute ecosystem's strategic decisions. If they
+extend into agent-native delivery aggressively, Paxiom faces
+strong competition with their existing customer bases. If they
+stay focused on B2B integration, the agent-native niche remains
+open. The competitive trajectory is partly outside the founder's
+control.
+</p>
+
+<p>
+The mitigation is the architectural moats covered in B-320. Those
+moats are real and are not trivially retrofittable by competitors.
+But they are not insurmountable for well-funded teams that decide
+to commit. The competitive advantage is real but bounded by what
+larger competitors choose to do.
+</p>
+
+<h3>The honest summary</h3>
+
+<p>
+The platform's success depends on multiple factors outside the
+founder's control. The agentic economy continues to grow. x402 or
+its successor remains the dominant payment rail. Standards layers
+mature in compatible directions. Regulators move at a pace the
+platform can adapt to. AI labs build frameworks that are
+discoverable to platforms like Paxiom. Existing verified compute
+providers do not aggressively extend into agent-native delivery.
+</p>
+
+<p>
+None of these are guarantees. All of them are reasonable bets
+based on observable institutional behavior. The architectural
+choices in the platform are designed to be robust to multiple
+plausible futures rather than to bet on one specific outcome.
+The platform survives outcomes that diverge from the realistic
+case; it just produces less value than the realistic case
+projects.
+</p>
+
+<p>
+Building infrastructure means accepting that the substrate's
+evolution is partly someone else's decision. The mitigation is
+not pretending otherwise. The mitigation is making bets that
+work across reasonable variation in the substrate's evolution.
+</p>
+
+</div>
+</div>
+
+<!-- B-1000 -->
+<div class="page-break" data-sheet="Sheet B-1000"></div>
+
+<div id="b-1000">
+<div class="section-mark">Section 10 · B-1000</div>
+<h2 class="section-title">The trajectory.<br><em>Phase 1 through Phase 5.</em></h2>
+<p class="section-strap">
+Where the platform goes after Phase 1. The moats. Being early to
+demand that does not yet fully exist.
+</p>
+
+<div class="prose">
+
+<p class="lead">
+Phase 1 ships the engine. The moat work is what makes the engine
+worth running for the long horizon. Each phase beyond Phase 1
+extends the platform's capability into directions where the
+architectural choices made in Phase 1 produce structural
+advantages.
+</p>
+
+<h3>Phase 2 — catalog breadth and multi-chain</h3>
+
+<p>
+Phase 2 expands the service catalog beyond the initial five and
+extends the platform to multi-chain operation. New verified state
+proofs for additional chains. New simulation services for chains
+beyond Ethereum. New cross-chain attestations spanning more pairs.
+Each addition uses the same substrate as Phase 1 — HyperBEAM
+devices, AO/Arweave audit, KYA primitive, x402-native delivery —
+without architectural change. The pattern established in Phase 1
+ramps in throughput.
+</p>
+
+<p>
+The expected revenue trajectory in Phase 2 is roughly 2-4x the
+Phase 1 run rate, depending on adoption and pricing optimization.
+Phase 2 is also where B2B contracts begin to materialize — the
+operational track record from Phase 1 provides the credibility
+that enterprise integrations require, and the catalog breadth
+provides the surface area that enterprise buyers need.
+</p>
+
+<h3>Phase 3 — differentiated capabilities</h3>
+
+<p>
+Phase 3 introduces capabilities that competitors cannot easily
+replicate. Recursive proving for composable cross-chain settlement
+through Polyhedra Expander integration. ZK proofs of computation
+on private data, opening the HIPAA-grade compliance market.
+Verified historical state at scale, where the no-RPC architecture
+provides genuinely rare capability.
+</p>
+
+<p>
+This is where the moat work begins. Phase 1 services are
+commoditized — competing primarily on operational properties.
+Phase 3 services are differentiated — competing on architectural
+properties that competitors cannot match without substantial
+investment. The economics improve correspondingly. Higher prices,
+larger contracts, longer customer relationships.
+</p>
+
+<p>
+The expected revenue trajectory in Phase 3 is meaningfully higher
+than Phase 2's, with the dispersion driven by which specific
+applications develop demand fastest. The platform's strategy in
+Phase 3 is to be operationally ready for multiple application
+categories simultaneously, so that whichever category catalyzes
+first, the platform absorbs the demand.
+</p>
+
+<h3>Phase 4 — enterprise integration</h3>
+
+<p>
+Phase 4 deepens enterprise relationships. Specific industries
+begin to integrate the platform's verified compute into their core
+operations. Healthcare for HIPAA-grade compliance. Financial
+services for regulatory attestation. Supply chain for verifiable
+provenance. Each integration is multi-quarter work but produces
+revenue at substantially higher unit economics than per-call
+service fees.
+</p>
+
+<p>
+The platform's posture in Phase 4 is shifting from generalist
+verified compute provider to vertical-specific compliance
+infrastructure. The generalist services continue, providing the
+horizontal substrate. The vertical-specific products layer on top,
+serving the buyers who pay for the moat work.
+</p>
+
+<h3>Phase 5 — quantum-clean and forward-positioning</h3>
+
+<p>
+Phase 5 completes the platform's positioning for the longer
+horizon. The proving stack migrates fully to post-quantum-clean
+primitives — Polyhedra Expander, ML-DSA signatures, hash-based
+attestations. The KYA primitive transitions to ERC-8004 or its
+successor in active deployment rather than just compatibility.
+ERC-8183 marketplace participation activates as Paxiom becomes a
+production Evaluator for trustless agent escrow. IoT and telemetry
+applications begin shipping as the SDF-native architecture
+finally has demand to serve.
+</p>
+
+<p>
+This is where being early pays off. The architectural choices
+made in Phase 1 — choosing Polyhedra Expander, building on
+HyperBEAM, anchoring audit in AO/Arweave, naive KYA primitive —
+position the platform to operate cleanly in the post-quantum
+agent economy that is taking shape. Competitors who chose
+quantum-vulnerable primitives or RPC-dependent architectures or
+bolt-on audit trails face migration costs that Paxiom does not.
+</p>
+
+<h3>Being early to demand that does not yet exist</h3>
+
+<p>
+Several Phase 5 capabilities serve demand that does not yet fully
+exist in the market. Quantum-clean proving is positioning for a
+threat that is real but not yet immediate. SDF-native IoT
+agentic interactions assume widespread agent-mediated commerce
+in physical-world data. Private-data ZK assumes regulatory
+frameworks that are forming but not yet finalized. ERC-8183
+evaluator role assumes marketplace adoption that is starting but
+not yet broad.
+</p>
+
+<p>
+Being early to these capabilities is the bet. The standard
+critique of being early — "you're solving for demand that doesn't
+exist yet" — is correct in the short term. It misses the longer
+horizon. Demand for these capabilities will exist. The question is
+who is ready when it does. A platform that has been operating
+quantum-clean infrastructure for three years when the migration
+broadly arrives captures more of the migrating market than
+incumbents who must scramble.
+</p>
+
+<p>
+The trajectory through Phase 5 is what makes the Phase 1 build
+worth doing. Phase 1 alone is a viable infrastructure business at
+modest scale. Phase 1 plus the moat work that follows is a
+substantial infrastructure business positioned for the agent
+economy that is forming. The bet is not on Phase 1's economics.
+The bet is on the substrate the Phase 1 architectural choices
+enable.
+</p>
+
+<h3>The compounding properties</h3>
+
+<p>
+Three properties compound across the phases.
+</p>
+
+<p>
+Reputation. Every successful service call adds to the platform's
+track record. Every reliable operation across years of operation
+makes Phase 4 enterprise contracts easier to land. The track
+record cannot be acquired by larger competitors who arrive later;
+it can only be built through time.
+</p>
+
+<p>
+Integration depth. Each agent framework integration, each
+discovery layer registration, each B2B partnership adds to the
+platform's surface area. By Phase 4, the platform is integrated
+into the agent economy in ways that are not trivially
+substitutable. Customer switching costs grow.
+</p>
+
+<p>
+Architectural advantages. The no-RPC, AO-audit, KYA-primitive
+properties become more valuable as the agent economy matures.
+Today they are differentiators. By Phase 4 or 5, they may be
+table stakes — the entire ecosystem has migrated toward them, and
+the platform that has been operating with them from Phase 1 has
+the longest track record and the deepest integration of any
+participant.
+</p>
+
+<p>
+None of this happens automatically. All of it requires sustained
+execution across many years. The phases are calibrated to a
+realistic execution pace, not to a heroic one. The bet on the
+trajectory is a bet on sustained discipline, not on extraordinary
+luck.
+</p>
+
+</div>
+</div>
+
+<!-- B-1100 -->
+<div class="page-break" data-sheet="Sheet B-1100"></div>
+
+<div id="b-1100">
+<div class="section-mark">B-1100 · Closing &amp; References</div>
+<h2 class="section-title">Closing.<br><em>Where to go from here.</em></h2>
+
+<div class="prose">
+
+<h3>Related documents</h3>
+
+<p>
+This narrative is one document in a set. The full set provides the
+detail this document deliberately avoids. Each document serves a
+specific purpose.
+</p>
+
+<p>
+<strong>A-series · Phase 1 Blueprint.</strong> Detailed specifications
+for each of the five Phase 1 services. Cost and revenue pro forma.
+Build sequence with explicit gates and decision points. Risk
+register specific to Phase 1. The "what to build" reference.
+</p>
+
+<p>
+<strong>M-series · Audit Relay Blueprint.</strong> WSL-native tooling
+that automates the audit cycle for code changes. Mechanical
+infrastructure that accelerates the build without removing the
+operator from decision loops. Six-gate build sequence.
+</p>
+
+<p>
+<strong>E-series · Key Custody and Identity Blueprint.</strong>
+Three-tier architecture for the keys the platform owns. Hot, warm,
+cold. Inventory of every keypair. Procedures for generation,
+signing, rotation, and compromise response. Operational specifics
+captured in a separate private document.
+</p>
+
+<p>
+<strong>O-series · Operations Runbook.</strong> Procedures for the
+day things go wrong and the days they go right. Eight incident
+procedures, five routine procedures, severity framework, post-incident
+discipline. The book to grab at 3am.
+</p>
+
+<p>
+<strong>Build Map.</strong> Strategic positioning across all phases
+from Phase 0 through Phase 5. Earlier strategic document that
+established the broad shape this narrative now elaborates.
+</p>
+
+<p>
+The full set of documents is at <code>paxiom.org</code> and in the
+project's GitHub repository.
+</p>
+
+<h3>Revision log</h3>
+
+<p>
+<strong>Rev. A — 2026.04.29.</strong> Initial issue. Eleven
+sections covering the agentic economy, x402 protocol, threat
+surface, platform definition, technical architecture, economics,
+forward-looking applications, founder context, ecosystem
+dependencies, trajectory through Phase 5, and references.
+</p>
+
+<p>
+<em>Subsequent revisions issued as the platform's positioning
+evolves. Rev. B expected when Phase 1 first service launches with
+operational traffic data to inform the economics section. Rev. C
+expected as KYA standards consolidate or significant ecosystem
+shifts occur.</em>
+</p>
+
+<h3>One last thing</h3>
+
+<p>
+The agentic economy is being built right now. The substrate of how
+machines transact for the next several decades is being laid by
+people who are early enough to be shaping it. Paxiom is one
+participant in that building. The bet is not on Paxiom specifically
+— the bet is on the territory, the timing, and the architectural
+choices that compound across years.
+</p>
+
+<p>
+The bet is also on the discipline to actually build it. Phase 1
+ships five services. The moats follow. The trajectory is real but
+not automatic. The work is the work.
+</p>
+
+<p>
+<em>Build the engine first. The moats come later. The substrate
+is being laid right now.</em>
+</p>
+
+</div>
+</div>
+
+</div>
+
+<div class="sheet-footer">
+  <div>Paxiom · paxiom.org</div>
+  <div class="center">Narrative · Rev. A · 2026.04.29</div>
+  <div class="right">Sheet Set B-000 / 26</div>
+</div>
+
+</div>
+
+</body>
+</html>

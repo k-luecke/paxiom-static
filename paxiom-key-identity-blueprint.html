@@ -1,0 +1,2389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom · Key Custody &amp; Identity · Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F1E8;
+  --paper-dark: #EDE6D3;
+  --ink: #1A2332;
+  --ink-mid: #3A4555;
+  --ink-faint: #6B7280;
+  --rule: #1A2332;
+  --rule-faint: #B8AE96;
+  --blue: #1E3A5F;
+  --blue-light: #4A6B8A;
+  --red: #8B2E1F;
+  --amber: #B8860B;
+  --grid: rgba(26, 35, 50, 0.04);
+  --redacted: #2A2F38;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+
+.sheet {
+  max-width: 1080px;
+  margin: 40px auto;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  position: relative;
+}
+
+@media (max-width: 900px) {
+  .sheet { margin: 16px 8px; border-width: 1px; }
+}
+
+.sheet-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border-bottom: 2px solid var(--ink);
+  padding: 16px 24px;
+  align-items: end;
+  gap: 24px;
+}
+
+.sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
+
+.sheet-project {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.sheet-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.sheet-subtitle {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-mid);
+  margin-top: 2px;
+}
+
+.sheet-meta {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 4px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+.sheet-meta dt {
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.sheet-meta dd { color: var(--ink); font-weight: 500; }
+
+.classification-bar {
+  background: var(--red);
+  color: var(--paper);
+  padding: 8px 24px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: center;
+  font-weight: 600;
+  border-bottom: 2px solid var(--ink);
+}
+
+.sheet-body { padding: 48px 64px; }
+
+@media (max-width: 700px) {
+  .sheet-body { padding: 32px 24px; }
+}
+
+/* ─── Cover ──────────────────────────────────────────── */
+
+.cover-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cover-mark::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule-faint);
+}
+
+.cover-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 400;
+  font-size: clamp(44px, 6.5vw, 76px);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+
+.cover-title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-mid);
+}
+
+.cover-strap {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 21px;
+  line-height: 1.4;
+  color: var(--ink-mid);
+  max-width: 60ch;
+  margin-bottom: 56px;
+}
+
+.cover-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 48px;
+}
+
+@media (max-width: 700px) {
+  .cover-grid { grid-template-columns: 1fr; }
+}
+
+.cover-cell {
+  padding: 20px 24px;
+  border-right: 1px solid var(--rule-faint);
+}
+
+.cover-cell:nth-child(2n) { border-right: none; }
+
+@media (max-width: 700px) {
+  .cover-cell {
+    border-right: none;
+    border-bottom: 1px solid var(--rule-faint);
+  }
+  .cover-cell:last-child { border-bottom: none; }
+}
+
+.cover-cell-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+}
+
+.cover-cell-value {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 18px;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.cover-cell-value em {
+  font-style: italic;
+  color: var(--ink-mid);
+}
+
+/* ─── TOC ────────────────────────────────────────────── */
+
+.toc-section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 40px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule-faint);
+}
+
+.toc-section-label:first-child { margin-top: 0; }
+
+.toc-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 24px;
+  padding: 10px 0;
+  border-bottom: 1px dotted var(--rule-faint);
+  align-items: baseline;
+}
+
+.toc-row:last-of-type { border-bottom: none; }
+
+.toc-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--blue);
+  letter-spacing: 0.04em;
+}
+
+.toc-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.toc-title em {
+  font-style: italic;
+  color: var(--ink-mid);
+  font-size: 14px;
+  display: block;
+  margin-top: 2px;
+}
+
+.toc-page {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+
+/* ─── Section Headers ────────────────────────────────── */
+
+.section-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-mark::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--blue);
+}
+
+.section-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.section-title em { font-style: italic; color: var(--ink-mid); }
+
+.section-strap {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--ink-mid);
+  margin-bottom: 40px;
+  max-width: 60ch;
+  line-height: 1.5;
+}
+
+/* ─── Body ────────────────────────────────────────────── */
+
+.prose p {
+  margin-bottom: 18px;
+  max-width: 70ch;
+}
+
+.prose h3 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 20px;
+  margin-top: 36px;
+  margin-bottom: 14px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.prose h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-top: 28px;
+  margin-bottom: 10px;
+}
+
+.prose strong { font-weight: 600; color: var(--ink); }
+.prose em { font-style: italic; color: var(--ink-mid); }
+
+.prose code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--paper-dark);
+  padding: 1px 6px;
+  border-radius: 2px;
+  color: var(--blue);
+}
+
+/* ─── Callouts ────────────────────────────────────────── */
+
+.callout {
+  border: 1px solid var(--ink);
+  margin: 32px 0;
+  background: var(--paper);
+}
+
+.callout-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  padding: 8px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  align-items: center;
+}
+
+.callout-tag { font-weight: 600; }
+
+.callout-id { color: var(--paper-dark); opacity: 0.7; }
+
+.callout-body { padding: 18px 20px; }
+
+.callout-body p {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.callout-body p:last-child { margin-bottom: 0; }
+
+.callout-body ul {
+  margin: 8px 0 4px 18px;
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.callout-body li { margin-bottom: 4px; }
+
+.callout-body code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--paper-dark);
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: var(--blue);
+}
+
+.callout.ref { border-color: var(--blue); }
+.callout.ref .callout-header { background: var(--blue); }
+
+.callout.spec { border-color: var(--ink); }
+
+.callout.note { border-style: dashed; border-color: var(--ink-faint); }
+.callout.note .callout-header {
+  background: transparent;
+  color: var(--ink-faint);
+  border-bottom: 1px dashed var(--ink-faint);
+}
+.callout.note .callout-id { color: var(--ink-faint); }
+
+.callout.warn { border-color: var(--red); }
+.callout.warn .callout-header { background: var(--red); }
+
+.callout.private {
+  border-color: var(--redacted);
+  background: var(--paper-dark);
+}
+.callout.private .callout-header {
+  background: var(--redacted);
+}
+
+/* ─── Redaction Marker ───────────────────────────────── */
+
+.redacted-block {
+  margin: 20px 0;
+  padding: 22px 24px;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--paper-dark),
+    var(--paper-dark) 8px,
+    var(--paper) 8px,
+    var(--paper) 16px
+  );
+  border: 1px solid var(--redacted);
+  border-left: 4px solid var(--redacted);
+  position: relative;
+}
+
+.redacted-label {
+  position: absolute;
+  top: -10px;
+  left: 18px;
+  background: var(--paper);
+  padding: 2px 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--redacted);
+  font-weight: 600;
+  border: 1px solid var(--redacted);
+}
+
+.redacted-content {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-mid);
+  line-height: 1.5;
+}
+
+.redacted-content strong {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ─── Tier Sheets ────────────────────────────────────── */
+
+.tier-sheet {
+  margin: 40px 0;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+}
+
+.tier-header {
+  padding: 20px 28px;
+  background: var(--paper-dark);
+  border-bottom: 1.5px solid var(--ink);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 24px;
+  align-items: baseline;
+}
+
+@media (max-width: 700px) {
+  .tier-header {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.tier-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--blue);
+  letter-spacing: 0.02em;
+}
+
+.tier-name {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.tier-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  border: 1px solid var(--ink-mid);
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.tier-tag.cold { color: var(--blue); border-color: var(--blue); }
+.tier-tag.warm { color: var(--amber); border-color: var(--amber); }
+.tier-tag.hot { color: var(--red); border-color: var(--red); }
+
+.tier-body { padding: 28px; }
+
+.tier-body h5 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-top: 22px;
+  margin-bottom: 8px;
+}
+
+.tier-body h5:first-child { margin-top: 0; }
+
+.tier-body p {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+
+.tier-body ul {
+  margin: 8px 0 14px 22px;
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.tier-body li { margin-bottom: 6px; }
+
+.spec-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid var(--rule-faint);
+  margin: 16px 0 24px;
+}
+
+@media (max-width: 700px) {
+  .spec-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.spec-cell {
+  padding: 14px 16px;
+  border-right: 1px solid var(--rule-faint);
+  border-bottom: 1px solid var(--rule-faint);
+}
+
+.spec-cell:last-child { border-right: none; }
+
+@media (max-width: 700px) {
+  .spec-cell:nth-child(2n) { border-right: none; }
+  .spec-cell:nth-child(odd) { border-right: 1px solid var(--rule-faint); }
+}
+
+.spec-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+}
+
+.spec-value {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.spec-value em {
+  font-style: italic;
+  color: var(--ink-mid);
+  font-size: 12px;
+  font-weight: 400;
+  display: block;
+  margin-top: 2px;
+}
+
+/* ─── Inventory Table ────────────────────────────────── */
+
+.inventory {
+  margin: 24px 0;
+  border: 1.5px solid var(--ink);
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.inventory th {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 10px 12px;
+  font-weight: 500;
+}
+
+.inventory td {
+  padding: 12px;
+  border-bottom: 1px solid var(--rule-faint);
+  border-right: 1px solid var(--rule-faint);
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 13px;
+  vertical-align: top;
+  color: var(--ink);
+}
+
+.inventory td:last-child { border-right: none; }
+.inventory tr:last-child td { border-bottom: none; }
+
+.inventory .id {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--blue);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.inventory .tier-cell {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.inventory .tier-cell.hot { color: var(--red); }
+.inventory .tier-cell.warm { color: var(--amber); }
+.inventory .tier-cell.cold { color: var(--blue); }
+
+/* ─── Procedure Sequence ─────────────────────────────── */
+
+.sequence {
+  margin: 32px 0;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  padding: 28px 32px;
+}
+
+.sequence-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 18px;
+}
+
+.sequence-row {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.sequence-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 28px;
+  bottom: -14px;
+  width: 1px;
+  background: var(--rule-faint);
+}
+
+.sequence-mark {
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--blue);
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--blue);
+  position: relative;
+  z-index: 1;
+}
+
+.sequence-mark.user {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.sequence-text {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  color: var(--ink);
+  padding-top: 4px;
+}
+
+.sequence-text strong { font-weight: 600; color: var(--ink); }
+
+.sequence-text em {
+  font-style: italic;
+  color: var(--ink-mid);
+  font-size: 13px;
+  display: block;
+  margin-top: 2px;
+}
+
+/* ─── Page Break ─────────────────────────────────────── */
+
+.page-break {
+  border-top: 2px solid var(--ink);
+  margin: 96px -64px 64px;
+  position: relative;
+}
+
+@media (max-width: 700px) {
+  .page-break { margin: 56px -24px 40px; }
+}
+
+.page-break::before {
+  content: attr(data-sheet);
+  position: absolute;
+  top: -10px;
+  left: 64px;
+  background: var(--paper);
+  padding: 0 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ─── Footer ─────────────────────────────────────────── */
+
+.sheet-footer {
+  border-top: 1.5px solid var(--ink);
+  padding: 14px 24px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  align-items: center;
+}
+
+.sheet-footer .center { text-align: center; }
+
+.sheet-footer .right {
+  text-align: right;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+a {
+  color: var(--blue);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+a:hover { color: var(--red); }
+
+@media print {
+  body { background: white; }
+  .sheet { border: 2px solid black; }
+  .page-break { page-break-before: always; }
+}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+<!-- ═════════════════════════════════════════════
+     SHEET HEADER
+     ═════════════════════════════════════════════ -->
+
+<div class="sheet-header">
+  <div class="sheet-title-block">
+    <div class="sheet-project">Paxiom · Electrical · Drawing Set</div>
+    <div class="sheet-title">Key Custody &amp; Identity Management</div>
+    <div class="sheet-subtitle">A three-tier architecture for the keys the platform will own.</div>
+  </div>
+  <dl class="sheet-meta">
+    <dt>Project No.</dt><dd>PXM-001-E</dd>
+    <dt>Issue</dt><dd>Electrical / Rev. A</dd>
+    <dt>Date</dt><dd>2026.04.29</dd>
+    <dt>Drawn By</dt><dd>K. Luecke</dd>
+  </dl>
+</div>
+
+<div class="classification-bar">
+  Architectural Reference · Operational Specifics Held Separately · Do Not Co-Locate
+</div>
+
+<!-- ═════════════════════════════════════════════
+     E-000 · COVER & INDEX
+     ═════════════════════════════════════════════ -->
+
+<div class="sheet-body">
+
+<div class="cover-mark">Sheet E-000 · Cover &amp; Index</div>
+
+<h1 class="cover-title">Three tiers.<br><em>Hot, warm, cold.</em></h1>
+
+<p class="cover-strap">
+Not every key has the same threat model. Not every key needs the same custody.
+The architecture distributes keys across three tiers by frequency of use and
+consequence of loss. Operational specifics live elsewhere — this document
+captures the shape, not the procedures.
+</p>
+
+<div class="cover-grid">
+  <div class="cover-cell">
+    <div class="cover-cell-label">Hot Tier</div>
+    <div class="cover-cell-value">Per-transaction signing<em>KYA · settlement · operational</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Warm Tier</div>
+    <div class="cover-cell-value">Periodic operations<em>admin · deployment · treasury sweeps</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Cold Tier</div>
+    <div class="cover-cell-value">Air-gapped, manual signing<em>master · entity · recovery</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Defense in Depth</div>
+    <div class="cover-cell-value">Compromise of one tier <em>does not compromise the others</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Audit Trail</div>
+    <div class="cover-cell-value">Every signature logged<em>AO · Arweave · permanent</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Operator Burden</div>
+    <div class="cover-cell-value">Calibrated to frequency<em>hot is automated; cold is ceremony</em></div>
+  </div>
+</div>
+
+<div class="callout private">
+  <div class="callout-header">
+    <span class="callout-tag">Operational Boundary</span>
+    <span></span>
+    <span class="callout-id">E-000 / B.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      This document is architectural. It names the tiers, the keys, the
+      threat models, and the procedures at the level of "what kind of operation
+      occurs." It does not name specific hardware models, specific OS
+      configurations, specific physical locations, specific transfer mechanisms,
+      or specific software builds for the cold tier.
+    </p>
+    <p>
+      Operational specifics live in a separate, private document under the
+      operator's exclusive control. References to redacted material are marked
+      with a hatched block and the label <strong>OPERATIONAL · PRIVATE</strong>.
+    </p>
+    <p>
+      This separation is the right discipline. Architectural documents that
+      include operational specifics become attack surfaces. Architectural
+      documents that omit them remain useful for planning while keeping
+      adversaries blind to the actual implementation.
+    </p>
+  </div>
+</div>
+
+<div class="toc-section-label">Front Matter</div>
+
+<div class="toc-row">
+  <div class="toc-num">E-000</div>
+  <div class="toc-title">Cover &amp; Index<em>this sheet</em></div>
+  <div class="toc-page">↑</div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">E-010</div>
+  <div class="toc-title">Project Narrative<em>threat model, why three tiers</em></div>
+  <div class="toc-page"><a href="#e-010">E-010</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">E-020</div>
+  <div class="toc-title">Reference Standards<em>cryptographic primitives, protocols, conventions</em></div>
+  <div class="toc-page"><a href="#e-020">E-020</a></div>
+</div>
+
+<div class="toc-section-label">Architecturals</div>
+
+<div class="toc-row">
+  <div class="toc-num">E-100</div>
+  <div class="toc-title">Key Inventory<em>every keypair the platform will own</em></div>
+  <div class="toc-page"><a href="#e-100">E-100</a></div>
+</div>
+
+<div class="toc-section-label">Tier Elevations</div>
+
+<div class="toc-row">
+  <div class="toc-num">E-201</div>
+  <div class="toc-title">Hot Tier<em>per-transaction signing on the production server</em></div>
+  <div class="toc-page"><a href="#e-201">E-201</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">E-202</div>
+  <div class="toc-title">Warm Tier<em>periodic operations, attached when needed</em></div>
+  <div class="toc-page"><a href="#e-202">E-202</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">E-203</div>
+  <div class="toc-title">Cold Tier<em>air-gapped, manual ceremony, rare use</em></div>
+  <div class="toc-page"><a href="#e-203">E-203</a></div>
+</div>
+
+<div class="toc-section-label">Procedures</div>
+
+<div class="toc-row">
+  <div class="toc-num">E-300</div>
+  <div class="toc-title">Generation Ceremonies<em>how keys are born</em></div>
+  <div class="toc-page"><a href="#e-300">E-300</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">E-301</div>
+  <div class="toc-title">Signing Ceremonies<em>cold-tier operation flow</em></div>
+  <div class="toc-page"><a href="#e-301">E-301</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">E-302</div>
+  <div class="toc-title">Rotation &amp; Compromise Response<em>aging keys out, keys gone bad</em></div>
+  <div class="toc-page"><a href="#e-302">E-302</a></div>
+</div>
+
+<div class="toc-section-label">Schedules</div>
+
+<div class="toc-row">
+  <div class="toc-num">E-310</div>
+  <div class="toc-title">Risk Register<em>known failure modes for key custody</em></div>
+  <div class="toc-page"><a href="#e-310">E-310</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">E-900</div>
+  <div class="toc-title">General Notes<em>conventions, related documents, revisions</em></div>
+  <div class="toc-page"><a href="#e-900">E-900</a></div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     E-010 · PROJECT NARRATIVE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet E-010"></div>
+
+<div id="e-010">
+<div class="section-mark">E-010 · Project Narrative</div>
+<h2 class="section-title">Why three tiers, <em>not one.</em></h2>
+<p class="section-strap">
+A single signing system can't serve every key the platform owns.
+The keys differ in frequency, consequence, and recoverability — the
+custody model has to differ too.
+</p>
+
+<div class="prose">
+
+<p>
+Paxiom will own multiple keypairs across its operational lifetime. The KYA
+primitive needs a signing key. The x402 settlement uses a wallet. The AO
+processes have admin keys. Eventually the LLC entity has master keys and
+the treasury has its own. Each of these has different operational characteristics
+— how often it signs, what it costs if it's lost, what it costs if it's
+stolen — and applying the same custody model to all of them is a mistake
+in both directions.
+</p>
+
+<p>
+Treating every key as if it needed maximum security creates operational
+friction that breaks the platform — customers can't wait minutes for a manual
+signing ceremony on every transaction. Treating every key as if it needed
+operational availability creates exposure that breaks security — the LLC
+master key sitting on the production server next to the operational keys
+multiplies the consequence of any single compromise.
+</p>
+
+<p>
+The three-tier architecture is the standard answer to this trade-off in
+serious key custody. Hot keys are available, automated, and survivable
+because they're scoped narrowly. Cold keys are protected, manual, and rare
+because compromise would be catastrophic. Warm keys sit in between for
+operations that recur but don't justify the latency of cold-tier ceremony.
+</p>
+
+<h3>Threat model</h3>
+
+<p>
+The threats Paxiom's keys face are not theoretical. The agent commerce
+ecosystem is actively targeted. Lazarus Group and similar state actors
+extract substantial value from DeFi infrastructure. Sophisticated criminal
+organizations target service operators. Lookalike attacks impersonate
+legitimate platforms. Each of these is a distinct adversary with distinct
+capabilities.
+</p>
+
+<p>
+The keys most likely to be attacked are the ones with the most reachable
+attack surface and the most concentrated value. The x402 settlement wallet
+holds incoming customer payments and is reachable through standard internet
+exposure. The KYA signing key is reachable through the same channels and
+its compromise would let an attacker impersonate the platform indefinitely.
+The cold-tier master and entity keys are unreachable through internet attack
+surface but are subject to physical and supply-chain compromise.
+</p>
+
+<p>
+Defense in depth matters because each tier compromise must be survivable.
+Hot tier compromise drains the operational wallet and forces emergency
+key rotation but does not compromise the platform's identity (because KYA
+keys are warm-tier or higher). Warm tier compromise allows specific operations
+during the compromise window but is detected and recovered through cold-tier
+authority. Cold tier compromise is catastrophic — therefore the cold tier
+is engineered to be the hardest to compromise.
+</p>
+
+<h3>What this document does not cover</h3>
+
+<p>
+End-user wallet security. Customers who interact with Paxiom manage their
+own wallets. Paxiom never holds customer keys, never custodies customer
+funds beyond per-transaction settlement, and never displays seeds or private
+keys to anyone in any context.
+</p>
+
+<p>
+Implementation specifics for the cold tier. The architectural sheet (E-203)
+describes what the cold tier is. The procedures (E-300, E-301) describe
+what flows through it. The specific hardware, OS, software stack, and
+physical environment are covered in a separate operational document under
+the operator's exclusive control.
+</p>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     E-020 · REFERENCE STANDARDS
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet E-020"></div>
+
+<div id="e-020">
+<div class="section-mark">E-020 · Reference Standards</div>
+<h2 class="section-title">Cryptographic primitives <em>&amp; conventions.</em></h2>
+<p class="section-strap">
+The cryptographic substrate the platform builds against. Standard, audited,
+not novel.
+</p>
+
+<div class="prose">
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Curves</span>
+    <span>secp256k1 + Ed25519</span>
+    <span class="callout-id">E-020 / R.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      <strong>secp256k1</strong> for Ethereum-compatible operations
+      (x402 settlement wallets, Ethereum identity attestations,
+      anything that signs transactions on EVM chains).
+    </p>
+    <p>
+      <strong>Ed25519</strong> for everything else (KYA platform identity,
+      AO process ownership, generic message authentication). Smaller signatures,
+      faster verification, fewer footguns than ECDSA.
+    </p>
+    <p>
+      <em>Not used:</em> RSA at any size. Brittle, large, slow, encourages
+      bad implementations. No legitimate need for it in this architecture.
+    </p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Standards</span>
+    <span>BIP-39 / BIP-32 / BIP-44</span>
+    <span class="callout-id">E-020 / R.02</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Mnemonic seed phrases for backup and recovery. Hierarchical
+      deterministic derivation for cold-tier child keys. Standard derivation
+      paths where applicable.
+    </p>
+    <p>
+      <em>Implication:</em> seed phrases are the actual secret. Their
+      storage is the cold-tier custody problem. Compromise of a seed
+      compromises every key derived from it.
+    </p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Format</span>
+    <span>EIP-191 / EIP-712</span>
+    <span class="callout-id">E-020 / R.03</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Structured signing for any payload that touches Ethereum.
+      EIP-191 personal_sign for human-readable messages. EIP-712 typed
+      data for structured payloads. Both prevent replay attacks and signature
+      malleability that plague raw signatures.
+    </p>
+    <p>
+      <em>v1 stance:</em> EIP-712 mandatory for any key that signs
+      cross-context payloads. Keys scoped to a single domain may use
+      simpler formats but must include domain separation in the payload.
+    </p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Hash</span>
+    <span>SHA-256 + Keccak-256</span>
+    <span class="callout-id">E-020 / R.04</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      <strong>SHA-256</strong> for non-Ethereum contexts. <strong>Keccak-256</strong>
+      where Ethereum compatibility requires it. Both are standard,
+      audited, and have widespread library support.
+    </p>
+    <p>
+      <em>Not used:</em> SHA-1 (broken), MD5 (broken), proprietary hashes
+      of any kind, custom hash constructions.
+    </p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Library</span>
+    <span>libsodium + standard wallet libraries</span>
+    <span class="callout-id">E-020 / R.05</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      <strong>libsodium</strong> for Ed25519 and general cryptographic
+      primitives. Audited, conservative, hard to misuse.
+    </p>
+    <p>
+      Standard wallet libraries (ethers.js, ethereum/go-ethereum's signing,
+      arweave-js for AR/AO, ArConnect-compatible signing patterns) for
+      curve-specific work. No custom cryptographic implementations
+      anywhere in the codebase.
+    </p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Source of Truth</span>
+    <span>NIST &amp; IETF guidance</span>
+    <span class="callout-id">E-020 / R.06</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      NIST SP 800-57 for general key management lifecycle guidance.
+      NIST FIPS 186-5 for digital signature standards. IETF RFCs for
+      protocol-specific signing formats. These are the references when
+      a procedure question doesn't have an obvious answer.
+    </p>
+    <p>
+      <em>Note:</em> NIST post-quantum guidance is relevant for Phase 5
+      (Orion, Rokokko) but not for Phase 1. Current keys are not
+      post-quantum. Migration plan exists in the build map but is not
+      a v1 concern.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     E-100 · KEY INVENTORY
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet E-100"></div>
+
+<div id="e-100">
+<div class="section-mark">E-100 · Key Inventory</div>
+<h2 class="section-title">Every keypair <em>the platform will own.</em></h2>
+<p class="section-strap">
+Comprehensive list. Every key named, classified, and assigned to a tier.
+What gets generated, when, and why.
+</p>
+
+<table class="inventory">
+  <thead>
+    <tr>
+      <th style="width: 90px;">Key ID</th>
+      <th>Name &amp; Purpose</th>
+      <th style="width: 70px;">Curve</th>
+      <th style="width: 70px;">Tier</th>
+      <th>Use Frequency</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="id">K-001</td>
+      <td><strong>KYA Platform Identity</strong><br>Signs every service response. Public key published as the platform's verifiable identity.</td>
+      <td>Ed25519</td>
+      <td class="tier-cell hot">Hot</td>
+      <td>Per-transaction (high)</td>
+    </tr>
+    <tr>
+      <td class="id">K-002</td>
+      <td><strong>x402 Settlement Wallet</strong><br>Receives customer payments via the facilitator. Funds settled here are subsequently swept to treasury.</td>
+      <td>secp256k1</td>
+      <td class="tier-cell hot">Hot</td>
+      <td>Per-transaction (high)</td>
+    </tr>
+    <tr>
+      <td class="id">K-003</td>
+      <td><strong>Service Deployment Key</strong><br>Deploys and updates platform services. Holds CI/CD credentials and infrastructure access.</td>
+      <td>Ed25519</td>
+      <td class="tier-cell warm">Warm</td>
+      <td>Per-deployment (low)</td>
+    </tr>
+    <tr>
+      <td class="id">K-004</td>
+      <td><strong>AO Compliance Process Owner</strong><br>Admin of the AO compliance logger. Authorizes handler updates and process configuration changes.</td>
+      <td>Ed25519</td>
+      <td class="tier-cell warm">Warm</td>
+      <td>Rare (process changes)</td>
+    </tr>
+    <tr>
+      <td class="id">K-005</td>
+      <td><strong>AO Service Process Owners (per service)</strong><br>One per Phase 1 service. Each AO process has a unique owner, separated for blast-radius reasons.</td>
+      <td>Ed25519</td>
+      <td class="tier-cell warm">Warm</td>
+      <td>Rare (per service)</td>
+    </tr>
+    <tr>
+      <td class="id">K-006</td>
+      <td><strong>Treasury Wallet</strong><br>Holds platform earnings beyond operational reserves. Funds swept here from K-002 on a defined cadence.</td>
+      <td>secp256k1</td>
+      <td class="tier-cell cold">Cold</td>
+      <td>Periodic sweep + disbursement</td>
+    </tr>
+    <tr>
+      <td class="id">K-007</td>
+      <td><strong>LLC Entity Master</strong><br>Once the LLC is formed: parent of all entity-owned keys. Used for legal-document signing and ownership attestation.</td>
+      <td>secp256k1</td>
+      <td class="tier-cell cold">Cold</td>
+      <td>Annual / structural events only</td>
+    </tr>
+    <tr>
+      <td class="id">K-008</td>
+      <td><strong>KYA Master &amp; Recovery</strong><br>Master key for the KYA primitive. Authorizes K-001 rotation. Used only for compromise response or planned key turnover.</td>
+      <td>Ed25519</td>
+      <td class="tier-cell cold">Cold</td>
+      <td>Rare (rotation events)</td>
+    </tr>
+    <tr>
+      <td class="id">K-009</td>
+      <td><strong>Hot-tier Recovery</strong><br>Backup recovery key for K-001 and K-002. Geographically separated from the cold-tier machine.</td>
+      <td>Ed25519</td>
+      <td class="tier-cell cold">Cold</td>
+      <td>Emergency only</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="prose">
+
+<div class="callout note">
+  <div class="callout-header">
+    <span class="callout-tag">Note</span>
+    <span></span>
+    <span class="callout-id">E-100 / N.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Inventory grows as the platform expands. Phase 2 services add additional
+      service-process owner keys. Phase 4 enterprise contracts may require
+      additional B2B-specific signing keys. The architecture supports growth
+      because each new key gets evaluated against the same tier criteria
+      (frequency × consequence) and assigned accordingly.
+    </p>
+    <p>
+      Every key added gets entered in this inventory before generation.
+      Generation procedures (E-300) require an inventory entry as a
+      precondition.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">CRITICAL</span>
+    <span>Key reuse is forbidden</span>
+    <span class="callout-id">E-100 / W.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      No key in this inventory is reused for any purpose outside its named
+      function. The KYA signing key never signs settlement transactions.
+      The settlement wallet never signs identity attestations. The AO process
+      owners never sign anything outside their respective processes.
+    </p>
+    <p>
+      Cross-purpose signing creates correlation attacks and complicates
+      incident response. Each key has a single bounded purpose. New purposes
+      get new keys.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     E-201 · HOT TIER
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet E-201"></div>
+
+<div id="e-201">
+<div class="section-mark">E-201 · Tier Elevation</div>
+<h2 class="section-title">Hot Tier — <em>per-transaction signing.</em></h2>
+<p class="section-strap">
+Available continuously. Automated. Scoped narrowly so compromise is survivable.
+</p>
+
+<div class="tier-sheet">
+  <div class="tier-header">
+    <div class="tier-num">01</div>
+    <div class="tier-name">Hot Tier</div>
+    <div class="tier-tag hot">Production · Always-On</div>
+  </div>
+  <div class="tier-body">
+
+    <div class="spec-grid">
+      <div class="spec-cell">
+        <div class="spec-label">Keys</div>
+        <div class="spec-value">K-001, K-002<em>operational signing</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Storage</div>
+        <div class="spec-value">Encrypted at rest<em>decrypted only in memory</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Signing Latency</div>
+        <div class="spec-value">&lt; 50ms<em>customer-facing constraint</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Recovery Auth</div>
+        <div class="spec-value">Cold tier<em>K-008 rotates K-001, K-009 covers K-002</em></div>
+      </div>
+    </div>
+
+    <h5>Operational properties</h5>
+
+    <p>
+      Hot-tier keys live on the production server. They sign in real time
+      as customer requests arrive. The KYA key signs every service response
+      (potentially 10,000+ signatures per month at full Phase 1 volume). The
+      x402 settlement wallet signs facilitator interactions on roughly the
+      same volume.
+    </p>
+
+    <h5>Storage at rest</h5>
+
+    <p>
+      Keys encrypted with a passphrase known only to the operator. Passphrase
+      not stored on the production server in any form. Decryption happens
+      at process start, key material lives in process memory only, never
+      written back to disk.
+    </p>
+
+    <p>
+      On process restart, the operator provides the passphrase. This is a
+      manual step. It means production server reboots require operator
+      attention. That friction is acceptable because reboots are rare.
+    </p>
+
+    <h5>Process memory hygiene</h5>
+
+    <ul>
+      <li>Key material zeroed after each signing operation where the
+      operating system permits.</li>
+      <li>No swap file on the production server, or encrypted swap if one
+      is unavoidable.</li>
+      <li>No core dumps. Process configured with appropriate ulimits.</li>
+      <li>Memory pages locked where possible (mlock on Linux) to prevent
+      paging key material to disk.</li>
+    </ul>
+
+    <h5>Bounded blast radius</h5>
+
+    <p>
+      The hot tier is the most reachable, so it is engineered to be the
+      least valuable per individual compromise.
+    </p>
+
+    <ul>
+      <li>K-001 signs the platform's identity but does not authorize any
+      transfer of value. Compromise allows impersonation; it does not
+      allow theft.</li>
+      <li>K-002 holds operational settlement balances. Funds are swept to
+      treasury (K-006) on a defined cadence so the wallet's balance stays
+      bounded. Compromise loses the operational balance, not the platform's
+      reserves.</li>
+      <li>Both keys are rotatable. K-001 rotates through cold-tier ceremony
+      (K-008 signs the rotation attestation). K-002 rotates by generating
+      a new wallet and updating the facilitator integration.</li>
+    </ul>
+
+    <h5>Audit and observability</h5>
+
+    <p>
+      Every hot-tier signature gets logged to AO/Arweave permanently.
+      Anomaly detection runs on signature volume — sudden spikes or unusual
+      patterns trigger operator alerts via the same notification surface
+      the audit relay uses (M-203).
+    </p>
+
+    <p>
+      Rate limits at the application layer prevent runaway signing in the
+      event of a logic bug or compromise. Configurable per-key, per-minute
+      and per-hour caps. Exceeding the cap pauses signing and notifies
+      the operator.
+    </p>
+
+    <h5>Compromise response</h5>
+
+    <p>
+      Detection triggers immediate operator notification. Operator initiates
+      cold-tier rotation ceremony (E-302). New key published; old key
+      revoked through KYA primitive update; settlement wallet replaced
+      with successor; downstream systems alerted. Recovery time objective:
+      hours, not days.
+    </p>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     E-202 · WARM TIER
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet E-202"></div>
+
+<div id="e-202">
+<div class="section-mark">E-202 · Tier Elevation</div>
+<h2 class="section-title">Warm Tier — <em>periodic operations.</em></h2>
+<p class="section-strap">
+Attached when needed. Detached otherwise. Sits between hot's availability
+and cold's ceremony.
+</p>
+
+<div class="tier-sheet">
+  <div class="tier-header">
+    <div class="tier-num">02</div>
+    <div class="tier-name">Warm Tier</div>
+    <div class="tier-tag warm">Attach for Use · Detach After</div>
+  </div>
+  <div class="tier-body">
+
+    <div class="spec-grid">
+      <div class="spec-cell">
+        <div class="spec-label">Keys</div>
+        <div class="spec-value">K-003, K-004, K-005<em>admin and deploy</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Storage</div>
+        <div class="spec-value">Hardware wallet<em>or detached encrypted file</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Use Pattern</div>
+        <div class="spec-value">Operator-initiated<em>per deployment, per change</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Recovery Auth</div>
+        <div class="spec-value">Cold tier<em>seed backup + cold-signed succession</em></div>
+      </div>
+    </div>
+
+    <h5>Operational properties</h5>
+
+    <p>
+      Warm-tier keys handle operations that recur but don't require
+      per-transaction availability. Deployments. Process configuration changes.
+      AO handler updates. These happen on the order of days, weeks, or
+      occasions — not seconds.
+    </p>
+
+    <h5>Storage and attachment</h5>
+
+    <p>
+      Hardware wallet (Ledger, Trezor, or equivalent) attached to the
+      operator's workstation when an operation is needed. Disconnected
+      between operations. The hardware wallet's onboard security elements
+      protect the private key from malware on the host machine.
+    </p>
+
+    <p>
+      Alternative for keys not supported by hardware wallets (some Ed25519
+      paths, AO-specific formats): encrypted key file stored on removable
+      media kept separately from the workstation. Mounted only when needed,
+      unmounted and stored securely afterward. Same operational discipline
+      as the hardware wallet — present only during use, absent otherwise.
+    </p>
+
+    <h5>Per-operation discipline</h5>
+
+    <ul>
+      <li>Workstation booted into a known-clean state before attachment
+      where feasible.</li>
+      <li>Operation reviewed in detail before signing — what's being signed,
+      why, and what the expected effect is.</li>
+      <li>Signature applied through the hardware wallet's confirmation
+      flow (physical button press or equivalent).</li>
+      <li>Key detached immediately after the operation completes.</li>
+      <li>Operation logged to a private operations journal — what was signed,
+      when, what the outcome was.</li>
+    </ul>
+
+    <h5>Compromise response</h5>
+
+    <p>
+      Warm-tier compromise is detected through unauthorized operations
+      appearing in the platform's audit trail. Response: cold-tier ceremony
+      generates a successor key, the compromised key is revoked from any
+      systems that recognize it (AO process admin lists, deployment access
+      lists, etc.), and the audit trail is reviewed for any operations
+      executed during the compromise window.
+    </p>
+
+    <p>
+      Warm-tier compromise is more recoverable than hot-tier compromise
+      because the key is not exposed to internet attack surface. Recovery
+      time objective: a day or two, not hours.
+    </p>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     E-203 · COLD TIER
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet E-203"></div>
+
+<div id="e-203">
+<div class="section-mark">E-203 · Tier Elevation</div>
+<h2 class="section-title">Cold Tier — <em>air-gapped ceremony.</em></h2>
+<p class="section-strap">
+Rarely used. Manually signed. Operationally inconvenient on purpose.
+The keys whose loss is catastrophic.
+</p>
+
+<div class="tier-sheet">
+  <div class="tier-header">
+    <div class="tier-num">03</div>
+    <div class="tier-name">Cold Tier</div>
+    <div class="tier-tag cold">Air-Gapped · Ceremonial</div>
+  </div>
+  <div class="tier-body">
+
+    <div class="spec-grid">
+      <div class="spec-cell">
+        <div class="spec-label">Keys</div>
+        <div class="spec-value">K-006, K-007, K-008, K-009<em>master and recovery</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Hardware</div>
+        <div class="spec-value">Dedicated machine<em>pre-modern, never networked</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Use Frequency</div>
+        <div class="spec-value">Annual or rarer<em>plus emergency response</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Backup</div>
+        <div class="spec-value">Geographic separation<em>seed in independent storage</em></div>
+      </div>
+    </div>
+
+    <h5>Architectural properties</h5>
+
+    <p>
+      The cold tier is engineered to be the hardest target for the keys
+      whose compromise is most consequential. Several structural choices
+      define it.
+    </p>
+
+    <ul>
+      <li><strong>Air gap.</strong> The cold-tier machine is never connected
+      to any network. No Wi-Fi, no Ethernet, no Bluetooth, no cellular.
+      Information enters and leaves exclusively through a defined transport
+      protocol that the operator controls.</li>
+      <li><strong>Pre-modern hardware.</strong> Hardware vintage that predates
+      most of the supply-chain and side-channel attacks that target modern
+      machines. Specific selection captured in the operational document.</li>
+      <li><strong>Minimal software surface.</strong> Operating system and
+      software stack chosen to minimize complexity. No package manager
+      active in normal operation. No software added after initial setup
+      except via the same controlled transport used for signing requests.</li>
+      <li><strong>Physical security.</strong> Machine lives in a controlled
+      space. Physical access is restricted. Specifics captured in the
+      operational document.</li>
+      <li><strong>Signing daemon.</strong> A single audited program that
+      accepts structured signing requests and produces structured signatures.
+      No general-purpose compute on the cold-tier machine — the daemon
+      does its narrow job and nothing else.</li>
+    </ul>
+
+    <div class="redacted-block">
+      <div class="redacted-label">Operational · Private</div>
+      <div class="redacted-content">
+        Specific hardware model, OS configuration, signing daemon
+        implementation, transport protocol, and physical environment
+        are <strong>captured in the operator's private operational document</strong>.
+        These specifics are deliberately not included in this architectural
+        blueprint because their disclosure would create attack surface.
+      </div>
+    </div>
+
+    <h5>Why pre-modern hardware</h5>
+
+    <p>
+      The argument is structural. Modern hardware has a substantially larger
+      attack surface than hardware from before the relevant vulnerability
+      classes were introduced.
+    </p>
+
+    <ul>
+      <li>Spectre, Meltdown, and related speculative-execution side channels
+      affect virtually all CPUs from roughly 2008 onward. Pre-modern hardware
+      predates these issues at the architectural level.</li>
+      <li>Modern motherboards include extensive firmware (UEFI, IME, AMD PSP,
+      various baseboard management controllers) that has been the source
+      of numerous compromises. Pre-modern machines have minimal firmware
+      and what they have is well-understood.</li>
+      <li>Modern systems include radio interfaces that cannot be physically
+      removed (Wi-Fi, Bluetooth, sometimes cellular). Pre-modern systems
+      either lack these entirely or include them as discrete cards that
+      can be removed.</li>
+      <li>The supply chain for pre-modern hardware predates the period
+      where firmware-level supply-chain attacks were a known concern.</li>
+    </ul>
+
+    <p>
+      The trade-off is real: pre-modern hardware is less performant, less
+      reliable, and harder to source replacements for. For a machine that
+      signs rarely and runs minimal software, the trade-off is acceptable.
+    </p>
+
+    <h5>Signing protocol</h5>
+
+    <p>
+      Signing requests enter the cold-tier machine through the defined
+      transport. The daemon parses the request, verifies it against the
+      machine's local policy (what keys are authorized, what payloads are
+      acceptable, what limits apply), signs if authorized, returns the
+      signature through the same transport.
+    </p>
+
+    <p>
+      Each request and signature is logged on the cold-tier machine
+      permanently. The log is part of the cold-tier audit trail and is
+      transferred out periodically through the same controlled transport.
+    </p>
+
+    <h5>Compromise response</h5>
+
+    <p>
+      Cold-tier compromise is the worst case. Detection requires noticing
+      either physical compromise (the machine is missing or has been
+      tampered with) or anomalous downstream signatures (operations attributed
+      to cold-tier keys that the operator did not perform).
+    </p>
+
+    <p>
+      Response involves the recovery keys (K-009 and other recovery
+      provisions) generating successor keys, emergency revocation of the
+      compromised keys through whatever channels recognize them (LLC
+      records, treasury succession, KYA master rotation), and a forensic
+      review of the platform's history to identify any signatures the
+      attacker may have made.
+    </p>
+
+    <p>
+      Cold-tier compromise is engineered to be the rarest event in the
+      threat model. The platform survives a hot-tier compromise routinely
+      and a warm-tier compromise with effort. A cold-tier compromise is
+      a foundational event that requires multiple recovery steps and
+      potentially affects the platform's identity continuity.
+    </p>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     E-300 · GENERATION CEREMONIES
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet E-300"></div>
+
+<div id="e-300">
+<div class="section-mark">E-300 · Procedure</div>
+<h2 class="section-title">Generation — <em>how keys are born.</em></h2>
+<p class="section-strap">
+Generation procedures by tier. The how varies; the discipline doesn't —
+randomness is real, the procedure is documented, and the artifact gets
+inventoried before it gets used.
+</p>
+
+<div class="prose">
+
+<h3>Hot tier generation (K-001, K-002)</h3>
+
+<p>
+Generated on the production server during initial setup. Standard library
+calls (libsodium for Ed25519, ethers/web3 for secp256k1). Random source
+is the operating system's CSPRNG. Generated key material is immediately
+encrypted with the operator's passphrase before being written to disk.
+The unencrypted key never touches non-volatile storage.
+</p>
+
+<p>
+After generation, the public key is published to the canonical locations
+(paxiom.org for K-001, on-chain interactions for K-002 once funded). The
+operator records the inventory entry. The procedure log captures the
+generation timestamp, the host, and the public key.
+</p>
+
+<h3>Warm tier generation (K-003 — K-005)</h3>
+
+<p>
+Generated on a hardware wallet during a deliberate setup ceremony. Operator
+initiates seed generation through the hardware wallet's onboard process.
+Recovery seed phrase recorded on appropriate medium and stored according
+to the operational document's procedures (separate location from the
+hardware wallet itself, geographic separation from cold-tier backup).
+</p>
+
+<p>
+After generation, public address is recorded in the inventory and registered
+with whatever systems will recognize it (AO process admin lists, deployment
+infrastructure, etc.).
+</p>
+
+<h3>Cold tier generation (K-006 — K-009)</h3>
+
+<div class="redacted-block">
+  <div class="redacted-label">Operational · Private</div>
+  <div class="redacted-content">
+    Cold-tier generation procedure is captured in the operator's private
+    operational document. The architectural requirements are: <strong>the
+    procedure happens on the air-gapped machine, uses a high-quality
+    randomness source, produces a recoverable seed phrase, and includes
+    geographic separation of the seed backup</strong>. Specific tooling,
+    randomness sources, seed encoding, and backup procedures are not
+    included in this document for operational security reasons.
+  </div>
+</div>
+
+<p>
+What this document does specify: the generation event creates an inventory
+entry before the key is used for any operation. The public key (or address)
+is recorded. The procedure log captures what was generated, when, and the
+public artifact. The private artifact never appears in any document, in
+any inventory, or in any system other than the cold-tier machine itself
+and its physical backup.
+</p>
+
+<h3>What never happens</h3>
+
+<ul>
+  <li>Keys are never generated by an online service. Browser-based key
+  generation tools, online wallet generators, and any service that produces
+  keys server-side are forbidden — even those that claim to generate
+  client-side.</li>
+  <li>Keys are never reused from previous projects, prior wallets, or
+  any pre-existing source. Every keypair in the inventory is fresh,
+  generated for its specific purpose, and used only for that purpose.</li>
+  <li>Keys are never copied between tiers. A hot-tier key cannot be
+  promoted to warm-tier or cold-tier; if a higher-tier function is needed,
+  a new key is generated for it.</li>
+  <li>Keys are never displayed in any context where a screenshot, screen
+  recording, or shoulder surveillance could capture them. Generation
+  procedures that require viewing the seed are conducted with this
+  consideration in mind.</li>
+</ul>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     E-301 · SIGNING CEREMONIES
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet E-301"></div>
+
+<div id="e-301">
+<div class="section-mark">E-301 · Procedure</div>
+<h2 class="section-title">Signing — <em>cold-tier ceremony flow.</em></h2>
+<p class="section-strap">
+The shape of a cold-tier signing operation. Specific commands and
+mechanisms live in the private operational document; the architectural
+flow lives here.
+</p>
+
+<div class="sequence">
+  <div class="sequence-title">Cold-Tier Signing — Architectural Flow</div>
+
+  <div class="sequence-row">
+    <div class="sequence-mark user">★</div>
+    <div class="sequence-text">
+      <strong>Operator identifies signing need.</strong>
+      <em>Treasury sweep, master-key rotation, LLC document, etc.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">01</div>
+    <div class="sequence-text">
+      <strong>Construct signing request on networked workstation.</strong>
+      <em>Structured payload: which key, what operation, what payload, why.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark user">★</div>
+    <div class="sequence-text">
+      <strong>Review request before transport.</strong>
+      <em>Operator confirms the request matches the intended operation.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">02</div>
+    <div class="sequence-text">
+      <strong>Transfer request to cold-tier machine via defined transport.</strong>
+      <em>Specifics in operational document. The transport is narrow and operator-mediated.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">03</div>
+    <div class="sequence-text">
+      <strong>Cold-tier daemon validates request against local policy.</strong>
+      <em>Authorized key? Acceptable payload type? Limits respected? Operator confirmation step?</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark user">★</div>
+    <div class="sequence-text">
+      <strong>Operator confirms operation on cold-tier machine.</strong>
+      <em>Physical presence required. Final go/no-go before signature is produced.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">04</div>
+    <div class="sequence-text">
+      <strong>Daemon produces signature, logs operation locally.</strong>
+      <em>Signature paired with structured metadata about the request.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">05</div>
+    <div class="sequence-text">
+      <strong>Transfer signature back to networked workstation.</strong>
+      <em>Same transport, reverse direction. Signature is the only thing that crosses.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">06</div>
+    <div class="sequence-text">
+      <strong>Apply signature to the operation that needed it.</strong>
+      <em>Submit the signed transaction, deploy the signed attestation, etc.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">07</div>
+    <div class="sequence-text">
+      <strong>Record operation in platform audit trail.</strong>
+      <em>AO log entry. Public verification possible afterward.</em>
+    </div>
+  </div>
+</div>
+
+<div class="prose">
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">CRITICAL</span>
+    <span>Three operator gates per ceremony</span>
+    <span class="callout-id">E-301 / W.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Pre-transport review on the networked workstation. Physical confirmation
+      on the cold-tier machine. Post-signing application step. Each is a
+      separate decision point. The ceremony cannot complete without three
+      affirmative operator actions.
+    </p>
+    <p>
+      This is the structural defense against ceremony-shortcut errors. A
+      signing request that gets all three confirmations was reviewed three
+      times. Errors that pass three reviews are extraordinary, not routine.
+    </p>
+  </div>
+</div>
+
+<div class="callout private">
+  <div class="callout-header">
+    <span class="callout-tag">Operational Boundary</span>
+    <span></span>
+    <span class="callout-id">E-301 / B.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      The mechanics of "transfer request to cold-tier machine" and "transfer
+      signature back" are deliberately not specified here. The choice of
+      transport mechanism is a security decision with multiple defensible
+      answers depending on operator preferences and threat tolerance. That
+      decision lives in the operational document.
+    </p>
+    <p>
+      What matters architecturally: the transport is narrow (carries one
+      request and one signature, nothing else), operator-mediated (no
+      automated bridge between machines), and producing visible artifacts
+      (the operator can inspect what crosses).
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     E-302 · ROTATION & COMPROMISE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet E-302"></div>
+
+<div id="e-302">
+<div class="section-mark">E-302 · Procedure</div>
+<h2 class="section-title">Rotation <em>&amp; compromise response.</em></h2>
+<p class="section-strap">
+Two procedures that share a structure. Rotation is the planned version;
+compromise response is the unplanned version under time pressure.
+</p>
+
+<div class="prose">
+
+<h3>Planned rotation</h3>
+
+<p>
+Hot-tier keys (K-001, K-002) rotate annually as standard hygiene. The
+procedure is documented, scheduled, and unhurried. New successor key
+generated. Public attestation signed by the cold-tier master authorizing
+the succession. New key brought into production while the old key remains
+active for a transition window. Old key revoked after the window expires.
+Audit trail records the transition.
+</p>
+
+<p>
+Warm-tier keys rotate less frequently because their use frequency is lower.
+Annual review evaluates whether rotation is warranted; rotation occurs
+when warranted but is not automatic.
+</p>
+
+<p>
+Cold-tier keys rotate rarely. Every rotation is a structural event that
+affects the platform's identity continuity. Master key rotation requires
+attestation that ties the new master to the old, preserving identity
+across the rotation event.
+</p>
+
+<h3>Compromise response</h3>
+
+<p>
+Detection mechanisms differ by tier. Hot-tier compromise is detected through
+anomaly detection on signature volume and patterns. Warm-tier compromise
+is detected through unauthorized operations appearing in audit trails.
+Cold-tier compromise is detected through physical inspection of the
+cold-tier machine and through downstream signatures the operator did not
+authorize.
+</p>
+
+<p>
+Response time objectives reflect the consequence of each tier:
+</p>
+
+<ul>
+  <li><strong>Hot tier:</strong> Hours from detection to recovery. Rapid rotation
+  using recovery keys. Service downtime acceptable during transition.</li>
+  <li><strong>Warm tier:</strong> A day or two. Cold-tier ceremony generates the
+  successor; downstream systems are updated to recognize the new key.</li>
+  <li><strong>Cold tier:</strong> Days to weeks. Cold-tier compromise is the worst
+  case and recovery requires coordinated action across multiple systems.
+  Recovery keys (K-009 and counterparts) cover this scenario.</li>
+</ul>
+
+<h3>Audit during compromise response</h3>
+
+<p>
+Every compromise response generates a forensic record. The record captures
+when the compromise was detected, what evidence supported the determination,
+what operations were authorized during the suspected compromise window,
+which were legitimate, and which (if any) were attributable to the attacker.
+</p>
+
+<p>
+Forensic records are preserved permanently. They become reference material
+if subsequent incidents occur and they support any legal or regulatory
+process that might follow a serious compromise. The AO/Arweave audit
+trail makes this preservation structural rather than an additional
+operational burden.
+</p>
+
+<h3>Recovery key custody</h3>
+
+<p>
+Recovery keys (K-009 specifically and the recovery provisions for warm
+and hot tier keys generally) are the second-line defense. Their custody
+follows the same principles as cold-tier keys but with geographic
+separation from the primary cold-tier machine.
+</p>
+
+<div class="redacted-block">
+  <div class="redacted-label">Operational · Private</div>
+  <div class="redacted-content">
+    Specific recovery key storage locations, geographic separation
+    arrangements, and access procedures during emergency response are
+    captured in the operator's private operational document. Architectural
+    requirement: <strong>recovery is possible without access to the primary
+    cold-tier machine, and the recovery process is rehearsed periodically
+    to verify it actually works</strong>.
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     E-310 · RISK REGISTER
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet E-310"></div>
+
+<div id="e-310">
+<div class="section-mark">E-310 · Risk Register</div>
+<h2 class="section-title">What goes <em>wrong with key custody.</em></h2>
+<p class="section-strap">
+Specific failure modes and the planned response to each.
+</p>
+
+<div class="prose">
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Hot</span>
+    <span>Production server compromise extracts hot keys</span>
+    <span class="callout-id">E-310 / R.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Attacker gains code execution on the production server, extracts
+      K-001 and K-002 from process memory before the operator detects
+      and rotates.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Bounded blast radius (K-002 holds
+      operational balance only, swept regularly to K-006). KYA primitive
+      revocable through cold-tier ceremony. Anomaly detection and rate
+      limits reduce time-to-detection. Memory hygiene practices (no swap,
+      no core dumps, mlock where possible) reduce extraction risk during
+      compromise.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Hot</span>
+    <span>Passphrase forgotten or operator unavailable</span>
+    <span class="callout-id">E-310 / R.02</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Production server reboots and the operator cannot supply the passphrase
+      to decrypt hot-tier keys. Service is down until passphrase is
+      recovered or keys are rotated.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Passphrase recorded in operator's
+      personal records with appropriate physical security. Recovery keys
+      (K-009) provide an alternative path that bypasses the original
+      passphrase entirely if needed. Clear operational documentation so
+      partner or successor can execute recovery if the operator is unavailable.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Warm</span>
+    <span>Hardware wallet lost or destroyed</span>
+    <span class="callout-id">E-310 / R.03</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Physical hardware wallet is lost, destroyed, or stops working.
+      Warm-tier keys cannot sign new operations until recovery is performed.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Recovery seed phrase preserved per the
+      operational document. New hardware wallet provisioned, seed restored,
+      operations resume. Recovery time depends on ability to acquire
+      replacement hardware — typically days.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Cold</span>
+    <span>Cold-tier machine compromised physically</span>
+    <span class="callout-id">E-310 / R.04</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      The cold-tier machine is stolen, tampered with, or otherwise
+      physically compromised. Master keys may be exposed.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Physical security per operational
+      document. Tamper-evident packaging where appropriate. Recovery keys
+      (K-009) stored geographically separately from the cold-tier machine
+      so a single physical event does not compromise both. Compromise
+      response plan rehearsed periodically.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Cold</span>
+    <span>Signing daemon has a vulnerability</span>
+    <span class="callout-id">E-310 / R.05</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Bug in the cold-tier signing daemon allows an attacker who can submit
+      requests through the transport to extract key material or sign
+      arbitrary payloads.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Daemon scope is minimal — single program,
+      audited code, narrow input format, strict policy enforcement. Daemon
+      built from inspectable source. Updates are rare and follow the same
+      controlled transport as signing requests. Multiple-eyes review of
+      any daemon change before deployment.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Operational</span>
+    <span>Single point of failure in operator</span>
+    <span class="callout-id">E-310 / R.06</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Operator becomes incapacitated, deceased, or otherwise unavailable.
+      Key custody depends on personal knowledge that does not survive.
+      Platform cannot recover keys, cannot operate, and cannot be transferred
+      to legitimate successors.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Succession planning lives in the operational
+      document. Trusted person (partner, family member) has access to
+      recovery procedures sealed appropriately. LLC formation when complete
+      provides legal structure for succession. This risk is uncomfortable
+      to plan for but mature operations require it.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Cryptographic</span>
+    <span>Underlying primitive becomes weak</span>
+    <span class="callout-id">E-310 / R.07</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Future cryptographic advances (quantum computing or unforeseen
+      classical breakthroughs) compromise secp256k1, Ed25519, or the
+      hash functions in use. Long-lived keys may need migration before
+      retirement.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Phase 5 of the build map includes
+      post-quantum migration. NIST guidance tracked. Architecture supports
+      curve migration through the rotation procedures (E-302) — keys can
+      be replaced with successors using different curves without losing
+      identity continuity.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     E-900 · GENERAL NOTES
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet E-900"></div>
+
+<div id="e-900">
+<div class="section-mark">E-900 · General Notes</div>
+<h2 class="section-title">Conventions <em>&amp; related documents.</em></h2>
+
+<div class="prose">
+
+<h3>Sheet numbering</h3>
+
+<p>
+This set is the E-series — Electrical / Key &amp; Identity Management.
+Companion to A-series (Phase 1) and M-series (audit relay tooling).
+Future sets reserved by the master plan: S-series (Structural / security
+audit findings, separate from this key-custody document), L-series
+(Landscape / public-facing surfaces), O-series (Operations runbook).
+</p>
+
+<h3>Architectural vs. operational separation</h3>
+
+<p>
+This document is architectural. Operational specifics — specific hardware
+configurations, software builds, physical locations, transfer mechanisms,
+exact procedures — live in a separate private document under the operator's
+exclusive control. The two documents are deliberately separated: this
+one is shareable with collaborators, advisors, or auditors; the operational
+document is not.
+</p>
+
+<p>
+Where the architectural document needs to reference operational specifics,
+the reference is marked with the <strong>OPERATIONAL · PRIVATE</strong>
+hatched block. Anyone reading the architectural document can see what
+exists; the specifics are deliberately absent.
+</p>
+
+<h3>Related documents</h3>
+
+<p>
+<strong>A-series Phase 1 Blueprint</strong> — KYA primitive (K-001) is
+specified at the architectural level there; this document specifies its
+custody. The two compose: A-series describes what gets signed, this
+document describes how the signing key is protected.
+</p>
+
+<p>
+<strong>M-series Audit Relay Blueprint</strong> — the relay's signing of
+its own state changes uses keys consistent with this document's tier model.
+</p>
+
+<p>
+<strong>Operator's Private Operational Document</strong> — captures the
+specifics this document deliberately omits. Lives only in the operator's
+controlled storage. Updates to this document do not require updates to
+the operational document and vice versa, except where the architectural
+shape changes.
+</p>
+
+<h3>Revision log</h3>
+
+<p>
+<strong>Rev. A — 2026.04.29.</strong> Initial issue. Three tiers specified.
+Nine keys inventoried. Procedures for generation, signing, rotation, and
+compromise response. Risk register with seven entries. Operational specifics
+deliberately omitted.
+</p>
+
+<p>
+<em>Subsequent revisions issued as the platform expands. Rev. B expected
+when LLC formation completes (K-007 entered into active use). Rev. C
+expected when first Phase 1 service launches (K-005 fleet expands per
+service).</em>
+</p>
+
+<h3>One last thing</h3>
+
+<p>
+The keys outlast individual decisions about everything else. They will
+sign attestations that the platform's customers rely on years from now.
+They will authorize transfers that the platform's treasury depends on.
+They will identify the platform across whatever standard succession KYA
+goes through over the next several years.
+</p>
+
+<p>
+That makes the architecture decisions in this document load-bearing in
+ways that the platform's other architectural decisions are not. Phase 1
+services can be redesigned in Phase 2. The audit relay can be rewritten
+when its limitations show. Key architecture cannot be redesigned without
+losing identity continuity, breaking trust with downstream systems, and
+forcing every counterparty to accept a new attestation chain.
+</p>
+
+<p>
+<em>Build the engine first. The moats come later. The keys come first
+of all.</em>
+</p>
+
+</div>
+</div>
+
+</div>
+
+<div class="sheet-footer">
+  <div>Paxiom · paxiom.org</div>
+  <div class="center">Electrical · Rev. A · 2026.04.29</div>
+  <div class="right">Sheet Set E-000 / 12</div>
+</div>
+
+</div>
+
+</body>
+</html>
