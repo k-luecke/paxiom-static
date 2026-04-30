@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom · Contact</title>
+<meta name="description" content="How to reach Paxiom — for substantive technical questions, partnership inquiries, or feedback on the public drawing set.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F1E8; --paper-dark: #EDE6D3; --ink: #1A2332; --ink-mid: #3A4555;
+  --ink-faint: #6B7280; --rule-faint: #B8AE96; --blue: #1E3A5F; --red: #8B2E1F; --amber: #B8860B;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 15px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.frame { max-width: 1080px; margin: 0 auto; padding: 20px 18px 32px; }
+
+.title-block { border-bottom: 2px solid var(--ink); padding-bottom: 16px; margin-bottom: 14px; }
+.title-mark { display: block; margin-bottom: 12px; }
+.paxiom-mark { width: 42px; height: 42px; color: var(--ink); display: block; }
+.title-block .project-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: 4px;
+}
+.title-block .project-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 28px; font-weight: 500; line-height: 1.1;
+  letter-spacing: -0.01em; color: var(--ink);
+}
+.title-block .project-subtitle {
+  font-family: 'IBM Plex Serif', serif; font-style: italic;
+  font-size: 14px; color: var(--ink-mid); margin-top: 4px; max-width: 36ch;
+}
+.title-block .meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.04em; color: var(--ink-faint);
+  margin-top: 12px; line-height: 1.7;
+}
+.title-block .meta .sep { margin: 0 6px; color: var(--rule-faint); }
+
+nav.primary {
+  border-bottom: 1px solid var(--rule-faint); margin-bottom: 28px;
+  overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;
+}
+nav.primary ul {
+  list-style: none; display: flex; gap: 22px; padding: 12px 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+}
+nav.primary a { color: var(--ink-mid); text-decoration: none; padding-bottom: 4px; }
+nav.primary a.active { color: var(--ink); border-bottom: 2px solid var(--ink); }
+nav.primary a:hover { color: var(--blue); }
+
+.page-header { margin-bottom: 32px; padding: 8px 0 16px; }
+.page-header .mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.page-header .mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.page-header h1 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500; font-size: clamp(32px, 6vw, 44px); line-height: 1.05;
+  letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px;
+}
+.page-header h1 em { font-style: italic; color: var(--ink-mid); font-weight: 400; }
+.page-header .strap {
+  font-family: 'IBM Plex Serif', serif; font-style: italic;
+  font-size: 17px; color: var(--ink-mid); max-width: 56ch; line-height: 1.5;
+}
+
+/* Channel grid */
+.channels { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 32px; }
+.channel {
+  border: 1.5px solid var(--ink); background: var(--paper);
+  padding: 18px 20px;
+}
+.channel .label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 8px;
+}
+.channel .value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 18px; color: var(--ink); margin-bottom: 8px; word-break: break-all;
+}
+.channel .value a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.channel .value a:hover { color: var(--blue); }
+.channel .note {
+  font-family: 'IBM Plex Serif', serif; font-style: italic;
+  font-size: 14px; color: var(--ink-mid); line-height: 1.5;
+}
+
+/* Subsection */
+.subsection { margin-bottom: 32px; }
+.subsection-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.subsection-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.subsection h2 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500; font-size: 22px; letter-spacing: -0.01em;
+  margin-bottom: 12px; color: var(--ink);
+}
+.subsection h2 em { font-style: italic; color: var(--ink-mid); }
+.subsection p {
+  font-family: 'IBM Plex Serif', serif; font-size: 16px; line-height: 1.6;
+  color: var(--ink); max-width: 64ch; margin-bottom: 12px;
+}
+.subsection ul {
+  font-family: 'IBM Plex Serif', serif; font-size: 15px; line-height: 1.55;
+  color: var(--ink); max-width: 64ch; margin: 8px 0 16px 22px;
+}
+.subsection li { margin-bottom: 6px; }
+
+.note-block {
+  border-left: 3px solid var(--amber); padding: 12px 18px;
+  background: var(--paper-dark); margin-bottom: 28px;
+}
+.note-block .note-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--amber); margin-bottom: 6px;
+}
+.note-block p {
+  font-family: 'IBM Plex Serif', serif; font-size: 15px; line-height: 1.55;
+  color: var(--ink); max-width: 64ch;
+}
+
+/* Footer */
+.sheet-footer {
+  border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-faint);
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;
+}
+.sheet-footer .sheet-id { color: var(--ink); font-weight: 600; }
+
+a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--red); }
+
+@media (min-width: 768px) {
+  .frame { padding: 40px 32px 48px; }
+  body {
+    background-image:
+      linear-gradient(rgba(26, 35, 50, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26, 35, 50, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .title-block { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 24px; padding-bottom: 20px; }
+  .title-mark { margin-bottom: 0; }
+  .paxiom-mark { width: 54px; height: 54px; }
+  .title-block .project-title { font-size: 36px; }
+  .title-block .meta { text-align: right; margin-top: 0; }
+  .channels { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .channel .value { font-size: 20px; }
+}
+
+@media print { body { background: white; background-image: none; } }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <header class="title-block">
+    <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg></div>
+    <div>
+      <div class="project-mark">Paxiom · Contact</div>
+      <div class="project-title">Contact</div>
+      <div class="project-subtitle">For substantive questions. The project is small, the founder responds directly.</div>
+    </div>
+    <div class="meta">
+      <span>Project No. PXM-001</span><span class="sep">·</span>
+      <span>Sheet PXM-C-100</span><span class="sep">·</span>
+      <span>Updated 2026.04.30</span>
+    </div>
+  </header>
+
+  <nav class="primary" aria-label="Primary">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/docs.html">Docs</a></li>
+      <li><a href="/services.html">Services</a></li>
+      <li><a href="/status.html">Status</a></li>
+      <li><a href="/contact.html" class="active">Contact</a></li>
+    </ul>
+  </nav>
+
+  <section class="page-header">
+    <div class="mark">Sheet PXM-C-100</div>
+    <h1>How to reach <em>the project.</em></h1>
+    <p class="strap">No contact form. No sales funnel. The project is small enough that messages reach the founder directly. That's the right shape for now and the channels below reflect it.</p>
+  </section>
+
+  <section class="channels" aria-label="Contact channels">
+
+    <div class="channel">
+      <div class="label">Email</div>
+      <div class="value"><a href="mailto:kyle@paxiom.org">kyle@paxiom.org</a></div>
+      <div class="note">For technical questions, partnership inquiries, or feedback on the drawing set. Concrete subject lines get faster responses than generic ones.</div>
+    </div>
+
+    <div class="channel">
+      <div class="label">GitHub</div>
+      <div class="value"><a href="https://github.com/k-luecke/paxiom" target="_blank" rel="noopener">github.com/k-luecke/paxiom</a></div>
+      <div class="note">Repository, issues, build history. File a GitHub issue for documentation feedback or to flag specific concerns about a sheet in the drawing set.</div>
+    </div>
+
+  </section>
+
+  <div class="note-block">
+    <div class="note-label">Note · What gets a response</div>
+    <p>Substantive technical engagement, partnership conversations with concrete proposals, and considered feedback on the drawing set get direct replies. Casual sales outreach, generic introductory pitches, and recruiter cold mail typically don't. The project is heads-down on shipping; bandwidth is rationed accordingly.</p>
+  </div>
+
+  <section class="subsection">
+    <div class="subsection-mark">C-200 · Things worth reaching out about</div>
+    <h2>Where the conversation matters.</h2>
+    <ul>
+      <li>Technical questions about the architecture that aren't answered in the drawing set.</li>
+      <li>Specific use cases where Paxiom's services would directly apply, with concrete volume and integration context.</li>
+      <li>Partnership conversations with adjacent projects in verified compute, agent infrastructure, or cross-chain settlement.</li>
+      <li>Standards-engagement conversations (KYA, ERC-8004, ERC-8183, x402 Foundation working groups).</li>
+      <li>Operator-side feedback from teams using x402 in production who have hit the gaps Paxiom is built to close.</li>
+      <li>Substantive criticism of the architecture, the bet, or the documents themselves. Disagreement is information.</li>
+    </ul>
+  </section>
+
+  <section class="subsection">
+    <div class="subsection-mark">C-300 · Things that don't get a response</div>
+    <h2>And what the founder skips.</h2>
+    <ul>
+      <li>Cold sales pitches for SaaS, recruiting, marketing services, or generic "synergy" conversations.</li>
+      <li>Token launch invitations, IDO requests, exchange listings, market-maker pitches.</li>
+      <li>"Quick call" requests with no specified topic.</li>
+      <li>Anything addressed to a fictional CEO, COO, or BD lead. The org chart has one slot.</li>
+    </ul>
+  </section>
+
+  <footer class="sheet-footer">
+    <div>Paxiom · paxiom.org</div>
+    <div>Public · Rev. A · 2026.04.30</div>
+    <div class="sheet-id">PXM-C-100 · Contact</div>
+  </footer>
+
+</div>
+</body>
+</html>

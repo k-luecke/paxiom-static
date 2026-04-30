@@ -3,960 +3,318 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paxiom — Verified Ethereum Data Feeds</title>
+<title>Paxiom · Public Index</title>
+<meta name="description" content="Paxiom is a verification layer for the agent economy. Phase 1 ships proof services for cross-chain settlement, chain-state verification, audit relay, and identity-bound service access.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #f7f8f6;
-    --ink: #101312;
-    --text: #222826;
-    --muted: #64706a;
-    --line: #d8ded9;
-    --panel: #ffffff;
-    --green: #136f4a;
-    --blue: #234f7d;
-    --amber: #8a5a08;
-    --code: #111817;
-  }
-  * { box-sizing: border-box; }
+:root {
+  --paper: #F5F1E8;
+  --paper-dark: #EDE6D3;
+  --ink: #1A2332;
+  --ink-mid: #3A4555;
+  --ink-faint: #6B7280;
+  --rule-faint: #B8AE96;
+  --blue: #1E3A5F;
+  --red: #8B2E1F;
+  --amber: #B8860B;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.frame { max-width: 1080px; margin: 0 auto; padding: 20px 18px 32px; }
+
+/* Title block */
+.title-block { border-bottom: 2px solid var(--ink); padding-bottom: 16px; margin-bottom: 14px; }
+.title-mark { display: block; margin-bottom: 12px; }
+.paxiom-mark { width: 42px; height: 42px; color: var(--ink); display: block; }
+.title-block .project-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: 4px;
+}
+.title-block .project-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 28px; font-weight: 500; line-height: 1.1;
+  letter-spacing: -0.01em; color: var(--ink);
+}
+.title-block .project-subtitle {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic; font-size: 14px; color: var(--ink-mid);
+  margin-top: 4px; max-width: 36ch;
+}
+.title-block .meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.04em; color: var(--ink-faint);
+  margin-top: 12px; line-height: 1.7;
+}
+.title-block .meta span { display: inline-block; }
+.title-block .meta .sep { margin: 0 6px; color: var(--rule-faint); }
+
+/* Nav */
+nav.primary {
+  border-bottom: 1px solid var(--rule-faint);
+  margin-bottom: 28px;
+  overflow-x: auto; white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+nav.primary ul {
+  list-style: none; display: flex; gap: 22px; padding: 12px 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+}
+nav.primary a { color: var(--ink-mid); text-decoration: none; padding-bottom: 4px; }
+nav.primary a.active { color: var(--ink); border-bottom: 2px solid var(--ink); }
+nav.primary a:hover { color: var(--blue); }
+
+/* Hero */
+.hero { margin-bottom: 36px; padding: 8px 0 16px; }
+.hero h1 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: clamp(30px, 7vw, 44px);
+  line-height: 1.05; letter-spacing: -0.02em;
+  color: var(--ink); margin-bottom: 18px; max-width: 18ch;
+}
+.hero h1 em { font-style: italic; color: var(--ink-mid); font-weight: 400; }
+.hero .lede {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 17px; line-height: 1.55; color: var(--ink);
+  max-width: 56ch; margin-bottom: 14px;
+}
+.hero .meta-line {
+  font-family: 'IBM Plex Serif', serif; font-style: italic;
+  font-size: 15px; color: var(--ink-mid);
+  max-width: 56ch; margin-bottom: 24px;
+}
+.hero .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn {
+  display: inline-block; padding: 10px 18px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  text-decoration: none;
+  border: 1.5px solid var(--ink); color: var(--ink);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.btn:hover { background: var(--ink); color: var(--paper); }
+.btn.primary { background: var(--ink); color: var(--paper); }
+.btn.primary:hover { background: var(--blue); border-color: var(--blue); }
+
+/* Build state */
+.build-state { border: 1.5px solid var(--ink); margin-bottom: 40px; background: var(--paper); }
+.build-state-header {
+  background: var(--ink); color: var(--paper); padding: 10px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+}
+.build-state-grid { display: grid; grid-template-columns: 1fr; }
+.build-cell { padding: 18px 18px 22px; border-bottom: 1px solid var(--rule-faint); }
+.build-cell:last-child { border-bottom: none; }
+.build-cell .label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.build-cell .label::before {
+  content: ''; width: 8px; height: 8px;
+  background: var(--blue); border-radius: 50%;
+}
+.build-cell.in-progress .label { color: var(--amber); }
+.build-cell.in-progress .label::before { background: var(--amber); }
+.build-cell.not-claimed .label { color: var(--ink-faint); }
+.build-cell.not-claimed .label::before {
+  background: transparent;
+  border: 1.5px solid var(--ink-faint);
+  width: 6px; height: 6px;
+}
+.build-cell ul { list-style: none; font-family: 'IBM Plex Serif', serif; font-size: 15px; line-height: 1.5; }
+.build-cell li { padding: 4px 0 4px 14px; position: relative; color: var(--ink); }
+.build-cell li::before { content: '·'; position: absolute; left: 0; color: var(--rule-faint); font-weight: bold; }
+.build-cell.not-claimed li { color: var(--ink-faint); font-style: italic; }
+
+/* Section */
+.section { margin-bottom: 40px; }
+.section .section-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section .section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.section h2 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500; font-size: 24px; letter-spacing: -0.01em;
+  margin-bottom: 14px; color: var(--ink);
+}
+.section h2 em { font-style: italic; color: var(--ink-mid); }
+.section p {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px; line-height: 1.6; color: var(--ink);
+  max-width: 64ch; margin-bottom: 14px;
+}
+.section p code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px; background: var(--paper-dark);
+  padding: 1px 6px; border-radius: 2px; color: var(--blue); font-weight: 500;
+}
+.section .read-more {
+  display: inline-block; margin-top: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--blue); text-decoration: underline; text-underline-offset: 3px;
+}
+
+/* Footer */
+.sheet-footer {
+  border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-faint);
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;
+}
+.sheet-footer .sheet-id { color: var(--ink); font-weight: 600; }
+
+a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--red); }
+
+/* Desktop */
+@media (min-width: 768px) {
+  .frame { padding: 40px 32px 48px; }
   body {
-    margin: 0;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: var(--bg);
-    color: var(--text);
+    background-image:
+      linear-gradient(rgba(26, 35, 50, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26, 35, 50, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
-  header {
-    min-height: 72vh;
-    display: grid;
-    align-content: center;
-    padding: 112px clamp(20px, 5vw, 72px) 42px;
-    border-bottom: 1px solid var(--line);
+  .title-block {
+    display: grid; grid-template-columns: auto 1fr auto;
+    align-items: end; gap: 24px; padding-bottom: 20px;
   }
-  nav {
-    position: absolute;
-    top: 22px;
-    left: clamp(20px, 5vw, 72px);
-    right: clamp(20px, 5vw, 72px);
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    min-height: 38px;
-  }
-  .mark {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    letter-spacing: .08em;
-    color: var(--ink);
-    white-space: nowrap;
-  }
-  .mark svg {
-    width: 30px;
-    height: 30px;
-    flex: 0 0 auto;
-  }
-  .links {
-    margin-left: auto;
-    display: flex;
-    gap: 18px;
-    flex-wrap: wrap;
-  }
-  a {
-    color: var(--blue);
-    text-decoration: none;
-    font-weight: 600;
-  }
-  a:hover { text-decoration: underline; }
-  .hero {
-    max-width: 920px;
-  }
-  .eyebrow {
-    margin: 0 0 18px;
-    color: var(--green);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-  }
-  h1 {
-    margin: 0;
-    color: var(--ink);
-    font-size: clamp(40px, 5.8vw, 72px);
-    line-height: 1.02;
-    letter-spacing: 0;
-    max-width: 820px;
-  }
-  .lead {
-    margin: 22px 0 0;
-    max-width: 700px;
-    font-size: clamp(17px, 1.7vw, 21px);
-    line-height: 1.5;
-    color: var(--text);
-  }
-  .status-strip {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1px;
-    margin-top: 34px;
-    border: 1px solid var(--line);
-    background: var(--line);
-    max-width: 980px;
-  }
-  .status {
-    background: rgba(255,255,255,.72);
-    padding: 14px;
-    min-height: 78px;
-  }
-  .status b {
-    display: block;
-    color: var(--ink);
-    margin-bottom: 8px;
-    font-size: 12px;
-  }
-  .status span {
-    color: var(--muted);
-    font-size: 12px;
-    line-height: 1.4;
-  }
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 26px;
-  }
-  .action {
-    display: inline-flex;
-    align-items: center;
-    min-height: 42px;
-    padding: 0 16px;
-    border: 1px solid var(--ink);
-    border-radius: 6px;
-    color: var(--ink);
-    background: transparent;
-    font-weight: 800;
-  }
-  .action.primary {
-    background: var(--ink);
-    color: #fff;
-  }
-  main {
-    padding: 0 clamp(20px, 5vw, 72px) 64px;
-  }
-  section {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 54px 0;
-    border-bottom: 1px solid var(--line);
-  }
-  h2 {
-    margin: 0 0 18px;
-    color: var(--ink);
-    font-size: clamp(26px, 3.5vw, 42px);
-    letter-spacing: 0;
-  }
-  p {
-    font-size: 17px;
-    line-height: 1.65;
-    max-width: 760px;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-    margin-top: 24px;
-  }
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 18px;
-  }
-  .card h3 {
-    margin: 0 0 10px;
-    color: var(--ink);
-    font-size: 17px;
-  }
-  .card p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.55;
-  }
-  .card ul {
-    margin: 12px 0 0;
-    padding-left: 18px;
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.55;
-  }
-  .split {
-    display: grid;
-    grid-template-columns: minmax(0, .9fr) minmax(320px, 1.1fr);
-    gap: 28px;
-    align-items: start;
-  }
-  .rail {
-    display: grid;
-    gap: 10px;
-  }
-  .step {
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 16px;
-  }
-  .step b {
-    display: block;
-    color: var(--ink);
-    margin-bottom: 6px;
-  }
-  .step span {
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.5;
-  }
-  .levels {
-    display: grid;
-    gap: 8px;
-    max-width: 760px;
-    margin-top: 22px;
-  }
-  .level {
-    display: grid;
-    grid-template-columns: 170px 1fr;
-    gap: 14px;
-    align-items: start;
-    padding: 12px 0;
-    border-top: 1px solid var(--line);
-  }
-  .level b {
-    color: var(--ink);
-    font-size: 14px;
-  }
-  .level span {
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.45;
-  }
-  pre {
-    margin: 24px 0 0;
-    padding: 18px;
-    overflow-x: auto;
-    background: var(--code);
-    color: #e9f0ec;
-    border-radius: 8px;
-    font-size: 13px;
-    line-height: 1.55;
-  }
-  code { font-family: "SFMono-Regular", Consolas, monospace; }
-  .note {
-    border-left: 4px solid var(--amber);
-    padding: 12px 16px;
-    background: #fff9ea;
-    color: #4a3920;
-    max-width: 780px;
-    line-height: 1.55;
-  }
-  .proof-note {
-    margin-top: 24px;
-    border-left-color: var(--green);
-    background: #edf8f2;
-    color: #173b2c;
-  }
-  .footer-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-    margin-top: 22px;
-  }
-  .console {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 18px;
-    margin-top: 24px;
-  }
-  .controls {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-  input {
-    width: 100%;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 10px 12px;
-    font: inherit;
-    background: #fff;
-    color: var(--ink);
-  }
-  button {
-    border: 1px solid var(--ink);
-    border-radius: 6px;
-    background: var(--ink);
-    color: #fff;
-    font: inherit;
-    font-weight: 700;
-    padding: 10px 14px;
-    cursor: pointer;
-  }
-  button.secondary {
-    background: #fff;
-    color: var(--ink);
-  }
-  .feed-status {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 10px 0 16px;
-  }
-  .pill {
-    display: inline-flex;
-    align-items: center;
-    min-height: 28px;
-    padding: 4px 9px;
-    border-radius: 999px;
-    background: #eef3ef;
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 700;
-  }
-  .pill.ok { color: var(--green); background: #e7f5ee; }
-  .pill.warn { color: var(--amber); background: #fff4d8; }
-  .feed-list {
-    display: grid;
-    gap: 10px;
-  }
-  .feed-item {
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 14px;
-    background: #fff;
-  }
-  .feed-head {
-    display: flex;
-    gap: 12px;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
-  }
-  .feed-title {
-    color: var(--ink);
-    font-weight: 800;
-    overflow-wrap: anywhere;
-  }
-  .feed-meta {
-    color: var(--muted);
-    font-size: 13px;
-    white-space: nowrap;
-  }
-  .kv {
-    display: grid;
-    grid-template-columns: 150px 1fr;
-    gap: 8px;
-    padding: 4px 0;
-    border-top: 1px solid #edf0ed;
-    font-size: 13px;
-  }
-  .kv b { color: var(--muted); }
-  .kv span { overflow-wrap: anywhere; }
-  .empty {
-    color: var(--muted);
-    padding: 16px;
-    border: 1px dashed var(--line);
-    border-radius: 8px;
-  }
-  @media (max-width: 760px) {
-    header { min-height: auto; padding-top: 104px; }
-    nav { align-items: flex-start; gap: 12px; }
-    .mark { font-size: 13px; }
-    .mark svg { width: 26px; height: 26px; }
-    .links { gap: 10px; font-size: 13px; }
-    .status-strip, .grid { grid-template-columns: 1fr; }
-    .split { grid-template-columns: 1fr; }
-    .level { grid-template-columns: 1fr; gap: 4px; }
-    .controls { grid-template-columns: 1fr; }
-    .feed-head, .kv { display: block; }
-    .feed-meta { margin-top: 4px; }
-  }
+  .title-mark { margin-bottom: 0; }
+  .paxiom-mark { width: 54px; height: 54px; }
+  .title-block .project-title { font-size: 36px; }
+  .title-block .meta { text-align: right; margin-top: 0; }
+  .hero h1 { font-size: clamp(40px, 6vw, 60px); margin-bottom: 22px; }
+  .hero .lede { font-size: 20px; }
+  .build-state-grid { grid-template-columns: repeat(3, 1fr); }
+  .build-cell { border-bottom: none; border-right: 1px solid var(--rule-faint); }
+  .build-cell:last-child { border-right: none; }
+  .section h2 { font-size: 30px; }
+}
+
+@media print { body { background: white; background-image: none; } }
 </style>
-<script src="site-config.js"></script>
 </head>
 <body>
-<header>
-  <nav>
-    <div class="mark">
-      <svg viewBox="0 0 512 512" fill="none" aria-hidden="true">
-        <circle cx="256" cy="256" r="210" stroke="currentColor" stroke-width="18"/>
-        <polygon points="256,100 120,360 392,360" stroke="currentColor" stroke-width="16" fill="none"/>
-        <polygon points="256,184 170,330 342,330" stroke="currentColor" stroke-width="16" fill="none"/>
-        <circle cx="256" cy="275" r="11" fill="currentColor"/>
-      </svg>
-      PAXIOM
+<div class="frame">
+
+  <header class="title-block">
+    <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg></div>
+    <div>
+      <div class="project-mark">Paxiom · Public Index</div>
+      <div class="project-title">Paxiom</div>
+      <div class="project-subtitle">A verification layer for the agent economy.</div>
     </div>
-    <div class="links">
-      <a href="about.html">How it works</a>
-      <a href="where-paxiom-fits.html">Where Paxiom Fits</a>
-      <a href="#feed-console">Console</a>
-      <a href="api.html">API docs</a>
-      <a href="pricing.html">Pricing</a>
-      <a href="#request-access">Request access</a>
-      <a href="spec/proof-corpus.md">Spec</a>
-      <a href="https://github.com/k-luecke/paxiom-static" target="_blank" rel="noreferrer">GitHub</a>
+    <div class="meta">
+      <span>Project No. PXM-001</span><span class="sep">·</span>
+      <span>Issue: Public / Rev. A</span><span class="sep">·</span>
+      <span>Status: Active Build</span><span class="sep">·</span>
+      <span>Updated 2026.04.30</span>
     </div>
+  </header>
+
+  <nav class="primary" aria-label="Primary">
+    <ul>
+      <li><a href="/" class="active">Home</a></li>
+      <li><a href="/docs.html">Docs</a></li>
+      <li><a href="/services.html">Services</a></li>
+      <li><a href="/status.html">Status</a></li>
+      <li><a href="/contact.html">Contact</a></li>
+    </ul>
   </nav>
 
-  <div class="hero">
-    <p class="eyebrow">Verified Ethereum data feeds</p>
-    <h1>Ethereum facts your trading and risk systems can verify.</h1>
-    <p class="lead">
-      Paxiom gives subscribers proof-labeled state records for pools, protocols, and accounts.
-      Use them to gate alerts, monitor markets, audit model decisions, and build toward
-      trust-minimized execution without handing Paxiom custody or trade control.
-    </p>
-    <p class="note proof-note">
-      Current feeds verify Ethereum Merkle Patricia proofs against sourced finalized state roots.
-      The recursive and beaconless roadmap is designed to reduce that remaining state-root trust dependency.
-    </p>
+  <section class="hero">
+    <h1>The substrate is being laid <em>right now.</em></h1>
+    <p class="lede">Paxiom is a verification layer for the agent economy. Phase 1 ships proof services for cross-chain settlement, chain-state verification, audit relay, and identity-bound service access.</p>
+    <p class="meta-line">The project is early. The drawings are public. The build is being sequenced from the infrastructure up.</p>
     <div class="actions">
-      <a class="action primary" href="#request-access">Request pilot access</a>
-      <a class="action" href="about.html">See how it works</a>
-      <a class="action" href="api.html">Read API docs</a>
-    </div>
-
-    <div class="status-strip">
-      <div class="status"><b>For consumers</b><span>APIs for verified pool state, storage facts, and commitment lookup.</span></div>
-      <div class="status"><b>For capital</b><span>Use proof-labeled facts before alerts, routes, liquidations, or settlement checks.</span></div>
-      <div class="status"><b>For budgets</b><span>Pilot access starts at $500-$2K/month with scoped predicate feeds.</span></div>
-      <div class="status"><b>For audit</b><span>Archive why a system acted, with state root, proof hash, and feed hash.</span></div>
-    </div>
-  </div>
-</header>
-
-<main>
-  <section>
-    <h2>The First Buyer Use Case</h2>
-    <p>
-      The cleanest first use is not “beat every price feed on latency.” It is evidence: proof-labeled
-      records for alerts, risk decisions, post-trade review, divergence monitoring, and systems where
-      the cost of trusting incorrect state is higher than the cost of verification.
-    </p>
-    <div class="grid">
-      <div class="card">
-        <h3>Audit and replay</h3>
-        <p>Store the exact state fact behind a model decision, route, liquidation alert, or settlement check.</p>
-      </div>
-      <div class="card">
-        <h3>Freshness tiers</h3>
-        <p>Finalized state is strongest. Safe and latest state are roadmap tiers with clearer latency tradeoffs.</p>
-      </div>
-      <div class="card">
-        <h3>Latency disclosure</h3>
-        <p>Current finalized <code>uniswap_v3_slot0</code> proof generation measured p50 0.69s and p95 1.22s across 10 local runs on April 26, 2026.</p>
-      </div>
+      <a class="btn primary" href="/docs.html">Read the Brief</a>
+      <a class="btn" href="/status.html">Current Status</a>
     </div>
   </section>
 
-  <section>
-    <h2>What You Can Buy First</h2>
-    <p>
-      The first subscriber package is a verified Ethereum state feed for market and risk systems.
-      It is designed for teams that need better evidence than a price API, indexer row, or RPC response,
-      but do not want to operate a proving pipeline themselves.
-    </p>
-    <div class="grid">
-      <div class="card">
-        <h3>Verified pool state</h3>
-        <p>Uniswap V3 <code>slot0</code> facts with block number, state root, proof system, commitment fields, and observed latency.</p>
+  <section class="build-state" id="build-state" aria-labelledby="build-state-heading">
+    <div class="build-state-header">
+      <span id="build-state-heading">Current Build State</span>
+      <span>2026.04.30</span>
+    </div>
+    <div class="build-state-grid">
+      <div class="build-cell designed">
+        <div class="label">Designed</div>
         <ul>
-          <li>Use before routing, hedging, or flagging opportunities</li>
-          <li>Freshness and verification depth labeled per item</li>
-          <li>Measured finalized proof latency: p50 0.69s, p95 1.22s</li>
+          <li>Phase 1 service map</li>
+          <li>Audit relay mechanics</li>
+          <li>Key custody model</li>
+          <li>Operations runbook</li>
+          <li>Build sequence</li>
         </ul>
       </div>
-      <div class="card">
-        <h3>Commitment lookup</h3>
-        <p>Subscriber systems can retrieve the exact record behind a signal, alert, model decision, or post-trade review.</p>
+      <div class="build-cell in-progress">
+        <div class="label">In Progress</div>
         <ul>
-          <li>Replayable commitment lookup</li>
-          <li>Subscriber-side evidence archive</li>
-          <li>Proof hash, feed hash, state root, and subject included</li>
+          <li>Reference implementation</li>
+          <li>AO dispatcher experiments</li>
+          <li>Proof job routing</li>
+          <li>Public repo structure</li>
+          <li>Service metadata</li>
         </ul>
       </div>
-      <div class="card">
-        <h3>Scoped API keys</h3>
-        <p>Access is gated by predicate, feed, and subject. There is no free production API surface.</p>
+      <div class="build-cell not-claimed">
+        <div class="label">Not Claimed</div>
         <ul>
-          <li>Start with selected predicates and subjects</li>
-          <li>Expand to AO-committed and recursive levels as depth improves</li>
-          <li>No custody or execution dependency</li>
+          <li>Production uptime</li>
+          <li>Regulated custody</li>
+          <li>Mainnet-scale reliability</li>
+          <li>Enterprise deployment</li>
+          <li>Fully autonomous service market</li>
         </ul>
       </div>
     </div>
-    <div class="actions">
-      <a class="action primary" href="#request-access">Request pilot access</a>
-      <a class="action" href="where-paxiom-fits.html">Where Paxiom fits</a>
-      <a class="action" href="pricing.html">View pricing</a>
-    </div>
   </section>
 
-  <section>
-    <div class="split">
-      <div>
-        <h2>Why It Matters</h2>
-        <p>
-          Most market infrastructure treats Ethereum state as something a service provider reports.
-          Paxiom treats it as something a subscriber can verify, store, and compare across time.
-        </p>
-        <p>
-          That creates a stronger primitive for arbitrage monitoring, liquidation readiness,
-          risk controls, bridge checks, and any workflow where the cost of trusting stale or incorrect
-          state is higher than the cost of verifying a proof-backed record.
-        </p>
-      </div>
-      <div class="rail">
-        <div class="step"><b>For trading desks</b><span>Verified pool state can gate signals before capital moves.</span></div>
-        <div class="step"><b>For risk systems</b><span>State facts arrive with proof context and commitment lookup.</span></div>
-        <div class="step"><b>For protocols</b><span>External monitors can consume facts without giving Paxiom custody.</span></div>
-        <div class="step"><b>For future automation</b><span>The same records become inputs to AO and recursive proof workflows.</span></div>
-      </div>
-    </div>
+  <section class="section">
+    <div class="section-mark">What is being built</div>
+    <h2>A verification layer, <em>not a payment rail.</em></h2>
+    <p>The agent economy needs a substrate where machines can transact across chains, services, and trust boundaries without relying on any single intermediary's honesty. Paxiom is one specific bet on what part of that substrate should look like — proof services, audit relay mechanics, identity-bound service access — built on permanent autonomous compute and zero-knowledge verification.</p>
+    <p>The drawing set goes deeper. The Project Narrative explains the territory and the bet. The Phase 1 Blueprint details the five services that ship first. The Operations Runbook covers what happens on the days things go wrong, and the days they don't.</p>
+    <a class="read-more" href="/docs.html">View the Drawing Set →</a>
   </section>
 
-  <section>
-    <h2>Predicates Are The Product</h2>
-    <p>
-      A predicate is a specific claim Paxiom can prove about Ethereum state. Subscribers are not buying
-      a vague market-data stream; they are buying verified answers they can wire into trading, risk,
-      accounting, and monitoring systems.
-    </p>
-    <div class="grid">
-      <div class="card">
-        <h3><code>storage_equals</code></h3>
-        <p>Proves a contract storage slot had a specific value under a block state root.</p>
-        <ul>
-          <li>Answer: did this protocol fact exist at this block?</li>
-          <li>Use it for accounting, audits, and custom feeds</li>
-          <li>Live now</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3><code>uniswap_v3_slot0</code></h3>
-        <p>Proves and decodes the pool price/tick state traders and monitors care about.</p>
-        <ul>
-          <li>Answer: what did this pool know before the trade?</li>
-          <li>Use it for routing, divergence, and replayable signals</li>
-          <li>Live now</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Decision predicates</h3>
-        <p>The roadmap expands from raw storage to assertions capital systems can act on.</p>
-        <ul>
-          <li>Is an oracle stale or divergent?</li>
-          <li>Is an Aave account liquidatable?</li>
-          <li>Did an event actually happen?</li>
-        </ul>
-      </div>
-    </div>
-    <p class="note">
-      The moat compounds as the predicate library grows: protocol storage layouts, proof adapters,
-      decoders, historical records, and subscriber integrations all become reusable infrastructure.
-    </p>
+  <section class="section">
+    <div class="section-mark">Why this exists</div>
+    <h2>The proof is the point.</h2>
+    <p>Most agent infrastructure being built today asks the consumer to trust the operator. Paxiom is built on the opposite assumption: every output the platform produces is independently verifiable, and the audit trail is permanent rather than retained at the operator's discretion.</p>
+    <p>This is a slower way to build. It requires substrate decisions — HyperBEAM compute, AO/Arweave audit, archive-anchored state reconstruction — that competitors using commodity infrastructure don't make. The bet is that as trust failures accumulate in adjacent agent service categories, the customers who care about verifiable outputs will be the ones who matter most.</p>
   </section>
 
-  <section>
-    <h2>Where The Roadmap Goes</h2>
-    <p>
-      The feed starts with real Ethereum storage proof verification and grows toward a broader
-      proof-native coordination layer. Subscribers do not need to wait for the full end state:
-      each stage adds a stricter guarantee to the same data surface.
-    </p>
-    <div class="levels">
-      <div class="level"><b>Now</b><span><code>mpt_verified</code> feeds for Uniswap V3 pool state and contract storage facts.</span></div>
-      <div class="level"><b>Next</b><span>More predicates: pool reserves, oracle values, lending health inputs, liquidation eligibility, event/log inclusion.</span></div>
-      <div class="level"><b>AO committed</b><span>Facts are submitted to an AO proof-corpus process for durable public coordination.</span></div>
-      <div class="level"><b>Recursive history</b><span>Segments aggregate toward a genesis-to-present Ethereum corpus.</span></div>
-      <div class="level"><b>Beaconless proof layer</b><span>Consensus and execution proofs reduce reliance on trusted checkpoints and oracle-style beacons.</span></div>
-    </div>
-  </section>
+  <footer class="sheet-footer">
+    <div>Paxiom · paxiom.org</div>
+    <div>Public · Rev. A · 2026.04.30</div>
+    <div class="sheet-id">PXM-B-000 · Public Index</div>
+  </footer>
 
-  <section>
-    <h2>What Paxiom Is Not</h2>
-    <p>
-      Paxiom is not a low-latency price oracle, a subgraph replacement, or a hosted archive node.
-      It is a verification layer for Ethereum facts: state-root-bound records, proof context,
-      commitment lookup, and a path toward recursive proof depth.
-    </p>
-    <div class="grid">
-      <div class="card">
-        <h3>Not Pyth or Chainlink</h3>
-        <p>Paxiom does not begin by reporting prices into contracts. It begins by proving what Ethereum state said.</p>
-      </div>
-      <div class="card">
-        <h3>Not a subgraph</h3>
-        <p>Indexers optimize queryability. Paxiom optimizes evidence that a specific fact opened under a specific root.</p>
-      </div>
-      <div class="card">
-        <h3>Not your node team</h3>
-        <p>Running Erigon gives control. Paxiom gives productized proof records and subscriber-grade commitments.</p>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h2>What Each Record Carries</h2>
-    <p>
-      Every item is built to be consumed by machines and reviewed by humans. The value is not just
-      the field value; it is the proof context around that value.
-    </p>
-<pre><code>{
-  "schema": "paxiom.feed.v1",
-  "feed_id": "ethereum.uniswap_v3_slot0",
-  "predicate": "uniswap_v3_slot0",
-  "subject": "ethereum:0x88e6...f5640:slot0",
-  "block_number": 24961596,
-  "state_root": "0xd8f847...",
-  "proof_system": "eip1186-mpt+uniswap-v3-slot0",
-  "verification_level": "mpt_verified",
-  "custody": "none",
-  "paxiom_commitment": "775ca05c...",
-  "feed_item_hash": "..."
-}</code></pre>
-  </section>
-
-  <section>
-    <h2>Subscriber Access</h2>
-    <p>
-      Production access is authenticated and provisioned per subscriber. Scopes can be limited
-      by predicate, feed, or subject so early customers only receive the feeds they are approved to use.
-    </p>
-<pre><code>GET /health
-GET /v1/predicates
-GET /v1/predicates/:id
-GET /v1/feed/latest
-GET /v1/feed/subjects
-GET /v1/feed/commitment/:commitment</code></pre>
-    <p class="note">
-      Paxiom data feeds are not custody, trade execution, or investment advice. They are proof-labeled records
-      that downstream systems can verify and consume according to their own risk policy. API keys are required
-      for live production feeds.
-    </p>
-  </section>
-
-  <section id="request-access">
-    <div class="split">
-      <div>
-        <h2>Private Feed Pilot</h2>
-        <p>
-          Paxiom is onboarding early subscribers for verified Ethereum state feeds. The first package is
-          proof-backed Uniswap V3 pool state with scoped API access, commitment lookup, and replayable
-          records for trading, monitoring, and risk systems.
-        </p>
-        <p>
-          Pilot access is manually approved. Tokens are scoped by predicate, feed, or subject; production
-          feeds are not open-access and are not custody, execution, or investment advice.
-        </p>
-        <div class="actions">
-          <a class="action primary" href="mailto:access@paxiom.org?subject=Paxiom%20feed%20pilot%20access&body=Company%3A%0AUse%20case%3A%0AFeeds%20requested%3A%20uniswap_v3_slot0%0AFreshness%20needed%3A%0AExpected%20monthly%20volume%3A%0A">Email access@paxiom.org</a>
-          <a class="action" href="api.html">Review integration</a>
-        </div>
-      </div>
-      <div class="rail">
-        <div class="step"><b>1. Qualify the use case</b><span>Trading, monitoring, liquidation, risk, accounting, or settlement checks.</span></div>
-        <div class="step"><b>2. Choose feed scope</b><span>Start with selected predicates and subjects instead of broad API access.</span></div>
-        <div class="step"><b>3. Issue token</b><span>Subscribers receive an API key with explicit rate and feed limits.</span></div>
-        <div class="step"><b>4. Expand predicates</b><span>Custom protocol facts can be added after the first integration is live.</span></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="feed-console">
-    <h2>Live Feed Console</h2>
-    <p>
-      The console is for approved subscribers and local testing. Without an API key or private endpoint,
-      it shows a demo-mode feed with recent-looking sample records so the proof context is visible without
-      exposing live subscriber data.
-    </p>
-    <div class="console">
-      <div class="controls">
-        <input id="apiBase" aria-label="Feed API base URL" placeholder="https://api.paxiom.org">
-        <button type="button" onclick="refreshFeed()">Refresh</button>
-        <button class="secondary" type="button" onclick="loadSubjects()">Subjects</button>
-      </div>
-      <div class="controls">
-        <input id="apiToken" aria-label="Feed API token" placeholder="Subscriber API token">
-        <button type="button" onclick="saveToken()">Save Token</button>
-        <button class="secondary" type="button" onclick="clearToken()">Clear Token</button>
-      </div>
-      <div class="controls">
-        <input id="commitment" aria-label="Commitment lookup" placeholder="Paste Paxiom commitment or feed item hash">
-        <button type="button" onclick="lookupCommitment()">Lookup</button>
-        <button class="secondary" type="button" onclick="saveApiBase()">Save API</button>
-      </div>
-      <div class="feed-status">
-        <span class="pill ok" id="health">demo mode</span>
-        <span class="pill" id="apiLabel">api: unset</span>
-        <span class="pill" id="tokenLabel">token: not set</span>
-        <span class="pill" id="countLabel">items: 2</span>
-      </div>
-      <div class="feed-list" id="feedList">
-        <div class="empty">Demo-mode records shown until the subscriber feed is reachable.</div>
-        <article class="feed-item">
-          <div class="feed-head">
-            <div class="feed-title">ethereum.uniswap_v3_slot0</div>
-            <div class="feed-meta">block 24961660</div>
-          </div>
-          <div class="kv"><b>Predicate</b><span>uniswap_v3_slot0</span></div>
-          <div class="kv"><b>Subject</b><span>ethereum:0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640:slot0</span></div>
-          <div class="kv"><b>Tick</b><span>198871</span></div>
-          <div class="kv"><b>Token1/token0</b><span>0.000432938269562708</span></div>
-          <div class="kv"><b>Verification</b><span>mpt_verified</span></div>
-          <div class="kv"><b>Observed latency</b><span>1840 ms demo</span></div>
-          <div class="kv"><b>Custody</b><span>none</span></div>
-          <div class="kv"><b>Proof system</b><span>eip1186-mpt+uniswap-v3-slot0</span></div>
-          <div class="kv"><b>State root</b><span>0x40e907bd3becec6fae4d5f10c4c19bdc8a34f79b8cb2907820330453bf2e42d5</span></div>
-          <div class="kv"><b>Commitment</b><span>2e3850623970bf9af5c4cc460bc6c7cddd093530b951f86c259fac9ea2d9b8c3</span></div>
-          <div class="kv"><b>Feed hash</b><span>84691bdfae08dedb6767a6805f6a85abd9285470d5026a9d0b2fcebf701ba022</span></div>
-        </article>
-        <article class="feed-item">
-          <div class="feed-head">
-            <div class="feed-title">ethereum.storage_equals</div>
-            <div class="feed-meta">block 24961660</div>
-          </div>
-          <div class="kv"><b>Predicate</b><span>storage_equals</span></div>
-          <div class="kv"><b>Subject</b><span>ethereum:0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2:slot:0x0</span></div>
-          <div class="kv"><b>Storage value</b><span>0x0000000000000000000000000000000000000000000000000000000000000000</span></div>
-          <div class="kv"><b>Verification</b><span>mpt_verified</span></div>
-          <div class="kv"><b>Observed latency</b><span>1290 ms demo</span></div>
-          <div class="kv"><b>Custody</b><span>none</span></div>
-          <div class="kv"><b>Proof system</b><span>eip1186-mpt</span></div>
-          <div class="kv"><b>State root</b><span>0x40e907bd3becec6fae4d5f10c4c19bdc8a34f79b8cb2907820330453bf2e42d5</span></div>
-          <div class="kv"><b>Commitment</b><span>775ca05c9a8b2bc6ffb6e0d1119d0f55383f9e2a74a5ecf1df27756bb4e78f61</span></div>
-          <div class="kv"><b>Feed hash</b><span>52a9ea3a1b59ec206b57f6f21e48d4c1a75c0e821a59e677e25fdb316fcf5a00</span></div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Current Commands</h2>
-<pre><code>npm run proof:uniswap-v3-slot0 -- \
-  --pool=0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640 \
-  --token0-decimals=6 \
-  --token1-decimals=18 \
-  --block=finalized
-
-PAXIOM_WATCH_KIND=uniswap-v3-slot0 \
-PAXIOM_WATCH_ADDRESS=0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640 \
-PAXIOM_TOKEN0_DECIMALS=6 \
-PAXIOM_TOKEN1_DECIMALS=18 \
-npm run proof:live
-
-npm run feed:server</code></pre>
-    <div class="footer-links">
-      <a href="about.html">How it works</a>
-      <a href="where-paxiom-fits.html">Where Paxiom fits</a>
-      <a href="api.html">API docs</a>
-      <a href="pricing.html">Pricing</a>
-      <a href="spec/proof-corpus.md">Proof corpus spec</a>
-      <a href="https://github.com/k-luecke/paxiom-static" target="_blank" rel="noreferrer">Static site repository</a>
-    </div>
-  </section>
-</main>
-<script>
-const sampleItems = [
-  {
-    schema: 'paxiom.feed.v1',
-    feed_id: 'ethereum.uniswap_v3_slot0',
-    predicate: 'uniswap_v3_slot0',
-    subject: 'ethereum:0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640:slot0',
-    block_number: 24961660,
-    state_root: '0x40e907bd3becec6fae4d5f10c4c19bdc8a34f79b8cb2907820330453bf2e42d5',
-    proof_system: 'eip1186-mpt+uniswap-v3-slot0',
-    verification_level: 'mpt_verified',
-    custody: 'none',
-    latency_observed_ms: 1840,
-    paxiom_commitment: '2e3850623970bf9af5c4cc460bc6c7cddd093530b951f86c259fac9ea2d9b8c3',
-    feed_item_hash: '84691bdfae08dedb6767a6805f6a85abd9285470d5026a9d0b2fcebf701ba022',
-    value: {
-      decoded: { tick: '198871' },
-      token1PerToken0: 0.000432938269562708
-    }
-  },
-  {
-    schema: 'paxiom.feed.v1',
-    feed_id: 'ethereum.storage_equals',
-    predicate: 'storage_equals',
-    subject: 'ethereum:0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2:slot:0x0',
-    block_number: 24961660,
-    state_root: '0x40e907bd3becec6fae4d5f10c4c19bdc8a34f79b8cb2907820330453bf2e42d5',
-    proof_system: 'eip1186-mpt',
-    verification_level: 'mpt_verified',
-    custody: 'none',
-    latency_observed_ms: 1290,
-    paxiom_commitment: '775ca05c9a8b2bc6ffb6e0d1119d0f55383f9e2a74a5ecf1df27756bb4e78f61',
-    feed_item_hash: '52a9ea3a1b59ec206b57f6f21e48d4c1a75c0e821a59e677e25fdb316fcf5a00',
-    value: {
-      slot: '0x0',
-      storage_value: '0x0000000000000000000000000000000000000000000000000000000000000000'
-    }
-  }
-];
-
-function configuredApiBase() {
-  return localStorage.getItem('paxiom.feedApiBase') ||
-    window.PAXIOM_SITE_CONFIG?.feedApiBase ||
-    'https://api.paxiom.org';
-}
-
-function initConsole() {
-  const input = document.getElementById('apiBase');
-  input.value = configuredApiBase();
-  const token = localStorage.getItem('paxiom.feedToken') || '';
-  document.getElementById('apiToken').value = token;
-  document.getElementById('apiLabel').textContent = 'api: ' + input.value;
-  document.getElementById('tokenLabel').textContent = token ? 'token: set' : 'token: not set';
-  renderItems(sampleItems, 'Demo-mode records shown until the subscriber feed is reachable.');
-}
-
-function saveApiBase() {
-  const value = document.getElementById('apiBase').value.trim().replace(/\/$/, '');
-  if (!value) return;
-  localStorage.setItem('paxiom.feedApiBase', value);
-  document.getElementById('apiLabel').textContent = 'api: ' + value;
-}
-
-function saveToken() {
-  const value = document.getElementById('apiToken').value.trim();
-  if (value) {
-    localStorage.setItem('paxiom.feedToken', value);
-    document.getElementById('tokenLabel').textContent = 'token: set';
-  } else {
-    clearToken();
-  }
-}
-
-function clearToken() {
-  localStorage.removeItem('paxiom.feedToken');
-  document.getElementById('apiToken').value = '';
-  document.getElementById('tokenLabel').textContent = 'token: not set';
-}
-
-async function fetchJson(path) {
-  const base = document.getElementById('apiBase').value.trim().replace(/\/$/, '');
-  document.getElementById('apiLabel').textContent = 'api: ' + base;
-  const token = localStorage.getItem('paxiom.feedToken') || document.getElementById('apiToken').value.trim();
-  const headers = { accept: 'application/json' };
-  if (token) headers['x-paxiom-feed-token'] = token;
-  const res = await fetch(base + path, { headers });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  return res.json();
-}
-
-async function checkHealth() {
-  const health = document.getElementById('health');
-  try {
-    const data = await fetchJson('/health');
-    health.textContent = data.status === 'ok' ? 'feed online' : 'feed reachable';
-    health.className = 'pill ok';
-    return true;
-  } catch (err) {
-    health.textContent = 'feed offline';
-    health.className = 'pill warn';
-    return false;
-  }
-}
-
-async function refreshFeed() {
-  saveApiBase();
-  const ok = await checkHealth();
-  try {
-    const data = await fetchJson('/v1/feed/latest?limit=10');
-    renderItems(data.items || [], ok ? '' : 'Feed health failed, but latest endpoint returned data.');
-  } catch (err) {
-    renderItems(sampleItems, 'Subscriber API unavailable or unauthorized. Showing demo-mode records.');
-  }
-}
-
-async function loadSubjects() {
-  saveApiBase();
-  await checkHealth();
-  try {
-    const data = await fetchJson('/v1/feed/subjects');
-    renderItems(data.items || [], 'Latest record by subject.');
-  } catch (err) {
-    renderItems(sampleItems, 'Subscriber API unavailable or unauthorized. Showing demo-mode subjects.');
-  }
-}
-
-async function lookupCommitment() {
-  saveApiBase();
-  const value = document.getElementById('commitment').value.trim();
-  if (!value) return;
-  await checkHealth();
-  try {
-    const item = await fetchJson('/v1/feed/commitment/' + encodeURIComponent(value));
-    renderItems([item], 'Commitment lookup result.');
-  } catch (err) {
-    renderItems([], 'No record found for that commitment.');
-  }
-}
-
-function renderItems(items, message) {
-  document.getElementById('countLabel').textContent = 'items: ' + items.length;
-  const list = document.getElementById('feedList');
-  if (!items.length) {
-    list.innerHTML = '<div class="empty">' + escapeHtml(message || 'No feed records found.') + '</div>';
-    return;
-  }
-  const note = message ? '<div class="empty">' + escapeHtml(message) + '</div>' : '';
-  list.innerHTML = note + items.map(renderItem).join('');
-}
-
-function renderItem(item) {
-  const tick = item.value?.decoded?.tick || item.value?.tick || '';
-  const price = item.value?.token1PerToken0;
-  const latency = item.latency_observed_ms;
-  return `
-    <article class="feed-item">
-      <div class="feed-head">
-        <div class="feed-title">${escapeHtml(item.feed_id || item.predicate || 'feed item')}</div>
-        <div class="feed-meta">block ${escapeHtml(String(item.block_number || '--'))}</div>
-      </div>
-      ${kv('Predicate', item.predicate)}
-      ${kv('Subject', item.subject)}
-      ${tick ? kv('Tick', tick) : ''}
-      ${price !== undefined ? kv('Token1/token0', String(price)) : ''}
-      ${item.value?.storage_value ? kv('Storage value', item.value.storage_value) : ''}
-      ${kv('Verification', item.verification_level)}
-      ${latency !== undefined ? kv('Observed latency', String(latency) + ' ms demo') : ''}
-      ${kv('Custody', item.custody)}
-      ${kv('Proof system', item.proof_system)}
-      ${kv('State root', item.state_root)}
-      ${kv('Commitment', item.paxiom_commitment)}
-      ${kv('Feed hash', item.feed_item_hash)}
-    </article>
-  `;
-}
-
-function kv(label, value) {
-  if (value === undefined || value === null || value === '') return '';
-  return '<div class="kv"><b>' + escapeHtml(label) + '</b><span>' + escapeHtml(String(value)) + '</span></div>';
-}
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, char => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  }[char]));
-}
-
-initConsole();
-</script>
+</div>
 </body>
 </html>

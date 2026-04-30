@@ -1,0 +1,2517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom · Phase 1 Blueprint · Sheet Set</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F1E8;
+  --paper-dark: #EDE6D3;
+  --ink: #1A2332;
+  --ink-mid: #3A4555;
+  --ink-faint: #6B7280;
+  --rule: #1A2332;
+  --rule-faint: #B8AE96;
+  --blue: #1E3A5F;
+  --blue-light: #4A6B8A;
+  --red: #8B2E1F;
+  --amber: #B8860B;
+  --grid: rgba(26, 35, 50, 0.04);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+
+/* ─── Sheet Frame ─────────────────────────────────────── */
+
+.sheet {
+  max-width: 1080px;
+  margin: 0 auto;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  margin-top: 40px;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+@media (max-width: 900px) {
+  .sheet { margin: 16px 8px; border-width: 1px; }
+}
+
+.sheet-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border-bottom: 2px solid var(--ink);
+  padding: 16px 24px;
+  align-items: end;
+  gap: 24px;
+}
+
+.sheet-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sheet-project {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.sheet-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.sheet-subtitle {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-mid);
+  margin-top: 2px;
+}
+
+.sheet-meta {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 4px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+.sheet-meta dt {
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.sheet-meta dd {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ─── Sheet Body ──────────────────────────────────────── */
+
+.sheet-body {
+  padding: 48px 64px;
+}
+
+@media (max-width: 700px) {
+  .sheet-body { padding: 32px 24px; }
+}
+
+/* ─── Cover & TOC ─────────────────────────────────────── */
+
+.cover-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cover-mark::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule-faint);
+}
+
+.cover-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 400;
+  font-size: clamp(48px, 7vw, 84px);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+
+.cover-title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-mid);
+}
+
+.cover-strap {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.4;
+  color: var(--ink-mid);
+  max-width: 60ch;
+  margin-bottom: 56px;
+}
+
+.cover-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 64px;
+}
+
+@media (max-width: 700px) {
+  .cover-grid { grid-template-columns: 1fr; }
+}
+
+.cover-cell {
+  padding: 20px 24px;
+  border-right: 1px solid var(--rule-faint);
+}
+
+.cover-cell:nth-child(2n) { border-right: none; }
+
+@media (max-width: 700px) {
+  .cover-cell {
+    border-right: none;
+    border-bottom: 1px solid var(--rule-faint);
+  }
+  .cover-cell:last-child { border-bottom: none; }
+}
+
+.cover-cell-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+}
+
+.cover-cell-value {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 18px;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.cover-cell-value em {
+  font-style: italic;
+  color: var(--ink-mid);
+}
+
+/* ─── TOC ─────────────────────────────────────────────── */
+
+.toc-section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 40px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule-faint);
+}
+
+.toc-section-label:first-child { margin-top: 0; }
+
+.toc-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 24px;
+  padding: 10px 0;
+  border-bottom: 1px dotted var(--rule-faint);
+  align-items: baseline;
+}
+
+.toc-row:last-of-type { border-bottom: none; }
+
+.toc-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--blue);
+  letter-spacing: 0.04em;
+}
+
+.toc-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.toc-title em {
+  font-style: italic;
+  color: var(--ink-mid);
+  font-size: 14px;
+  display: block;
+  margin-top: 2px;
+}
+
+.toc-page {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+
+/* ─── Section Headers ─────────────────────────────────── */
+
+.section-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-mark::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--blue);
+}
+
+.section-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.section-title em {
+  font-style: italic;
+  color: var(--ink-mid);
+}
+
+.section-strap {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--ink-mid);
+  margin-bottom: 40px;
+  max-width: 60ch;
+  line-height: 1.5;
+}
+
+/* ─── Body Text ───────────────────────────────────────── */
+
+.prose p {
+  margin-bottom: 18px;
+  max-width: 68ch;
+}
+
+.prose h3 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 20px;
+  margin-top: 36px;
+  margin-bottom: 14px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.prose h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-top: 28px;
+  margin-bottom: 10px;
+}
+
+.prose strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.prose em {
+  font-style: italic;
+  color: var(--ink-mid);
+}
+
+.prose code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--paper-dark);
+  padding: 1px 6px;
+  border-radius: 2px;
+  color: var(--blue);
+}
+
+/* ─── Callout Boxes ───────────────────────────────────── */
+
+.callout {
+  border: 1px solid var(--ink);
+  margin: 32px 0;
+  background: var(--paper);
+  position: relative;
+}
+
+.callout-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  padding: 8px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  align-items: center;
+}
+
+.callout-tag {
+  font-weight: 600;
+}
+
+.callout-id {
+  color: var(--paper-dark);
+  opacity: 0.7;
+}
+
+.callout-body {
+  padding: 18px 20px;
+}
+
+.callout-body p {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.callout-body p:last-child { margin-bottom: 0; }
+
+.callout-body ul {
+  margin: 8px 0 4px 18px;
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.callout-body li {
+  margin-bottom: 4px;
+}
+
+/* Variant: REF */
+.callout.ref { border-color: var(--blue); }
+.callout.ref .callout-header { background: var(--blue); }
+
+/* Variant: SPEC */
+.callout.spec { border-color: var(--ink); }
+
+/* Variant: NOTE */
+.callout.note {
+  border-style: dashed;
+  border-color: var(--ink-faint);
+}
+.callout.note .callout-header {
+  background: transparent;
+  color: var(--ink-faint);
+  border-bottom: 1px dashed var(--ink-faint);
+}
+.callout.note .callout-id { color: var(--ink-faint); }
+
+/* Variant: WARN */
+.callout.warn { border-color: var(--red); }
+.callout.warn .callout-header { background: var(--red); }
+
+/* ─── Service Sheets (Elevations) ─────────────────────── */
+
+.service-sheet {
+  margin: 40px 0;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+}
+
+.service-header {
+  padding: 20px 28px;
+  background: var(--paper-dark);
+  border-bottom: 1.5px solid var(--ink);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 24px;
+  align-items: baseline;
+}
+
+@media (max-width: 700px) {
+  .service-header {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.service-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--blue);
+  letter-spacing: 0.02em;
+}
+
+.service-name {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.service-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  border: 1px solid var(--ink-mid);
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.service-body {
+  padding: 28px;
+}
+
+.spec-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid var(--rule-faint);
+  margin: 16px 0 24px;
+}
+
+@media (max-width: 700px) {
+  .spec-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.spec-cell {
+  padding: 14px 16px;
+  border-right: 1px solid var(--rule-faint);
+  border-bottom: 1px solid var(--rule-faint);
+}
+
+.spec-cell:last-child { border-right: none; }
+
+@media (max-width: 700px) {
+  .spec-cell:nth-child(2n) { border-right: none; }
+  .spec-cell:nth-child(odd) { border-right: 1px solid var(--rule-faint); }
+}
+
+.spec-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+}
+
+.spec-value {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 17px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.spec-value em {
+  font-style: italic;
+  color: var(--ink-mid);
+  font-size: 13px;
+  font-weight: 400;
+  display: block;
+  margin-top: 2px;
+}
+
+.service-prose {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.service-prose p { margin-bottom: 14px; }
+
+.service-prose h5 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-top: 22px;
+  margin-bottom: 8px;
+}
+
+/* ─── Sequence Diagram ────────────────────────────────── */
+
+.sequence {
+  margin: 32px 0;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  padding: 28px 32px;
+}
+
+.sequence-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 18px;
+}
+
+.sequence-row {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.sequence-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 28px;
+  bottom: -14px;
+  width: 1px;
+  background: var(--rule-faint);
+}
+
+.sequence-mark {
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--blue);
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--blue);
+  position: relative;
+  z-index: 1;
+}
+
+.sequence-text {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  color: var(--ink);
+  padding-top: 4px;
+}
+
+.sequence-text strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.sequence-text em {
+  font-style: italic;
+  color: var(--ink-mid);
+  font-size: 13px;
+  display: block;
+  margin-top: 2px;
+}
+
+/* ─── Schedule Table ──────────────────────────────────── */
+
+.schedule {
+  margin: 24px 0;
+  border: 1.5px solid var(--ink);
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.schedule th {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 10px 12px;
+  font-weight: 500;
+}
+
+.schedule td {
+  padding: 12px;
+  border-bottom: 1px solid var(--rule-faint);
+  border-right: 1px solid var(--rule-faint);
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 14px;
+  vertical-align: top;
+  color: var(--ink);
+}
+
+.schedule td:last-child { border-right: none; }
+.schedule tr:last-child td { border-bottom: none; }
+
+.schedule tr.total td {
+  background: var(--paper-dark);
+  font-weight: 600;
+  border-top: 2px solid var(--ink);
+}
+
+.schedule .num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  text-align: right;
+}
+
+.schedule .id {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--blue);
+  font-weight: 500;
+}
+
+/* ─── Page Breaks ─────────────────────────────────────── */
+
+.page-break {
+  border-top: 2px solid var(--ink);
+  margin: 96px -64px 64px;
+  position: relative;
+}
+
+@media (max-width: 700px) {
+  .page-break { margin: 56px -24px 40px; }
+}
+
+.page-break::before {
+  content: attr(data-sheet);
+  position: absolute;
+  top: -10px;
+  left: 64px;
+  background: var(--paper);
+  padding: 0 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ─── Footer / Sheet Number ──────────────────────────── */
+
+.sheet-footer {
+  border-top: 1.5px solid var(--ink);
+  padding: 14px 24px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  align-items: center;
+}
+
+.sheet-footer .center {
+  text-align: center;
+}
+
+.sheet-footer .right {
+  text-align: right;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ─── North Arrow / Decorative ────────────────────────── */
+
+.compass {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 32px;
+  height: 32px;
+}
+
+/* ─── Internal Anchors ───────────────────────────────── */
+
+a {
+  color: var(--blue);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: var(--red);
+}
+
+/* ─── Print Styles ────────────────────────────────────── */
+
+@media print {
+  body { background: white; }
+  .sheet { border: 2px solid black; box-shadow: none; }
+  .page-break { page-break-before: always; }
+}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+<!-- ═══════════════════════════════════════════════════════
+     SHEET HEADER
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="sheet-header">
+  <div class="sheet-title-block">
+    <div class="sheet-project">Paxiom · Phase 1 · Drawing Set</div>
+    <div class="sheet-title">Verified Compute Platform</div>
+    <div class="sheet-subtitle">A blueprint for launch — five services, x402-native, AO-anchored.</div>
+  </div>
+  <dl class="sheet-meta">
+    <dt>Project No.</dt><dd>PXM-001</dd>
+    <dt>Issue</dt><dd>Phase 1 / Rev. A</dd>
+    <dt>Date</dt><dd>2026.04.29</dd>
+    <dt>Drawn By</dt><dd>K. Luecke</dd>
+  </dl>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     COVER & TABLE OF CONTENTS — A-000
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="sheet-body">
+
+<div class="cover-mark">Sheet A-000 · Cover &amp; Index</div>
+
+<h1 class="cover-title">Phase One.<br><em>Five services to revenue.</em></h1>
+
+<p class="cover-strap">
+A working drawing set for the verified compute platform. The thesis is set.
+The architecture is anchored. What remains is to build, ship, and observe —
+in that order, on a timeline that matches the household.
+</p>
+
+<div class="cover-grid">
+  <div class="cover-cell">
+    <div class="cover-cell-label">Floor</div>
+    <div class="cover-cell-value">$30k / yr <em>net to founder</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Trigger to Quit</div>
+    <div class="cover-cell-value">All five earning <em>before runway is touched</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Build Cadence</div>
+    <div class="cover-cell-value">80–100 hr/wk <em>evenings, weekends, sustained</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Runway</div>
+    <div class="cover-cell-value">6 months <em>preserved as bridge, not fuel</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Settlement Chain</div>
+    <div class="cover-cell-value">Base <em>via Coinbase facilitator, v1</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Substrate</div>
+    <div class="cover-cell-value">HyperBEAM + AO + Arweave <em>+ Load Network</em></div>
+  </div>
+</div>
+
+<!-- ─── TABLE OF CONTENTS ───────────────────────────── -->
+
+<div class="toc-section-label">Front Matter</div>
+
+<div class="toc-row">
+  <div class="toc-num">A-000</div>
+  <div class="toc-title">Cover &amp; Index<em>this sheet</em></div>
+  <div class="toc-page">↑</div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">A-010</div>
+  <div class="toc-title">Project Narrative<em>scope, position, what this set is and isn't</em></div>
+  <div class="toc-page"><a href="#a-010">A-010</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">A-020</div>
+  <div class="toc-title">Reference Standards &amp; Substrate<em>x402, ERC-8004, ERC-8183, AO, HyperBEAM, Load</em></div>
+  <div class="toc-page"><a href="#a-020">A-020</a></div>
+</div>
+
+<div class="toc-section-label">Architecturals — Platform</div>
+
+<div class="toc-row">
+  <div class="toc-num">A-100</div>
+  <div class="toc-title">Site Plan<em>where Paxiom sits in the agent commerce stack</em></div>
+  <div class="toc-page"><a href="#a-100">A-100</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">A-110</div>
+  <div class="toc-title">Floor Plan<em>request lifecycle: agent → endpoint → facilitator → settlement</em></div>
+  <div class="toc-page"><a href="#a-110">A-110</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">A-120</div>
+  <div class="toc-title">Foundations<em>HyperBEAM, AO, Load Network, KYA primitive</em></div>
+  <div class="toc-page"><a href="#a-120">A-120</a></div>
+</div>
+
+<div class="toc-section-label">Elevations — Service Catalog</div>
+
+<div class="toc-row">
+  <div class="toc-num">A-201</div>
+  <div class="toc-title">Service 1 · Slot Storage Proofs<em>ZK proof of contract storage at any block</em></div>
+  <div class="toc-page"><a href="#a-201">A-201</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">A-202</div>
+  <div class="toc-title">Service 2 · Sync Committee Verification<em>Ethereum consensus light-client primitive</em></div>
+  <div class="toc-page"><a href="#a-202">A-202</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">A-203</div>
+  <div class="toc-title">Service 3 · Cross-Chain Message Verification<em>bridge-grade attestation, Kelp lesson encoded</em></div>
+  <div class="toc-page"><a href="#a-203">A-203</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">A-204</div>
+  <div class="toc-title">Service 4 · Simulation as a Service<em>~evm@1.0 device, TEE-attested execution</em></div>
+  <div class="toc-page"><a href="#a-204">A-204</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">A-205</div>
+  <div class="toc-title">Service 5 · Verified Historical State<em>Load Network archive reconstruction, no RPC</em></div>
+  <div class="toc-page"><a href="#a-205">A-205</a></div>
+</div>
+
+<div class="toc-section-label">Schedules — Pro Forma &amp; Build Order</div>
+
+<div class="toc-row">
+  <div class="toc-num">A-300</div>
+  <div class="toc-title">Revenue &amp; Cost Schedule<em>per-service economics, month 9 steady state</em></div>
+  <div class="toc-page"><a href="#a-300">A-300</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">A-310</div>
+  <div class="toc-title">Build Sequence &amp; Gates<em>ship order, dependencies, decision points</em></div>
+  <div class="toc-page"><a href="#a-310">A-310</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">A-320</div>
+  <div class="toc-title">Risk Register<em>known failure modes, mitigations, watch-fors</em></div>
+  <div class="toc-page"><a href="#a-320">A-320</a></div>
+</div>
+
+<div class="toc-section-label">Back Matter</div>
+
+<div class="toc-row">
+  <div class="toc-num">A-900</div>
+  <div class="toc-title">General Notes<em>conventions, callout legend, revision log</em></div>
+  <div class="toc-page"><a href="#a-900">A-900</a></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-010 · PROJECT NARRATIVE
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-010"></div>
+
+<div id="a-010">
+<div class="section-mark">A-010 · Project Narrative</div>
+<h2 class="section-title">What this is, <em>and isn't.</em></h2>
+<p class="section-strap">
+Phase 1 is the engine. The moats — quantum-clean proving, IoT telemetry,
+medical compliance — come later. First the engine has to run.
+</p>
+
+<div class="prose">
+
+<p>
+Paxiom is a verified compute platform: agent-callable services that return
+cryptographically verifiable outputs. The deliverable is its own integrity check —
+buyers don't trust the platform, they verify what was sent. This is the
+structural property that distinguishes the category from every other agent
+service surface in the x402 ecosystem.
+</p>
+
+<p>
+Phase 1 ships five services that overlap deliberately with what existing
+verified compute providers already sell. The strategy is not to invent a
+new category. The strategy is to enter an established category with x402-native
+delivery, AO-anchored audit, and architectural properties (no RPC trust,
+permanent provenance) that competitors can't easily match. Revenue from the
+commoditized base funds the differentiated work that becomes the durable moat.
+</p>
+
+<p>
+This sheet set covers Phase 1 only. Quantum-ready proving systems
+(<em>Orion, Rokokko</em>), HIPAA-grade ZK for personal data, IoT telemetry via SDF,
+and the broader marketplace integration via ERC-8183 are vision items
+referenced where relevant but not specified here. They are Phase 3 and beyond.
+</p>
+
+<div class="callout note">
+  <div class="callout-header">
+    <span class="callout-tag">Note</span>
+    <span></span>
+    <span class="callout-id">A-010 / N.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      The framing shift from "API platform" to "agent-callable verified compute"
+      resolves the long-running answer to <em>what do you actually sell.</em>
+      APIs in the human-developer sense are commoditized. Agent-callable
+      services in the x402 sense are a different product because the buyer
+      is different, the discovery mechanism is different, and the pricing
+      model is different.
+    </p>
+  </div>
+</div>
+
+<h3>Position in one sentence</h3>
+
+<p>
+Paxiom sells verified computation to autonomous agents over x402, anchored
+in HyperBEAM compute and AO/Arweave audit, with architectural properties
+that defeat the trust failures (RPC compromise, lookalike fraud, opaque
+provenance) that affect every adjacent agent service category.
+</p>
+
+<h3>What this sheet set does not contain</h3>
+
+<p>
+No marketing language. No investor pitch. No long-form competitive analysis.
+Those exist elsewhere or will be written when needed. This is a working
+drawing set for the build itself — what to ship, in what order, with what
+inputs and outputs, against what gates.
+</p>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-020 · REFERENCE STANDARDS
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-020"></div>
+
+<div id="a-020">
+<div class="section-mark">A-020 · Reference Standards &amp; Substrate</div>
+<h2 class="section-title">What we build <em>against.</em></h2>
+<p class="section-strap">
+Every load-bearing dependency, named. The platform's architectural manifest.
+</p>
+
+<div class="prose">
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Protocol</span>
+    <span>x402</span>
+    <span class="callout-id">A-020 / R.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      HTTP-native payment protocol. Coinbase + Cloudflare + Stripe + AWS
+      backing. Reference facilitators on Base; community implementations
+      include <code>x402-rs</code> in Rust. V2 introduces lifecycle hooks
+      and plug-in chains/schemes. Linux Foundation x402 Foundation
+      announced as governance body.
+    </p>
+    <p><em>v1 stance:</em> Coinbase facilitator on Base. Single chain at launch.</p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Identity</span>
+    <span>ERC-8004 + KYA</span>
+    <span class="callout-id">A-020 / R.02</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Agent identity and reputation registry. Composes with x402 (payment)
+      and ERC-8183 (escrow) as the Ethereum Foundation's agent commerce stack.
+      KYA (Know Your Agent) is the broader category framing — RNWY, AgentFacts,
+      Trulioo's Digital Agent Passport, Sumsub all building variants.
+    </p>
+    <p><em>v1 stance:</em> Naive primitive — signed responses, public key
+    published, forward-compatible with ERC-8004 as standard matures.</p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Marketplace</span>
+    <span>ERC-8183</span>
+    <span class="callout-id">A-020 / R.03</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Trustless escrow for agent-to-agent jobs. Job primitive with
+      Client / Provider / Evaluator roles. Evaluator can be a smart contract
+      that verifies cryptographic proofs — Paxiom is a candidate Evaluator
+      for verification-gated jobs.
+    </p>
+    <p><em>v1 stance:</em> Don't integrate yet. Track the standard. Position
+    Paxiom as a credible Evaluator candidate when the marketplace activates.</p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Compute</span>
+    <span>HyperBEAM</span>
+    <span class="callout-id">A-020 / R.04</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Erlang-based AO node implementation with device model. Devices used
+      by Paxiom: <code>~evm@1.0</code> (Revm-based EVM emulator),
+      <code>~riscv-em@1.0</code> (RISC-V execution),
+      <code>~greenzone@1.0</code> (TEE-attested execution).
+    </p>
+    <p><em>v1 stance:</em> HyperBEAM running locally is Phase 0 gate.
+    All five services use it as substrate.</p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Persistence</span>
+    <span>AO + Arweave</span>
+    <span class="callout-id">A-020 / R.05</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Permanent message log and storage. Every transaction Paxiom processes
+      writes an audit record. This is the structural property that gives
+      Paxiom audit-friendly compliance posture from day one without bolt-on
+      infrastructure.
+    </p>
+    <p><em>v1 stance:</em> AO compliance process already deployed.
+    Extend to log every Phase 1 service transaction.</p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · State</span>
+    <span>Load Network</span>
+    <span class="callout-id">A-020 / R.06</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Ethereum transaction data archived permanently on Arweave. Deterministic
+      reconstruction of historical world state from archive. Eliminates RPC
+      trust assumption — the differentiator versus every existing verified
+      compute provider that depends on RPC-sourced witness data.
+    </p>
+    <p><em>v1 stance:</em> Required for Service 5 (historical state).
+    Useful enhancement for Services 1, 3.</p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Proving</span>
+    <span>Polyhedra Expander / SP1 / RISC Zero</span>
+    <span class="callout-id">A-020 / R.07</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Proving systems used or evaluated. Polyhedra Expander targeted for
+      live recursion of state proofs. SP1 and RISC Zero remain as alternative
+      proving backends. Quantum-clean alternatives (Orion, Rokokko) are
+      Phase 5 — listed in vision, not Phase 1.
+    </p>
+    <p><em>v1 stance:</em> Pick one proving backend per service based on
+    fit. Don't try to be polyglot at launch.</p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-100 · SITE PLAN
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-100"></div>
+
+<div id="a-100">
+<div class="section-mark">A-100 · Site Plan</div>
+<h2 class="section-title">Where Paxiom <em>sits.</em></h2>
+<p class="section-strap">
+The agent commerce stack, with Paxiom located precisely. Not a substrate.
+Not a marketplace. A service operator with architectural advantages.
+</p>
+
+<div class="prose">
+
+<p>
+Three layers above Paxiom; three layers below. The layers above are the
+agent and its discovery surfaces. The layers below are the substrate that
+makes Paxiom's services possible. Paxiom occupies the service-provider
+slot in the middle, where verified outputs are produced and delivered to
+agents over x402.
+</p>
+
+<h4>Layers above (where customers live)</h4>
+
+<p>
+<strong>Agent operators</strong> — the humans and organizations deploying
+agents. Configure which services agents can call, set spending limits, own
+the wallets agents transact through.
+</p>
+
+<p>
+<strong>Agents themselves</strong> — autonomous software making real-time
+decisions about which services to call for which tasks. Not the marketing
+target. The runtime customer.
+</p>
+
+<p>
+<strong>Discovery surfaces</strong> — MCP registries, x402 service indexes,
+agent framework plugin lists, AI lab default toolkits. Agents query these
+to find services that match capability requirements. Paxiom registers in
+the major ones at launch.
+</p>
+
+<h4>Paxiom's layer (the service)</h4>
+
+<p>
+Five x402-gated endpoints. Each accepts a structured request, performs
+verified computation, returns a verifiable artifact, settles payment via
+facilitator. Wrapped in MCP for agent-framework discoverability. KYA-compatible
+through signed responses and published public key.
+</p>
+
+<h4>Layers below (the substrate)</h4>
+
+<p>
+<strong>HyperBEAM compute</strong> — proof generation, simulation execution,
+TEE-attested workloads. Devices: <code>~evm@1.0</code>, <code>~riscv-em@1.0</code>,
+<code>~greenzone@1.0</code>.
+</p>
+
+<p>
+<strong>AO messaging + persistence</strong> — orchestration between processes,
+permanent audit trail of every transaction, Arweave-backed log of all platform
+activity.
+</p>
+
+<p>
+<strong>Load Network historical state</strong> — Arweave-archived Ethereum
+transaction data, deterministically reconstructible. The piece that
+eliminates RPC trust for state-related services.
+</p>
+
+<div class="callout spec">
+  <div class="callout-header">
+    <span class="callout-tag">SPEC</span>
+    <span>Differentiation, in plain language</span>
+    <span class="callout-id">A-100 / S.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Other verified compute providers prove things about RPC-sourced data.
+      Paxiom proves things about archive-anchored data.
+    </p>
+    <p>
+      Other agent services produce outputs that buyers can't verify. Paxiom
+      produces outputs that are themselves verification artifacts.
+    </p>
+    <p>
+      Other platforms add audit trails as a feature. Paxiom has them as a
+      structural property of the substrate.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-110 · FLOOR PLAN
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-110"></div>
+
+<div id="a-110">
+<div class="section-mark">A-110 · Floor Plan</div>
+<h2 class="section-title">Request <em>lifecycle.</em></h2>
+<p class="section-strap">
+What happens when an agent calls a Paxiom endpoint, step by step.
+The same path for every service in the catalog.
+</p>
+
+<div class="sequence">
+  <div class="sequence-title">Request → Verified Output → Settlement</div>
+
+  <div class="sequence-row">
+    <div class="sequence-mark">01</div>
+    <div class="sequence-text">
+      <strong>Agent issues HTTP request to Paxiom endpoint.</strong>
+      <em>Request includes structured parameters per service spec. No auth header.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">02</div>
+    <div class="sequence-text">
+      <strong>Endpoint returns 402 Payment Required.</strong>
+      <em>Header includes PaymentRequired object: chain, asset, amount, scheme.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">03</div>
+    <div class="sequence-text">
+      <strong>Agent's wallet signs payment authorization.</strong>
+      <em>EIP-3009 transferWithAuthorization for USDC on Base.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">04</div>
+    <div class="sequence-text">
+      <strong>Agent retries request with PAYMENT-SIGNATURE header.</strong>
+      <em>Same request body; signed payload now attached.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">05</div>
+    <div class="sequence-text">
+      <strong>Paxiom forwards signature to Coinbase facilitator /verify.</strong>
+      <em>Facilitator confirms signature validity, payment amount, chain.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">06</div>
+    <div class="sequence-text">
+      <strong>On verify success, Paxiom dispatches to compute layer.</strong>
+      <em>Service-specific HyperBEAM device handles the work.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">07</div>
+    <div class="sequence-text">
+      <strong>Compute layer returns verified output.</strong>
+      <em>Proof artifact, simulation result, or attested computation.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">08</div>
+    <div class="sequence-text">
+      <strong>AO process logs transaction to Arweave.</strong>
+      <em>Permanent audit record: inputs, output hash, timestamp, signature.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">09</div>
+    <div class="sequence-text">
+      <strong>Paxiom signs response with platform key, returns 200.</strong>
+      <em>X-PAYMENT-RESPONSE header includes tx reference.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">10</div>
+    <div class="sequence-text">
+      <strong>Paxiom calls facilitator /settle (deferred or immediate).</strong>
+      <em>Funds move on-chain. Facilitator monitors for confirmation.</em>
+    </div>
+  </div>
+</div>
+
+<div class="prose">
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">CRITICAL</span>
+    <span>Idempotency on retry</span>
+    <span class="callout-id">A-110 / W.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      If step 7 succeeds but step 9 fails (network drop, server crash),
+      the agent will retry. The retry must return the same verified output
+      without re-charging. Key off the payment ID — same payment, same
+      response, no double-charge.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">CRITICAL</span>
+    <span>Verify-before-charge</span>
+    <span class="callout-id">A-110 / W.02</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      For services where compute can fail on bad input (Service 5 in particular),
+      validate inputs before /settle. Refund or do not charge for failed
+      proof generation. The deferred settlement scheme handles this elegantly —
+      cryptographic commit at request time, actual settlement at end-of-period
+      after success.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-120 · FOUNDATIONS
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-120"></div>
+
+<div id="a-120">
+<div class="section-mark">A-120 · Foundations</div>
+<h2 class="section-title">What's <em>already poured.</em></h2>
+<p class="section-strap">
+The substrate that exists before service work begins. Some deployed,
+some pending. Phase 1 cannot begin without these in place.
+</p>
+
+<div class="prose">
+
+<h4>Already deployed</h4>
+
+<p>
+<strong>PaxiomOApp</strong> on Optimism Sepolia and Base Sepolia. LayerZero V2 OApp
+contracts, peered, with confirmed cross-chain messaging. From the prior arbitrage
+architecture; usable as cross-chain substrate for Service 3 if needed.
+</p>
+
+<p>
+<strong>PaxiomPool</strong> on Optimism Sepolia. First loan cycle completed,
+protocol fees collected and distributed. Demonstrates protocol-fee revenue
+mechanism is operational. Not load-bearing for Phase 1 services but
+proven infrastructure.
+</p>
+
+<p>
+<strong>AO compliance process</strong>. Logging contract deployments, cross-chain
+messages, loan cycles. Process ID: <code>w_MR7QlkfuRcfd3TQJPD1pzMwU5yEEyLMDjO0Ql8_5I</code>.
+Extend to log Phase 1 service transactions. Lowercase tag-name quirk documented.
+</p>
+
+<p>
+<strong>AO opportunity monitor</strong>. Process ID:
+<code>JbsXrqoy26CAE8_agv9ZX2aeL8-ec06yGETP7-6IvUg</code>. From arbitrage architecture;
+not used in Phase 1 but operational pattern for autonomous AO processes.
+</p>
+
+<p>
+<strong>AO mainnet consensus process</strong>. Process ID:
+<code>b-SlkvSm8FnADwSupRxlAXN6rezSnosjVakMmpfd_w0</code>. Stores Ethereum
+consensus data (slot 13883119, state root confirmed). Substrate for Service 2.
+</p>
+
+<h4>Pending / required for Phase 1</h4>
+
+<div class="callout spec">
+  <div class="callout-header">
+    <span class="callout-tag">SPEC · Phase 0 Gate</span>
+    <span>HyperBEAM operational locally</span>
+    <span class="callout-id">A-120 / S.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      <code>rebar3 shell</code> opens successfully. <code>~evm@1.0</code> device
+      executable. Confirmed message dispatch through <code>hb_ao</code>.
+    </p>
+    <p>
+      This is the first gate. Until HyperBEAM runs locally, nothing else
+      in Phase 1 is buildable. Estimated time: days, not weeks, if the
+      environment cooperates. Source: <code>github.com/permaweb/HyperBEAM</code>.
+    </p>
+  </div>
+</div>
+
+<div class="callout spec">
+  <div class="callout-header">
+    <span class="callout-tag">SPEC · Phase 0 Gate</span>
+    <span>Sync committee verifier located</span>
+    <span class="callout-id">A-120 / S.02</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      The Rust sync committee verifier exists on a local machine. It needs
+      to be located, reviewed, and confirmed working before Service 2 can
+      be the fast-launch path. If it's missing or broken, Service 2 timeline
+      extends meaningfully.
+    </p>
+  </div>
+</div>
+
+<div class="callout spec">
+  <div class="callout-header">
+    <span class="callout-tag">SPEC · Phase 0 Gate</span>
+    <span>Load Network integration tested</span>
+    <span class="callout-id">A-120 / S.03</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      State reconstruction from Load Network archive working end-to-end
+      for at least one historical block. Required for Service 5; useful
+      for Services 1 and 3.
+    </p>
+  </div>
+</div>
+
+<div class="callout spec">
+  <div class="callout-header">
+    <span class="callout-tag">SPEC · Phase 0 Gate</span>
+    <span>x402 facilitator integration tested</span>
+    <span class="callout-id">A-120 / S.04</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Stub endpoint that accepts an x402 request, forwards signature to
+      Coinbase facilitator, receives verification, returns hardcoded response,
+      settles payment. End-to-end on Base testnet. Validates the integration
+      pattern before any real service logic ships.
+    </p>
+  </div>
+</div>
+
+<h4>KYA primitive at launch</h4>
+
+<p>
+Generate platform signing keypair. Publish public key on:
+<code>paxiom.org</code>, GitHub <code>k-luecke/paxiom</code>, AO via dedicated
+process, Arweave manifest. Sign every service response with private key.
+Document verification procedure in service spec. Forward-compatible with
+ERC-8004 when the standard matures.
+</p>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-201 · SERVICE 1 — SLOT STORAGE PROOFS
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-201"></div>
+
+<div id="a-201">
+<div class="section-mark">A-201 · Elevation</div>
+<h2 class="section-title">Service 1 — <em>Slot Storage Proofs.</em></h2>
+<p class="section-strap">
+ZK proof that a contract storage slot held a specific value at a specific block.
+The canonical "verified state" use case. Direct competition with Lagrange,
+Axiom, Herodotus.
+</p>
+
+<div class="service-sheet">
+  <div class="service-header">
+    <div class="service-num">01</div>
+    <div class="service-name">Slot Storage Proofs</div>
+    <div class="service-tag">Commoditized · Compete on Properties</div>
+  </div>
+  <div class="service-body">
+
+    <div class="spec-grid">
+      <div class="spec-cell">
+        <div class="spec-label">Price (v1)</div>
+        <div class="spec-value">$1.00<em>per proof</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Compute Cost</div>
+        <div class="spec-value">~$0.30<em>RunPod GPU-seconds</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Latency Target</div>
+        <div class="spec-value">&lt; 30s<em>p95, single block</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Mo. Volume Target</div>
+        <div class="spec-value">800<em>realistic, month 9</em></div>
+      </div>
+    </div>
+
+    <div class="service-prose">
+
+      <h5>Inputs</h5>
+      <p>
+        Contract address, storage slot (bytes32), block number. Optional:
+        chain identifier (default Ethereum mainnet, expand later).
+      </p>
+
+      <h5>Outputs</h5>
+      <p>
+        Groth16 or Plonky-family proof artifact (depending on backend),
+        verifiable on-chain at &lt;400k gas. Public inputs: contract address,
+        slot, block, claimed value. Response signed with platform key.
+      </p>
+
+      <h5>Backend</h5>
+      <p>
+        SP1 or RISC Zero guest program performing Merkle inclusion against
+        block state root. Witness data sourced from Load Network archive
+        (preferred) or RPC fallback (initial launch acceptable).
+      </p>
+
+      <h5>Differentiation</h5>
+      <p>
+        Existing providers depend on RPC for witness data. Paxiom uses
+        Load Network archive — no RPC trust assumption. This is the
+        architectural moat for this category. Marketing: "the proof is
+        as trustworthy as Ethereum itself, not as trustworthy as your
+        RPC provider."
+      </p>
+
+      <h5>Build complexity</h5>
+      <p>
+        Moderate. Proving math is well-understood; you're integrating
+        components rather than inventing them. Estimated 4–6 weeks at
+        focused pace once Phase 0 gates are clear.
+      </p>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-202 · SERVICE 2 — SYNC COMMITTEE VERIFICATION
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-202"></div>
+
+<div id="a-202">
+<div class="section-mark">A-202 · Elevation</div>
+<h2 class="section-title">Service 2 — <em>Sync Committee Verification.</em></h2>
+<p class="section-strap">
+Ethereum beacon chain consensus light-client primitive. The fastest path
+to first revenue if the existing Rust verifier code is recoverable.
+</p>
+
+<div class="service-sheet">
+  <div class="service-header">
+    <div class="service-num">02</div>
+    <div class="service-name">Sync Committee Verification</div>
+    <div class="service-tag">Fastest Launch · Fastest Validation</div>
+  </div>
+  <div class="service-body">
+
+    <div class="spec-grid">
+      <div class="spec-cell">
+        <div class="spec-label">Price (v1)</div>
+        <div class="spec-value">$0.50<em>per verification</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Compute Cost</div>
+        <div class="spec-value">~$0.10<em>BLS-dominant</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Latency Target</div>
+        <div class="spec-value">&lt; 10s<em>p95</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Mo. Volume Target</div>
+        <div class="spec-value">1,500<em>realistic, month 9</em></div>
+      </div>
+    </div>
+
+    <div class="service-prose">
+
+      <h5>Inputs</h5>
+      <p>
+        Beacon chain slot number. Optionally: claimed header hash, claimed
+        state root for verification rather than retrieval.
+      </p>
+
+      <h5>Outputs</h5>
+      <p>
+        Proof that the sync committee for that slot signed the specified
+        header. Public inputs: slot, header hash, sync committee root.
+        Verifiable on-chain or in-application. Response signed with
+        platform key.
+      </p>
+
+      <h5>Backend</h5>
+      <p>
+        Existing Rust verifier (40KB WASM), located in Phase 0. Wraps
+        BLS aggregate signature verification over BLS12-381 with SHA-256
+        Merkle proof checks. Compact because it doesn't pull the full
+        ark-relations stack.
+      </p>
+
+      <h5>Differentiation</h5>
+      <p>
+        x402-native delivery is the primary differentiator. Telepathy,
+        Helios, and Polyhedra serve this need but require SDK integration
+        rather than agent-callable HTTP. Paxiom is the agent-economy
+        wrapper around capability that already exists.
+      </p>
+
+      <h5>Build complexity</h5>
+      <p>
+        Lowest of the five. Existing code wrapped in x402 endpoint, AO
+        orchestration for audit, MCP server for discovery. Estimated
+        4–6 weeks at focused pace, conditional on locating working verifier.
+      </p>
+
+      <h5>Why this ships first</h5>
+      <p>
+        Speed to first transaction matters more than perfection at launch.
+        Service 2 reaches "first paying customer" fastest. Validates the
+        x402 + AO + MCP integration pattern. Every subsequent service
+        reuses what's built here.
+      </p>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-203 · SERVICE 3 — CROSS-CHAIN MESSAGE VERIFICATION
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-203"></div>
+
+<div id="a-203">
+<div class="section-mark">A-203 · Elevation</div>
+<h2 class="section-title">Service 3 — <em>Cross-Chain Message Verification.</em></h2>
+<p class="section-strap">
+Bridge-grade attestation. Higher complexity, higher price, narrower customer
+base. The Kelp DAO incident is the marketing case study.
+</p>
+
+<div class="service-sheet">
+  <div class="service-header">
+    <div class="service-num">03</div>
+    <div class="service-name">Cross-Chain Message Verification</div>
+    <div class="service-tag">Bridge-Grade · Late Phase 1</div>
+  </div>
+  <div class="service-body">
+
+    <div class="spec-grid">
+      <div class="spec-cell">
+        <div class="spec-label">Price (v1)</div>
+        <div class="spec-value">$3.00<em>per attestation</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Compute Cost</div>
+        <div class="spec-value">~$0.60<em>multi-chain witness</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Latency Target</div>
+        <div class="spec-value">&lt; 60s<em>p95</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Mo. Volume Target</div>
+        <div class="spec-value">200<em>realistic, month 9</em></div>
+      </div>
+    </div>
+
+    <div class="service-prose">
+
+      <h5>Inputs</h5>
+      <p>
+        Source chain ID, source transaction hash or message ID, destination
+        chain ID, claim about the message contents.
+      </p>
+
+      <h5>Outputs</h5>
+      <p>
+        Proof that the message exists in the source chain's canonical state
+        with the claimed contents. Verifiable on the destination chain.
+        Response signed with platform key.
+      </p>
+
+      <h5>Backend</h5>
+      <p>
+        Composes Service 1 (state proof on source chain) with destination-chain
+        verification logic. Requires Load Network coverage for source chain.
+        Multi-chain support adds operational complexity beyond single-chain
+        services.
+      </p>
+
+      <h5>Differentiation</h5>
+      <p>
+        The Kelp DAO attack on April 18, 2026 drained $292M because a
+        LayerZero DVN was fed false data via compromised RPC infrastructure.
+        Paxiom's Load Network architecture would have made that attack
+        impossible. The marketing pitch writes itself: <em>verification that
+        doesn't depend on the trust assumption that just failed.</em>
+      </p>
+
+      <h5>Build complexity</h5>
+      <p>
+        High. Bridges have strict correctness requirements; mistakes in
+        this category lose hundreds of millions. Estimated 6–10 weeks.
+        Ships last in Phase 1.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-header">
+          <span class="callout-tag">Note</span>
+          <span></span>
+          <span class="callout-id">A-203 / N.01</span>
+        </div>
+        <div class="callout-body">
+          <p>
+            Reference: Chainalysis post-mortem of Kelp DAO incident,
+            April 2026. <em>"This was not a smart contract hack, but a
+            sophisticated attack on off-chain infrastructure. The attackers
+            compromised internal RPC nodes and DDoS'd external nodes to feed
+            false data to a single-point-of-failure verification network."</em>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-204 · SERVICE 4 — SIMULATION AS A SERVICE
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-204"></div>
+
+<div id="a-204">
+<div class="section-mark">A-204 · Elevation</div>
+<h2 class="section-title">Service 4 — <em>Simulation as a Service.</em></h2>
+<p class="section-strap">
+High-volume, low-price. Agents simulating before they commit. TEE-attested
+execution via greenzone is the upsell.
+</p>
+
+<div class="service-sheet">
+  <div class="service-header">
+    <div class="service-num">04</div>
+    <div class="service-name">Simulation as a Service</div>
+    <div class="service-tag">High Volume · Low Margin · Wide Net</div>
+  </div>
+  <div class="service-body">
+
+    <div class="spec-grid">
+      <div class="spec-cell">
+        <div class="spec-label">Price (v1)</div>
+        <div class="spec-value">$0.05<em>per simulation</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Compute Cost</div>
+        <div class="spec-value">~$0.005<em>milliseconds of EVM</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Latency Target</div>
+        <div class="spec-value">&lt; 2s<em>p95</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Mo. Volume Target</div>
+        <div class="spec-value">8,000<em>realistic, month 9</em></div>
+      </div>
+    </div>
+
+    <div class="service-prose">
+
+      <h5>Inputs</h5>
+      <p>
+        Sender address, target contract, calldata, value, optional block
+        number for state context. Optional: TEE attestation request flag.
+      </p>
+
+      <h5>Outputs</h5>
+      <p>
+        Execution result, gas used, state changes, event logs. With TEE flag:
+        attestation chain proving execution happened in genuine hardware
+        running registered code. Response signed with platform key.
+      </p>
+
+      <h5>Backend</h5>
+      <p>
+        HyperBEAM <code>~evm@1.0</code> device for execution. Optional
+        <code>~greenzone@1.0</code> wrapping for TEE attestation. The
+        platform's natural fit — HyperBEAM was built for this class of
+        workload.
+      </p>
+
+      <h5>Differentiation</h5>
+      <p>
+        Tenderly, Alchemy simulation API, Foundry tooling all exist but
+        are RPC-based and not verified. TEE-attested simulation is a
+        meaningful upsell over unverified alternatives. Volume economics
+        work because per-simulation cost is genuinely low.
+      </p>
+
+      <h5>Build complexity</h5>
+      <p>
+        Moderate, gated entirely on HyperBEAM Phase 0. Once
+        <code>~evm@1.0</code> is operational, wrapping it in x402 is
+        straightforward. Estimated 3–5 weeks after Phase 0 clears.
+      </p>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-205 · SERVICE 5 — VERIFIED HISTORICAL STATE
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-205"></div>
+
+<div id="a-205">
+<div class="section-mark">A-205 · Elevation</div>
+<h2 class="section-title">Service 5 — <em>Verified Historical State.</em></h2>
+<p class="section-strap">
+The differentiated companion to the commoditized base. Where the
+no-RPC architecture matters most. Where Paxiom's identity gets established.
+</p>
+
+<div class="service-sheet">
+  <div class="service-header">
+    <div class="service-num">05</div>
+    <div class="service-name">Verified Historical State Queries</div>
+    <div class="service-tag">Differentiated · Compliance-Grade · Higher Margin</div>
+  </div>
+  <div class="service-body">
+
+    <div class="spec-grid">
+      <div class="spec-cell">
+        <div class="spec-label">Price (v1)</div>
+        <div class="spec-value">$2.00<em>per query</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Compute Cost</div>
+        <div class="spec-value">~$0.40<em>archive + proof</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Latency Target</div>
+        <div class="spec-value">&lt; 60s<em>p95</em></div>
+      </div>
+      <div class="spec-cell">
+        <div class="spec-label">Mo. Volume Target</div>
+        <div class="spec-value">300<em>realistic, month 9</em></div>
+      </div>
+    </div>
+
+    <div class="service-prose">
+
+      <h5>Inputs</h5>
+      <p>
+        Initial query types (v1):
+      </p>
+      <p>
+        — ERC-20 balance for an address at a historical block.<br>
+        — Contract storage slot value at a historical block.<br>
+        — Event log presence and contents at a historical block.
+      </p>
+      <p>
+        Expand query catalog based on early customer demand. Don't try
+        to be general at launch.
+      </p>
+
+      <h5>Outputs</h5>
+      <p>
+        Verified answer plus proof artifact. Public inputs include the
+        block number, block hash (canonically attested), and the claimed
+        value. Response signed with platform key. Audit record on Arweave
+        permanently.
+      </p>
+
+      <h5>Backend</h5>
+      <p>
+        Load Network archive provides historical block data. Deterministic
+        state reconstruction yields the storage trie at the requested block.
+        Proof generation against the reconstructed state. The whole pipeline
+        runs without any RPC dependency.
+      </p>
+
+      <h5>Differentiation</h5>
+      <p>
+        This is where Paxiom is genuinely rare. Most existing providers
+        focus on recent state because that's what's easily available from
+        archive nodes. Historical state beyond a few hundred blocks is
+        harder, and most existing services rely on archive nodes that
+        customers have to trust. Paxiom's Load Network integration removes
+        that trust requirement entirely.
+      </p>
+
+      <h5>Build complexity</h5>
+      <p>
+        Higher than Services 1 and 2. Requires Load Network integration
+        plus proof generation. Estimated 6–8 weeks. Ships in middle of
+        Phase 1, after Service 2 has validated the launch pattern.
+      </p>
+
+      <h5>Customer fit</h5>
+      <p>
+        Compliance teams, audit firms, regulatory reporting use cases,
+        historical analysis for institutional buyers. These are higher-value
+        customers than the average x402 traffic — willing to pay more,
+        sign B2B contracts, integrate deeply. Service 5 is the primary
+        bridge from Phase 1 commoditized revenue to Phase 4 enterprise sales.
+      </p>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-300 · REVENUE & COST SCHEDULE
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-300"></div>
+
+<div id="a-300">
+<div class="section-mark">A-300 · Schedule</div>
+<h2 class="section-title">Pro Forma — <em>Month 9 Steady State.</em></h2>
+<p class="section-strap">
+Realistic case. Not best, not worst. The scenario for which the build
+plan is calibrated.
+</p>
+
+<table class="schedule">
+  <thead>
+    <tr>
+      <th style="width: 60px;">ID</th>
+      <th>Service</th>
+      <th class="num">Vol/Mo</th>
+      <th class="num">Price</th>
+      <th class="num">Gross</th>
+      <th class="num">Var. Cost</th>
+      <th class="num">Net</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="id">A-201</td>
+      <td>Slot Storage Proofs</td>
+      <td class="num">800</td>
+      <td class="num">$1.00</td>
+      <td class="num">$800</td>
+      <td class="num">$246</td>
+      <td class="num">$554</td>
+    </tr>
+    <tr>
+      <td class="id">A-202</td>
+      <td>Sync Committee Verification</td>
+      <td class="num">1,500</td>
+      <td class="num">$0.50</td>
+      <td class="num">$750</td>
+      <td class="num">$159</td>
+      <td class="num">$591</td>
+    </tr>
+    <tr>
+      <td class="id">A-203</td>
+      <td>Cross-Chain Message Verification</td>
+      <td class="num">200</td>
+      <td class="num">$3.00</td>
+      <td class="num">$600</td>
+      <td class="num">$122</td>
+      <td class="num">$478</td>
+    </tr>
+    <tr>
+      <td class="id">A-204</td>
+      <td>Simulation as a Service</td>
+      <td class="num">8,000</td>
+      <td class="num">$0.05</td>
+      <td class="num">$400</td>
+      <td class="num">$56</td>
+      <td class="num">$344</td>
+    </tr>
+    <tr>
+      <td class="id">A-205</td>
+      <td>Verified Historical State</td>
+      <td class="num">300</td>
+      <td class="num">$2.00</td>
+      <td class="num">$600</td>
+      <td class="num">$122</td>
+      <td class="num">$478</td>
+    </tr>
+    <tr class="total">
+      <td>—</td>
+      <td>Phase 1 Total</td>
+      <td class="num">10,800</td>
+      <td class="num">—</td>
+      <td class="num">$3,150</td>
+      <td class="num">$705</td>
+      <td class="num">$2,445</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="prose">
+
+<p>
+Fixed monthly infrastructure: <strong>$100</strong>. Net monthly profit at this scenario:
+<strong>$2,345</strong>. Annualized run rate: <strong>~$28k/year</strong>.
+</p>
+
+<p>
+This sits at the floor of "could go full-time." It does not provide
+comfortable margin above the floor. Reaching comfortable margin requires
+either traffic growth above the realistic case, the addition of a B2B
+contract, or expansion into Phase 2 services.
+</p>
+
+<div class="callout note">
+  <div class="callout-header">
+    <span class="callout-tag">Note · Sensitivity</span>
+    <span></span>
+    <span class="callout-id">A-300 / N.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      <strong>High-volume services drive upside.</strong> If sync committee
+      and simulation traffic doubles, monthly gross ~$4,500.
+    </p>
+    <p>
+      <strong>Compute cost is the main expense.</strong> Spot GPU pricing
+      can cut compute 30–50% with operational care.
+    </p>
+    <p>
+      <strong>Pricing is iterative.</strong> Launch numbers are starting
+      points. Adjust based on observed customer behavior at month 3,
+      month 6, month 9.
+    </p>
+    <p>
+      <strong>One B2B contract changes everything.</strong> A single
+      enterprise customer at $5–10k/month doubles or triples the run rate.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-310 · BUILD SEQUENCE & GATES
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-310"></div>
+
+<div id="a-310">
+<div class="section-mark">A-310 · Schedule</div>
+<h2 class="section-title">Build Sequence <em>&amp; Gates.</em></h2>
+<p class="section-strap">
+What ships in what order, with what dependencies, against what decision points.
+The discipline: all five earning before runway is touched.
+</p>
+
+<div class="prose">
+
+<h3>Gate 0 — Foundations clear</h3>
+
+<p>
+HyperBEAM running locally. Sync committee verifier located. Load Network
+integration tested. x402 facilitator stub working on Base testnet. KYA
+keypair generated and public key published.
+</p>
+
+<p>
+<em>Estimated:</em> 2–4 weeks at evening pace, faster with focused weekend blocks.
+<em>Decision:</em> If gates don't clear in 6 weeks, reassess. Either rebuild
+missing pieces, or pivot Phase 1 scope to what's actually achievable.
+</p>
+
+<h3>Gate 1 — Service 2 live</h3>
+
+<p>
+Sync committee verification operational on Base mainnet. x402-gated.
+MCP-wrapped. Registered in major directories. First paying transaction
+recorded.
+</p>
+
+<p>
+<em>Estimated:</em> 4–6 weeks after Gate 0 clears. <em>Decision:</em> If
+realistic-case traffic materializes within 30 days of launch (50+
+transactions/month from non-test sources), proceed with Service 4. If not,
+diagnose discovery problem before building further services.
+</p>
+
+<h3>Gate 2 — Service 4 live</h3>
+
+<p>
+Simulation as a service operational. <code>~evm@1.0</code> wrapped in x402.
+Optional TEE attestation tier via <code>~greenzone@1.0</code>. Together with
+Service 2, two endpoints generating real (small) revenue.
+</p>
+
+<p>
+<em>Estimated:</em> 3–5 weeks after Gate 1. Combined timeline from Gate 0:
+roughly 9–15 weeks.
+</p>
+
+<h3>Gate 3 — Services 1 and 5 live</h3>
+
+<p>
+Slot storage proofs and verified historical state both operational. The
+commoditized-and-differentiated pair that defines Paxiom's identity in
+the verified compute category.
+</p>
+
+<p>
+<em>Estimated:</em> 6–8 weeks each, can run partially in parallel. Combined
+timeline from Gate 0: roughly 16–24 weeks.
+</p>
+
+<h3>Gate 4 — Service 3 live</h3>
+
+<p>
+Cross-chain message verification operational. The bridge-grade service.
+The Kelp DAO marketing case study activated.
+</p>
+
+<p>
+<em>Estimated:</em> 6–10 weeks. Combined timeline from Gate 0: roughly
+22–34 weeks. <em>This is the all-five-earning trigger.</em>
+</p>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">DECISION POINT</span>
+    <span>Day Job Quit Trigger</span>
+    <span class="callout-id">A-310 / W.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      All five services operational and earning. 3+ months of traffic
+      data on the earliest services, 1+ months on the latest. Run rate
+      visible against realistic-case projections.
+    </p>
+    <p>
+      If run rate ≥ $30k/year annualized: leave the day job, full-time
+      on Phase 2 expansion and B2B sales.
+    </p>
+    <p>
+      If run rate &lt; $30k/year but trending up: continue side-pace,
+      reassess in 90 days.
+    </p>
+    <p>
+      If run rate flat or declining: diagnose. Possible causes — wrong
+      pricing, wrong category, wrong discovery channels, broader x402
+      ecosystem stagnation. Pivot or iterate based on diagnosis.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-320 · RISK REGISTER
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-320"></div>
+
+<div id="a-320">
+<div class="section-mark">A-320 · Risk Register</div>
+<h2 class="section-title">What goes <em>wrong.</em></h2>
+<p class="section-strap">
+Known failure modes, watch-fors, and the planned response for each.
+Better to have these named on a sheet than discovered in production.
+</p>
+
+<div class="prose">
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Technical</span>
+    <span>Sync committee verifier doesn't work</span>
+    <span class="callout-id">A-320 / R.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      The Rust verifier on the local machine is incomplete, broken, or
+      depends on libraries that have moved on. Service 2 launch timeline
+      extends from 4–6 weeks to 12+ weeks while the verifier is rebuilt.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Locate and test the verifier in week 1
+      of Phase 0, before committing to Service 2 as the fast-launch path.
+      If broken, swap launch order — Service 4 (simulation) becomes the
+      fastest-ship instead.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Demand</span>
+    <span>Realistic-case traffic doesn't materialize</span>
+    <span class="callout-id">A-320 / R.02</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Phase 1 launches on schedule but agents don't actually call the
+      services at projected volumes. Pessimistic-case revenue persists
+      through month 9. Run rate stays below $30k/year floor.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Outbound sales effort during build, not
+      just after launch. Identify 5–10 specific organizations that would
+      benefit from each service, reach out before launch, line up early
+      customers. Treat traffic from cold inbound as a bonus, not a plan.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Ecosystem</span>
+    <span>x402 stagnates as a category</span>
+    <span class="callout-id">A-320 / R.03</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      x402 transaction volume stays at current $28k/day instead of growing
+      5–10x as projected. The agent commerce thesis underperforms. Phase 1
+      services exist but the addressable market doesn't expand.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Architectural choices that work even
+      if x402 itself stalls. The verified compute capabilities Paxiom
+      builds are valuable to non-x402 customers via direct B2B integration.
+      Phase 4 enterprise sales motion does not require x402 ecosystem
+      growth to succeed.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Operational</span>
+    <span>Sustained 80–100 hour weeks compromise judgment</span>
+    <span class="callout-id">A-320 / R.04</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Build pace at planned intensity is sustainable for weeks but not
+      indefinitely. Errors in customer relationships, security decisions,
+      or strategic choices compound when made under sustained fatigue.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Reserve weekends for the technical work
+      where pace matters most. Slow down on the surfaces where errors are
+      expensive — security audit before mainnet, customer contract terms,
+      pricing decisions. Health check at month 3 and 6.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Competitive</span>
+    <span>Existing providers ship x402-native versions</span>
+    <span class="callout-id">A-320 / R.05</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Lagrange, Succinct, RISC Zero, or another established provider
+      decides to ship x402-native endpoints during Paxiom's Phase 1 build.
+      The first-mover advantage in agent-native verified compute disappears.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> The architectural moat (no RPC trust,
+      AO-anchored audit, KYA primitive) doesn't disappear when competitors
+      add x402. Compete on properties they can't easily replicate. Speed
+      to launch matters; speed of competitors moving is mostly outside
+      Paxiom's control.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Regulatory</span>
+    <span>KYA becomes mandatory before naive primitive is sufficient</span>
+    <span class="callout-id">A-320 / R.06</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Regulatory framework or major customer demands force KYA compliance
+      that exceeds the v1 naive primitive. Retrofit work delays Phase 2
+      or compromises customer relationships.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> The naive primitive is forward-compatible
+      with ERC-8004. Track the standards (Trulioo DAP, AgentFacts, Sumsub
+      framework) quarterly. Upgrade path is incremental, not rebuild.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     A-900 · GENERAL NOTES
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet A-900"></div>
+
+<div id="a-900">
+<div class="section-mark">A-900 · General Notes</div>
+<h2 class="section-title">Conventions, <em>legend, log.</em></h2>
+
+<div class="prose">
+
+<h3>Callout legend</h3>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF</span>
+    <span>External standard or substrate dependency</span>
+    <span class="callout-id">Legend</span>
+  </div>
+  <div class="callout-body">
+    <p>Used for x402, ERC-8004, ERC-8183, HyperBEAM, AO, Load Network, proving systems.</p>
+  </div>
+</div>
+
+<div class="callout spec">
+  <div class="callout-header">
+    <span class="callout-tag">SPEC</span>
+    <span>Required behavior or gate condition</span>
+    <span class="callout-id">Legend</span>
+  </div>
+  <div class="callout-body">
+    <p>Used for technical requirements that must be met for Phase 1 to proceed.</p>
+  </div>
+</div>
+
+<div class="callout note">
+  <div class="callout-header">
+    <span class="callout-tag">Note</span>
+    <span>Context, reasoning, or clarification</span>
+    <span class="callout-id">Legend</span>
+  </div>
+  <div class="callout-body">
+    <p>Used for non-binding observations, references to other documents, or
+    explanations of why a decision was made.</p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">CRITICAL</span>
+    <span>Risk, decision point, or hazard</span>
+    <span class="callout-id">Legend</span>
+  </div>
+  <div class="callout-body">
+    <p>Used for things that will damage Phase 1 if not handled correctly.
+    Read these carefully.</p>
+  </div>
+</div>
+
+<h3>Sheet numbering convention</h3>
+
+<p>
+<code>A-000</code> series: Architecturals (this set).
+Future revisions may add <code>S-000</code> for Structural (security audit
+findings), <code>M-000</code> for Mechanical (operational runbooks),
+<code>E-000</code> for Electrical (signing key management).
+</p>
+
+<h3>Revision log</h3>
+
+<p>
+<strong>Rev. A — 2026.04.29.</strong> Initial Phase 1 issue. Five services
+specified. Pro forma at month 9 steady state. Build sequence with four gates.
+Risk register with six entries.
+</p>
+
+<p>
+<em>Subsequent revisions will be issued as Phase 1 build progresses.
+Rev. B expected at Gate 1 (Service 2 live).</em>
+</p>
+
+<h3>Related documents</h3>
+
+<p>
+<strong>Build journal</strong> — narrative record of what was built and when.
+Currently covers pre-Phase-1 arbitrage architecture and audit pass.
+Phase 1 entries forthcoming.
+</p>
+
+<p>
+<strong>Build map (Phase 0–5)</strong> — strategic positioning across all
+phases. This Phase 1 blueprint sits inside Phase 2 of the build map's
+phasing. Build map covers vision; this blueprint covers execution.
+</p>
+
+<p>
+<strong>Architecture document v0.4</strong> — earlier substrate documentation
+from arbitrage-execution era. Relevant background; superseded for Phase 1
+purposes by this set.
+</p>
+
+<h3>One last thing</h3>
+
+<p>
+This is a working drawing. It is not the truth. It is the best plan
+available on the day it was issued, against the information then in hand.
+The platform that actually gets built will deviate from this set in ways
+that won't be knowable until the work begins. That is normal. The set's
+job is to make the deviations legible — when reality differs from the
+drawing, the drawing is what gets revised.
+</p>
+
+<p>
+<em>Build the engine first. The moats come later.</em>
+</p>
+
+</div>
+</div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SHEET FOOTER
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="sheet-footer">
+  <div>Paxiom · paxiom.org</div>
+  <div class="center">Phase 1 · Rev. A · 2026.04.29</div>
+  <div class="right">Sheet Set A-000 / 12</div>
+</div>
+
+</div> <!-- /sheet -->
+
+</body>
+</html>

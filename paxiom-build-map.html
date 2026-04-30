@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom · Build Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0E0D0B;
+  --bg-raised: #16140F;
+  --ink: #E8E3D8;
+  --ink-dim: #A39B8C;
+  --ink-faint: #5C5448;
+  --rule: #2A2620;
+  --amber: #D4A04A;
+  --amber-dim: #8C6A2E;
+  --rust: #A6553F;
+  --leaf: #6B7F5C;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Newsreader', Georgia, serif;
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.65;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding: 0;
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 96px 48px 160px;
+}
+
+@media (max-width: 700px) {
+  .page { padding: 56px 24px 96px; }
+  body { font-size: 16px; }
+}
+
+/* ─── Header ──────────────────────────────────────────── */
+
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.eyebrow::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--amber-dim);
+  opacity: 0.5;
+}
+
+h1.title {
+  font-family: 'Fraunces', serif;
+  font-weight: 400;
+  font-size: clamp(48px, 8vw, 84px);
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+  font-variation-settings: 'opsz' 144, 'SOFT' 0;
+  margin-bottom: 8px;
+}
+
+h1.title em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--ink-dim);
+  font-variation-settings: 'opsz' 144, 'SOFT' 80;
+}
+
+.subtitle {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 22px;
+  color: var(--ink-dim);
+  margin-bottom: 40px;
+  letter-spacing: -0.005em;
+}
+
+.meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+}
+.meta span strong { color: var(--ink-dim); font-weight: 500; }
+
+/* ─── Section structure ──────────────────────────────── */
+
+section { margin-top: 88px; }
+
+.section-mark {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 16px;
+}
+
+h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 28px;
+  font-variation-settings: 'opsz' 72, 'SOFT' 30;
+}
+
+p { margin-bottom: 1.2em; }
+p:last-child { margin-bottom: 0; }
+
+p strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+em { color: var(--ink-dim); font-style: italic; }
+
+/* ─── Phase blocks ───────────────────────────────────── */
+
+.phase {
+  margin-top: 64px;
+  padding-top: 48px;
+  border-top: 1px solid var(--rule);
+  position: relative;
+}
+
+.phase-num {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-size: 96px;
+  line-height: 0.85;
+  color: var(--amber);
+  font-variation-settings: 'opsz' 144, 'SOFT' 100;
+  letter-spacing: -0.04em;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.phase-window {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 18px;
+}
+
+.phase-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  margin-bottom: 24px;
+  font-variation-settings: 'opsz' 72, 'SOFT' 40;
+}
+
+.phase-title em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--amber);
+  font-variation-settings: 'opsz' 72, 'SOFT' 60;
+}
+
+.phase-body { margin-left: 0; }
+
+.phase-body ul {
+  list-style: none;
+  padding: 0;
+  margin: 1.4em 0;
+}
+
+.phase-body li {
+  padding-left: 28px;
+  position: relative;
+  margin-bottom: 1em;
+  line-height: 1.6;
+}
+
+.phase-body li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.75em;
+  width: 14px;
+  height: 1px;
+  background: var(--amber-dim);
+}
+
+/* ─── Decision callout ─────────────────────────────── */
+
+.decision {
+  margin-top: 32px;
+  padding: 24px 28px;
+  border-left: 2px solid var(--rust);
+  background: rgba(166, 85, 63, 0.06);
+}
+
+.decision-mark {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 10px;
+  display: block;
+}
+
+.decision p {
+  margin: 0;
+  font-size: 15.5px;
+  color: var(--ink-dim);
+  line-height: 1.55;
+}
+
+/* ─── Quote / pull statement ────────────────────────── */
+
+.pull {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: 26px;
+  line-height: 1.35;
+  color: var(--ink-dim);
+  letter-spacing: -0.01em;
+  margin: 56px 0;
+  padding-left: 28px;
+  border-left: 1px solid var(--amber-dim);
+  font-variation-settings: 'opsz' 72, 'SOFT' 100;
+}
+
+/* ─── Stat row ──────────────────────────────────────── */
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin: 32px 0;
+  border: 1px solid var(--rule);
+}
+
+.compare > div {
+  padding: 24px 28px;
+}
+
+.compare > div:first-child {
+  border-right: 1px solid var(--rule);
+}
+
+@media (max-width: 600px) {
+  .compare { grid-template-columns: 1fr; }
+  .compare > div:first-child {
+    border-right: none;
+    border-bottom: 1px solid var(--rule);
+  }
+}
+
+.compare h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--amber);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.compare .col-rust h4 { color: var(--rust); }
+
+.compare p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  margin: 0;
+}
+
+/* ─── Workstream grid ───────────────────────────────── */
+
+.workstreams {
+  margin-top: 24px;
+}
+
+.workstream {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 24px;
+  align-items: baseline;
+}
+
+.workstream:last-child { border-bottom: none; }
+
+.workstream h4 {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: var(--amber);
+  font-variation-settings: 'opsz' 36;
+}
+
+.workstream p {
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .workstream {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+/* ─── Footer mark ───────────────────────────────────── */
+
+.foot {
+  margin-top: 120px;
+  padding-top: 32px;
+  border-top: 1px solid var(--rule);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* ─── Inline emphasis ───────────────────────────────── */
+
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88em;
+  color: var(--amber);
+  background: rgba(212, 160, 74, 0.08);
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+
+/* ─── Subtle texture ────────────────────────────────── */
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle at 20% 0%, rgba(212, 160, 74, 0.04) 0%, transparent 40%),
+                    radial-gradient(circle at 80% 100%, rgba(166, 85, 63, 0.03) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ─── Subtle scan line on phase numbers ──────────────── */
+
+.phase-num {
+  background: linear-gradient(180deg, var(--amber) 0%, var(--amber-dim) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── Animation on load ─────────────────────────────── */
+
+.page > * {
+  opacity: 0;
+  animation: fade-in 0.7s ease-out forwards;
+}
+
+.page > *:nth-child(1) { animation-delay: 0.05s; }
+.page > *:nth-child(2) { animation-delay: 0.15s; }
+.page > *:nth-child(3) { animation-delay: 0.25s; }
+.page > *:nth-child(n+4) { animation-delay: 0.35s; }
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<div class="eyebrow">Paxiom · Operational Plan</div>
+
+<h1 class="title">Build the <em>platform.</em><br>Take the <em>fee.</em></h1>
+
+<p class="subtitle">A revised map for shipping cross-chain proof infrastructure as transaction-fee revenue, not directional risk.</p>
+
+<div class="meta">
+  <span><strong>Revision</strong> &nbsp;0.5</span>
+  <span><strong>Date</strong> &nbsp;Apr 28 2026</span>
+  <span><strong>Operator</strong> &nbsp;Solo</span>
+  <span><strong>Substrate</strong> &nbsp;HyperBEAM / AO</span>
+</div>
+
+<!-- ─── Strategic Position ─── -->
+
+<section>
+<div class="section-mark">§ A · Strategic Position</div>
+<h2>Vendor, not counterparty.</h2>
+
+<p>The earlier framing treated cross-chain arbitrage as the primary revenue path with the proof platform as supporting infrastructure. That ordering is wrong for this operator and this household. Arbitrage is capital-intensive, directionally exposed, competes against teams with structural advantages, and produces volatile income that does not sit well next to existing extended-family obligations.</p>
+
+<p>The reframe: Paxiom is a HyperBEAM-native distributed proof orchestration platform with x402-gated public endpoints as the primary revenue surface. Cross-chain settlement becomes the reference application that demonstrates the platform works. Arbitrage P&amp;L from operating that reference is bonus margin, not the business.</p>
+
+<p>You collect transaction fees on infrastructure other people use to take risk. Same shape as AWS, Stripe, Twilio. Different shape from Citadel.</p>
+</section>
+
+<!-- ─── Comparison ─── -->
+
+<section>
+<div class="section-mark">§ B · Why This Reframe</div>
+<h2>The structural difference.</h2>
+
+<div class="compare">
+  <div class="col-rust">
+    <h4>Arbitrage path</h4>
+    <p>Capital-intensive. Variance is high, tail risk is real. Competes against Jump, Wintermute, GSR, MEV searchers with better latency and deeper relationships. A bad week is a five-figure drawdown. Income volatility doesn't sleep well next to extended-family obligations.</p>
+  </div>
+  <div>
+    <h4>Platform path</h4>
+    <p>Capital-light. Revenue per transaction with positive margin on compute cost. No directional exposure. Bad weeks for traders are still revenue weeks for you because volume goes up when markets are volatile. Customers are agentic systems needing verified compute — a market larger than the 200 industrious individuals.</p>
+  </div>
+</div>
+
+<p class="pull">The category isn't profitable for anyone yet. Whoever finds genuine product-market fit at sustainable unit economics first wins disproportionately. Capital efficiency is the moat.</p>
+</section>
+
+<!-- ─── Phases ─── -->
+
+<section>
+<div class="section-mark">§ C · Sequencing</div>
+<h2>Six phases, evaluated at each gate.</h2>
+<p>Each phase produces enough information to make the next decision. Each phase generates revenue earlier than its replacement would. Failures fail cheaply because nothing downstream depends on them.</p>
+
+<!-- Phase 0 -->
+<div class="phase">
+<span class="phase-num">00</span>
+<div class="phase-window">Foundation · weeks 1–2</div>
+<h3 class="phase-title">Substrate familiarity. <em>No product yet.</em></h3>
+<div class="phase-body">
+<ul>
+<li>HyperBEAM running locally via <code>rebar3 shell</code>. If this doesn't work, nothing downstream matters.</li>
+<li>Read the Load Network HyperBEAM fork source: <code>~evm@1.0</code>, <code>dev_evm.erl</code>, the AO process examples.</li>
+<li>Read the AO core protocol docs and <code>hb_ao</code> device source. Understand message flow, ordering, persistence.</li>
+<li>Lurk on ZK Hack Discord, Arweave/AO Discord, Decent Land community channels. Read for two weeks before posting.</li>
+<li>Pin the segmentation manifest on Arweave. Smallest first artifact. Locks the protocol shape.</li>
+</ul>
+</div>
+</div>
+
+<!-- Phase 1 -->
+<div class="phase">
+<span class="phase-num">01</span>
+<div class="phase-window">Minimum viable proof device · weeks 3–6</div>
+<h3 class="phase-title">One device. One predicate. <em>One number.</em></h3>
+<div class="phase-body">
+<ul>
+<li>HyperBEAM device wrapping the existing slot0 proof generation. Single block, hardcoded inputs, end-to-end.</li>
+<li>Deploy Groth16 verifier on Optimism / Base / Arbitrum Sepolia. Measure exact gas cost on each.</li>
+<li>Instrument the dispatch path. Log timestamps for witness gen, proof gen, AO coordination, Arweave commitment, on-chain verification.</li>
+<li>Steady-state staleness budget: define the ceiling per chain explicitly before measuring.</li>
+</ul>
+<div class="decision">
+<span class="decision-mark">Gate 01</span>
+<p>If verification gas exceeds 400k on any target chain, or end-to-end latency exceeds 30 seconds in steady state — the architecture needs adjustment before proceeding. Pivot proof system or accept longer settlement window.</p>
+</div>
+</div>
+</div>
+
+<!-- Phase 2 -->
+<div class="phase">
+<span class="phase-num">02</span>
+<div class="phase-window">x402-gated endpoint · weeks 7–12</div>
+<h3 class="phase-title">First revenue from <em>infrastructure</em>, not trades.</h3>
+<div class="phase-body">
+<ul>
+<li>Wrap the proof device behind an HTTP server implementing x402. Single proof type, single price, single endpoint.</li>
+<li>Test with Cloudflare's Agent SDK or equivalent. Verify an off-the-shelf agent can discover, pay, consume.</li>
+<li>Document the endpoint. Publish to whatever directories x402 services are listed in (early; build relationships with directory maintainers).</li>
+<li>Run the public endpoint for a month. Measure inbound traffic. Learn what agents actually request.</li>
+<li>Light arbitrage on own book at small capital ($5–10k) using own platform — reference customer, not primary revenue.</li>
+</ul>
+<div class="decision">
+<span class="decision-mark">Gate 02</span>
+<p>If x402 endpoint generates non-trivial inbound traffic in first month — proceed. If not — the agentic-payment thesis is premature; pivot to direct B2B sales or accept slower customer acquisition.</p>
+</div>
+</div>
+</div>
+
+<!-- Phase 3 -->
+<div class="phase">
+<span class="phase-num">03</span>
+<div class="phase-window">Catalog expansion · weeks 13–20</div>
+<h3 class="phase-title">More proof types. <em>More chains. Simulation as product.</em></h3>
+<div class="phase-body">
+<ul>
+<li>Expand proof catalog: range proofs, aggregated proofs, cross-chain state predicates beyond slot0.</li>
+<li>Add simulation-as-a-service endpoint using the <code>~evm@1.0</code> device. Pre-flight check for arbitrageurs and other agents — they pay per simulation.</li>
+<li>Multi-backend support: route work between RISC Zero, SP1, Plonky3, Orion/Rokokko. Customer picks proof system.</li>
+<li>State reconstruction integration: use Load Network archive-based reconstruction as default input source. Trust-minimization differentiator vs. competitors depending on Alchemy / Infura.</li>
+</ul>
+</div>
+</div>
+
+<!-- Phase 4 -->
+<div class="phase">
+<span class="phase-num">04</span>
+<div class="phase-window">B2B + cross-chain settlement · months 6–12</div>
+<h3 class="phase-title">The reference application <em>becomes the showpiece.</em></h3>
+<div class="phase-body">
+<ul>
+<li>Build the source-chain escrow contract on mainnet with the explicit state machine: <code>INIT → LOAN_REQUESTED → COLLATERAL_LOCKED → LOAN_DISBURSED → AWAITING_PROOF → [PROOF_VALID_SUCCESS | PROOF_VALID_FAILURE | TIMED_OUT | LIQUIDATED]</code>.</li>
+<li>Destination-chain borrower contract. Commitment relayer. Full bounded-time settlement loop tested on testnet, then mainnet small.</li>
+<li>B2B sales motion: approach 5–10 named ZK organizations with concrete operational data. Uptime, gas costs, pricing, what their engineers stop having to do.</li>
+<li>Each B2B integration is a 3–6 month engagement; first paying customer unlocks reference for next three.</li>
+</ul>
+<div class="decision">
+<span class="decision-mark">Gate 04</span>
+<p>At least one paying B2B customer integrated by end of month 12, or platform productization is happening too slowly relative to household timeline. Adjust scope.</p>
+</div>
+</div>
+</div>
+
+<!-- Phase 5 -->
+<div class="phase">
+<span class="phase-num">05</span>
+<div class="phase-window">Specialization · year 2+</div>
+<h3 class="phase-title">Hardware partnerships. <em>Adjacent markets.</em></h3>
+<div class="phase-body">
+<ul>
+<li>Hardware acceleration partnerships once volume justifies negotiation. Cysic, Ulvetanna, Ingonyama. Routing layer picks optimal hardware per workload.</li>
+<li>TEE-attested proving via HyperBEAM's <code>~greenzone@1.0</code> device for customers preferring TEE trust model over ZK.</li>
+<li>Expansion to non-crypto applications: verifiable AI inference, regulatory compliance, identity. Same capabilities, different customers.</li>
+<li>Post-quantum migration path becomes a product as NIST 2030 deprecation deadline approaches and competitors face migration headaches.</li>
+</ul>
+</div>
+</div>
+
+</section>
+
+<!-- ─── Workstreams ─── -->
+
+<section>
+<div class="section-mark">§ D · Continuous Workstreams</div>
+<h2>Run across all phases.</h2>
+<div class="workstreams">
+
+<div class="workstream">
+<h4>Community presence</h4>
+<p>Lurk now, contribute later. Solve ZK Hack puzzles publicly. Answer technical questions thoughtfully. Build name recognition through substance, not marketing. ETHDenver 2027 is the first major in-person investment.</p>
+</div>
+
+<div class="workstream">
+<h4>Documentation</h4>
+<p>Every device gets clean documentation. Every endpoint a clear specification. Construction PM background should make this natural — it's the same operational discipline applied to software.</p>
+</div>
+
+<div class="workstream">
+<h4>Operational rigor</h4>
+<p>Uptime, monitoring, incident response, postmortems. Every outage is a customer-acquisition setback. Every clean postmortem is a public credibility builder. The platform's value is reliability under load.</p>
+</div>
+
+<div class="workstream">
+<h4>Financial track</h4>
+<p>Track infrastructure cost against revenue from day one. Phases 2 onward should fund continued development without external capital. If those numbers don't materialize on schedule — that's signal. Adjust before runway runs out.</p>
+</div>
+
+</div>
+</section>
+
+<!-- ─── Honest assessment ─── -->
+
+<section>
+<div class="section-mark">§ E · What this map does not promise</div>
+<h2>The honest list.</h2>
+
+<p>This map does not promise the architecture works. Phases 1 and 2 might reveal a fatal flaw in dispatch latency, gas costs, or the proof system selected. Phase 3 might reveal that x402 adoption is too early for the platform to find customers there. Phase 4 might reveal that B2B sales motion is harder than the public endpoint motion.</p>
+
+<p>What the map does promise: each phase produces enough information to make the next decision. The work compounds rather than starts over. Revenue arrives as early as possible to fund subsequent phases without external capital. Every phase that works funds the next; every phase that fails fails cheaply.</p>
+
+<p class="pull">The binding constraint is not the technical roadmap. It's the household timeline. Anything that doesn't move toward "platform generates revenue at increasing rates over the next 18–24 months" is lower priority than things that do.</p>
+
+<p>The architectural elegance of running as a HyperBEAM device matters because it lowers build cost and accelerates the timeline. The x402 integration matters because it expands the customer base beyond what reputation can sell into. The proof platform matters because it generates fee revenue from day one rather than capital-at-risk returns. Every architectural choice in this map serves the timeline, not the other way around.</p>
+</section>
+
+<!-- ─── Closing ─── -->
+
+<section>
+<div class="section-mark">§ F · Immediate next action</div>
+<h2>Get HyperBEAM running this week.</h2>
+
+<p>Phase 0 is two weeks of foundation work. Phase 1 starts when there is a working device. The clock starts when hands are on the substrate, not before. Everything else in this map depends on that single first step actually happening.</p>
+</section>
+
+<div class="foot">
+<span>PAXIOM · BUILD MAP · v0.5</span>
+<span>OPERATOR : SOLO</span>
+<span>NEXT REVIEW : END OF PHASE 01</span>
+</div>
+
+</div>
+
+</body>
+</html>

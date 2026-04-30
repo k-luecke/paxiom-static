@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom · Audit Relay · Mechanical Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F1E8;
+  --paper-dark: #EDE6D3;
+  --ink: #1A2332;
+  --ink-mid: #3A4555;
+  --ink-faint: #6B7280;
+  --rule: #1A2332;
+  --rule-faint: #B8AE96;
+  --blue: #1E3A5F;
+  --blue-light: #4A6B8A;
+  --red: #8B2E1F;
+  --amber: #B8860B;
+  --grid: rgba(26, 35, 50, 0.04);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+
+.sheet {
+  max-width: 1080px;
+  margin: 0 auto;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  margin-top: 40px;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+@media (max-width: 900px) {
+  .sheet { margin: 16px 8px; border-width: 1px; }
+}
+
+.sheet-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border-bottom: 2px solid var(--ink);
+  padding: 16px 24px;
+  align-items: end;
+  gap: 24px;
+}
+
+.sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
+
+.sheet-project {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.sheet-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.sheet-subtitle {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-mid);
+  margin-top: 2px;
+}
+
+.sheet-meta {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 4px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+.sheet-meta dt {
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.sheet-meta dd { color: var(--ink); font-weight: 500; }
+
+.sheet-body { padding: 48px 64px; }
+
+@media (max-width: 700px) {
+  .sheet-body { padding: 32px 24px; }
+}
+
+/* ─── Cover ──────────────────────────────────────────── */
+
+.cover-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cover-mark::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule-faint);
+}
+
+.cover-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 400;
+  font-size: clamp(44px, 6.5vw, 76px);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+
+.cover-title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-mid);
+}
+
+.cover-strap {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 21px;
+  line-height: 1.4;
+  color: var(--ink-mid);
+  max-width: 60ch;
+  margin-bottom: 56px;
+}
+
+.cover-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 64px;
+}
+
+@media (max-width: 700px) {
+  .cover-grid { grid-template-columns: 1fr; }
+}
+
+.cover-cell {
+  padding: 20px 24px;
+  border-right: 1px solid var(--rule-faint);
+}
+
+.cover-cell:nth-child(2n) { border-right: none; }
+
+@media (max-width: 700px) {
+  .cover-cell {
+    border-right: none;
+    border-bottom: 1px solid var(--rule-faint);
+  }
+  .cover-cell:last-child { border-bottom: none; }
+}
+
+.cover-cell-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+}
+
+.cover-cell-value {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 18px;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.cover-cell-value em {
+  font-style: italic;
+  color: var(--ink-mid);
+}
+
+/* ─── TOC ────────────────────────────────────────────── */
+
+.toc-section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 40px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule-faint);
+}
+
+.toc-section-label:first-child { margin-top: 0; }
+
+.toc-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 24px;
+  padding: 10px 0;
+  border-bottom: 1px dotted var(--rule-faint);
+  align-items: baseline;
+}
+
+.toc-row:last-of-type { border-bottom: none; }
+
+.toc-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--blue);
+  letter-spacing: 0.04em;
+}
+
+.toc-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.toc-title em {
+  font-style: italic;
+  color: var(--ink-mid);
+  font-size: 14px;
+  display: block;
+  margin-top: 2px;
+}
+
+.toc-page {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+
+/* ─── Section Headers ────────────────────────────────── */
+
+.section-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-mark::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--blue);
+}
+
+.section-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.section-title em { font-style: italic; color: var(--ink-mid); }
+
+.section-strap {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--ink-mid);
+  margin-bottom: 40px;
+  max-width: 60ch;
+  line-height: 1.5;
+}
+
+/* ─── Body ────────────────────────────────────────────── */
+
+.prose p {
+  margin-bottom: 18px;
+  max-width: 70ch;
+}
+
+.prose h3 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 20px;
+  margin-top: 36px;
+  margin-bottom: 14px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.prose h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-top: 28px;
+  margin-bottom: 10px;
+}
+
+.prose strong { font-weight: 600; color: var(--ink); }
+.prose em { font-style: italic; color: var(--ink-mid); }
+
+.prose code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--paper-dark);
+  padding: 1px 6px;
+  border-radius: 2px;
+  color: var(--blue);
+}
+
+/* ─── Code Blocks ─────────────────────────────────────── */
+
+pre.codeblock {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 18px 22px;
+  margin: 20px 0;
+  border-left: 3px solid var(--amber);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+pre.codeblock .comment { color: var(--ink-faint); font-style: italic; }
+pre.codeblock .keyword { color: #E8B574; }
+pre.codeblock .string { color: #C8B084; }
+pre.codeblock .label { color: #98B0CC; }
+
+.code-caption {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: -12px;
+  margin-bottom: 24px;
+  padding-left: 4px;
+}
+
+/* ─── Callouts ────────────────────────────────────────── */
+
+.callout {
+  border: 1px solid var(--ink);
+  margin: 32px 0;
+  background: var(--paper);
+}
+
+.callout-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  padding: 8px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  align-items: center;
+}
+
+.callout-tag { font-weight: 600; }
+
+.callout-id { color: var(--paper-dark); opacity: 0.7; }
+
+.callout-body { padding: 18px 20px; }
+
+.callout-body p {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.callout-body p:last-child { margin-bottom: 0; }
+
+.callout-body ul {
+  margin: 8px 0 4px 18px;
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.callout-body li { margin-bottom: 4px; }
+
+.callout-body code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--paper-dark);
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: var(--blue);
+}
+
+.callout.ref { border-color: var(--blue); }
+.callout.ref .callout-header { background: var(--blue); }
+
+.callout.spec { border-color: var(--ink); }
+
+.callout.note { border-style: dashed; border-color: var(--ink-faint); }
+.callout.note .callout-header {
+  background: transparent;
+  color: var(--ink-faint);
+  border-bottom: 1px dashed var(--ink-faint);
+}
+.callout.note .callout-id { color: var(--ink-faint); }
+
+.callout.warn { border-color: var(--red); }
+.callout.warn .callout-header { background: var(--red); }
+
+/* ─── State / Sequence ───────────────────────────────── */
+
+.sequence {
+  margin: 32px 0;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  padding: 28px 32px;
+}
+
+.sequence-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 18px;
+}
+
+.sequence-row {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.sequence-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 28px;
+  bottom: -14px;
+  width: 1px;
+  background: var(--rule-faint);
+}
+
+.sequence-mark {
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--blue);
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--blue);
+  position: relative;
+  z-index: 1;
+}
+
+.sequence-mark.user {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.sequence-mark.gate {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.sequence-text {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  color: var(--ink);
+  padding-top: 4px;
+}
+
+.sequence-text strong { font-weight: 600; color: var(--ink); }
+
+.sequence-text em {
+  font-style: italic;
+  color: var(--ink-mid);
+  font-size: 13px;
+  display: block;
+  margin-top: 2px;
+}
+
+.sequence-text .role-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  border: 1px solid var(--rule-faint);
+  padding: 2px 6px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.sequence-text .role-tag.user-tag {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+/* ─── Component Sheet ─────────────────────────────────── */
+
+.component-sheet {
+  margin: 40px 0;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+}
+
+.component-header {
+  padding: 20px 28px;
+  background: var(--paper-dark);
+  border-bottom: 1.5px solid var(--ink);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 24px;
+  align-items: baseline;
+}
+
+@media (max-width: 700px) {
+  .component-header {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.component-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--blue);
+  letter-spacing: 0.02em;
+}
+
+.component-name {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.component-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  border: 1px solid var(--ink-mid);
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.component-body { padding: 28px; }
+
+.component-body h5 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-top: 22px;
+  margin-bottom: 8px;
+}
+
+.component-body h5:first-child { margin-top: 0; }
+
+.component-body p {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+
+.component-body ul {
+  margin: 8px 0 14px 22px;
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.component-body li { margin-bottom: 6px; }
+
+/* ─── Page Break ─────────────────────────────────────── */
+
+.page-break {
+  border-top: 2px solid var(--ink);
+  margin: 96px -64px 64px;
+  position: relative;
+}
+
+@media (max-width: 700px) {
+  .page-break { margin: 56px -24px 40px; }
+}
+
+.page-break::before {
+  content: attr(data-sheet);
+  position: absolute;
+  top: -10px;
+  left: 64px;
+  background: var(--paper);
+  padding: 0 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ─── Footer ─────────────────────────────────────────── */
+
+.sheet-footer {
+  border-top: 1.5px solid var(--ink);
+  padding: 14px 24px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  align-items: center;
+}
+
+.sheet-footer .center { text-align: center; }
+
+.sheet-footer .right {
+  text-align: right;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+a {
+  color: var(--blue);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+a:hover { color: var(--red); }
+
+@media print {
+  body { background: white; }
+  .sheet { border: 2px solid black; }
+  .page-break { page-break-before: always; }
+}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+<!-- ═════════════════════════════════════════════
+     SHEET HEADER
+     ═════════════════════════════════════════════ -->
+
+<div class="sheet-header">
+  <div class="sheet-title-block">
+    <div class="sheet-project">Paxiom · Operational · Drawing Set</div>
+    <div class="sheet-title">Audit Relay Tooling</div>
+    <div class="sheet-subtitle">A WSL-native automation for the audit cycle. Mechanical loops out, decision loops in.</div>
+  </div>
+  <dl class="sheet-meta">
+    <dt>Project No.</dt><dd>PXM-001-M</dd>
+    <dt>Issue</dt><dd>Mechanical / Rev. A</dd>
+    <dt>Date</dt><dd>2026.04.29</dd>
+    <dt>Drawn By</dt><dd>K. Luecke</dd>
+  </dl>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     M-000 · COVER & INDEX
+     ═════════════════════════════════════════════ -->
+
+<div class="sheet-body">
+
+<div class="cover-mark">Sheet M-000 · Cover &amp; Index</div>
+
+<h1 class="cover-title">The Relay.<br><em>Mechanical loops out.<br>Decision loops in.</em></h1>
+
+<p class="cover-strap">
+A small tool for a focused workflow. Three or four models in defined roles,
+one operator at the keystone position. Not a multi-agent system. A structured
+code review that automates the file-shuffling and preserves the judgment.
+</p>
+
+<div class="cover-grid">
+  <div class="cover-cell">
+    <div class="cover-cell-label">Goal</div>
+    <div class="cover-cell-value">Ship Phase 1 faster <em>by removing copy-paste, not removing review</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Build Effort</div>
+    <div class="cover-cell-value">~1–2 weekends <em>incrementally as Phase 1 ships</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Environment</div>
+    <div class="cover-cell-value">WSL2 / Ubuntu <em>terminal-native, no Slack, no email</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Substrate</div>
+    <div class="cover-cell-value">Python + git <em>git is the canonical state</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Models</div>
+    <div class="cover-cell-value">Claude · Codex · Gemini <em>roles assigned, rotation supported</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">User in Loop At</div>
+    <div class="cover-cell-value">Plan review · Final accept <em>nowhere else</em></div>
+  </div>
+</div>
+
+<div class="toc-section-label">Front Matter</div>
+
+<div class="toc-row">
+  <div class="toc-num">M-000</div>
+  <div class="toc-title">Cover &amp; Index<em>this sheet</em></div>
+  <div class="toc-page">↑</div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">M-010</div>
+  <div class="toc-title">Project Narrative<em>what this is and what it isn't</em></div>
+  <div class="toc-page"><a href="#m-010">M-010</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">M-020</div>
+  <div class="toc-title">Reference Standards<em>APIs, libraries, WSL conventions</em></div>
+  <div class="toc-page"><a href="#m-020">M-020</a></div>
+</div>
+
+<div class="toc-section-label">Architecturals</div>
+
+<div class="toc-row">
+  <div class="toc-num">M-100</div>
+  <div class="toc-title">Site Plan &amp; Floor Plan<em>where it sits, how the cycle flows</em></div>
+  <div class="toc-page"><a href="#m-100">M-100</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">M-120</div>
+  <div class="toc-title">Foundations<em>filesystem layout, prompts, config</em></div>
+  <div class="toc-page"><a href="#m-120">M-120</a></div>
+</div>
+
+<div class="toc-section-label">Components</div>
+
+<div class="toc-row">
+  <div class="toc-num">M-201</div>
+  <div class="toc-title">Orchestrator<em>entry point, subcommands, configuration</em></div>
+  <div class="toc-page"><a href="#m-201">M-201</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">M-202</div>
+  <div class="toc-title">Prompts &amp; Output Schema<em>audit, refinement, revision templates</em></div>
+  <div class="toc-page"><a href="#m-202">M-202</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">M-203</div>
+  <div class="toc-title">Terminal Interface<em>WSL-native review, notification, status</em></div>
+  <div class="toc-page"><a href="#m-203">M-203</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">M-204</div>
+  <div class="toc-title">State Machine &amp; Persistence<em>cycle states, crash recovery, parallel runs</em></div>
+  <div class="toc-page"><a href="#m-204">M-204</a></div>
+</div>
+
+<div class="toc-section-label">Schedules</div>
+
+<div class="toc-row">
+  <div class="toc-num">M-300</div>
+  <div class="toc-title">Build Sequence<em>incremental gates, ship in days not weeks</em></div>
+  <div class="toc-page"><a href="#m-300">M-300</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">M-310</div>
+  <div class="toc-title">Risk Register<em>known failure modes for the tool itself</em></div>
+  <div class="toc-page"><a href="#m-310">M-310</a></div>
+</div>
+<div class="toc-row">
+  <div class="toc-num">M-900</div>
+  <div class="toc-title">General Notes<em>conventions, related documents</em></div>
+  <div class="toc-page"><a href="#m-900">M-900</a></div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     M-010 · PROJECT NARRATIVE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet M-010"></div>
+
+<div id="m-010">
+<div class="section-mark">M-010 · Project Narrative</div>
+<h2 class="section-title">What this <em>is.</em></h2>
+<p class="section-strap">
+A single Python tool that automates the file-shuffling in an existing
+audit-cycle workflow. Not an agent framework. Not a team. A relay with
+one operator at the keystone.
+</p>
+
+<div class="prose">
+
+<p>
+The workflow this tool automates already works. A coding interaction
+produces an initial implementation. That implementation is sent to two
+models for in-depth audit with a strict prompt: do not gloss over flaws,
+do not change code, indicate ambiguity, produce an action plan. The
+plans are reviewed by the operator, optionally tightened by a third
+model, then sent back to a coding model for revision. The coding role
+rotates between cycles to prevent inherited bias.
+</p>
+
+<p>
+The mechanical work — copying code between four windows, re-attaching
+references, parsing out the action plan from prose, applying the diff
+back to disk — is what slows down the cycle. The judgment work — deciding
+whether the plan is right, whether the revision achieved it, whether the
+next iteration is needed — is what produces value. This tool removes the
+mechanical work and preserves the judgment work. That distinction is the
+entire design.
+</p>
+
+<div class="callout note">
+  <div class="callout-header">
+    <span class="callout-tag">Note</span>
+    <span></span>
+    <span class="callout-id">M-010 / N.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      The tool is not the project. Phase 1 is. This blueprint is for a
+      tool that exists to accelerate Phase 1, not for a tool that justifies
+      its own development time. Every hour spent on the relay that doesn't
+      save more than an hour on Phase 1 is wasted hour.
+    </p>
+    <p>
+      Build incrementally. Use the simplest version that removes the
+      most painful copy-paste first. Add capability when specific friction
+      earns it.
+    </p>
+  </div>
+</div>
+
+<h3>Position in one sentence</h3>
+
+<p>
+The audit relay is a Python orchestrator that runs the existing audit-cycle
+prompts against multiple LLM APIs in parallel, presents action plans to the
+operator for review at defined gates, applies approved revisions, and tracks
+state across multiple in-flight cycles.
+</p>
+
+<h3>What this tool is not</h3>
+
+<ul>
+  <li>Not a multi-agent framework. No agent communicates with another agent.
+  Each model is called with a defined prompt and returns a defined output.
+  The orchestrator routes; it does not facilitate dialogue.</li>
+  <li>Not a code generation tool. Coding still happens in the existing
+  conversational interfaces (Claude Code, Codex CLI, Antigravity, etc.).
+  The relay handles the audit-and-revise cycle, not the initial creation.</li>
+  <li>Not autonomous. The operator stays in the decision loop at plan
+  finalization and final acceptance. Removing those gates produces
+  confidently-wrong code; preserving them earns the tool's keep.</li>
+  <li>Not a replacement for tests. Tests are run as part of the cycle but
+  the tool does not invent tests or judge whether existing tests are
+  sufficient.</li>
+</ul>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     M-020 · REFERENCE STANDARDS
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet M-020"></div>
+
+<div id="m-020">
+<div class="section-mark">M-020 · Reference Standards</div>
+<h2 class="section-title">What we build <em>against.</em></h2>
+<p class="section-strap">
+APIs, libraries, conventions. Every external dependency named.
+</p>
+
+<div class="prose">
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · API</span>
+    <span>Anthropic Messages API</span>
+    <span class="callout-id">M-020 / R.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Claude via <code>https://api.anthropic.com/v1/messages</code>.
+      Highest tier subscription supports the model needed. SDK:
+      <code>anthropic</code> Python package. Used for: long-form audit
+      role and revision role.
+    </p>
+    <p><em>Auth:</em> <code>ANTHROPIC_API_KEY</code> in environment.</p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · API</span>
+    <span>OpenAI Responses API</span>
+    <span class="callout-id">M-020 / R.02</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Codex / GPT via <code>https://api.openai.com/v1/responses</code>.
+      SDK: <code>openai</code> Python package. Used for: alternate audit
+      role and rotated revision role.
+    </p>
+    <p><em>Auth:</em> <code>OPENAI_API_KEY</code> in environment.</p>
+    <p><em>Note:</em> Avoid the Monday persona for this work — register
+    the model with a clinical system prompt that suppresses snark.</p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · API</span>
+    <span>Google Generative Language API</span>
+    <span class="callout-id">M-020 / R.03</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Gemini via Google Cloud or AI Studio. SDK:
+      <code>google-generativeai</code> Python package. Used for: plan
+      refinement role only — sharpen and consolidate, never originate.
+    </p>
+    <p><em>Auth:</em> <code>GOOGLE_API_KEY</code> in environment, or
+    application default credentials if going through Cloud.</p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Substrate</span>
+    <span>git as canonical state</span>
+    <span class="callout-id">M-020 / R.04</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Each cycle commits to a feature branch. State transitions are
+      commits with structured messages. Diffs between commits show what
+      changed at each stage. Solves the WSL/Windows mirror problem
+      because git is the source of truth, not either filesystem location.
+    </p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Tooling</span>
+    <span>WSL2 conventions</span>
+    <span class="callout-id">M-020 / R.05</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Project lives under <code>~/projects/paxiom-relay</code> on the
+      Linux filesystem (not <code>/mnt/c</code> — performance). WSLg
+      provides <code>notify-send</code> for desktop notifications on
+      Windows 11. <code>tmux</code> for split-pane workflow. <code>$EDITOR</code>
+      respected for plan review (vim, nvim, micro, or
+      <code>code --wait</code> if VS Code preferred).
+    </p>
+  </div>
+</div>
+
+<div class="callout ref">
+  <div class="callout-header">
+    <span class="callout-tag">REF · Library</span>
+    <span>Python standard + minimal deps</span>
+    <span class="callout-id">M-020 / R.06</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Python 3.11+. Direct dependencies kept small:
+      <code>anthropic</code>, <code>openai</code>,
+      <code>google-generativeai</code>, <code>pyyaml</code>,
+      <code>click</code> (or <code>typer</code>) for CLI,
+      <code>rich</code> for terminal output. No heavyweight frameworks
+      (no LangChain, no CrewAI, no AutoGen). The orchestrator is
+      pedestrian Python, not a meta-system.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     M-100 · SITE PLAN & FLOOR PLAN
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet M-100"></div>
+
+<div id="m-100">
+<div class="section-mark">M-100 · Site Plan &amp; Floor Plan</div>
+<h2 class="section-title">Where it sits. <em>How it flows.</em></h2>
+<p class="section-strap">
+The relay sits between conversational tooling (Claude long-form, Codex CLI,
+Antigravity) and git. It runs structured passes after the conversation
+has produced a first artifact.
+</p>
+
+<div class="prose">
+
+<h4>Upstream of the relay</h4>
+
+<p>
+Long-form conversational work in Claude — idea shaping, spec drafting,
+architecture decisions, blueprint sheets like the ones referenced above.
+Output: written specifications and reference materials in
+<code>references/</code>.
+</p>
+
+<p>
+Initial coding interaction in any of the conversational coding tools
+(Claude Code, Codex CLI, Antigravity). Output: a first-pass implementation
+committed to a feature branch.
+</p>
+
+<h4>The relay's job</h4>
+
+<p>
+Take that first-pass implementation and run audit-revise cycles against it
+until the operator accepts the result. The number of cycles is bounded by
+configuration; in practice 1–3 cycles is typical.
+</p>
+
+<h4>Downstream of the relay</h4>
+
+<p>
+A feature branch with cycle commits visible as history. Final accepted
+code on the tip of the branch. Audit artifacts preserved as files for
+later reference. Merge to main is a separate step the operator does
+manually.
+</p>
+
+</div>
+
+<div class="sequence">
+  <div class="sequence-title">One Audit Cycle, End to End</div>
+
+  <div class="sequence-row">
+    <div class="sequence-mark gate">▶</div>
+    <div class="sequence-text">
+      <strong>Operator runs <code>relay start &lt;service&gt;</code>.</strong>
+      <span class="role-tag user-tag">Operator</span>
+      <em>Cycle UUID generated. Branch created. State file written.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">01</div>
+    <div class="sequence-text">
+      <strong>Bundle current code state with reference materials.</strong>
+      <em>Read working tree. Read <code>references/&lt;service&gt;/*</code>. Compose audit input.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">02</div>
+    <div class="sequence-text">
+      <strong>Dispatch audit prompts to two models in parallel.</strong>
+      <em>Async calls to Claude and Codex with the audit prompt template.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">03</div>
+    <div class="sequence-text">
+      <strong>Collect both audits. Write to <code>audits/&lt;cycle&gt;/</code>.</strong>
+      <em>Validate output structure. If parse fails, retry once with format reminder.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">04</div>
+    <div class="sequence-text">
+      <strong>Optional: send both audits to Gemini for refinement.</strong>
+      <em>"Tighten existing items, do not add, mark ambiguous and duplicate."</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark user">★</div>
+    <div class="sequence-text">
+      <strong>Notify operator. Cycle pauses.</strong>
+      <span class="role-tag user-tag">Operator</span>
+      <em>WSLg notification via <code>notify-send</code>. Plan files appear in queue.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark user">★</div>
+    <div class="sequence-text">
+      <strong>Operator runs <code>relay review &lt;cycle&gt;</code>.</strong>
+      <span class="role-tag user-tag">Operator</span>
+      <em>$EDITOR opens consolidated plan. Operator edits, saves, exits.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark user">★</div>
+    <div class="sequence-text">
+      <strong>Operator runs <code>relay continue &lt;cycle&gt;</code>.</strong>
+      <span class="role-tag user-tag">Operator</span>
+      <em>Or <code>relay abort &lt;cycle&gt;</code>. Decision is explicit, never inferred.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">05</div>
+    <div class="sequence-text">
+      <strong>Dispatch revision prompt to coding model.</strong>
+      <em>Model selected per rotation rule. Revision prompt + plan + code input.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">06</div>
+    <div class="sequence-text">
+      <strong>Apply revised code. Commit to branch.</strong>
+      <em>Diff written. Commit message references cycle UUID and plan items addressed.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark">07</div>
+    <div class="sequence-text">
+      <strong>Run tests if configured.</strong>
+      <em><code>test_command</code> from service config. Output captured.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark user">★</div>
+    <div class="sequence-text">
+      <strong>Notify operator with diff and test results.</strong>
+      <span class="role-tag user-tag">Operator</span>
+      <em>Operator runs <code>relay accept</code>, <code>relay iterate</code>, or <code>relay abort</code>.</em>
+    </div>
+  </div>
+  <div class="sequence-row">
+    <div class="sequence-mark gate">■</div>
+    <div class="sequence-text">
+      <strong>Cycle complete or iterates from step 01.</strong>
+      <em>State transitions to <code>complete</code> or back to <code>audit-running</code>.</em>
+    </div>
+  </div>
+</div>
+
+<div class="prose">
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">CRITICAL</span>
+    <span>Two non-negotiable user gates</span>
+    <span class="callout-id">M-100 / W.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Plan finalization (between steps 04 and 05) and final acceptance
+      (after step 07) are mandatory operator gates. The tool never
+      auto-continues past either. This is the structural defense against
+      confidently-wrong drift. If the tool ever ships a mode that skips
+      these gates, that mode is a bug.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     M-120 · FOUNDATIONS
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet M-120"></div>
+
+<div id="m-120">
+<div class="section-mark">M-120 · Foundations</div>
+<h2 class="section-title">Filesystem, <em>config, prompts.</em></h2>
+<p class="section-strap">
+The substrate the tool runs on. Concrete paths, concrete formats.
+</p>
+
+<div class="prose">
+
+<h4>Project layout</h4>
+
+<pre class="codeblock">~/projects/paxiom-relay/
+├── relay.py                <span class="comment"># Entry point. Click-based CLI.</span>
+├── relay/
+│   ├── __init__.py
+│   ├── orchestrator.py     <span class="comment"># Cycle state machine, dispatch logic.</span>
+│   ├── models/
+│   │   ├── anthropic.py    <span class="comment"># Claude wrapper.</span>
+│   │   ├── openai.py       <span class="comment"># Codex/GPT wrapper.</span>
+│   │   └── gemini.py       <span class="comment"># Gemini wrapper.</span>
+│   ├── prompts.py          <span class="comment"># Template loading and rendering.</span>
+│   ├── parse.py            <span class="comment"># Audit output parsing.</span>
+│   ├── notify.py           <span class="comment"># notify-send + tmux + bell.</span>
+│   ├── state.py            <span class="comment"># Cycle persistence in .relay/</span>
+│   └── git.py              <span class="comment"># Branch + commit helpers.</span>
+├── prompts/
+│   ├── audit.md            <span class="comment"># Audit prompt template.</span>
+│   ├── refine.md           <span class="comment"># Gemini refinement prompt.</span>
+│   └── revise.md           <span class="comment"># Coding revision prompt.</span>
+├── config/
+│   ├── default.yaml        <span class="comment"># Global defaults.</span>
+│   └── services/
+│       ├── A-201.yaml      <span class="comment"># Per-service overrides.</span>
+│       ├── A-202.yaml
+│       └── ...
+└── README.md</pre>
+<div class="code-caption">Project tree · ~50 lines per .py file · pedestrian Python</div>
+
+<h4>State directory inside the target repo</h4>
+
+<pre class="codeblock">&lt;target-repo&gt;/.relay/
+├── cycles/
+│   └── &lt;uuid&gt;/
+│       ├── state.json          <span class="comment"># State machine value + metadata.</span>
+│       ├── input.txt           <span class="comment"># Code state at cycle start.</span>
+│       ├── audits/
+│       │   ├── claude.md
+│       │   └── codex.md
+│       ├── refined-plan.md     <span class="comment"># Optional, after Gemini.</span>
+│       ├── plan.md             <span class="comment"># What the operator approved.</span>
+│       ├── revision.diff
+│       └── test-output.txt
+├── queue.md                    <span class="comment"># Live list of in-flight cycles.</span>
+└── logs/
+    └── &lt;date&gt;.log              <span class="comment"># Daily log of all cycle activity.</span></pre>
+<div class="code-caption">State per cycle · git-ignored · separate from working tree</div>
+
+<h4>Service configuration example</h4>
+
+<pre class="codeblock"><span class="comment"># config/services/A-202.yaml</span>
+service:
+  id: A-202
+  name: Sync Committee Verification
+  branch_prefix: feat/svc-202
+
+references:
+  - blueprint/A-202.md
+  - architecture/kya-primitive.md
+  - architecture/x402-integration.md
+  - tests/sync-committee-vectors.json
+
+models:
+  audit_a:
+    provider: anthropic
+    model: claude-opus-4-7
+  audit_b:
+    provider: openai
+    model: gpt-5
+  refinement:
+    provider: google
+    model: gemini-2.5-pro
+    enabled: true
+  revision:
+    rotation: [anthropic, openai]   <span class="comment"># Alternates per cycle.</span>
+
+cycle:
+  max_iterations: 5
+  test_command: cargo test --package sync-committee-verifier
+  acceptance_required: true</pre>
+<div class="code-caption">YAML config · per-service overrides · explicit, not magical</div>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     M-201 · ORCHESTRATOR
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet M-201"></div>
+
+<div id="m-201">
+<div class="section-mark">M-201 · Component</div>
+<h2 class="section-title">Orchestrator — <em>the entry point.</em></h2>
+<p class="section-strap">
+A single CLI that handles every operation. No daemons. No long-running
+processes. Each invocation does one thing and exits.
+</p>
+
+<div class="component-sheet">
+  <div class="component-header">
+    <div class="component-num">01</div>
+    <div class="component-name">relay (CLI)</div>
+    <div class="component-tag">Click-based · Stateless invocations</div>
+  </div>
+  <div class="component-body">
+
+    <h5>Subcommands</h5>
+
+<pre class="codeblock"><span class="keyword">relay start</span> &lt;service-id&gt;     <span class="comment"># Begin new cycle. Returns UUID.</span>
+<span class="keyword">relay status</span>                <span class="comment"># Show all in-flight cycles.</span>
+<span class="keyword">relay show</span> &lt;uuid&gt;            <span class="comment"># Detailed view of one cycle.</span>
+<span class="keyword">relay review</span> &lt;uuid&gt;          <span class="comment"># Open plan in $EDITOR.</span>
+<span class="keyword">relay continue</span> &lt;uuid&gt;        <span class="comment"># Approve plan, run revision.</span>
+<span class="keyword">relay accept</span> &lt;uuid&gt;          <span class="comment"># Final accept after revision.</span>
+<span class="keyword">relay iterate</span> &lt;uuid&gt;         <span class="comment"># Revision incomplete, audit again.</span>
+<span class="keyword">relay abort</span> &lt;uuid&gt;           <span class="comment"># Stop cycle, clean state.</span>
+<span class="keyword">relay rotate</span> &lt;service-id&gt;    <span class="comment"># Manually flip revision rotation.</span>
+<span class="keyword">relay cost</span>                  <span class="comment"># Token usage and $ to date.</span>
+<span class="keyword">relay logs</span> [--tail]          <span class="comment"># Activity log, optionally follow.</span></pre>
+
+    <h5>Exit codes</h5>
+
+    <ul>
+      <li><code>0</code> — operation completed.</li>
+      <li><code>1</code> — operation paused, waiting on operator (after audit, after revision).</li>
+      <li><code>2</code> — error, operator should investigate.</li>
+      <li><code>3</code> — config or environment problem (missing API key, missing repo).</li>
+    </ul>
+
+    <p>
+      Exit codes matter for tmux scripting and for integration with other
+      tools. <code>relay status; if [ $? -eq 1 ]; then ...</code> patterns
+      let the operator wire the relay into their existing terminal flow.
+    </p>
+
+    <h5>Configuration resolution order</h5>
+
+    <ul>
+      <li>Built-in defaults.</li>
+      <li><code>config/default.yaml</code>.</li>
+      <li><code>config/services/&lt;service-id&gt;.yaml</code>.</li>
+      <li>Per-cycle overrides (e.g., <code>--model claude-opus-4-7</code> on the start command).</li>
+    </ul>
+
+    <h5>Logging</h5>
+
+    <p>
+      Every API call, state transition, and operator command logs to
+      <code>.relay/logs/YYYY-MM-DD.log</code> with timestamps and cycle
+      UUIDs. Logs are append-only, plain text, grep-friendly. No structured
+      logging library. If something went wrong at 2 AM the previous day,
+      <code>grep &lt;uuid&gt; logs/2026-04-28.log</code> reconstructs the
+      story.
+    </p>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     M-202 · PROMPTS & SCHEMA
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet M-202"></div>
+
+<div id="m-202">
+<div class="section-mark">M-202 · Component</div>
+<h2 class="section-title">Prompts <em>&amp; output schema.</em></h2>
+<p class="section-strap">
+The prompts are the actual product. The orchestrator is plumbing.
+</p>
+
+<div class="component-sheet">
+  <div class="component-header">
+    <div class="component-num">02a</div>
+    <div class="component-name">Audit Prompt</div>
+    <div class="component-tag">Structured output · Strict</div>
+  </div>
+  <div class="component-body">
+
+<pre class="codeblock"><span class="comment"># prompts/audit.md</span>
+
+You are conducting an in-depth technical audit of the code below
+against the reference materials provided. Your role is auditor only.
+
+Hard rules:
+- Do not gloss over flaws. Flaws unaddressed in the audit will reach
+  production unaddressed.
+- Do not change the code. Do not propose code. Produce an action plan
+  that another model will execute.
+- Indicate ambiguity. Where the spec is unclear or the code's intent is
+  uncertain, say so explicitly with [AMBIGUOUS].
+- Be specific. Quote line numbers and code excerpts.
+- Do not propose features beyond the spec. The spec is the contract.
+
+Reference materials:
+{{ references }}
+
+Service specification:
+{{ spec }}
+
+Code to audit:
+{{ code }}
+
+Produce output in this exact structure. Do not add or remove sections.
+
+## Critical issues
+[bugs, security flaws, spec violations - must fix before merge]
+
+## Significant concerns
+[design problems, robustness issues - should fix]
+
+## Ambiguities
+[places the spec is unclear or code intent is uncertain]
+
+## Style and convention notes
+[lower priority improvements]
+
+## Action plan
+[ordered list of specific imperative changes,
+ each item references which section above it addresses]</pre>
+<div class="code-caption">Audit prompt · Jinja2 templated · ~30 lines</div>
+
+  </div>
+</div>
+
+<div class="component-sheet">
+  <div class="component-header">
+    <div class="component-num">02b</div>
+    <div class="component-name">Refinement Prompt</div>
+    <div class="component-tag">Gemini · Tighten Only</div>
+  </div>
+  <div class="component-body">
+
+<pre class="codeblock"><span class="comment"># prompts/refine.md</span>
+
+Two independent audits of the same code are below. Your role is to
+consolidate them into a single action plan. Your role is editorial,
+not creative.
+
+Hard rules:
+- Do not add new items. If neither audit raised it, it stays out.
+- Do not propose new directions. Do not editorialize.
+- Tighten existing items for accuracy and explicitness.
+- Mark items unclear with [AMBIGUOUS].
+- Mark items present in both audits with [DUPLICATE — consolidate].
+- Mark items where the two audits conflict with [CONFLICT — operator decides].
+
+Audit A (Claude):
+{{ audit_a }}
+
+Audit B (Codex):
+{{ audit_b }}
+
+Produce a single consolidated action plan in the same structure as the
+input audits. Preserve attribution where it matters; otherwise merge
+silently.</pre>
+<div class="code-caption">Refinement prompt · Narrow scope · ~20 lines</div>
+
+  </div>
+</div>
+
+<div class="component-sheet">
+  <div class="component-header">
+    <div class="component-num">02c</div>
+    <div class="component-name">Revision Prompt</div>
+    <div class="component-tag">Coding Model · Plan-Driven</div>
+  </div>
+  <div class="component-body">
+
+<pre class="codeblock"><span class="comment"># prompts/revise.md</span>
+
+Revise the code below to address the action plan. The plan has been
+reviewed and approved by the operator. Your role is to execute the plan
+as written.
+
+Hard rules:
+- Do not deviate from the plan. Items the plan doesn't mention stay
+  unchanged.
+- Do not add features. The plan is the contract.
+- If a plan item is impossible to address as written, stop and report
+  the conflict in a section called "## Plan conflicts" rather than
+  improvising a workaround.
+- Preserve existing tests. Add tests only for new behavior the plan
+  introduces.
+
+Reference materials:
+{{ references }}
+
+Service specification:
+{{ spec }}
+
+Original code:
+{{ code }}
+
+Approved action plan:
+{{ plan }}
+
+Produce the revised code as a single artifact. Use proper file structure
+with file path headers (e.g., # path: src/verifier/lib.rs) before each
+file's contents.</pre>
+<div class="code-caption">Revision prompt · Plan-bounded · ~25 lines</div>
+
+  </div>
+</div>
+
+<div class="prose">
+
+<div class="callout note">
+  <div class="callout-header">
+    <span class="callout-tag">Note · Output Parsing</span>
+    <span></span>
+    <span class="callout-id">M-202 / N.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Parsing audit output is straightforward markdown header detection.
+      <code>parse.py</code> looks for <code>## Critical issues</code>,
+      <code>## Significant concerns</code>, etc., and slices the document
+      into sections. If a required section is missing, the orchestrator
+      retries the audit once with a format reminder. If the second attempt
+      also fails, it surfaces the raw output to the operator with a flag.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     M-203 · TERMINAL INTERFACE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet M-203"></div>
+
+<div id="m-203">
+<div class="section-mark">M-203 · Component</div>
+<h2 class="section-title">Terminal — <em>WSL native.</em></h2>
+<p class="section-strap">
+No Slack. No email. No web dashboard. The notification surface is
+the terminal you already have open.
+</p>
+
+<div class="component-sheet">
+  <div class="component-header">
+    <div class="component-num">03</div>
+    <div class="component-name">Notification &amp; Review</div>
+    <div class="component-tag">notify-send · tmux · $EDITOR</div>
+  </div>
+  <div class="component-body">
+
+    <h5>Notification mechanisms (in priority order)</h5>
+
+    <ul>
+      <li><strong>WSLg <code>notify-send</code></strong> — desktop toast
+      via Windows 11 native integration. Default. Works without setup on
+      Win11 + WSL2 with WSLg enabled.</li>
+      <li><strong>Terminal bell (<code>\a</code>)</strong> — fallback if
+      <code>notify-send</code> unavailable. Configurable on/off per
+      operator preference.</li>
+      <li><strong>Status file (<code>.relay/queue.md</code>)</strong> —
+      always written. Watch with <code>watch -n 5 cat .relay/queue.md</code>
+      in a tmux pane for live status without polling the API.</li>
+      <li><strong>tmux status line</strong> — optional. The
+      <code>relay tmux-status</code> subcommand emits a single-line
+      summary suitable for <code>status-right</code>.</li>
+    </ul>
+
+    <h5>Plan review interface</h5>
+
+    <p>
+      <code>relay review &lt;uuid&gt;</code> opens the consolidated plan
+      file in <code>$EDITOR</code>. Operator edits in place — adding,
+      removing, sharpening items. Saves and exits. The orchestrator reads
+      the modified file as the approved plan.
+    </p>
+
+    <p>
+      Editor selection follows standard convention:
+    </p>
+
+    <ul>
+      <li><code>$EDITOR</code> environment variable if set.</li>
+      <li><code>git config --get core.editor</code> if set.</li>
+      <li><code>vi</code> as last fallback.</li>
+    </ul>
+
+    <p>
+      For VS Code users: <code>export EDITOR="code --wait"</code>.
+      For nvim users: standard. For terminal-only operators (vim, micro):
+      standard.
+    </p>
+
+    <h5>Status display</h5>
+
+<pre class="codeblock">$ relay status
+
+CYCLES IN FLIGHT
+────────────────────────────────────────────────────────
+A-202  bf3c91   AUDIT-RUNNING        2m ago     claude+codex
+A-204  1a8d72   AWAITING-REVIEW      14m ago    plan ready
+A-201  7e0c45   REVISION-RUNNING     38s ago    claude
+A-205  9b2317   AWAITING-ACCEPTANCE  1h ago     tests passed
+
+COSTS THIS SESSION
+────────────────────────────────────────────────────────
+Anthropic   $4.21    18,402 input  /  6,108 output tokens
+OpenAI      $3.86    21,209 input  /  4,892 output tokens
+Google      $0.42     8,103 input  /    718 output tokens
+                                          TOTAL  $8.49
+
+3 cycle(s) need your attention. Run `relay queue`.</pre>
+<div class="code-caption">relay status · what awaits the operator at a glance</div>
+
+    <h5>tmux pane recipe (optional)</h5>
+
+<pre class="codeblock">$ tmux new-session -d -s paxiom
+$ tmux send-keys -t paxiom 'cd ~/projects/paxiom' C-m
+$ tmux split-window -h -t paxiom 'watch -n 10 relay status'
+$ tmux split-window -v -t paxiom:0.1 'tail -f .relay/logs/$(date +%Y-%m-%d).log'
+$ tmux attach -t paxiom</pre>
+<div class="code-caption">Three-pane layout · work · status · tail</div>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     M-204 · STATE MACHINE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet M-204"></div>
+
+<div id="m-204">
+<div class="section-mark">M-204 · Component</div>
+<h2 class="section-title">State machine <em>&amp; persistence.</em></h2>
+<p class="section-strap">
+Cycle states explicit, transitions journaled, crashes recoverable.
+Multiple cycles in flight without conflict.
+</p>
+
+<div class="component-sheet">
+  <div class="component-header">
+    <div class="component-num">04</div>
+    <div class="component-name">State Machine &amp; Parallel Cycles</div>
+    <div class="component-tag">JSON state · git branches · file locks</div>
+  </div>
+  <div class="component-body">
+
+    <h5>Cycle states</h5>
+
+    <ul>
+      <li><code>INITIALIZED</code> — UUID created, branch checked out, ready to dispatch.</li>
+      <li><code>AUDIT_RUNNING</code> — API calls in flight to audit models.</li>
+      <li><code>AUDIT_COMPLETE</code> — both audits captured, refinement (if enabled) pending or done.</li>
+      <li><code>AWAITING_REVIEW</code> — operator gate. Notification fired.</li>
+      <li><code>PLAN_APPROVED</code> — operator ran <code>continue</code>.</li>
+      <li><code>REVISION_RUNNING</code> — coding model has the revision prompt.</li>
+      <li><code>TESTING</code> — revision applied, tests executing.</li>
+      <li><code>AWAITING_ACCEPTANCE</code> — operator gate. Notification fired.</li>
+      <li><code>COMPLETE</code> — operator accepted. Branch ready for merge.</li>
+      <li><code>ITERATING</code> — operator chose to re-audit. Loops back to AUDIT_RUNNING.</li>
+      <li><code>ABORTED</code> — operator killed cycle. State preserved for review.</li>
+    </ul>
+
+    <h5>State file</h5>
+
+<pre class="codeblock"><span class="comment">// .relay/cycles/&lt;uuid&gt;/state.json</span>
+{
+  "uuid": "bf3c91a4-...",
+  "service_id": "A-202",
+  "state": "AWAITING_REVIEW",
+  "branch": "feat/svc-202-bf3c91",
+  "iteration": 1,
+  "started_at": "2026-04-29T22:14:03Z",
+  "transitions": [
+    { "to": "AUDIT_RUNNING",   "at": "..." },
+    { "to": "AUDIT_COMPLETE",  "at": "..." },
+    { "to": "AWAITING_REVIEW", "at": "..." }
+  ],
+  "config_snapshot": { ... },
+  "tokens": { "anthropic_in": 8421, ... },
+  "cost_usd": 0.34
+}</pre>
+<div class="code-caption">One file per cycle · journaled · grep-able</div>
+
+    <h5>Crash recovery</h5>
+
+    <p>
+      If the orchestrator dies mid-cycle (network fail, system reboot,
+      <code>Ctrl+C</code>), state is preserved. <code>relay status</code>
+      shows the last known state. <code>relay resume &lt;uuid&gt;</code>
+      picks up from the last persisted transition. API calls that were
+      in flight at crash time may have completed server-side; the orchestrator
+      checks for cached results before re-issuing.
+    </p>
+
+    <h5>Parallel cycle coordination</h5>
+
+    <ul>
+      <li><strong>Branch isolation.</strong> Each cycle owns a unique branch.
+      Concurrent cycles on different services don't conflict.</li>
+      <li><strong>Per-service lock file.</strong> A file at
+      <code>.relay/locks/&lt;service-id&gt;</code> prevents two cycles
+      against the same service from running simultaneously. Operator can
+      override with <code>--force</code> if they understand the risk.</li>
+      <li><strong>Shared rate limiting.</strong> A token bucket per provider
+      shared across all cycles. Prevents one cycle from starving another
+      for API quota.</li>
+      <li><strong>Cost tracking aggregated.</strong> Per-cycle costs and
+      session totals computed from token usage. <code>relay cost</code>
+      surfaces both views.</li>
+    </ul>
+
+    <h5>Git integration</h5>
+
+    <p>
+      Each state transition with a code change produces a commit on the
+      cycle branch. Commit messages follow a structured format:
+    </p>
+
+<pre class="codeblock">[&lt;cycle-uuid&gt;] &lt;state-transition&gt;: &lt;summary&gt;
+
+Cycle:    bf3c91a4
+Service:  A-202 (Sync Committee Verification)
+Iteration: 1
+State:    REVISION_COMPLETE
+
+Plan items addressed:
+  - Critical #1: Add bounds check on signature aggregation
+  - Significant #3: Refactor witness loading for Load Network path
+  - Ambiguity resolved: Decision was &lt;X&gt;, see plan v2
+
+Models:
+  audit_a:  claude-opus-4-7
+  audit_b:  gpt-5
+  refine:   gemini-2.5-pro
+  revise:   claude-opus-4-7
+
+Tokens:   in 24,213  out 8,047
+Cost:     $0.71</pre>
+<div class="code-caption">Cycle branch history · self-documenting · auditable</div>
+
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     M-300 · BUILD SEQUENCE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet M-300"></div>
+
+<div id="m-300">
+<div class="section-mark">M-300 · Build Sequence</div>
+<h2 class="section-title">Ship in days, <em>not weeks.</em></h2>
+<p class="section-strap">
+The relay is built incrementally alongside Phase 1. Each gate produces
+a working tool that's better than the previous gate but useful at every
+step. No "build everything before using anything."
+</p>
+
+<div class="prose">
+
+<h3>Gate 0 — Skeleton</h3>
+
+<p>
+Project structure exists. <code>relay.py</code> imports successfully. Three
+prompt templates exist. One service config exists. <code>relay --help</code>
+prints subcommands. No actual API calls yet.
+</p>
+
+<p><em>Estimated:</em> 2–4 hours. <em>Output:</em> Tool that can be invoked,
+even if it doesn't do anything yet.</p>
+
+<h3>Gate 1 — Single-model audit</h3>
+
+<p>
+<code>relay start &lt;service&gt;</code> sends code to one model with the
+audit prompt and writes output to <code>.relay/cycles/&lt;uuid&gt;/audits/</code>.
+Operator can read the output. No revision step yet.
+</p>
+
+<p><em>Estimated:</em> 4–6 hours. <em>Output:</em> The first thing that
+saves real copy-paste time. Already useful.</p>
+
+<h3>Gate 2 — Two-model parallel audit + review interface</h3>
+
+<p>
+Both audits run in parallel via <code>asyncio.gather</code>. Notification
+fires on completion. <code>relay review &lt;uuid&gt;</code> opens
+<code>$EDITOR</code> on a consolidated plan file.
+</p>
+
+<p><em>Estimated:</em> 4–8 hours. <em>Output:</em> The audit-and-plan
+loop fully automated. Major friction reduction.</p>
+
+<h3>Gate 3 — Revision + git integration</h3>
+
+<p>
+<code>relay continue</code> dispatches the revision prompt. Result applied
+as commit on the cycle branch. <code>relay accept</code> merges (or marks
+ready). Iteration loop closes.
+</p>
+
+<p><em>Estimated:</em> 6–10 hours. <em>Output:</em> Full single-cycle
+end-to-end. Tool is feature-complete for sequential use.</p>
+
+<h3>Gate 4 — Test runner integration</h3>
+
+<p>
+After revision, run <code>test_command</code> from service config. Capture
+output. Surface failures in the acceptance prompt. Optionally auto-iterate
+on test failures up to <code>max_iterations</code>.
+</p>
+
+<p><em>Estimated:</em> 3–5 hours. <em>Output:</em> Reduces the manual
+test-then-decide step.</p>
+
+<h3>Gate 5 — Parallel cycle support + Gemini refinement</h3>
+
+<p>
+Multiple cycles on different services can run simultaneously. Lock files
+prevent same-service conflicts. <code>relay queue</code> shows what awaits
+review across all cycles. Gemini refinement step optional and toggleable.
+</p>
+
+<p><em>Estimated:</em> 4–6 hours. <em>Output:</em> Multi-service throughput.
+This is where the time savings really compound.</p>
+
+<h3>Gate 6 — Cost tracking + rate limiting</h3>
+
+<p>
+Per-provider cost tracking. Rate limit handling with backoff. Daily and
+session cost commands. Alerts if any single cycle blows past a configurable
+cost threshold.
+</p>
+
+<p><em>Estimated:</em> 2–4 hours. <em>Output:</em> Production hygiene.</p>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">DECISION POINT</span>
+    <span>When to stop building and use</span>
+    <span class="callout-id">M-300 / W.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Gate 2 is when the tool becomes net-positive on time. After Gate 2,
+      every additional gate is an optimization rather than a requirement.
+      If Phase 1 work is being delayed by relay-tool work, stop at the
+      latest gate that's stable and use the tool while building Phase 1
+      services. Return to relay improvement when specific friction earns it.
+    </p>
+    <p>
+      <strong>Do not finish all six gates before starting Service 2.</strong>
+      Gate 1 ships the same week Service 2 work starts. Gate 2 ships
+      mid-Service-2. Gate 3+ ships during the Service 2 → Service 4 transition.
+    </p>
+  </div>
+</div>
+
+<h3>Total time investment</h3>
+
+<p>
+Gates 0–6 sum to roughly 25–43 hours. At evening pace (2–3 productive hours
+per evening) that's 9–18 evenings. At weekend pace (8–10 hours per Saturday)
+that's 3–4 weekends. Realistic: built incrementally over the first month
+of Phase 1, never as a discrete project.
+</p>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     M-310 · RISK REGISTER
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet M-310"></div>
+
+<div id="m-310">
+<div class="section-mark">M-310 · Risk Register</div>
+<h2 class="section-title">What goes <em>wrong with the tool.</em></h2>
+<p class="section-strap">
+Failure modes specific to the relay itself. Distinct from Phase 1 risks.
+</p>
+
+<div class="prose">
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Operational</span>
+    <span>Tool becomes the project</span>
+    <span class="callout-id">M-310 / R.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Hours flow into relay improvements that don't translate to Phase 1
+      acceleration. The tool is interesting; Phase 1 work has higher
+      activation energy. Time leaks toward the easier task.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Gate-based discipline (M-300). Stop at
+      the latest stable gate when Phase 1 work needs attention. Treat
+      relay improvement as background work, not foreground.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Technical</span>
+    <span>Models produce non-conforming output</span>
+    <span class="callout-id">M-310 / R.02</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Audit prompt requires specific section headers. A model occasionally
+      omits a section or uses a different header format. Parsing fails.
+      Cycle stalls.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> One automatic retry with a format
+      reminder appended. After second failure, surface raw output to
+      operator with a flag. Operator decides whether to manually parse
+      or abort. Track non-conformance rate in logs to identify which
+      model needs prompt tuning.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Cost</span>
+    <span>Token costs escalate</span>
+    <span class="callout-id">M-310 / R.03</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Parallel cycles, multiple iterations, expanding reference materials
+      drive token usage above expectations. $50/day becomes $200/day
+      becomes the dominant Phase 1 expense.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Cost tracking per cycle from Gate 6.
+      Configurable per-cycle and per-day caps. Alert at 50% and abort at
+      100% by default. Reference materials trimmed: only what's necessary
+      for the specific service, not the entire blueprint.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Drift</span>
+    <span>Confident-wrong patterns get reinforced</span>
+    <span class="callout-id">M-310 / R.04</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      A subtle wrong assumption enters the code. Audit doesn't flag it
+      because the assumption is plausible. Refinement doesn't flag it
+      because it wasn't in either audit. Revision preserves it. Subsequent
+      cycles deepen it. Operator skims and accepts.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> Operator review at plan finalization
+      and final acceptance is non-negotiable (M-100 / W.01). When skimming
+      starts to feel automatic, slow down and read carefully — that's
+      exactly when drift is most likely.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Stale References</span>
+    <span>Reference materials diverge from current truth</span>
+    <span class="callout-id">M-310 / R.05</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      The blueprint sheet for a service was updated yesterday but the
+      relay's reference path still points to the old version. Audits run
+      against stale spec. Code drifts from current intent.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> References live in the same git repo
+      as the code. The relay reads HEAD, not a snapshot. When the blueprint
+      changes, commit it before running the next cycle. Cycle metadata
+      records the commit SHA the references came from.
+    </p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">Risk · Auth</span>
+    <span>API credential rotation breaks the script</span>
+    <span class="callout-id">M-310 / R.06</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      An API key expires or gets rotated. Cycle dies mid-run with auth
+      error. State preserved but no progress.
+    </p>
+    <p>
+      <strong>Mitigation:</strong> <code>relay doctor</code> subcommand
+      checks all configured providers for valid auth before any cycle
+      starts. Run as part of <code>relay start</code> precondition.
+      Failure surfaces immediately rather than mid-cycle.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     M-900 · GENERAL NOTES
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet M-900"></div>
+
+<div id="m-900">
+<div class="section-mark">M-900 · General Notes</div>
+<h2 class="section-title">Conventions <em>&amp; related documents.</em></h2>
+
+<div class="prose">
+
+<h3>Sheet numbering</h3>
+
+<p>
+This set is the M-series — Mechanical / Operational. Companion to the
+A-series Phase 1 blueprint. Future sets reserved by the master plan:
+S-series (Structural / security audit findings), E-series (Electrical /
+signing key management), L-series (Landscape / public-facing surfaces).
+</p>
+
+<h3>Naming</h3>
+
+<p>
+The tool's internal name is <em>relay</em>. The CLI binary is
+<code>relay</code>. The package is <code>paxiom-relay</code>. No external
+branding. This is internal infrastructure, not a product.
+</p>
+
+<h3>Related documents</h3>
+
+<p>
+<strong>A-series Phase 1 Blueprint</strong> — what the relay accelerates.
+Each A-2## elevation lists the references the relay needs for that service.
+</p>
+
+<p>
+<strong>Build journal</strong> — narrative record. Relay-related entries
+will be marked with <code>[relay]</code> tag for filtering.
+</p>
+
+<p>
+<strong>This document (M-series Rev. A)</strong> — the relay blueprint.
+Subsequent revisions will be issued as the relay's capability grows. Rev. B
+expected at Gate 3 (revision step working end-to-end).
+</p>
+
+<h3>Revision log</h3>
+
+<p>
+<strong>Rev. A — 2026.04.29.</strong> Initial issue. Six gates planned.
+Three prompt templates drafted. Filesystem layout specified. Risk register
+with six entries. WSL terminal as the notification surface.
+</p>
+
+<h3>One last thing</h3>
+
+<p>
+The relay is leverage. Used well, it removes mechanical friction from a
+workflow that already produces good code. Used poorly, it removes the
+operator from the decision loop and produces confidently-wrong code at
+scale. The structural defense — two non-negotiable operator gates per cycle —
+is what keeps the leverage from cutting the wrong way.
+</p>
+
+<p>
+<em>Build the engine first. The moats come later. The tools come from
+doing the work.</em>
+</p>
+
+</div>
+</div>
+
+</div>
+
+<div class="sheet-footer">
+  <div>Paxiom · paxiom.org</div>
+  <div class="center">Mechanical · Rev. A · 2026.04.29</div>
+  <div class="right">Sheet Set M-000 / 11</div>
+</div>
+
+</div>
+
+</body>
+</html>
