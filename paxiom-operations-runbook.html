@@ -990,6 +990,14 @@ calmly so it can be followed under pressure.
   <div class="toc-page"><a href="#o-205">O-205</a></div>
 </div>
 
+<div class="toc-section-label">Verification Primitives</div>
+
+<div class="toc-row">
+  <div class="toc-num">O-700</div>
+  <div class="toc-title">BLS Sync Committee Primitive<em>cryptographic core of Service 02</em></div>
+  <div class="toc-page"><a href="#o-700">O-700</a></div>
+</div>
+
 <div class="toc-section-label">Back Matter</div>
 
 <div class="toc-row">
@@ -2450,6 +2458,244 @@ more than the format.
 </div>
 
 <!-- ═════════════════════════════════════════════
+     O-700 · BLS VERIFICATION PRIMITIVE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet O-700"></div>
+
+<div id="o-700">
+<div class="section-mark">O-700 · Verification Primitive</div>
+<h2 class="section-title">BLS Sync Committee <em>Primitive.</em></h2>
+<p class="section-strap">
+The cryptographic primitive at the bottom of Service 02 — Ethereum
+sync committee signature verification. One C-FFI function exported from
+a small Rust crate, compiled to either a native cdylib or a wasm32 module
+for the HyperBEAM device. Verifies one thing well; the layers above it
+do the rest.
+</p>
+
+<div class="prose">
+
+<h3>Artifact location</h3>
+
+<p>
+Canonical source lives in the private repository
+<code>k-luecke/bls-verifier</code> on GitHub. Sources only — the
+<code>libbls_verifier.so</code> cdylib and the <code>bls-test</code>
+integration binary are reproducible from those sources via
+<code>cargo build --release</code> and are deliberately not committed.
+Add <code>target/</code>, <code>Cargo.lock</code>, <code>*.so</code>,
+and <code>*.dylib</code> to <code>.gitignore</code>.
+</p>
+
+<p>
+The repository is structured as a Cargo workspace with three members:
+<code>bls-verifier</code> (the cdylib primitive — this sheet's subject),
+<code>bls-test</code> (a tokio binary that fetches a current sync
+committee from Lodestar mainnet and verifies it end-to-end), and
+<code>bls-verify-cli</code> (a stdin-JSON wrapper for ad-hoc verification;
+its JSON schema is throwaway and will be replaced by the HyperBEAM
+device interface).
+</p>
+
+<div class="callout note">
+  <div class="callout-header">
+    <span class="callout-tag">INTERIM STATE</span>
+    <span>Repository not yet created (as of 2026-05-01)</span>
+    <span class="callout-id">O-700 / N.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      Until <code>k-luecke/bls-verifier</code> exists, the canonical
+      source is the tarball <code>bls-verifier-scaffold.tar.gz</code>
+      produced by the 2026-05-01 scaffold session. The tarball was
+      created in an ephemeral sandbox and must be pulled to durable
+      storage before the sandbox is reclaimed. Pull destination:
+      operator's laptop, then push to a freshly-created
+      <code>k-luecke/bls-verifier</code> private repo. Update this sheet
+      to remove the interim notice once that repo exists.
+    </p>
+  </div>
+</div>
+
+<h3>What the primitive does</h3>
+
+<p>
+A single C-ABI function, <code>verify_sync_committee</code>, takes a flat
+buffer of 48-byte participating BLS pubkeys, a 96-byte aggregate
+signature, and a 32-byte signing root. It parses each pubkey, aggregates
+them with subgroup checking, and verifies the signature against the
+aggregate using the BLS POP DST. Return codes are documented inline in
+<code>bls-verifier/src/lib.rs</code> and reproduced below as the
+human-readable reference.
+</p>
+
+<div class="callout spec">
+  <div class="callout-header">
+    <span class="callout-tag">REFERENCE</span>
+    <span>verify_sync_committee — return codes</span>
+    <span class="callout-id">O-700 / R.01</span>
+  </div>
+  <div class="callout-body">
+    <p><strong>Inputs.</strong></p>
+    <ul>
+      <li><code>pubkeys_ptr / pubkeys_len</code> — concatenated 48-byte participating pubkeys</li>
+      <li><code>sig_ptr</code> — 96-byte aggregate signature</li>
+      <li><code>signing_root_ptr</code> — 32-byte signing root (caller computes domain + root)</li>
+    </ul>
+    <p><strong>Caller is responsible for.</strong></p>
+    <ul>
+      <li>Filtering pubkeys by sync committee participation bits</li>
+      <li>Computing the fork domain (<code>fork_version</code> is fork-dependent — fetch dynamically)</li>
+      <li>Computing the signing root: <code>sha256(parent_root || domain)</code></li>
+    </ul>
+    <p><strong>Return codes.</strong></p>
+    <ul>
+      <li><code>&nbsp;1</code> &nbsp;signature verified</li>
+      <li><code>&nbsp;0</code> &nbsp;signature invalid</li>
+      <li><code>-1</code> &nbsp;signature parse failed (not a valid 96-byte G2 point)</li>
+      <li><code>-2</code> &nbsp;no pubkeys provided (<code>pubkeys_len == 0</code>)</li>
+      <li><code>-3</code> &nbsp;aggregation failed (subgroup check or internal blst error)</li>
+      <li><code>-4</code> &nbsp;malformed pubkey chunk (any 48-byte slice that is not a valid G1 point)</li>
+    </ul>
+    <p>
+      Single source of truth is the doc-comment block in
+      <code>lib.rs</code>. If the codes ever change, both the source
+      and this sheet must be updated together.
+    </p>
+  </div>
+</div>
+
+<h3>What this primitive does <em>not</em> do</h3>
+
+<div class="callout warn">
+  <div class="callout-header">
+    <span class="callout-tag">CRITICAL</span>
+    <span>The primitive is not a complete sync committee verifier</span>
+    <span class="callout-id">O-700 / W.01</span>
+  </div>
+  <div class="callout-body">
+    <p>
+      <code>verify_sync_committee</code> verifies one thing — that an
+      aggregated BLS signature over a given signing root is valid against
+      an aggregated pubkey. It does not, by itself, constitute a sync
+      committee verifier. A future engineer or future-Claude looking at
+      <code>lib.rs</code> in isolation may mistake it for the whole story
+      and wire it into production with assumptions the primitive does
+      not satisfy. The primitive specifically does <strong>not</strong>:
+    </p>
+    <ul>
+      <li>Filter participating pubkeys from the 512-validator sync committee using the participation bitfield</li>
+      <li>Compute the fork domain from <code>fork_version</code> and <code>genesis_validators_root</code></li>
+      <li>Compute the signing root from <code>parent_root</code> and the domain</li>
+      <li>Validate that the supplied pubkey set has length 512 (or any other count)</li>
+      <li>Track fork epoch transitions or fetch fork versions from the beacon API</li>
+      <li>Handle network I/O of any kind — it is a pure function over byte buffers</li>
+    </ul>
+    <p>
+      The HyperBEAM device that wraps this primitive does all of the
+      above. Calling the primitive directly without a wrapper that
+      supplies these preconditions will produce signatures that verify
+      successfully against the wrong inputs — exactly the failure mode
+      this runbook entry exists to prevent.
+    </p>
+  </div>
+</div>
+
+<h3>Failure modes</h3>
+
+<p>
+Three categories of failure surface in different ways and require
+different remediations. Distinguishing them at first observation saves
+time during incident response.
+</p>
+
+<h4>Sandbox-class failures</h4>
+
+<p>
+Network outbound to <code>lodestar-mainnet.chainsafe.io</code> denied at
+the host policy layer. Surfaces as a JSON decode error at the very first
+beacon API call — typically
+<code>reqwest::Error { kind: Decode, "expected value", line 1 column 1 }</code>
+because the response body is plain-text "Host not in allowlist" rather
+than JSON. Direct <code>curl -i</code> against the endpoint confirms
+the deny by returning <code>HTTP/2 403</code> with header
+<code>x-deny-reason: host_not_allowed</code>.
+</p>
+
+<p>
+Remediation is environmental, not code. Run the verifier in an
+environment with mainnet beacon access (operator laptop, RunPod, or
+HyperBEAM node). Not a code defect; do not file an incident.
+</p>
+
+<h4>Beacon endpoint outage</h4>
+
+<p>
+Lodestar (or whichever beacon endpoint is in use) goes down, returns
+5xx, gets rate-limited, returns malformed JSON, or times out under load.
+Symptomatically similar to sandbox-class failures from the caller's
+perspective — JSON decode failures, connection resets — but the
+remediation is different: failover to an alternate beacon endpoint
+rather than relocating the runtime.
+</p>
+
+<p>
+The integration test <code>bls-test</code> currently hardcodes a single
+Chainsafe endpoint, which is acceptable for a scaffold. Production
+HyperBEAM-device implementations <strong>must</strong> support beacon
+endpoint failover with at least two and ideally three independent
+providers. A sync committee verifier that depends on a single beacon
+endpoint inherits that endpoint's availability as a hard dependency.
+</p>
+
+<h4>Fork-boundary regression</h4>
+
+<p>
+At the next mainnet fork (Glamsterdam, currently targeted Q2/Q3 2026),
+the <code>current_version</code> value returned by the beacon API
+<code>/eth/v1/beacon/states/{slot}/fork</code> endpoint will change from
+the present <code>0x06000000</code> (Fulu, active since 2025-12-03) to
+the next allocated value. As long as the verifier fetches fork version
+dynamically — which the post-fix <code>bls-test</code> does and which
+the production HyperBEAM device <strong>must</strong> — this is not a
+regression. The signing root will recompute correctly with the new
+domain and verification will continue to succeed.
+</p>
+
+<p>
+A future operator observing the fork version value change in production
+logs may mistake this for a bug. It is not. The primitive itself is
+fork-version-agnostic; the wrapper supplies the value. Verify that the
+wrapper is fetching the value dynamically (rather than hardcoding)
+before treating any fork-boundary value change as an incident.
+</p>
+
+<h3>Next layer up</h3>
+
+<p>
+The HyperBEAM device that wraps this primitive is the production
+verifier and is the proper subject of Service 02 in the A-series
+blueprint. The device handles the participation-bit filtering, domain
+computation, signing-root computation, fork-version fetching, beacon
+endpoint failover, AO compliance hook, and x402 facilitator integration.
+It is the layer that becomes a public service; the primitive in
+<code>k-luecke/bls-verifier</code> is one component of it.
+</p>
+
+<p>
+When the HyperBEAM device exists, it should have its own runbook entry
+in this series — likely <code>O-701</code> — documenting the
+device-level operations (build, deploy, monitor) and pointing back to
+this sheet for the primitive contract. Subsequent verification
+primitives (audit relay signatures, identity signing keys) extend the
+same series: <code>O-720</code>, <code>O-730</code>, and so on.
+</p>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
      O-900 · POST-INCIDENT DISCIPLINE
      ═════════════════════════════════════════════ -->
 
@@ -2593,7 +2839,7 @@ keeps both running.</em>
 <div class="sheet-footer">
   <div>Paxiom · paxiom.org</div>
   <div class="center">Operations · Rev. A · 2026.04.29</div>
-  <div class="right">Sheet Set O-000 / 16</div>
+  <div class="right">Sheet Set O-000 / 17</div>
 </div>
 
 </div>
