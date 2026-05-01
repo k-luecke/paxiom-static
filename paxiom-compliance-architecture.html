@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom · Compliance Architecture · CA.01 Verifiable Records</title>
+<meta name="description" content="Verifiable Records Architecture — what is recorded, where, and how to verify it independently of any Paxiom-operated infrastructure.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F1E8;
+  --paper-dark: #EDE6D3;
+  --ink: #1A2332;
+  --ink-mid: #3A4555;
+  --ink-faint: #6B7280;
+  --rule: #1A2332;
+  --rule-faint: #B8AE96;
+  --blue: #1E3A5F;
+  --blue-light: #4A6B8A;
+  --red: #8B2E1F;
+  --amber: #B8860B;
+  --green: #2D6A4F;
+  --grid: rgba(26, 35, 50, 0.04);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: 'Neutraface Text', system-ui, -apple-system, sans-serif;
+  font-size: 14px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+.sheet { max-width: 1080px; margin: 40px auto; background: var(--paper); border: 2px solid var(--ink); position: relative; }
+@media (max-width: 900px) { .sheet { margin: 16px 8px; border-width: 1px; } }
+.sheet-header {
+  display: grid; grid-template-columns: auto 1fr auto;
+  border-bottom: 2px solid var(--ink);
+  padding: 16px 24px; align-items: end; gap: 24px;
+}
+.sheet-mark { width: 44px; height: 44px; color: var(--ink); display: block; flex-shrink: 0; }
+.sheet-mark-link { display: block; line-height: 0; transition: opacity 0.15s ease; }
+.sheet-mark-link:hover { opacity: 0.65; }
+.sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
+.sheet-project { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.sheet-title { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
+.sheet-subtitle { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
+.sheet-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 16px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.04em; text-align: right; }
+.sheet-meta dt { color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
+.sheet-meta dd { color: var(--ink); font-weight: 500; }
+.sheet-body { padding: 56px 72px; }
+@media (max-width: 700px) {
+  .sheet-body { padding: 32px 24px; }
+  .sheet-header { grid-template-columns: auto 1fr; }
+  .sheet-meta { grid-column: 1 / -1; text-align: left; padding-top: 8px; border-top: 1px solid var(--rule-faint); }
+}
+.cover-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
+.cover-mark::after { content: ''; flex: 1; height: 1px; background: var(--rule-faint); }
+.cover-title { font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: clamp(48px, 7.5vw, 88px); line-height: 0.96; letter-spacing: -0.025em; color: var(--ink); margin-bottom: 28px; }
+.cover-title em { font-style: italic; font-weight: 400; color: var(--ink-mid); }
+.cover-strap { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 22px; line-height: 1.45; color: var(--ink-mid); max-width: 60ch; margin-bottom: 64px; }
+.cover-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 56px; }
+@media (max-width: 700px) { .cover-grid { grid-template-columns: 1fr; } }
+.cover-cell { padding: 20px 24px; border-right: 1px solid var(--rule-faint); border-bottom: 1px solid var(--rule-faint); }
+.cover-cell:nth-child(2n) { border-right: none; }
+.cover-cell:nth-last-child(-n+2) { border-bottom: none; }
+@media (max-width: 700px) { .cover-cell { border-right: none; border-bottom: 1px solid var(--rule-faint); } .cover-cell:last-child { border-bottom: none; } }
+.cover-cell-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+.cover-cell-value { font-family: 'Times New Roman', Times, serif; font-size: 17px; color: var(--ink); line-height: 1.35; }
+.cover-cell-value em { font-style: italic; color: var(--ink-mid); }
+.toc-section-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-top: 36px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-faint); }
+.toc-section-label:first-child { margin-top: 0; }
+.toc-row { display: grid; grid-template-columns: 80px 1fr auto; gap: 24px; padding: 10px 0; border-bottom: 1px dotted var(--rule-faint); align-items: baseline; }
+.toc-row:last-of-type { border-bottom: none; }
+.toc-num { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; font-weight: 500; color: var(--blue); letter-spacing: 0.04em; }
+.toc-title { font-family: 'Times New Roman', Times, serif; font-size: 16px; color: var(--ink); }
+.toc-title em { font-style: italic; color: var(--ink-mid); font-size: 14px; display: block; margin-top: 2px; }
+.toc-page { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--ink-faint); letter-spacing: 0.04em; }
+.section-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.section-title { font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: 40px; line-height: 1.05; letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px; }
+.section-title em { font-style: italic; color: var(--ink-mid); }
+.section-strap { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 18px; color: var(--ink-mid); margin-bottom: 44px; max-width: 60ch; line-height: 1.5; }
+.prose p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.65; margin-bottom: 18px; max-width: 68ch; color: var(--ink); }
+.prose p.lead { font-size: 19px; line-height: 1.55; color: var(--ink-mid); font-style: italic; margin-bottom: 28px; }
+.prose h3 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 22px; margin-top: 40px; margin-bottom: 14px; color: var(--ink); letter-spacing: -0.005em; }
+.prose h4 { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); margin-top: 32px; margin-bottom: 10px; }
+.prose strong { font-weight: 600; color: var(--ink); }
+.prose em { font-style: italic; color: var(--ink-mid); }
+.prose code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); word-break: break-all; }
+.prose ul, .prose ol { margin: 12px 0 22px 28px; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.65; max-width: 68ch; }
+.prose li { margin-bottom: 8px; }
+.callout { border: 1px solid var(--ink); margin: 32px 0; background: var(--paper); }
+.callout-header { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; padding: 9px 18px; background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; align-items: center; }
+.callout-tag { font-weight: 600; }
+.callout-id { color: var(--paper-dark); opacity: 0.7; }
+.callout-body { padding: 20px 24px; }
+.callout-body p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; color: var(--ink); margin-bottom: 12px; }
+.callout-body p:last-child { margin-bottom: 0; }
+.callout-body ul { margin: 10px 0 6px 22px; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; }
+.callout-body li { margin-bottom: 6px; }
+.callout-body code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); }
+.callout.note { border-style: dashed; border-color: var(--ink-faint); }
+.callout.note .callout-header { background: transparent; color: var(--ink-faint); border-bottom: 1px dashed var(--ink-faint); }
+.callout.note .callout-id { color: var(--ink-faint); }
+.callout.proves { border-color: var(--blue); }
+.callout.proves .callout-header { background: var(--blue); }
+.callout.disclaim { border-style: dashed; border-color: var(--red); }
+.callout.disclaim .callout-header { background: transparent; color: var(--red); border-bottom: 1px dashed var(--red); }
+.callout.disclaim .callout-id { color: var(--red); }
+.steps { list-style: none; margin: 28px 0; padding: 0; counter-reset: step; }
+.steps li { position: relative; padding: 18px 0 18px 64px; border-bottom: 1px solid var(--rule-faint); counter-increment: step; }
+.steps li:last-child { border-bottom: none; }
+.steps li::before {
+  content: counter(step, decimal-leading-zero);
+  position: absolute;
+  left: 0; top: 19px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 13px;
+  color: var(--blue);
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+.steps .step-name {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+}
+.steps p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; color: var(--ink); margin: 0; max-width: 68ch; }
+.schedule { margin: 24px 0; border: 1.5px solid var(--ink); width: 100%; border-collapse: collapse; }
+.schedule th { background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; text-align: left; padding: 10px 12px; font-weight: 500; }
+.schedule td { padding: 12px; border-bottom: 1px solid var(--rule-faint); border-right: 1px solid var(--rule-faint); font-family: 'Times New Roman', Times, serif; font-size: 14px; vertical-align: top; color: var(--ink); }
+.schedule td:last-child { border-right: none; }
+.schedule tr:last-child td { border-bottom: none; }
+.schedule .addr { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; word-break: break-all; }
+.schedule .addr a { color: var(--blue); text-decoration: none; }
+.schedule .addr a:hover { color: var(--red); text-decoration: underline; }
+.schedule .status { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--green); white-space: nowrap; letter-spacing: 0.1em; text-transform: uppercase; }
+.schedule .net { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--ink-mid); white-space: nowrap; }
+.diagram { background: var(--paper-dark); border: 1.5px solid var(--ink); padding: 24px; margin: 28px 0 12px; }
+.diagram svg { display: block; width: 100%; height: auto; max-width: 720px; margin: 0 auto; }
+.diagram-caption { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 8px 0 28px; padding-top: 8px; border-top: 1px solid var(--rule-faint); }
+.diagram-caption .fig-num { color: var(--blue); margin-right: 8px; font-weight: 500; }
+.xrefs { list-style: none; margin: 12px 0 0; padding: 0; }
+.xrefs li { display: grid; grid-template-columns: 130px 1fr auto; gap: 18px; padding: 12px 0; border-bottom: 1px dotted var(--rule-faint); align-items: baseline; }
+.xrefs li:last-child { border-bottom: none; }
+.xrefs .ref { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--blue); font-weight: 500; letter-spacing: 0.04em; }
+.xrefs .ref-label { font-family: 'Times New Roman', Times, serif; font-size: 15px; color: var(--ink); font-style: italic; }
+.xrefs .planned-tag { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); }
+.xrefs a { color: var(--blue); text-decoration: none; }
+.xrefs a:hover { color: var(--red); text-decoration: underline; }
+.page-break { border-top: 2px solid var(--ink); margin: 96px -72px 64px; position: relative; }
+@media (max-width: 700px) { .page-break { margin: 56px -24px 40px; } }
+.page-break::before { content: attr(data-sheet); position: absolute; top: -10px; left: 72px; background: var(--paper); padding: 0 12px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.sheet-footer { border-top: 1.5px solid var(--ink); padding: 14px 24px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); align-items: center; }
+.sheet-footer .center { text-align: center; }
+.sheet-footer .right { text-align: right; color: var(--ink); font-weight: 600; }
+a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--red); }
+@media print { body { background: white; } .sheet { border: 2px solid black; } .page-break { page-break-before: always; } }
+
+.paxiom-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(245, 241, 232, 0.88);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule-faint);
+}
+.paxiom-bar-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 10px 18px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.paxiom-bar-mark {
+  display: inline-flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--ink);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  transition: color 0.15s ease;
+}
+.paxiom-bar-mark svg { width: 22px; height: 22px; display: block; }
+.paxiom-bar-mark:hover { color: var(--blue); }
+.paxiom-bar-nav {
+  display: flex; gap: 18px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; transition: color 0.15s ease; padding-bottom: 2px; }
+.paxiom-bar-nav a:hover { color: var(--ink); }
+.paxiom-bar-nav a.active { color: var(--ink); border-bottom: 1.5px solid var(--ink); }
+@media (max-width: 600px) {
+  .paxiom-bar-inner { padding: 8px 14px; }
+  .paxiom-bar-mark span { display: none; }
+  .paxiom-bar-nav { gap: 14px; font-size: 9.5px; letter-spacing: 0.12em; }
+}
+</style>
+</head>
+<body>
+<div class="paxiom-bar">
+  <div class="paxiom-bar-inner">
+    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
+      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg>
+      <span>Paxiom</span>
+    </a>
+    <nav class="paxiom-bar-nav" aria-label="Primary">
+      <a href="/docs.html">Docs</a>
+      <a href="/services.html">Services</a>
+      <a href="/status.html">Status</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </div>
+</div>
+
+<div class="sheet">
+
+<div class="sheet-header">
+  <a class="sheet-mark-link" href="/" aria-label="Paxiom — home"><svg class="sheet-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50,14 L76,64 L24,64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg></a>
+  <div class="sheet-title-block">
+    <div class="sheet-project">Paxiom · Compliance Architecture · Drawing Set</div>
+    <div class="sheet-title">Verifiable Records Architecture</div>
+    <div class="sheet-subtitle">What is recorded, where, and how to verify it independently of any Paxiom-operated infrastructure.</div>
+  </div>
+  <dl class="sheet-meta">
+    <dt>Project No.</dt><dd>PXM-001-CA</dd>
+    <dt>Issue</dt><dd>CA.01 / Rev. A</dd>
+    <dt>Date</dt><dd>2026.05.01</dd>
+    <dt>Drawn By</dt><dd>K. Luecke</dd>
+  </dl>
+</div>
+
+<div class="sheet-body">
+
+<!-- ═════════════════════════════════════════════
+     CA-000 · COVER
+     ═════════════════════════════════════════════ -->
+
+<div class="cover-mark">Sheet CA-000 · Cover &amp; Index</div>
+
+<h1 class="cover-title">Audit trail<br><em>as a byproduct.</em></h1>
+
+<p class="cover-strap">
+Paxiom emits permanent, public records of every coordinated protocol
+action. The architecture produces an audit trail as a byproduct of
+cross-chain coordination, not as a separate compliance overlay. This
+document specifies what is recorded, where, and how to verify it
+independently.
+</p>
+
+<div class="cover-grid">
+  <div class="cover-cell">
+    <div class="cover-cell-label">Document Type</div>
+    <div class="cover-cell-value">Architecture Specification<em>recording surface, not build spec</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Audience</div>
+    <div class="cover-cell-value">Counterparties &amp; auditors<em>integrating protocols, operators</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Status</div>
+    <div class="cover-cell-value">Testnet<em>proof of concept on Sepolia, mainnet pending</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Series</div>
+    <div class="cover-cell-value">CA · Compliance Architecture<em>CA.02 (HyperBEAM) and CA.03 (ZK) forthcoming</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Companion Set</div>
+    <div class="cover-cell-value">A · B · E · O · F<em>Phase 1, Narrative, Identity, Ops, Vision</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">What This Is Not</div>
+    <div class="cover-cell-value">Not an omission proof<em>see CA.01.1; addressed by CA.03</em></div>
+  </div>
+</div>
+
+<div class="toc-section-label">Front Matter</div>
+<div class="toc-row"><div class="toc-num">CA-000</div><div class="toc-title">Cover &amp; Index<em>this sheet</em></div><div class="toc-page">↑</div></div>
+<div class="toc-row"><div class="toc-num">CA-100</div><div class="toc-title">Purpose<em>why this document exists, who it's for</em></div><div class="toc-page"><a href="#ca-100">CA-100</a></div></div>
+
+<div class="toc-section-label">The Architecture</div>
+<div class="toc-row"><div class="toc-num">CA-200</div><div class="toc-title">Scope and Limits<em>what this proves and what it does not</em></div><div class="toc-page"><a href="#ca-200">CA-200</a></div></div>
+<div class="toc-row"><div class="toc-num">CA-300</div><div class="toc-title">Components<em>deployed contracts and AO processes</em></div><div class="toc-page"><a href="#ca-300">CA-300</a></div></div>
+<div class="toc-row"><div class="toc-num">CA-400</div><div class="toc-title">Reference Cycle<em>cross-chain settlement, end to end</em></div><div class="toc-page"><a href="#ca-400">CA-400</a></div></div>
+
+<div class="toc-section-label">Verification</div>
+<div class="toc-row"><div class="toc-num">CA-500</div><div class="toc-title">Independent Verification<em>retrieving and confirming any recorded event</em></div><div class="toc-page"><a href="#ca-500">CA-500</a></div></div>
+
+<div class="toc-section-label">Forward</div>
+<div class="toc-row"><div class="toc-num">CA-600</div><div class="toc-title">Roadmap<em>planned extensions and revisions</em></div><div class="toc-page"><a href="#ca-600">CA-600</a></div></div>
+
+<div class="toc-section-label">Back Matter</div>
+<div class="toc-row"><div class="toc-num">CA-700</div><div class="toc-title">References<em>related documents and external infrastructure</em></div><div class="toc-page"><a href="#ca-700">CA-700</a></div></div>
+
+<!-- ═════════════════════════════════════════════
+     CA-100 · PURPOSE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet CA-100"></div>
+
+<div id="ca-100">
+<div class="section-mark">CA-100 · Purpose</div>
+<h2 class="section-title">What this document <em>is for.</em></h2>
+<p class="section-strap">
+Coordination needs first; audit trail second. The two requirements are
+satisfied by the same artifact, and that is what makes the architecture
+work.
+</p>
+
+<div class="prose">
+<p class="lead">Paxiom coordinates state across multiple chains. To do so, every protocol action must produce a record that is durable, structured, and recoverable by parties who do not share Paxiom's runtime. The records described here exist for the protocol's own coordination needs first, and as a public audit trail second.</p>
+
+<p>This document is intended for readers who need to verify Paxiom's behavior independently: counterparties, auditors, integrating protocols, and operators of the system itself. It assumes familiarity with EVM events, Arweave's permanence model, and the AO actor runtime; readers who need that grounding should reference the related documents listed in <a href="#ca-700">CA-700</a>.</p>
+
+<p>The implementation specified here is a proof of concept on public testnets. It demonstrates the recording and verification surface against the simplest viable loan structure ahead of more complex loan structures, RPC-free chain access via HyperBEAM, ZK verification of execution traces, and mainnet deployment. The forward sequence is given in <a href="#ca-600">CA-600 Roadmap</a>.</p>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     CA-200 · SCOPE AND LIMITS
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet CA-200"></div>
+
+<div id="ca-200">
+<div class="section-mark">CA-200 · Scope and Limits</div>
+<h2 class="section-title">Two records,<br><em>one correspondence.</em></h2>
+<p class="section-strap">
+Two sources of record exist in the Paxiom system. The value of the
+architecture is the verifiable correspondence between them.
+</p>
+
+<div class="prose">
+<h3>The two sources</h3>
+
+<p><strong>On-chain transaction logs</strong> on each operating chain are the canonical source of truth. Every protocol action that mutates state — pool borrows, repayments, fee distributions, OApp message sends and receipts — emits one or more events to the chain on which it occurred.</p>
+
+<p><strong>AO process state on Arweave</strong> is a permanent, structured mirror of those events. Each AO message records the originating chain, contract, transaction hash, block, timestamp, and event-specific fields, indexed for retrieval.</p>
+
+<p>A reader queries either source independently and confirms the records agree. The procedure is specified in <a href="#ca-500">CA-500</a>.</p>
+</div>
+
+<div class="callout proves">
+  <div class="callout-header">
+    <span class="callout-tag">Proves</span>
+    <span>What this architecture establishes</span>
+    <span class="callout-id">CA-200 / P.01</span>
+  </div>
+  <div class="callout-body">
+    <ul>
+      <li>Records were not altered after the fact (Arweave permanence)</li>
+      <li>Recorded events match the on-chain transactions they reference (anchoring via tx hash)</li>
+      <li>Records remain available regardless of Paxiom's operational status</li>
+      <li>The set of recorded events is internally consistent with the protocol's stated rules</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout disclaim">
+  <div class="callout-header">
+    <span class="callout-tag">Does Not Prove</span>
+    <span>Limits of this architecture</span>
+    <span class="callout-id">CA-200 / D.01</span>
+  </div>
+  <div class="callout-body">
+    <ul>
+      <li>That every protocol action was logged — selective omission by an operator is not detected by this layer alone</li>
+      <li>The off-chain identity, authority, or intent of any party</li>
+      <li>The economic correctness of any individual action — only that it occurred and was recorded as described</li>
+      <li>That signed messages corresponded to authorized intent at the time of signing</li>
+    </ul>
+  </div>
+</div>
+
+<div class="prose">
+<p>The first limitation — selective omission — is the substantive one and is addressed in the Paxiom roadmap by ZK verification of execution traces. <code>CA.03</code> (forthcoming) will specify that layer. The remaining limitations are inherent to any on-chain system and are noted here for completeness rather than as defects of this architecture.</p>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     CA-300 · COMPONENTS
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet CA-300"></div>
+
+<div id="ca-300">
+<div class="section-mark">CA-300 · Components</div>
+<h2 class="section-title">The deployed <em>recording surface.</em></h2>
+<p class="section-strap">
+Five live components on public testnets. Two contracts on each operating
+chain, plus the AO Compliance Process and AO Consensus Process on
+Arweave. Mainnet equivalents pending per <a href="#ca-600">CA-600</a>.
+</p>
+
+<div class="prose">
+
+<table class="schedule">
+  <thead>
+    <tr>
+      <th style="width: 24%;">Component</th>
+      <th style="width: 16%;">Network</th>
+      <th>Address / Process ID</th>
+      <th style="width: 12%;">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>PaxiomOApp</td>
+      <td class="net">Optimism Sepolia</td>
+      <td class="addr"><a href="https://sepolia-optimism.etherscan.io/address/0x5fE0c2d112cf4E579271DD1f864C86dC193a1d0F" target="_blank" rel="noopener">0x5fE0c2d112cf4E579271DD1f864C86dC193a1d0F</a></td>
+      <td class="status">Live</td>
+    </tr>
+    <tr>
+      <td>PaxiomOApp</td>
+      <td class="net">Base Sepolia</td>
+      <td class="addr"><a href="https://sepolia.basescan.org/address/0x607DB3774343Abc650Ef31d9414bCA9D24b0C254" target="_blank" rel="noopener">0x607DB3774343Abc650Ef31d9414bCA9D24b0C254</a></td>
+      <td class="status">Live</td>
+    </tr>
+    <tr>
+      <td>PaxiomPool</td>
+      <td class="net">Optimism Sepolia</td>
+      <td class="addr"><a href="https://sepolia-optimism.etherscan.io/address/0x28321b5030B4E03ACCBD4236D1a97E01A7a9fc92" target="_blank" rel="noopener">0x28321b5030B4E03ACCBD4236D1a97E01A7a9fc92</a></td>
+      <td class="status">Live</td>
+    </tr>
+    <tr>
+      <td>AO Compliance Process</td>
+      <td class="net">Arweave / AO</td>
+      <td class="addr">w_MR7QlkfuRcfd3TQJPD1pzMwU5yEEyLMDjO0Ql8_5I</td>
+      <td class="status">Live</td>
+    </tr>
+    <tr>
+      <td>AO Consensus Process</td>
+      <td class="net">Arweave / AO</td>
+      <td class="addr">b-SlkvSm8FnADwSupRxlAXN6rezSnosjVakMmpfd_w0</td>
+      <td class="status">Live</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>All addresses are testnet. Verification procedures in <a href="#ca-500">CA-500</a> use these addresses directly; readers should substitute mainnet addresses once <code>D.01</code> (mainnet deployment) is complete.</p>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     CA-400 · REFERENCE CYCLE
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet CA-400"></div>
+
+<div id="ca-400">
+<div class="section-mark">CA-400 · Reference Cycle</div>
+<h2 class="section-title">Cross-chain <em>settlement.</em></h2>
+<p class="section-strap">
+The reference event is the first cross-chain loan settlement coordinated
+by Paxiom. Capital is deployed on both chains in parallel; execution is
+synchronized via the AO Compliance Process; a final data frame is
+written to Arweave as the permanent record.
+</p>
+
+<div class="prose">
+<p class="lead">The diagram below shows the architectural shape only. Concrete contract calls, message contents, and the per-chain execution sequence are pending and will be specified in Rev B.</p>
+</div>
+
+<div class="diagram">
+  <svg viewBox="0 0 680 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cross-chain coordination architecture: AO Compliance Process coordinates simultaneous execution on Optimism Sepolia and Base Sepolia; final data frame is written to Arweave">
+    <defs>
+      <marker id="arrA" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto-start-reverse">
+        <polygon points="0,0 8,3 0,6" fill="#1E3A5F"/>
+      </marker>
+      <marker id="arrSoftA" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+        <polygon points="0,0 8,3 0,6" fill="#B8AE96"/>
+      </marker>
+    </defs>
+
+    <!-- AO Coordinator banner -->
+    <rect x="200" y="20" width="280" height="60" fill="#F5F1E8" stroke="#1E3A5F" stroke-width="1.5"/>
+    <text x="340" y="45" font-family="JetBrains Mono, monospace" font-size="12" fill="#1E3A5F" text-anchor="middle" letter-spacing="2.5">AO COORDINATOR</text>
+    <text x="340" y="65" font-family="Times New Roman, serif" font-style="italic" font-size="11" fill="#3A4555" text-anchor="middle">initiates simultaneous execution on both chains</text>
+
+    <!-- Tree from AO down to chains -->
+    <line x1="340" y1="80" x2="340" y2="110" stroke="#B8AE96" stroke-width="1"/>
+    <line x1="140" y1="110" x2="540" y2="110" stroke="#B8AE96" stroke-width="1"/>
+    <line x1="140" y1="110" x2="140" y2="143" stroke="#B8AE96" stroke-width="1" marker-end="url(#arrSoftA)"/>
+    <line x1="540" y1="110" x2="540" y2="143" stroke="#B8AE96" stroke-width="1" marker-end="url(#arrSoftA)"/>
+
+    <!-- Coordination labels -->
+    <text x="240" y="105" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280" letter-spacing="1" text-anchor="middle">coordination</text>
+    <text x="440" y="105" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280" letter-spacing="1" text-anchor="middle">coordination</text>
+
+    <!-- Chain A box -->
+    <rect x="20" y="145" width="240" height="120" fill="#F5F1E8" stroke="#1A2332" stroke-width="1"/>
+    <text x="35" y="167" font-family="JetBrains Mono, monospace" font-size="11" fill="#1E3A5F" letter-spacing="2">CHAIN A</text>
+    <text x="35" y="183" font-family="JetBrains Mono, monospace" font-size="10" fill="#6B7280" letter-spacing="0.5">Optimism Sepolia</text>
+    <line x1="35" y1="195" x2="245" y2="195" stroke="#B8AE96" stroke-width="1"/>
+    <text x="140" y="225" font-family="Times New Roman, serif" font-style="italic" font-size="13" fill="#1A2332" text-anchor="middle">execution leg</text>
+    <text x="140" y="248" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280" text-anchor="middle" letter-spacing="1.5">[ to be specified ]</text>
+
+    <!-- Chain B box -->
+    <rect x="420" y="145" width="240" height="120" fill="#F5F1E8" stroke="#1A2332" stroke-width="1"/>
+    <text x="435" y="167" font-family="JetBrains Mono, monospace" font-size="11" fill="#1E3A5F" letter-spacing="2">CHAIN B</text>
+    <text x="435" y="183" font-family="JetBrains Mono, monospace" font-size="10" fill="#6B7280" letter-spacing="0.5">Base Sepolia</text>
+    <line x1="435" y1="195" x2="645" y2="195" stroke="#B8AE96" stroke-width="1"/>
+    <text x="540" y="225" font-family="Times New Roman, serif" font-style="italic" font-size="13" fill="#1A2332" text-anchor="middle">execution leg</text>
+    <text x="540" y="248" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280" text-anchor="middle" letter-spacing="1.5">[ to be specified ]</text>
+
+    <!-- OApp bidirectional arrow between chains -->
+    <text x="340" y="200" font-family="JetBrains Mono, monospace" font-size="10" fill="#1E3A5F" text-anchor="middle" letter-spacing="2">OApp</text>
+    <line x1="265" y1="210" x2="415" y2="210" stroke="#1E3A5F" stroke-width="1.2" marker-start="url(#arrA)" marker-end="url(#arrA)"/>
+    <text x="340" y="227" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280" text-anchor="middle" letter-spacing="0.5">cross-chain messaging</text>
+
+    <!-- Chain to Arweave merge -->
+    <line x1="140" y1="265" x2="140" y2="295" stroke="#B8AE96" stroke-width="1"/>
+    <line x1="540" y1="265" x2="540" y2="295" stroke="#B8AE96" stroke-width="1"/>
+    <line x1="140" y1="295" x2="540" y2="295" stroke="#B8AE96" stroke-width="1"/>
+    <text x="340" y="288" font-family="JetBrains Mono, monospace" font-size="9" fill="#1E3A5F" text-anchor="middle" letter-spacing="1.5">AO observes both legs · writes settled state</text>
+    <line x1="340" y1="295" x2="340" y2="333" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrA)"/>
+
+    <!-- Arweave banner -->
+    <rect x="200" y="335" width="280" height="60" fill="#F5F1E8" stroke="#1E3A5F" stroke-width="1.5"/>
+    <text x="340" y="360" font-family="JetBrains Mono, monospace" font-size="12" fill="#1E3A5F" text-anchor="middle" letter-spacing="2.5">ARWEAVE</text>
+    <text x="340" y="380" font-family="Times New Roman, serif" font-style="italic" font-size="11" fill="#3A4555" text-anchor="middle">final data frame · permanent record</text>
+  </svg>
+</div>
+
+<div class="diagram-caption">
+  <span class="fig-num">FIG. CA-400.1</span>Cross-chain coordination architecture, abstract. AO initiates and observes; chains execute in parallel and exchange messages via OApp; AO writes the final consolidated data frame to Arweave. Concrete sequence and contract calls to be specified in Rev B.
+</div>
+
+<div class="prose">
+<p>The cycle proceeds in three phases.</p>
+</div>
+
+<ol class="steps">
+  <li>
+    <div class="step-name">Coordination</div>
+    <p>The AO Compliance Process initiates execution by dispatching coordination signals to both chains. The two legs of the cycle are scheduled to execute in parallel rather than sequentially, removing the latency window in which one leg could complete without the other.</p>
+  </li>
+  <li>
+    <div class="step-name">Execution</div>
+    <p>Each chain executes its leg locally, exchanging cross-chain messages via the LayerZero OApp where state on one chain depends on confirmation from the other. AO observes both legs as they progress.</p>
+  </li>
+  <li>
+    <div class="step-name">Settlement</div>
+    <p>Once both legs are confirmed, AO writes a single consolidated data frame to Arweave summarizing the cycle: the chains involved, the contracts called, the transaction hashes on each side, and the final state. The data frame is permanent and queryable independently of Paxiom-operated infrastructure.</p>
+  </li>
+</ol>
+
+<div class="callout note">
+  <div class="callout-header">
+    <span class="callout-tag">Implementation Note</span>
+    <span>AO normalizes custom tag names to lowercase</span>
+    <span class="callout-id">CA-400 / N.01</span>
+  </div>
+  <div class="callout-body">
+    <p>AO normalizes custom tag names to lowercase on receipt. <code>EventType</code> becomes <code>eventtype</code>; <code>TxHash</code> becomes <code>txhash</code>. Queries against AO process state must use the lowercased forms. This is a property of the AO runtime, not of Paxiom; documentation that asserts the mixed-case tag names will fail to match.</p>
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     CA-500 · INDEPENDENT VERIFICATION
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet CA-500"></div>
+
+<div id="ca-500">
+<div class="section-mark">CA-500 · Independent Verification</div>
+<h2 class="section-title">Verifying without<br><em>trusting Paxiom.</em></h2>
+<p class="section-strap">
+A reader who does not trust Paxiom-operated infrastructure can verify
+any recorded event using only public infrastructure. The procedure is
+independent of any single block explorer or AO front-end.
+</p>
+
+<div class="prose">
+<p class="lead">Four steps. Both records must exist and agree for the event to be considered verified.</p>
+</div>
+
+<ol class="steps">
+  <li>
+    <div class="step-name">Retrieve on-chain event</div>
+    <p>Query any RPC provider or public block explorer for the relevant chain using the contract address and transaction hash. Decode the event using the published contract ABI.</p>
+  </li>
+  <li>
+    <div class="step-name">Retrieve AO message</div>
+    <p>Query Arweave's GraphQL endpoint at <code>https://arweave.net/graphql</code>, filtering by the AO process ID and the event type tag (lowercased per <a href="#ca-400">CA-400 / N.01</a>). The endpoint returns the AO message and its tags.</p>
+  </li>
+  <li>
+    <div class="step-name">Confirm tx hash correspondence</div>
+    <p>The <code>txhash</code> tag of the AO message must equal the on-chain transaction hash retrieved in step 1. If the values differ, the AO message does not correspond to the claimed on-chain action.</p>
+  </li>
+  <li>
+    <div class="step-name">Confirm event field correspondence</div>
+    <p>The event-specific fields in the AO message must equal the decoded fields of the on-chain event. If both sources exist and agree, the event is verified.</p>
+  </li>
+</ol>
+
+<div class="prose">
+<h3>Three outcomes</h3>
+<p><strong>Both records exist and agree.</strong> The event is verified. This is the expected outcome for a healthy system.</p>
+<p><strong>Only the on-chain record exists.</strong> The AO mirror was not written. The event is treated as a recording gap. Operationally this should trigger an investigation into the AO Compliance Process; from a verification perspective the on-chain record stands as canonical.</p>
+<p><strong>Only the AO record exists.</strong> No corresponding on-chain transaction. The AO record is unverified and should be disregarded. An AO message without an anchor in chain state is, by definition, a claim about an action that did not occur.</p>
+</div>
+
+<div class="callout note">
+  <div class="callout-header">
+    <span class="callout-tag">Rev B</span>
+    <span>Worked example pending</span>
+    <span class="callout-id">CA-500 / N.01</span>
+  </div>
+  <div class="callout-body">
+    <p>A worked example with concrete tx hashes, AO message IDs, and a runnable GraphQL query will be added in the next revision. Until then, the procedure above can be exercised against any of the components listed in <a href="#ca-300">CA-300</a>.</p>
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     CA-600 · ROADMAP
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet CA-600"></div>
+
+<div id="ca-600">
+<div class="section-mark">CA-600 · Roadmap</div>
+<h2 class="section-title">Planned <em>extensions.</em></h2>
+<p class="section-strap">
+The implementation specified in this document is a proof of concept on
+public testnets. The following items are planned in sequence; each will
+be specified in its own document as it is implemented.
+</p>
+
+<div class="prose">
+
+<ul class="xrefs">
+  <li>
+    <span class="ref">CA.01 / Rev B</span>
+    <span class="ref-label">Worked verification example with concrete tx hashes and runnable GraphQL query</span>
+    <span class="planned-tag">Next</span>
+  </li>
+  <li>
+    <span class="ref">P.01</span>
+    <span class="ref-label">Complex loan structures: multi-asset positions, variable timeouts, partial repayments</span>
+    <span class="planned-tag">Planned</span>
+  </li>
+  <li>
+    <span class="ref">CA.02</span>
+    <span class="ref-label">RPC-free chain access via HyperBEAM — removes external RPC providers as a trust and availability vector</span>
+    <span class="planned-tag">Planned</span>
+  </li>
+  <li>
+    <span class="ref">CA.03</span>
+    <span class="ref-label">ZK verification of execution traces; addresses selective-omission limitation noted in <a href="#ca-200">CA-200</a></span>
+    <span class="planned-tag">Planned</span>
+  </li>
+  <li>
+    <span class="ref">D.01</span>
+    <span class="ref-label">Mainnet deployment of all components currently on Sepolia testnets</span>
+    <span class="planned-tag">Planned</span>
+  </li>
+  <li>
+    <span class="ref">S.01</span>
+    <span class="ref-label">Capacity, drawdown, and rebalance accounting</span>
+    <span class="planned-tag">Planned</span>
+  </li>
+</ul>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     CA-700 · REFERENCES
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet CA-700"></div>
+
+<div id="ca-700">
+<div class="section-mark">CA-700 · References</div>
+<h2 class="section-title">Related <em>documents.</em></h2>
+<p class="section-strap">
+Companion documents in the Paxiom drawing set and external infrastructure
+this architecture depends on.
+</p>
+
+<div class="prose">
+
+<h3>Within the drawing set</h3>
+<p><strong>A-Series Phase 1 Blueprint.</strong> The build specification for the current phase. Service 02 (sync committee verification) is the first product to ship; this compliance architecture is the audit substrate it lands on. <a href="/paxiom-phase-1-blueprint.html">Open the Phase 1 Blueprint</a>.</p>
+<p><strong>B-Series Project Narrative.</strong> The broader project context. Verifiable records sit within the larger Paxiom thesis at the level of architectural commitment. <a href="/paxiom-project-narrative.html">Open the Project Narrative</a>.</p>
+<p><strong>O-Series Operations Runbook.</strong> Procedural infrastructure for incident response and routine operations. The recording surface specified here is the source of evidence for post-incident review per <code>O-900</code>. <a href="/paxiom-operations-runbook.html">Open the Operations Runbook</a>.</p>
+<p><strong>E-Series Key Custody &amp; Identity.</strong> How signing authority is partitioned and rotated. Off-chain identity is explicitly out of scope for this architecture (per <a href="#ca-200">CA-200</a>); the E-series specifies the layer that handles it. <a href="/paxiom-key-identity-blueprint.html">Open the Key Custody Blueprint</a>.</p>
+<p><strong>F-Series Phase 2 Vision Brief.</strong> The forward arc. Phase 2 customers in regulated industries are the primary consumers of the audit posture this architecture establishes. <a href="/paxiom-phase-2-vision.html">Open the Phase 2 Vision Brief</a>.</p>
+
+<h3>External infrastructure</h3>
+<p><strong>LayerZero OApp.</strong> The cross-chain messaging primitive used between operating chains. <a href="https://docs.layerzero.network" target="_blank" rel="noopener">docs.layerzero.network</a>.</p>
+<p><strong>AO &amp; Arweave.</strong> Permanent storage and autonomous compute substrate that hosts the AO Compliance Process and AO Consensus Process. <a href="https://cookbook.arweave.dev/concepts/ao.html" target="_blank" rel="noopener">cookbook.arweave.dev</a>.</p>
+<p><strong>Source code and deployment artifacts.</strong> <a href="https://github.com/k-luecke" target="_blank" rel="noopener">github.com/k-luecke</a>.</p>
+
+<h3>Revision log</h3>
+<p><strong>Rev. A — 2026.05.01.</strong> Initial issue. Seven sheets covering purpose, scope and limits, components, the cross-chain reference cycle, the independent verification procedure, the forward roadmap, and references. Status: testnet proof of concept.</p>
+<p>Rev. B will add the worked verification example with concrete tx hashes, AO message IDs, and a runnable GraphQL query. Subsequent revisions will track mainnet deployment and the introduction of <code>CA.02</code> (HyperBEAM-mediated chain access) and <code>CA.03</code> (ZK execution-trace verification).</p>
+</div>
+</div>
+
+</div>
+
+<div class="sheet-footer">
+  <div>Paxiom · paxiom.org</div>
+  <div class="center">Compliance Architecture · CA.01 Rev. A · 2026.05.01</div>
+  <div class="right">Sheet Set CA-000 / 8</div>
+</div>
+
+</div>
+</body>
+</html>
