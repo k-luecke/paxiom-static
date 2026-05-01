@@ -3,343 +3,226 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AO Dispatcher Architecture · Verifiable Ethereum Proof Work</title>
+<title>Paxiom · Technical Architecture · T.01 AO Dispatcher</title>
+<meta name="description" content="AO as distributed dispatcher for verifiable Ethereum proof work — components, message schemas, build order, benchmarks.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0e0d0b;
-    --bg-2: #16140f;
-    --ink: #ece6d6;
-    --ink-dim: #8a8473;
-    --ink-faint: #4a4639;
-    --rule: #2a261d;
-    --accent: #d4a017;
-    --accent-2: #c9613a;
-    --ao-native: #5b8c5a;
-    --external: #c9613a;
-    --persistence: #d4a017;
-    --message: #6b8eae;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
-    line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
-  }
-  body {
-    background-image:
-      radial-gradient(ellipse at top left, rgba(212,160,23,0.04), transparent 60%),
-      radial-gradient(ellipse at bottom right, rgba(201,97,58,0.04), transparent 60%);
-    min-height: 100vh;
-  }
-  .wrap {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 48px 32px 96px;
-  }
-  header {
-    border-bottom: 1px solid var(--rule);
-    padding-bottom: 32px;
-    margin-bottom: 48px;
-  }
-  .eyebrow {
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--ink-dim);
-    margin-bottom: 16px;
-  }
-  h1 {
-    font-family: 'Times New Roman', Times, serif;
-    font-weight: 600;
-    font-size: clamp(28px, 4vw, 44px);
-    line-height: 1.1;
-    letter-spacing: -0.01em;
-    margin-bottom: 16px;
-  }
-  h1 em {
-    font-style: italic;
-    color: var(--accent);
-  }
-  .lede {
-    color: var(--ink-dim);
-    max-width: 680px;
-    font-size: 14px;
-  }
+:root {
+  --paper: #F5F1E8;
+  --paper-dark: #EDE6D3;
+  --ink: #1A2332;
+  --ink-mid: #3A4555;
+  --ink-faint: #6B7280;
+  --rule: #1A2332;
+  --rule-faint: #B8AE96;
+  --blue: #1E3A5F;
+  --blue-light: #4A6B8A;
+  --red: #8B2E1F;
+  --amber: #B8860B;
+  --green: #2D6A4F;
+  --grid: rgba(26, 35, 50, 0.04);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: 'Neutraface Text', system-ui, -apple-system, sans-serif;
+  font-size: 14px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+.sheet { max-width: 1080px; margin: 40px auto; background: var(--paper); border: 2px solid var(--ink); position: relative; }
+@media (max-width: 900px) { .sheet { margin: 16px 8px; border-width: 1px; } }
+.sheet-header {
+  display: grid; grid-template-columns: auto 1fr auto;
+  border-bottom: 2px solid var(--ink);
+  padding: 16px 24px; align-items: end; gap: 24px;
+}
+.sheet-mark { width: 44px; height: 44px; color: var(--ink); display: block; flex-shrink: 0; }
+.sheet-mark-link { display: block; line-height: 0; transition: opacity 0.15s ease; }
+.sheet-mark-link:hover { opacity: 0.65; }
+.sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
+.sheet-project { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.sheet-title { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
+.sheet-subtitle { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
+.sheet-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 16px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.04em; text-align: right; }
+.sheet-meta dt { color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
+.sheet-meta dd { color: var(--ink); font-weight: 500; }
+.sheet-body { padding: 56px 72px; }
+@media (max-width: 700px) {
+  .sheet-body { padding: 32px 24px; }
+  .sheet-header { grid-template-columns: auto 1fr; }
+  .sheet-meta { grid-column: 1 / -1; text-align: left; padding-top: 8px; border-top: 1px solid var(--rule-faint); }
+}
+.cover-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
+.cover-mark::after { content: ''; flex: 1; height: 1px; background: var(--rule-faint); }
+.cover-title { font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: clamp(48px, 7.5vw, 88px); line-height: 0.96; letter-spacing: -0.025em; color: var(--ink); margin-bottom: 28px; }
+.cover-title em { font-style: italic; font-weight: 400; color: var(--ink-mid); }
+.cover-strap { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 22px; line-height: 1.45; color: var(--ink-mid); max-width: 60ch; margin-bottom: 64px; }
+.cover-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 56px; }
+@media (max-width: 700px) { .cover-grid { grid-template-columns: 1fr; } }
+.cover-cell { padding: 20px 24px; border-right: 1px solid var(--rule-faint); border-bottom: 1px solid var(--rule-faint); }
+.cover-cell:nth-child(2n) { border-right: none; }
+.cover-cell:nth-last-child(-n+2) { border-bottom: none; }
+@media (max-width: 700px) { .cover-cell { border-right: none; border-bottom: 1px solid var(--rule-faint); } .cover-cell:last-child { border-bottom: none; } }
+.cover-cell-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+.cover-cell-value { font-family: 'Times New Roman', Times, serif; font-size: 17px; color: var(--ink); line-height: 1.35; }
+.cover-cell-value em { font-style: italic; color: var(--ink-mid); }
+.toc-section-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-top: 36px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-faint); }
+.toc-section-label:first-child { margin-top: 0; }
+.toc-row { display: grid; grid-template-columns: 80px 1fr auto; gap: 24px; padding: 10px 0; border-bottom: 1px dotted var(--rule-faint); align-items: baseline; }
+.toc-row:last-of-type { border-bottom: none; }
+.toc-num { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; font-weight: 500; color: var(--blue); letter-spacing: 0.04em; }
+.toc-title { font-family: 'Times New Roman', Times, serif; font-size: 16px; color: var(--ink); }
+.toc-title em { font-style: italic; color: var(--ink-mid); font-size: 14px; display: block; margin-top: 2px; }
+.toc-page { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--ink-faint); letter-spacing: 0.04em; }
+.section-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.section-title { font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: 40px; line-height: 1.05; letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px; }
+.section-title em { font-style: italic; color: var(--ink-mid); }
+.section-strap { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 18px; color: var(--ink-mid); margin-bottom: 44px; max-width: 60ch; line-height: 1.5; }
+.prose p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.65; margin-bottom: 18px; max-width: 68ch; color: var(--ink); }
+.prose p.lead { font-size: 19px; line-height: 1.55; color: var(--ink-mid); font-style: italic; margin-bottom: 28px; }
+.prose h3 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 22px; margin-top: 40px; margin-bottom: 14px; color: var(--ink); letter-spacing: -0.005em; }
+.prose h4 { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); margin-top: 32px; margin-bottom: 10px; }
+.prose strong { font-weight: 600; color: var(--ink); }
+.prose em { font-style: italic; color: var(--ink-mid); }
+.prose code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); word-break: break-all; }
+.prose ul, .prose ol { margin: 12px 0 22px 28px; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.65; max-width: 68ch; }
+.prose li { margin-bottom: 8px; }
+.callout { border: 1px solid var(--ink); margin: 32px 0; background: var(--paper); }
+.callout-header { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; padding: 9px 18px; background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; align-items: center; }
+.callout-tag { font-weight: 600; }
+.callout-id { color: var(--paper-dark); opacity: 0.7; }
+.callout-body { padding: 20px 24px; }
+.callout-body p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; color: var(--ink); margin-bottom: 12px; }
+.callout-body p:last-child { margin-bottom: 0; }
+.callout-body ul { margin: 10px 0 6px 22px; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; }
+.callout-body li { margin-bottom: 6px; }
+.callout-body code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); }
+.callout.note { border-style: dashed; border-color: var(--ink-faint); }
+.callout.note .callout-header { background: transparent; color: var(--ink-faint); border-bottom: 1px dashed var(--ink-faint); }
+.callout.note .callout-id { color: var(--ink-faint); }
+.callout.bound { border-color: var(--amber); }
+.callout.bound .callout-header { background: var(--amber); color: var(--ink); }
+.callout.bound .callout-id { color: var(--ink); opacity: 0.7; }
 
-  section { margin-bottom: 64px; }
-  h2 {
-    font-family: 'Times New Roman', Times, serif;
-    font-weight: 600;
-    font-size: 22px;
-    letter-spacing: -0.005em;
-    margin-bottom: 20px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--rule);
-  }
-  h2 .num {
-    color: var(--accent);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
-    margin-right: 12px;
-    vertical-align: 2px;
-  }
-  p { margin-bottom: 16px; max-width: 780px; }
-  p strong { color: var(--ink); font-weight: 700; }
+/* Diagram + legend */
+.diagram { background: var(--paper-dark); border: 1.5px solid var(--ink); padding: 24px; margin: 8px 0 12px; overflow-x: auto; }
+.diagram svg { display: block; min-width: 880px; width: 100%; height: auto; }
+.diagram-caption { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 4px 0 28px; padding-top: 8px; border-top: 1px solid var(--rule-faint); }
+.diagram-caption .fig-num { color: var(--blue); margin-right: 8px; font-weight: 500; }
+.diagram-note { font-family: 'Times New Roman', Times, serif; font-size: 14px; color: var(--ink-mid); line-height: 1.55; margin: 12px 0 24px; max-width: 68ch; font-style: italic; }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; padding: 18px 22px; background: var(--paper-dark); border: 1px solid var(--rule-faint); margin-bottom: 18px; }
+@media (max-width: 700px) { .legend { grid-template-columns: 1fr; gap: 18px; } }
+.legend-group { display: flex; flex-direction: column; gap: 8px; }
+.legend-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px; }
+.legend-item { display: flex; align-items: center; gap: 10px; font-family: 'Times New Roman', Times, serif; font-size: 14px; color: var(--ink); line-height: 1.4; }
+.swatch { width: 14px; height: 14px; border: 1px solid var(--rule); flex-shrink: 0; }
 
-  /* Legend */
-  .legend {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
-    padding: 20px;
-    background: var(--bg-2);
-    border: 1px solid var(--rule);
-    margin-bottom: 32px;
-  }
-  @media (max-width: 700px) {
-    .legend { grid-template-columns: 1fr; gap: 20px; }
-  }
-  .legend-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .legend-label {
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    margin-bottom: 4px;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px;
-  }
-  .swatch {
-    width: 14px; height: 14px;
-    border: 1px solid rgba(255,255,255,0.2);
-    flex-shrink: 0;
-  }
+/* Components table — schedule style */
+.schedule { margin: 24px 0; border: 1.5px solid var(--ink); width: 100%; border-collapse: collapse; }
+.schedule th { background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; text-align: left; padding: 10px 12px; font-weight: 500; }
+.schedule td { padding: 14px 12px; border-bottom: 1px solid var(--rule-faint); border-right: 1px solid var(--rule-faint); font-family: 'Times New Roman', Times, serif; font-size: 15px; vertical-align: top; color: var(--ink); line-height: 1.5; }
+.schedule td:last-child { border-right: none; }
+.schedule tr:last-child td { border-bottom: none; }
+.schedule .comp { font-weight: 600; color: var(--ink); }
+.schedule .role { display: block; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 500; color: var(--ink-faint); margin-top: 4px; letter-spacing: 0.05em; text-transform: uppercase; }
+.schedule code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 5px; color: var(--blue); }
+.schedule .tag { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 8px; border: 1px solid var(--rule-faint); display: inline-block; white-space: nowrap; }
+.schedule .tag.ao { color: var(--green); border-color: var(--green); }
+.schedule .tag.ext { color: var(--red); border-color: var(--red); }
+.schedule .tag.store { color: var(--amber); border-color: var(--amber); }
 
-  /* Diagram */
-  .diagram {
-    background: var(--bg-2);
-    border: 1px solid var(--rule);
-    padding: 24px;
-    overflow-x: auto;
-    margin-bottom: 24px;
-  }
-  .diagram svg {
-    display: block;
-    min-width: 900px;
-    width: 100%;
-    height: auto;
-  }
+/* Schemas */
+.schemas { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 24px 0; }
+.schema { background: var(--paper-dark); border: 1px solid var(--ink); padding: 16px 18px; }
+.schema-name { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; font-weight: 600; color: var(--blue); letter-spacing: 0.05em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-faint); text-transform: uppercase; }
+.schema pre { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.65; color: var(--ink-mid); white-space: pre-wrap; margin: 0; }
+.schema pre .key { color: var(--ink); font-weight: 500; }
 
-  /* Component table */
-  .components {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0;
-    border: 1px solid var(--rule);
-  }
-  .component {
-    display: grid;
-    grid-template-columns: 180px 1fr 140px;
-    gap: 24px;
-    padding: 18px 20px;
-    border-bottom: 1px solid var(--rule);
-    align-items: start;
-  }
-  .component:last-child { border-bottom: none; }
-  .comp-name {
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--ink);
-  }
-  .comp-name .role {
-    display: block;
-    font-weight: 400;
-    font-size: 11px;
-    color: var(--ink-dim);
-    margin-top: 4px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  .comp-desc {
-    font-size: 13px;
-    color: var(--ink);
-  }
-  .comp-tag {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 4px 8px;
-    border: 1px solid var(--rule);
-    text-align: center;
-    align-self: start;
-  }
-  .tag-ao { color: var(--ao-native); border-color: var(--ao-native); }
-  .tag-ext { color: var(--external); border-color: var(--external); }
-  .tag-store { color: var(--persistence); border-color: var(--persistence); }
+/* Numbered build steps */
+.steps { list-style: none; margin: 28px 0; padding: 0; counter-reset: step; }
+.steps > li { position: relative; padding: 22px 0 22px 72px; border-bottom: 1px solid var(--rule-faint); counter-increment: step; }
+.steps > li:last-child { border-bottom: none; }
+.steps > li::before {
+  content: counter(step, decimal-leading-zero);
+  position: absolute;
+  left: 0; top: 24px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 28px;
+  color: var(--blue);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+.steps .step-title { font-family: 'Times New Roman', Times, serif; font-weight: 600; font-size: 17px; color: var(--ink); margin-bottom: 8px; line-height: 1.3; }
+.steps .step-body { font-family: 'Times New Roman', Times, serif; font-size: 15px; color: var(--ink); line-height: 1.6; margin-bottom: 10px; max-width: 68ch; }
+.steps .step-body code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 5px; color: var(--blue); }
+.steps .step-measure { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); }
+.steps .step-measure::before { content: '→ Measure: '; color: var(--ink-faint); }
 
-  @media (max-width: 700px) {
-    .component { grid-template-columns: 1fr; gap: 8px; }
-    .comp-tag { justify-self: start; }
-  }
+/* Benchmark cards */
+.bench { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0; border: 1.5px solid var(--ink); margin: 24px 0; }
+.bench-card { padding: 22px 24px; border-right: 1px solid var(--rule-faint); border-bottom: 1px solid var(--rule-faint); background: var(--paper); }
+.bench-card:nth-child(3n) { border-right: none; }
+.bench-card:nth-last-child(-n+3) { border-bottom: none; }
+@media (max-width: 900px) {
+  .bench-card { border-right: none !important; border-bottom: 1px solid var(--rule-faint) !important; }
+  .bench-card:last-child { border-bottom: none !important; }
+}
+.bench-card h3 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 18px; margin-bottom: 8px; color: var(--ink); line-height: 1.25; letter-spacing: -0.005em; }
+.bench-card p { font-family: 'Times New Roman', Times, serif; font-size: 14px; color: var(--ink); line-height: 1.55; margin: 0; }
+.bench-card p code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 5px; color: var(--blue); }
+.bench-card .ballpark { display: block; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--blue); margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--rule-faint); letter-spacing: 0.04em; font-weight: 500; }
 
-  /* Message schemas */
-  .schemas {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 16px;
-  }
-  .schema {
-    background: var(--bg-2);
-    border: 1px solid var(--rule);
-    padding: 18px 20px;
-  }
-  .schema-name {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-    margin-bottom: 12px;
-  }
-  .schema pre {
-    font-size: 11px;
-    line-height: 1.6;
-    color: var(--ink-dim);
-    white-space: pre-wrap;
-  }
-  .schema pre .key { color: var(--ink); }
-
-  /* Build steps */
-  .steps { counter-reset: step; }
-  .step {
-    display: grid;
-    grid-template-columns: 60px 1fr;
-    gap: 20px;
-    padding: 18px 0;
-    border-bottom: 1px solid var(--rule);
-  }
-  .step:last-child { border-bottom: none; }
-  .step-num {
-    font-family: 'Times New Roman', Times, serif;
-    font-size: 32px;
-    font-weight: 600;
-    color: var(--accent);
-    line-height: 1;
-  }
-  .step-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--ink);
-    margin-bottom: 6px;
-  }
-  .step-body {
-    font-size: 13px;
-    color: var(--ink-dim);
-    margin-bottom: 8px;
-  }
-  .step-measure {
-    font-size: 11px;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  .step-measure::before { content: "→ measure: "; color: var(--ink-faint); }
-
-  /* Benchmark notes */
-  .bench {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-  }
-  .bench-card {
-    background: var(--bg-2);
-    border: 1px solid var(--rule);
-    padding: 18px 20px;
-  }
-  .bench-card h3 {
-    font-family: 'Times New Roman', Times, serif;
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
-  .bench-card p {
-    font-size: 12px;
-    color: var(--ink-dim);
-    margin: 0;
-  }
-  .bench-card .ballpark {
-    display: block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-    margin-top: 8px;
-    letter-spacing: 0.05em;
-  }
-
-  footer {
-    margin-top: 64px;
-    padding-top: 24px;
-    border-top: 1px solid var(--rule);
-    font-size: 11px;
-    color: var(--ink-faint);
-    letter-spacing: 0.05em;
-  }
-
-  .home-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    color: var(--accent);
-    margin-bottom: 16px;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    transition: color 0.15s ease;
-  }
-  .home-link svg { width: 28px; height: 28px; display: block; }
-  .home-link:hover { color: var(--ink); }
+.page-break { border-top: 2px solid var(--ink); margin: 96px -72px 64px; position: relative; }
+@media (max-width: 700px) { .page-break { margin: 56px -24px 40px; } }
+.page-break::before { content: attr(data-sheet); position: absolute; top: -10px; left: 72px; background: var(--paper); padding: 0 12px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.sheet-footer { border-top: 1.5px solid var(--ink); padding: 14px 24px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); align-items: center; }
+.sheet-footer .center { text-align: center; }
+.sheet-footer .right { text-align: right; color: var(--ink); font-weight: 600; }
+a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--red); }
+@media print { body { background: white; } .sheet { border: 2px solid black; } .page-break { page-break-before: always; } }
 
 .paxiom-bar {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(14, 13, 11, 0.88);
+  background: rgba(245, 241, 232, 0.88);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule-faint);
 }
 .paxiom-bar-inner {
-  max-width: 1100px; margin: 0 auto;
+  max-width: 1200px; margin: 0 auto;
   padding: 10px 18px;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
 .paxiom-bar-mark {
   display: inline-flex; align-items: center; gap: 10px;
-  text-decoration: none; color: var(--accent);
+  text-decoration: none; color: var(--ink);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
   transition: color 0.15s ease;
 }
 .paxiom-bar-mark svg { width: 22px; height: 22px; display: block; }
-.paxiom-bar-mark:hover { color: var(--ink); }
+.paxiom-bar-mark:hover { color: var(--blue); }
 .paxiom-bar-nav {
   display: flex; gap: 18px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
 }
-.paxiom-bar-nav a { color: var(--ink-dim); text-decoration: none; transition: color 0.15s ease; }
+.paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; transition: color 0.15s ease; padding-bottom: 2px; }
 .paxiom-bar-nav a:hover { color: var(--ink); }
+.paxiom-bar-nav a.active { color: var(--ink); border-bottom: 1.5px solid var(--ink); }
 @media (max-width: 600px) {
   .paxiom-bar-inner { padding: 8px 14px; }
   .paxiom-bar-mark span { display: none; }
@@ -362,279 +245,352 @@
     </nav>
   </div>
 </div>
-<div class="wrap">
 
-<header>
-  <a class="home-link" href="/" aria-label="paxiom.org — home">
-    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true">
-      <circle cx="50" cy="50" r="40"/>
-      <path d="M50 14 L76 64 L24 64 Z"/>
-      <line x1="50" y1="30" x2="50" y2="80"/>
-      <line x1="38" y1="80" x2="62" y2="80"/>
-      <circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/>
-    </svg>
-    <span>paxiom.org</span>
-  </a>
-  <div class="eyebrow">Architecture Reference · v0.1</div>
-  <h1>AO as <em>distributed dispatcher</em><br>for verifiable Ethereum proof work</h1>
-  <p class="lede">
-    The MU/SU/CU separation maps onto a sharded proving graph: coordinator partitions
-    Ethereum work into N shards, MU pushes each shard job, SU orders and persists every
-    interaction to Arweave, and N CUs run in parallel to build witnesses, generate proofs,
-    and verify results. Aggregator processes recursively combine valid proofs. External
-    provers exist as a fallback for workloads that exceed CU capacity, but the design
-    intent is to keep all three workloads — witness, proof, verify — CU-native and
-    parallelized rather than concentrated on a single large machine. The proof corpus
-    and the coordination history are both first-class artifacts on Arweave.
-  </p>
-</header>
+<div class="sheet">
 
-<section>
-  <div class="legend">
-    <div class="legend-group">
-      <div class="legend-label">Components</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--ao-native)"></span>AO-native process (MU / SU / CU)</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--external); opacity:0.45"></span>External prover (fallback only)</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--persistence)"></span>Arweave persistence</div>
-    </div>
-    <div class="legend-group">
-      <div class="legend-label">Arrows</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--message)"></span>AO message flow</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--persistence)"></span>Persistence to Arweave</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--external); opacity:0.45"></span>Fallback to external prover</div>
-    </div>
+<div class="sheet-header">
+  <a class="sheet-mark-link" href="/" aria-label="Paxiom — home"><svg class="sheet-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50,14 L76,64 L24,64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg></a>
+  <div class="sheet-title-block">
+    <div class="sheet-project">Paxiom · Technical Architecture · Drawing Set</div>
+    <div class="sheet-title">AO Dispatcher Architecture</div>
+    <div class="sheet-subtitle">AO as distributed dispatcher for verifiable Ethereum proof work.</div>
   </div>
+  <dl class="sheet-meta">
+    <dt>Project No.</dt><dd>PXM-001-T</dd>
+    <dt>Issue</dt><dd>T.01 / Rev. A</dd>
+    <dt>Date</dt><dd>2026.05.01</dd>
+    <dt>Drawn By</dt><dd>K. Luecke</dd>
+  </dl>
+</div>
 
-  <div class="diagram">
-    <svg viewBox="0 0 1000 720" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
-          <path d="M0,0 L0,6 L9,3 z" fill="#6b8eae"/>
-        </marker>
-        <marker id="arrow-orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
-          <path d="M0,0 L0,6 L9,3 z" fill="#c9613a"/>
-        </marker>
-        <marker id="arrow-gold" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
-          <path d="M0,0 L0,6 L9,3 z" fill="#d4a017"/>
-        </marker>
-      </defs>
+<div class="sheet-body">
 
-      <!-- Coordinator -->
-      <rect x="380" y="20" width="240" height="60" fill="none" stroke="#5b8c5a" stroke-width="1.5"/>
-      <text x="500" y="44" text-anchor="middle" fill="#ece6d6" font-family="JetBrains Mono" font-size="13" font-weight="700">PAXIOM COORDINATOR</text>
-      <text x="500" y="62" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="10">AO process · partitions chain into ranges</text>
+<!-- ═════════════════════════════════════════════
+     T-000 · COVER
+     ═════════════════════════════════════════════ -->
 
-      <!-- Arrow down to MU -->
-      <line x1="500" y1="80" x2="500" y2="115" stroke="#6b8eae" stroke-width="1.2" marker-end="url(#arrow)"/>
-      <text x="510" y="100" fill="#8a8473" font-family="JetBrains Mono" font-size="10">ProofShardJob × N</text>
+<div class="cover-mark">Sheet T-000 · Cover &amp; Index</div>
 
-      <!-- MU layer -->
-      <rect x="380" y="120" width="240" height="50" fill="none" stroke="#5b8c5a" stroke-width="1.5" stroke-dasharray="4,3"/>
-      <text x="500" y="142" text-anchor="middle" fill="#ece6d6" font-family="JetBrains Mono" font-size="12" font-weight="700">MU · MESSENGER UNIT</text>
-      <text x="500" y="158" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="10">routes / pushes message</text>
+<h1 class="cover-title">AO as<br><em>distributed dispatcher.</em></h1>
 
-      <!-- Arrow down to SU -->
-      <line x1="500" y1="170" x2="500" y2="205" stroke="#6b8eae" stroke-width="1.2" marker-end="url(#arrow)"/>
+<p class="cover-strap">
+The MU/SU/CU separation maps onto a sharded proving graph. Coordinator
+partitions Ethereum work into N shards; MU pushes each shard job; SU
+orders and persists every interaction to Arweave; N CUs run in parallel
+to build witnesses, generate proofs, and verify results. Aggregator
+processes recursively combine valid proofs. The proof corpus and the
+coordination history are both first-class artifacts on Arweave.
+</p>
 
-      <!-- × N parallel badge -->
-      <text x="180" y="290" text-anchor="middle" fill="#5b8c5a" font-family="JetBrains Mono" font-size="11" font-weight="700">× N parallel</text>
-      <text x="180" y="306" text-anchor="middle" fill="#5b8c5a" font-family="JetBrains Mono" font-size="11" font-weight="700">shard processes</text>
-      <text x="180" y="326" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="9">each shard runs on</text>
-      <text x="180" y="338" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="9">its own CU</text>
-      <line x1="220" y1="350" x2="320" y2="350" stroke="#5b8c5a" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
-
-      <!-- Stacked outline behind SU (parallelization cue) -->
-      <rect x="388" y="218" width="240" height="50" fill="none" stroke="#5b8c5a" stroke-width="1" stroke-dasharray="4,3" opacity="0.2"/>
-      <rect x="384" y="214" width="240" height="50" fill="none" stroke="#5b8c5a" stroke-width="1" stroke-dasharray="4,3" opacity="0.4"/>
-
-      <!-- SU layer -->
-      <rect x="380" y="210" width="240" height="50" fill="none" stroke="#5b8c5a" stroke-width="1.5" stroke-dasharray="4,3"/>
-      <text x="500" y="232" text-anchor="middle" fill="#ece6d6" font-family="JetBrains Mono" font-size="12" font-weight="700">SU · SCHEDULER UNIT</text>
-      <text x="500" y="248" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="10">assigns ordered slot · persists</text>
-
-      <!-- Arrow to Arweave (right) -->
-      <line x1="620" y1="235" x2="780" y2="235" stroke="#d4a017" stroke-width="1.2" marker-end="url(#arrow-gold)"/>
-      <text x="700" y="227" text-anchor="middle" fill="#d4a017" font-family="JetBrains Mono" font-size="10">slot + msg</text>
-
-      <!-- Arweave -->
-      <rect x="780" y="195" width="180" height="80" fill="none" stroke="#d4a017" stroke-width="1.5"/>
-      <text x="870" y="220" text-anchor="middle" fill="#ece6d6" font-family="JetBrains Mono" font-size="13" font-weight="700">ARWEAVE</text>
-      <text x="870" y="238" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="10">message history</text>
-      <text x="870" y="252" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="10">witness manifests</text>
-      <text x="870" y="266" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="10">proof lineage</text>
-
-      <!-- Arrow down from SU to CU -->
-      <line x1="500" y1="260" x2="500" y2="295" stroke="#6b8eae" stroke-width="1.2" marker-end="url(#arrow)"/>
-
-      <!-- Stacked outline behind CU (parallelization cue) -->
-      <rect x="328" y="308" width="360" height="100" fill="none" stroke="#5b8c5a" stroke-width="1" stroke-dasharray="4,3" opacity="0.2"/>
-      <rect x="324" y="304" width="360" height="100" fill="none" stroke="#5b8c5a" stroke-width="1" stroke-dasharray="4,3" opacity="0.4"/>
-
-      <!-- CU layer -->
-      <rect x="320" y="300" width="360" height="100" fill="none" stroke="#5b8c5a" stroke-width="1.5"/>
-      <text x="500" y="320" text-anchor="middle" fill="#ece6d6" font-family="JetBrains Mono" font-size="13" font-weight="700">CU · COMPUTE UNIT</text>
-      <text x="500" y="335" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="9">witness · proof · verify — all CU-native, parallelized across N CUs</text>
-      <line x1="340" y1="346" x2="660" y2="346" stroke="#2a261d" stroke-width="1"/>
-      <line x1="440" y1="350" x2="440" y2="396" stroke="#2a261d" stroke-width="1" stroke-dasharray="2,2"/>
-      <line x1="560" y1="350" x2="560" y2="396" stroke="#2a261d" stroke-width="1" stroke-dasharray="2,2"/>
-      <!-- Column 1: Witness Gen -->
-      <text x="380" y="364" text-anchor="middle" fill="#5b8c5a" font-family="JetBrains Mono" font-size="10" font-weight="700">WITNESS GEN</text>
-      <text x="380" y="378" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="9">read state</text>
-      <text x="380" y="389" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="9">build manifest</text>
-      <!-- Column 2: Proof Gen -->
-      <text x="500" y="364" text-anchor="middle" fill="#5b8c5a" font-family="JetBrains Mono" font-size="10" font-weight="700">PROOF GEN</text>
-      <text x="500" y="378" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="9">run circuit</text>
-      <text x="500" y="389" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="9">emit artifact</text>
-      <!-- Column 3: Verify + Emit -->
-      <text x="620" y="364" text-anchor="middle" fill="#5b8c5a" font-family="JetBrains Mono" font-size="10" font-weight="700">VERIFY + EMIT</text>
-      <text x="620" y="378" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="9">check result</text>
-      <text x="620" y="389" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="9">emit outbox</text>
-
-      <!-- Arrow CU → External Prover (faded, dashed - fallback path) -->
-      <line x1="680" y1="380" x2="780" y2="430" stroke="#c9613a" stroke-width="1" stroke-dasharray="4,3" opacity="0.45" marker-end="url(#arrow-orange)"/>
-      <text x="755" y="395" fill="#c9613a" font-family="JetBrains Mono" font-size="9" opacity="0.55">if needed</text>
-
-      <!-- External Prover (FALLBACK - faded, dashed) -->
-      <rect x="780" y="410" width="180" height="80" fill="none" stroke="#c9613a" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.5"/>
-      <text x="870" y="432" text-anchor="middle" fill="#c9613a" font-family="JetBrains Mono" font-size="11" font-weight="700" opacity="0.65">EXTERNAL PROVER</text>
-      <text x="870" y="448" text-anchor="middle" fill="#c9613a" font-family="JetBrains Mono" font-size="9" font-weight="700" opacity="0.65">FALLBACK ONLY</text>
-      <text x="870" y="466" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="9" opacity="0.55">when CU exceeds capacity</text>
-      <text x="870" y="480" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="9" opacity="0.55">untrusted until verified</text>
-
-      <!-- Arrow External → CU (faded, dashed) -->
-      <path d="M 780 470 Q 720 470 680 410" stroke="#c9613a" stroke-width="1" stroke-dasharray="4,3" opacity="0.45" fill="none" marker-end="url(#arrow-orange)"/>
-      <text x="710" y="495" fill="#c9613a" font-family="JetBrains Mono" font-size="9" opacity="0.55">artifact (CU verifies)</text>
-
-      <!-- Arrow down from CU to Result -->
-      <line x1="500" y1="400" x2="500" y2="445" stroke="#6b8eae" stroke-width="1.2" marker-end="url(#arrow)"/>
-      <text x="510" y="425" fill="#8a8473" font-family="JetBrains Mono" font-size="10">ProofShardResult</text>
-
-      <!-- Aggregator -->
-      <rect x="320" y="450" width="360" height="80" fill="none" stroke="#5b8c5a" stroke-width="1.5"/>
-      <text x="500" y="474" text-anchor="middle" fill="#ece6d6" font-family="JetBrains Mono" font-size="13" font-weight="700">AGGREGATOR PROCESS</text>
-      <text x="500" y="490" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="10">CU receives left + right child proofs</text>
-      <text x="500" y="504" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="10">checks boundary · runs aggregation circuit (CU-native)</text>
-      <text x="500" y="520" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="10">emits AggregationResult</text>
-
-      <!-- Recursion arrow -->
-      <path d="M 320 490 Q 240 490 240 320 Q 240 200 320 235" stroke="#6b8eae" stroke-width="1.2" fill="none" marker-end="url(#arrow)" stroke-dasharray="3,3"/>
-      <text x="180" y="380" fill="#8a8473" font-family="JetBrains Mono" font-size="10" text-anchor="middle">recurse:</text>
-      <text x="180" y="395" fill="#8a8473" font-family="JetBrains Mono" font-size="10" text-anchor="middle">aggregation tree</text>
-
-      <!-- Arrow from Aggregator side to Arweave -->
-      <line x1="680" y1="490" x2="780" y2="490" stroke="#d4a017" stroke-width="1.2" stroke-dasharray="2,2" marker-end="url(#arrow-gold)" opacity="0.6"/>
-
-      <!-- Arrow down to Final Proof -->
-      <line x1="500" y1="530" x2="500" y2="575" stroke="#6b8eae" stroke-width="1.2" marker-end="url(#arrow)"/>
-      <text x="510" y="555" fill="#8a8473" font-family="JetBrains Mono" font-size="10">at root of tree</text>
-
-      <!-- Final Proof -->
-      <rect x="340" y="580" width="320" height="60" fill="none" stroke="#d4a017" stroke-width="2"/>
-      <text x="500" y="604" text-anchor="middle" fill="#ece6d6" font-family="JetBrains Mono" font-size="13" font-weight="700">PROOF[GENESIS, HEAD]</text>
-      <text x="500" y="622" text-anchor="middle" fill="#8a8473" font-family="JetBrains Mono" font-size="10">compact verifier-checkable artifact</text>
-
-      <!-- Arrow to Subscriber -->
-      <line x1="500" y1="640" x2="500" y2="675" stroke="#6b8eae" stroke-width="1.2" marker-end="url(#arrow)"/>
-
-      <!-- Subscriber -->
-      <rect x="340" y="680" width="320" height="30" fill="none" stroke="#8a8473" stroke-width="1"/>
-      <text x="500" y="700" text-anchor="middle" fill="#ece6d6" font-family="JetBrains Mono" font-size="12">SUBSCRIBER · RISK SYSTEM · CLEARING LAYER</text>
-    </svg>
+<div class="cover-grid">
+  <div class="cover-cell">
+    <div class="cover-cell-label">Document Type</div>
+    <div class="cover-cell-value">Architecture Reference<em>topology, schemas, build order</em></div>
   </div>
-
-  <p style="color:var(--ink-dim); font-size:12px; margin-top:8px;">
-    Blue arrows are AO message flow. Gold arrows are persistence to Arweave — every AO
-    message hits the SU and lands on Arweave with an ordered slot, which is the proof
-    lineage. The shard process runs in parallel across N CUs; the stacked outline behind
-    the SU and CU boxes is the visual cue for parallelization. Witness generation, proof
-    generation, and verification all run CU-native — for large ranges, building the
-    witness is itself significant compute that is parallelized the same way proving is.
-    Red dashed arrows are the fallback path to external prover services for workloads
-    that exceed CU capacity; those returned artifacts are treated as untrusted until the
-    CU verifies them against public inputs.
-  </p>
-</section>
-
-<section>
-  <h2><span class="num">01</span>Components</h2>
-  <div class="components">
-    <div class="component">
-      <div class="comp-name">Coordinator<span class="role">AO process</span></div>
-      <div class="comp-desc">
-        Owns the segmentation manifest. Partitions Ethereum history into deterministic
-        ranges under a versioned segmentation rule. Emits one <code>ProofShardJob</code>
-        per segment with input commitment, witness manifest pointer, target proof system,
-        and expected output schema.
-      </div>
-      <div class="comp-tag tag-ao">AO Native</div>
-    </div>
-    <div class="component">
-      <div class="comp-name">MU<span class="role">Messenger Unit</span></div>
-      <div class="comp-desc">
-        Recursive dispatcher. Pushes shard jobs into the network, routes results to aggregators,
-        propagates retries and verifier receipts. Not the ALU — the wire.
-      </div>
-      <div class="comp-tag tag-ao">AO Native</div>
-    </div>
-    <div class="component">
-      <div class="comp-name">SU<span class="role">Scheduler Unit</span></div>
-      <div class="comp-desc">
-        Assigns an ordered slot to every message and persists it. The persistence guarantee is what
-        turns the dispatcher's message graph into a tamper-evident proof lineage. This is the moat
-        primitive.
-      </div>
-      <div class="comp-tag tag-ao">AO Native</div>
-    </div>
-    <div class="component">
-      <div class="comp-name">CU<span class="role">Compute Unit · primary prover</span></div>
-      <div class="comp-desc">
-        Evaluates shard process state and runs all three workloads CU-native: builds the witness
-        from Ethereum state (read state, build MPT paths, package manifest), generates the proof,
-        verifies the result, emits outbox. The architecture parallelizes all three across many
-        CUs — each handling one bounded shard — rather than concentrating any of them on one
-        large machine. CU-native parallelized work is the moat; external provers are a fallback
-        for workloads that exceed what a CU can handle, not the default path.
-      </div>
-      <div class="comp-tag tag-ao">AO Native</div>
-    </div>
-    <div class="component">
-      <div class="comp-name">External Prover<span class="role">fallback only</span></div>
-      <div class="comp-desc">
-        Used only when a shard exceeds CU capacity — heavy custom circuits, very large witness
-        sets, or backends not yet portable to a CU environment. Backends like RISC Zero, SP1,
-        or Expander run on external hardware (CPU, GPU, FPGA). The CU calls out with a witness
-        manifest and treats the returned artifact as untrusted until verified against public
-        inputs. The design intent is to minimize reliance on this path.
-      </div>
-      <div class="comp-tag tag-ext">Fallback</div>
-    </div>
-    <div class="component">
-      <div class="comp-name">Aggregator<span class="role">AO process</span></div>
-      <div class="comp-desc">
-        Consumes valid sibling proofs, checks the boundary commitment match (left.end_root ==
-        right.start_root), runs the recursive aggregation circuit (or delegates to external prover),
-        emits one parent <code>AggregationResult</code>. Builds the tree level by level.
-      </div>
-      <div class="comp-tag tag-ao">AO Native</div>
-    </div>
-    <div class="component">
-      <div class="comp-name">Arweave<span class="role">storage substrate</span></div>
-      <div class="comp-desc">
-        SU writes every message to Arweave with its slot. Witness manifests, proof artifact
-        pointers, and the segmentation manifest itself live here. The lineage is the value, not
-        just the proofs.
-      </div>
-      <div class="comp-tag tag-store">Persistence</div>
-    </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Audience</div>
+    <div class="cover-cell-value">Engineers &amp; protocol reviewers<em>and operators of the dispatcher</em></div>
   </div>
-</section>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Status</div>
+    <div class="cover-cell-value">Reference · Rev. A<em>v0.4 of the architecture sketch</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Series</div>
+    <div class="cover-cell-value">T · Technical Architecture<em>the layer underneath A-series Phase 1</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Companion Set</div>
+    <div class="cover-cell-value">A · B · CA · M · O<em>Phase 1, Narrative, Compliance, Audit Relay, Ops</em></div>
+  </div>
+  <div class="cover-cell">
+    <div class="cover-cell-label">Boundary</div>
+    <div class="cover-cell-value">Composability claim only<em>not a total-cost claim — see T-600</em></div>
+  </div>
+</div>
 
-<section>
-  <h2><span class="num">02</span>Message schemas</h2>
-  <div class="schemas">
+<div class="toc-section-label">Front Matter</div>
+<div class="toc-row"><div class="toc-num">T-000</div><div class="toc-title">Cover &amp; Index<em>this sheet</em></div><div class="toc-page">↑</div></div>
 
-    <div class="schema">
-      <div class="schema-name">ProofShardJob</div>
+<div class="toc-section-label">Topology</div>
+<div class="toc-row"><div class="toc-num">T-100</div><div class="toc-title">Architecture Diagram<em>coordinator → MU → SU → CU → aggregator</em></div><div class="toc-page"><a href="#t-100">T-100</a></div></div>
+<div class="toc-row"><div class="toc-num">T-200</div><div class="toc-title">Components<em>seven roles in the dispatcher graph</em></div><div class="toc-page"><a href="#t-200">T-200</a></div></div>
+<div class="toc-row"><div class="toc-num">T-300</div><div class="toc-title">Message Schemas<em>jobs, results, manifests, receipts</em></div><div class="toc-page"><a href="#t-300">T-300</a></div></div>
+
+<div class="toc-section-label">Build &amp; Measurement</div>
+<div class="toc-row"><div class="toc-num">T-400</div><div class="toc-title">Build Order for Benchmarks<em>six steps from segmentation to scaling</em></div><div class="toc-page"><a href="#t-400">T-400</a></div></div>
+<div class="toc-row"><div class="toc-num">T-500</div><div class="toc-title">What to Expect<em>rough ballparks before measurement</em></div><div class="toc-page"><a href="#t-500">T-500</a></div></div>
+
+<div class="toc-section-label">Boundary &amp; Path</div>
+<div class="toc-row"><div class="toc-num">T-600</div><div class="toc-title">Boundary of the Claim<em>composability, not total compute</em></div><div class="toc-page"><a href="#t-600">T-600</a></div></div>
+<div class="toc-row"><div class="toc-num">T-700</div><div class="toc-title">Minimum Viable Proving Path<em>three deliverables, end-to-end</em></div><div class="toc-page"><a href="#t-700">T-700</a></div></div>
+
+<!-- ═════════════════════════════════════════════
+     T-100 · ARCHITECTURE DIAGRAM
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet T-100"></div>
+
+<div id="t-100">
+<div class="section-mark">T-100 · Architecture Diagram</div>
+<h2 class="section-title">Coordinator, MU, SU, CU,<br><em>aggregator, Arweave.</em></h2>
+<p class="section-strap">
+The full dispatcher topology in one figure. Coordinator partitions; MU
+pushes; SU orders and persists; N CUs run all three workloads —
+witness, proof, verify — in parallel; aggregator combines results
+recursively to a root proof.
+</p>
+
+<div class="legend">
+  <div class="legend-group">
+    <div class="legend-label">Components</div>
+    <div class="legend-item"><span class="swatch" style="background:var(--green)"></span>AO-native process (MU / SU / CU)</div>
+    <div class="legend-item"><span class="swatch" style="background:var(--red); opacity:0.55"></span>External prover (fallback only)</div>
+    <div class="legend-item"><span class="swatch" style="background:var(--amber)"></span>Arweave persistence</div>
+  </div>
+  <div class="legend-group">
+    <div class="legend-label">Arrows</div>
+    <div class="legend-item"><span class="swatch" style="background:var(--blue)"></span>AO message flow</div>
+    <div class="legend-item"><span class="swatch" style="background:var(--amber)"></span>Persistence to Arweave</div>
+    <div class="legend-item"><span class="swatch" style="background:var(--red); opacity:0.55"></span>Fallback to external prover</div>
+  </div>
+</div>
+
+<div class="diagram">
+  <svg viewBox="0 0 1000 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AO dispatcher topology — coordinator partitions Ethereum work, MU pushes shard jobs, SU persists to Arweave, N CUs run witness/proof/verify in parallel, aggregator recursively combines proofs to a single root">
+    <defs>
+      <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L9,3 z" fill="#1E3A5F"/>
+      </marker>
+      <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L9,3 z" fill="#8B2E1F"/>
+      </marker>
+      <marker id="arrow-amber" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L9,3 z" fill="#B8860B"/>
+      </marker>
+    </defs>
+
+    <!-- Coordinator -->
+    <rect x="380" y="20" width="240" height="60" fill="#F5F1E8" stroke="#2D6A4F" stroke-width="1.5"/>
+    <text x="500" y="44" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">PAXIOM COORDINATOR</text>
+    <text x="500" y="62" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">AO process · partitions chain into ranges</text>
+
+    <!-- Arrow down to MU -->
+    <line x1="500" y1="80" x2="500" y2="115" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrow)"/>
+    <text x="510" y="100" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">ProofShardJob × N</text>
+
+    <!-- MU layer -->
+    <rect x="380" y="120" width="240" height="50" fill="#F5F1E8" stroke="#2D6A4F" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="500" y="142" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700">MU · MESSENGER UNIT</text>
+    <text x="500" y="158" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">routes / pushes message</text>
+
+    <!-- Arrow down to SU -->
+    <line x1="500" y1="170" x2="500" y2="205" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+    <!-- × N parallel badge -->
+    <text x="180" y="290" text-anchor="middle" fill="#2D6A4F" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">× N parallel</text>
+    <text x="180" y="306" text-anchor="middle" fill="#2D6A4F" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">shard processes</text>
+    <text x="180" y="326" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">each shard runs on</text>
+    <text x="180" y="338" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">its own CU</text>
+    <line x1="220" y1="350" x2="320" y2="350" stroke="#2D6A4F" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+
+    <!-- Stacked outline behind SU (parallelization cue) -->
+    <rect x="388" y="218" width="240" height="50" fill="none" stroke="#2D6A4F" stroke-width="1" stroke-dasharray="4,3" opacity="0.25"/>
+    <rect x="384" y="214" width="240" height="50" fill="none" stroke="#2D6A4F" stroke-width="1" stroke-dasharray="4,3" opacity="0.45"/>
+
+    <!-- SU layer -->
+    <rect x="380" y="210" width="240" height="50" fill="#F5F1E8" stroke="#2D6A4F" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="500" y="232" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700">SU · SCHEDULER UNIT</text>
+    <text x="500" y="248" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">assigns ordered slot · persists</text>
+
+    <!-- Arrow to Arweave (right) -->
+    <line x1="620" y1="235" x2="780" y2="235" stroke="#B8860B" stroke-width="1.2" marker-end="url(#arrow-amber)"/>
+    <text x="700" y="227" text-anchor="middle" fill="#B8860B" font-family="JetBrains Mono, monospace" font-size="10">slot + msg</text>
+
+    <!-- Arweave -->
+    <rect x="780" y="195" width="180" height="80" fill="#F5F1E8" stroke="#B8860B" stroke-width="1.5"/>
+    <text x="870" y="220" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">ARWEAVE</text>
+    <text x="870" y="238" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">message history</text>
+    <text x="870" y="252" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">witness manifests</text>
+    <text x="870" y="266" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">proof lineage</text>
+
+    <!-- Arrow down from SU to CU -->
+    <line x1="500" y1="260" x2="500" y2="295" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+    <!-- Stacked outline behind CU (parallelization cue) -->
+    <rect x="328" y="308" width="360" height="100" fill="none" stroke="#2D6A4F" stroke-width="1" stroke-dasharray="4,3" opacity="0.25"/>
+    <rect x="324" y="304" width="360" height="100" fill="none" stroke="#2D6A4F" stroke-width="1" stroke-dasharray="4,3" opacity="0.45"/>
+
+    <!-- CU layer -->
+    <rect x="320" y="300" width="360" height="100" fill="#F5F1E8" stroke="#2D6A4F" stroke-width="1.5"/>
+    <text x="500" y="320" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">CU · COMPUTE UNIT</text>
+    <text x="500" y="335" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">witness · proof · verify — all CU-native, parallelized across N CUs</text>
+    <line x1="340" y1="346" x2="660" y2="346" stroke="#B8AE96" stroke-width="1"/>
+    <line x1="440" y1="350" x2="440" y2="396" stroke="#B8AE96" stroke-width="1" stroke-dasharray="2,2"/>
+    <line x1="560" y1="350" x2="560" y2="396" stroke="#B8AE96" stroke-width="1" stroke-dasharray="2,2"/>
+    <!-- Column 1: Witness Gen -->
+    <text x="380" y="364" text-anchor="middle" fill="#2D6A4F" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">WITNESS GEN</text>
+    <text x="380" y="378" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">read state</text>
+    <text x="380" y="389" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">build manifest</text>
+    <!-- Column 2: Proof Gen -->
+    <text x="500" y="364" text-anchor="middle" fill="#2D6A4F" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">PROOF GEN</text>
+    <text x="500" y="378" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">run circuit</text>
+    <text x="500" y="389" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">emit artifact</text>
+    <!-- Column 3: Verify + Emit -->
+    <text x="620" y="364" text-anchor="middle" fill="#2D6A4F" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">VERIFY + EMIT</text>
+    <text x="620" y="378" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">check result</text>
+    <text x="620" y="389" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">emit outbox</text>
+
+    <!-- Arrow CU → External Prover (faded, dashed - fallback path) -->
+    <line x1="680" y1="380" x2="780" y2="430" stroke="#8B2E1F" stroke-width="1" stroke-dasharray="4,3" opacity="0.55" marker-end="url(#arrow-red)"/>
+    <text x="755" y="395" fill="#8B2E1F" font-family="JetBrains Mono, monospace" font-size="9" opacity="0.7">if needed</text>
+
+    <!-- External Prover (FALLBACK - faded, dashed) -->
+    <rect x="780" y="410" width="180" height="80" fill="#F5F1E8" stroke="#8B2E1F" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.65"/>
+    <text x="870" y="432" text-anchor="middle" fill="#8B2E1F" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" opacity="0.8">EXTERNAL PROVER</text>
+    <text x="870" y="448" text-anchor="middle" fill="#8B2E1F" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" opacity="0.8">FALLBACK ONLY</text>
+    <text x="870" y="466" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9" opacity="0.7">when CU exceeds capacity</text>
+    <text x="870" y="480" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9" opacity="0.7">untrusted until verified</text>
+
+    <!-- Arrow External → CU (faded, dashed) -->
+    <path d="M 780 470 Q 720 470 680 410" stroke="#8B2E1F" stroke-width="1" stroke-dasharray="4,3" opacity="0.55" fill="none" marker-end="url(#arrow-red)"/>
+    <text x="710" y="495" fill="#8B2E1F" font-family="JetBrains Mono, monospace" font-size="9" opacity="0.7">artifact (CU verifies)</text>
+
+    <!-- Arrow down from CU to Result -->
+    <line x1="500" y1="400" x2="500" y2="445" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrow)"/>
+    <text x="510" y="425" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">ProofShardResult</text>
+
+    <!-- Aggregator -->
+    <rect x="320" y="450" width="360" height="80" fill="#F5F1E8" stroke="#2D6A4F" stroke-width="1.5"/>
+    <text x="500" y="474" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">AGGREGATOR PROCESS</text>
+    <text x="500" y="490" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">CU receives left + right child proofs</text>
+    <text x="500" y="504" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">checks boundary · runs aggregation circuit (CU-native)</text>
+    <text x="500" y="520" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">emits AggregationResult</text>
+
+    <!-- Recursion arrow -->
+    <path d="M 320 490 Q 240 490 240 320 Q 240 200 320 235" stroke="#1E3A5F" stroke-width="1.2" fill="none" marker-end="url(#arrow)" stroke-dasharray="3,3"/>
+    <text x="180" y="380" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">recurse:</text>
+    <text x="180" y="395" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">aggregation tree</text>
+
+    <!-- Arrow from Aggregator side to Arweave -->
+    <line x1="680" y1="490" x2="780" y2="490" stroke="#B8860B" stroke-width="1.2" stroke-dasharray="2,2" marker-end="url(#arrow-amber)" opacity="0.7"/>
+
+    <!-- Arrow down to Final Proof -->
+    <line x1="500" y1="530" x2="500" y2="575" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrow)"/>
+    <text x="510" y="555" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">at root of tree</text>
+
+    <!-- Final Proof -->
+    <rect x="340" y="580" width="320" height="60" fill="#F5F1E8" stroke="#B8860B" stroke-width="2"/>
+    <text x="500" y="604" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">PROOF[GENESIS, HEAD]</text>
+    <text x="500" y="622" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">compact verifier-checkable artifact</text>
+
+    <!-- Arrow to Subscriber -->
+    <line x1="500" y1="640" x2="500" y2="675" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+    <!-- Subscriber -->
+    <rect x="340" y="680" width="320" height="30" fill="#F5F1E8" stroke="#6B7280" stroke-width="1"/>
+    <text x="500" y="700" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="12">SUBSCRIBER · RISK SYSTEM · CLEARING LAYER</text>
+  </svg>
+</div>
+
+<div class="diagram-caption"><span class="fig-num">FIG. T-100.1</span>AO dispatcher topology · partitioning, persistence, parallel proving, recursive aggregation</div>
+
+<p class="diagram-note">
+Blue arrows are AO message flow. Amber arrows are persistence to Arweave —
+every AO message hits the SU and lands on Arweave with an ordered slot,
+which is the proof lineage. The shard process runs in parallel across N
+CUs; the stacked outline behind the SU and CU boxes is the visual cue
+for parallelization. Witness generation, proof generation, and
+verification all run CU-native — for large ranges, building the witness
+is itself significant compute that is parallelized the same way proving
+is. Red dashed arrows are the fallback path to external prover services
+for workloads that exceed CU capacity; those returned artifacts are
+treated as untrusted until the CU verifies them against public inputs.
+</p>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     T-200 · COMPONENTS
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet T-200"></div>
+
+<div id="t-200">
+<div class="section-mark">T-200 · Components</div>
+<h2 class="section-title">Seven roles in the <em>dispatcher graph.</em></h2>
+<p class="section-strap">
+Five AO-native processes, one external-prover fallback, one persistence
+substrate. Each named with its responsibility, classified as AO-native,
+fallback, or persistence.
+</p>
+
+<table class="schedule">
+  <thead>
+    <tr>
+      <th style="width: 22%;">Component</th>
+      <th>Responsibility</th>
+      <th style="width: 14%;">Class</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="comp">Coordinator</span><span class="role">AO process</span></td>
+      <td>Owns the segmentation manifest. Partitions Ethereum history into deterministic ranges under a versioned segmentation rule. Emits one <code>ProofShardJob</code> per segment with input commitment, witness manifest pointer, target proof system, and expected output schema.</td>
+      <td><span class="tag ao">AO Native</span></td>
+    </tr>
+    <tr>
+      <td><span class="comp">MU</span><span class="role">Messenger Unit</span></td>
+      <td>Recursive dispatcher. Pushes shard jobs into the network, routes results to aggregators, propagates retries and verifier receipts. Not the ALU — the wire.</td>
+      <td><span class="tag ao">AO Native</span></td>
+    </tr>
+    <tr>
+      <td><span class="comp">SU</span><span class="role">Scheduler Unit</span></td>
+      <td>Assigns an ordered slot to every message and persists it. The persistence guarantee is what turns the dispatcher's message graph into a tamper-evident proof lineage. This is the moat primitive.</td>
+      <td><span class="tag ao">AO Native</span></td>
+    </tr>
+    <tr>
+      <td><span class="comp">CU</span><span class="role">Compute Unit · primary prover</span></td>
+      <td>Evaluates shard process state and runs all three workloads CU-native: builds the witness from Ethereum state (read state, build MPT paths, package manifest), generates the proof, verifies the result, emits outbox. The architecture parallelizes all three across many CUs — each handling one bounded shard — rather than concentrating any of them on one large machine. CU-native parallelized work is the moat; external provers are a fallback for workloads that exceed what a CU can handle, not the default path.</td>
+      <td><span class="tag ao">AO Native</span></td>
+    </tr>
+    <tr>
+      <td><span class="comp">External Prover</span><span class="role">fallback only</span></td>
+      <td>Used only when a shard exceeds CU capacity — heavy custom circuits, very large witness sets, or backends not yet portable to a CU environment. Backends like RISC Zero, SP1, or Expander run on external hardware (CPU, GPU, FPGA). The CU calls out with a witness manifest and treats the returned artifact as untrusted until verified against public inputs. The design intent is to minimize reliance on this path.</td>
+      <td><span class="tag ext">Fallback</span></td>
+    </tr>
+    <tr>
+      <td><span class="comp">Aggregator</span><span class="role">AO process</span></td>
+      <td>Consumes valid sibling proofs, checks the boundary commitment match (<code>left.end_root == right.start_root</code>), runs the recursive aggregation circuit (or delegates to external prover), emits one parent <code>AggregationResult</code>. Builds the tree level by level.</td>
+      <td><span class="tag ao">AO Native</span></td>
+    </tr>
+    <tr>
+      <td><span class="comp">Arweave</span><span class="role">storage substrate</span></td>
+      <td>SU writes every message to Arweave with its slot. Witness manifests, proof artifact pointers, and the segmentation manifest itself live here. The lineage is the value, not just the proofs.</td>
+      <td><span class="tag store">Persistence</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     T-300 · MESSAGE SCHEMAS
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet T-300"></div>
+
+<div id="t-300">
+<div class="section-mark">T-300 · Message Schemas</div>
+<h2 class="section-title">Six messages,<br><em>typed and persisted.</em></h2>
+<p class="section-strap">
+Every AO message in the dispatcher conforms to one of six schemas. Each
+is persisted to Arweave with an ordered slot; the schema corpus is the
+protocol's typed surface.
+</p>
+
+<div class="schemas">
+
+  <div class="schema">
+    <div class="schema-name">ProofShardJob</div>
 <pre><span class="key">range</span>:               [start, end]
 <span class="key">input_commitment</span>:    bytes32
 <span class="key">witness_manifest</span>:    ar://...
@@ -642,10 +598,10 @@
 <span class="key">output_schema</span>:       eth-range-v0
 <span class="key">segmentation_ver</span>:    paxiom.seg.v1
 <span class="key">parent_job_id</span>:       opt</pre>
-    </div>
+  </div>
 
-    <div class="schema">
-      <div class="schema-name">ProofShardResult</div>
+  <div class="schema">
+    <div class="schema-name">ProofShardResult</div>
 <pre><span class="key">job_id</span>:              ref
 <span class="key">range</span>:               [start, end]
 <span class="key">proof_hash</span>:          bytes32
@@ -654,257 +610,247 @@
 <span class="key">output_commitment</span>:   bytes32
 <span class="key">prover_id</span>:           opt
 <span class="key">status</span>:              valid | failed</pre>
-    </div>
+  </div>
 
-    <div class="schema">
-      <div class="schema-name">AggregationJob</div>
+  <div class="schema">
+    <div class="schema-name">AggregationJob</div>
 <pre><span class="key">left_proof</span>:          ref
 <span class="key">right_proof</span>:         ref
 <span class="key">required_boundary</span>:   left.end ==
                      right.start
 <span class="key">aggregation_ckt</span>:     v1
 <span class="key">parent_range</span>:        [L.start, R.end]</pre>
-    </div>
+  </div>
 
-    <div class="schema">
-      <div class="schema-name">AggregationResult</div>
+  <div class="schema">
+    <div class="schema-name">AggregationResult</div>
 <pre><span class="key">job_id</span>:              ref
 <span class="key">aggregate_range</span>:     [start, end]
 <span class="key">aggregate_proof</span>:     ar://...
 <span class="key">aggregate_inputs</span>:    bytes
 <span class="key">tree_level</span>:          int
 <span class="key">status</span>:              valid | failed</pre>
-    </div>
+  </div>
 
-    <div class="schema">
-      <div class="schema-name">WitnessManifest</div>
+  <div class="schema">
+    <div class="schema-name">WitnessManifest</div>
 <pre><span class="key">range</span>:               [start, end]
 <span class="key">state_reads</span>:         ar://...
 <span class="key">code_blobs</span>:          ar://...
 <span class="key">mpt_paths</span>:           ar://...
 <span class="key">data_commitment</span>:     bytes32</pre>
-    </div>
+  </div>
 
-    <div class="schema">
-      <div class="schema-name">VerifierReceipt</div>
+  <div class="schema">
+    <div class="schema-name">VerifierReceipt</div>
 <pre><span class="key">proof_ref</span>:           ref
 <span class="key">verifier_key_id</span>:    ref to registry
 <span class="key">verified</span>:            bool
 <span class="key">verifier_id</span>:         opt
 <span class="key">timestamp</span>:           slot</pre>
-    </div>
-
   </div>
-</section>
 
-<section>
-  <h2><span class="num">03</span>Build order for benchmarks</h2>
-  <div class="steps">
+</div>
+</div>
 
-    <div class="step">
-      <div class="step-num">01</div>
-      <div>
-        <div class="step-title">Pin the segmentation manifest and verifier key registry</div>
-        <div class="step-body">
-          Write <code>paxiom.segmentation.v1</code> as a JSON document on Arweave: how ranges are
-          partitioned, which proof systems are accepted at which tree levels, which verifier keys
-          are canonical. Every shard process anchors against this. This is the smallest possible
-          first artifact and it locks the protocol shape.
-        </div>
-        <div class="step-measure">arweave write latency · doc retrieval latency</div>
-      </div>
-    </div>
+<!-- ═════════════════════════════════════════════
+     T-400 · BUILD ORDER FOR BENCHMARKS
+     ═════════════════════════════════════════════ -->
 
-    <div class="step">
-      <div class="step-num">02</div>
-      <div>
-        <div class="step-title">Build one shard process for one predicate at one block</div>
-        <div class="step-body">
-          Start from <code>uniswap_v3_slot0</code> at a single block — it's a predicate you've
-          already shipped. Wrap it as an AO process that accepts <code>ProofShardJob</code> and
-          emits <code>ProofShardResult</code>. The CU evaluates the process, builds the witness
-          (storage slot value + MPT path), runs the proof, verifies the result, returns the
-          artifact pointer. No external prover at this stage. For slot0 the witness is small;
-          for range shards it will be the bulk of the per-shard compute.
-        </div>
-        <div class="step-measure">round-trip latency: job emit → result on Arweave</div>
-      </div>
-    </div>
+<div class="page-break" data-sheet="Sheet T-400"></div>
 
-    <div class="step">
-      <div class="step-num">03</div>
-      <div>
-        <div class="step-title">Instrument the dispatch path</div>
-        <div class="step-body">
-          Add timestamps at: coordinator emit, MU push received, SU slot assigned, CU eval
-          start, witness gen start, witness gen done, proof gen start, proof gen done, CU
-          verification done, result message persisted. Separating witness from proof is what
-          tells you which workload dominates per shard size — and which one to prioritize
-          when you start optimizing.
-        </div>
-        <div class="step-measure">AO coordination latency vs witness time vs proof time vs verify time</div>
-      </div>
-    </div>
+<div id="t-400">
+<div class="section-mark">T-400 · Build Order for Benchmarks</div>
+<h2 class="section-title">Six steps from segmentation<br><em>to scaling measurement.</em></h2>
+<p class="section-strap">
+Sequenced so each step's measurement informs the next. No step skips
+ahead of its measurement; no claim is made that a later step has not
+yet been validated.
+</p>
 
-    <div class="step">
-      <div class="step-num">04</div>
-      <div>
-        <div class="step-title">Range-extend the predicate</div>
-        <div class="step-body">
-          Move from single-block <code>slot0</code> to <code>slot0_range</code> over [A, B]. Same
-          process, larger witness, larger proof. This is the first real shard — directly
-          monetizable, exercises the full path, and is the smallest unit the clearing house's
-          netting layer actually consumes.
-        </div>
-        <div class="step-measure">prover time as f(range size) · witness size as f(range)</div>
-      </div>
-    </div>
+<ol class="steps">
+  <li>
+    <div class="step-title">Pin the segmentation manifest and verifier key registry</div>
+    <p class="step-body">Write <code>paxiom.segmentation.v1</code> as a JSON document on Arweave: how ranges are partitioned, which proof systems are accepted at which tree levels, which verifier keys are canonical. Every shard process anchors against this. This is the smallest possible first artifact and it locks the protocol shape.</p>
+    <div class="step-measure">arweave write latency · doc retrieval latency</div>
+  </li>
+  <li>
+    <div class="step-title">Build one shard process for one predicate at one block</div>
+    <p class="step-body">Start from <code>uniswap_v3_slot0</code> at a single block — it's a predicate already shipped. Wrap it as an AO process that accepts <code>ProofShardJob</code> and emits <code>ProofShardResult</code>. The CU evaluates the process, builds the witness (storage slot value + MPT path), runs the proof, verifies the result, returns the artifact pointer. No external prover at this stage. For slot0 the witness is small; for range shards it will be the bulk of the per-shard compute.</p>
+    <div class="step-measure">round-trip latency: job emit → result on Arweave</div>
+  </li>
+  <li>
+    <div class="step-title">Instrument the dispatch path</div>
+    <p class="step-body">Add timestamps at: coordinator emit, MU push received, SU slot assigned, CU eval start, witness gen start, witness gen done, proof gen start, proof gen done, CU verification done, result message persisted. Separating witness from proof is what tells you which workload dominates per shard size — and which one to prioritize when you start optimizing.</p>
+    <div class="step-measure">AO coordination latency vs witness time vs proof time vs verify time</div>
+  </li>
+  <li>
+    <div class="step-title">Range-extend the predicate</div>
+    <p class="step-body">Move from single-block <code>slot0</code> to <code>slot0_range</code> over [A, B]. Same process, larger witness, larger proof. This is the first real shard — directly monetizable, exercises the full path, and is the smallest unit the clearing house's netting layer actually consumes.</p>
+    <div class="step-measure">prover time as f(range size) · witness size as f(range)</div>
+  </li>
+  <li>
+    <div class="step-title">Build the aggregator process and prove two ranges combine</div>
+    <p class="step-body">New AO process that consumes two sibling <code>ProofShardResult</code> messages, validates boundary match, runs the aggregation circuit (RISC Zero recursion receipt or equivalent), emits a parent <code>AggregationResult</code>. Test with two adjacent slot0_range proofs.</p>
+    <div class="step-measure">aggregation overhead per level (typically 1.2–2x sum of children)</div>
+  </li>
+  <li>
+    <div class="step-title">Scale to a tree and measure depth</div>
+    <p class="step-body">Run 4 → 8 → 16 → 32 shards in parallel across that many CUs. Plot wall-clock vs shard count and aggregation depth. The headline number is whether parallel CU proving actually scales linearly (or near it) with shard count. If yes, the architecture works as advertised; if not, a bottleneck has been found that's worth solving before the public claim.</p>
+    <div class="step-measure">parallel scaling factor · tree depth scaling · projection to full chain</div>
+  </li>
+</ol>
+</div>
 
-    <div class="step">
-      <div class="step-num">05</div>
-      <div>
-        <div class="step-title">Build the aggregator process and prove two ranges combine</div>
-        <div class="step-body">
-          New AO process that consumes two sibling <code>ProofShardResult</code> messages,
-          validates boundary match, runs the aggregation circuit (RISC Zero recursion receipt or
-          equivalent), emits a parent <code>AggregationResult</code>. Test with two adjacent
-          slot0_range proofs.
-        </div>
-        <div class="step-measure">aggregation overhead per level (typically 1.2–2x sum of children)</div>
-      </div>
-    </div>
+<!-- ═════════════════════════════════════════════
+     T-500 · WHAT TO EXPECT
+     ═════════════════════════════════════════════ -->
 
-    <div class="step">
-      <div class="step-num">06</div>
-      <div>
-        <div class="step-title">Scale to a tree and measure depth</div>
-        <div class="step-body">
-          Run 4 → 8 → 16 → 32 shards in parallel across that many CUs. Plot wall-clock vs shard
-          count and aggregation depth. The headline number is whether parallel CU proving
-          actually scales linearly (or near it) with shard count. If yes, the architecture works
-          as advertised; if not, you've found a bottleneck worth solving before the public claim.
-        </div>
-        <div class="step-measure">parallel scaling factor · tree depth scaling · projection to full chain</div>
-      </div>
-    </div>
+<div class="page-break" data-sheet="Sheet T-500"></div>
 
+<div id="t-500">
+<div class="section-mark">T-500 · What to Expect</div>
+<h2 class="section-title">Rough ballparks,<br><em>before measurement.</em></h2>
+<p class="section-strap">
+Order-of-magnitude expectations, not commitments. The actual numbers
+come from <a href="#t-400">T-400</a>; these are what to expect when
+running the steps and what to flag as anomalous if observed values
+diverge significantly.
+</p>
+
+<div class="bench">
+
+  <div class="bench-card">
+    <h3>AO dispatch overhead</h3>
+    <p>MU push + SU slot + CU eval start, no proving work. Wire-time of the architecture itself.</p>
+    <span class="ballpark">~hundreds of ms per hop</span>
   </div>
-</section>
 
-<section>
-  <h2><span class="num">04</span>What to expect (rough ballparks)</h2>
-  <div class="bench">
-
-    <div class="bench-card">
-      <h3>AO dispatch overhead</h3>
-      <p>MU push + SU slot + CU eval start, no proving work. Wire-time of the architecture itself.</p>
-      <span class="ballpark">~hundreds of ms per hop</span>
-    </div>
-
-    <div class="bench-card">
-      <h3>Single MPT shard</h3>
-      <p>One <code>uniswap_v3_slot0</code> proof at one block on commodity hardware. Your existing baseline.</p>
-      <span class="ballpark">p50 0.69s · p95 1.22s (measured)</span>
-    </div>
-
-    <div class="bench-card">
-      <h3>Witness generation per shard</h3>
-      <p>Reading state, building MPT paths, packaging the manifest. Trivial for slot0; significant
-      for range shards. Worth measuring separately so you know which workload to optimize.</p>
-      <span class="ballpark">measure separately from proof time</span>
-    </div>
-
-    <div class="bench-card">
-      <h3>CU-native range shard</h3>
-      <p>1000-block <code>slot0_range</code> proof running in a single CU. Variability driven by
-      witness size, predicate complexity, and CU compute class.</p>
-      <span class="ballpark">measure first · highly workload-dependent</span>
-    </div>
-
-    <div class="bench-card">
-      <h3>Aggregation per level</h3>
-      <p>Combining two child proofs into one parent. Roughly fixed cost per level regardless of children's coverage.</p>
-      <span class="ballpark">seconds to minutes</span>
-    </div>
-
-    <div class="bench-card">
-      <h3>Arweave persistence</h3>
-      <p>SU writing a message + slot. Bundled writes amortize cost. Witness manifest writes are larger.</p>
-      <span class="ballpark">seconds per bundle</span>
-    </div>
-
-    <div class="bench-card">
-      <h3>Genesis-to-head projection</h3>
-      <p>Don't extrapolate until step 06 of the build order is done. Numbers from a real tree depth measurement are the only honest projection.</p>
-      <span class="ballpark">measure first · claim later</span>
-    </div>
-
+  <div class="bench-card">
+    <h3>Single MPT shard</h3>
+    <p>One <code>uniswap_v3_slot0</code> proof at one block on commodity hardware. Existing baseline.</p>
+    <span class="ballpark">p50 0.69s · p95 1.22s (measured)</span>
   </div>
-</section>
 
-<section>
-  <h2><span class="num">05</span>Boundary of the claim</h2>
-  <p>
-    The design intent is that proof work runs on AO CUs in parallel — many lightweight
-    CUs each handling one bounded shard, with recursive aggregation compressing the
-    result. External provers exist as a fallback for workloads that exceed CU capacity,
-    not as the default path. This page does not claim that every historical Ethereum
-    transition can be cheaply proven on commodity CUs today; some workloads will require
-    the fallback path until CU-side proving capability matures, until shard sizing
-    improves, or until aggregation circuits absorb more of the heavy work. The
-    composability claim is about <em>who can participate</em> in proving — many CUs in
-    parallel rather than one big prover or one bonded marketplace — not about reducing
-    total proving compute.
-  </p>
-</section>
-
-<section>
-  <h2><span class="num">06</span>Minimum viable proving path</h2>
-  <p>
-    Three deliverables that demonstrate the architecture works end-to-end without yet
-    claiming the full genesis-to-head ambition. Each one stands on its own as a
-    publishable milestone and as a credibility artifact.
-  </p>
-  <div class="steps">
-    <div class="step">
-      <div class="step-num">01</div>
-      <div>
-        <div class="step-title">Prove one bounded Ethereum state predicate</div>
-        <div class="step-body">
-          Storage inclusion or <code>uniswap_v3_slot0</code> verification against a known
-          block state root. The verifier accepts the public input and proof artifact.
-        </div>
-        <div class="step-measure">verifier accepts artifact end-to-end</div>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">02</div>
-      <div>
-        <div class="step-title">Persist witness manifest and receipt lineage through AO</div>
-        <div class="step-body">
-          Store the job, witness pointer, prover receipt, verifier result, and output
-          commitment via AO/Arweave. Anyone can replay the proving event from public data.
-        </div>
-        <div class="step-measure">auditable replay path exists</div>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">03</div>
-      <div>
-        <div class="step-title">Aggregate two bounded ranges into one parent proof</div>
-        <div class="step-body">
-          Combine sibling results only when boundary commitments match. The parent proof
-          has a deterministic lineage traceable back to the segmentation manifest.
-        </div>
-        <div class="step-measure">range proof has deterministic lineage</div>
-      </div>
-    </div>
+  <div class="bench-card">
+    <h3>Witness generation per shard</h3>
+    <p>Reading state, building MPT paths, packaging the manifest. Trivial for slot0; significant for range shards. Worth measuring separately so the dominating workload is known.</p>
+    <span class="ballpark">measure separately from proof time</span>
   </div>
-</section>
 
-<footer>
-  paxiom · ao dispatcher architecture for verifiable ethereum proof work · v0.4
-</footer>
+  <div class="bench-card">
+    <h3>CU-native range shard</h3>
+    <p>1000-block <code>slot0_range</code> proof running in a single CU. Variability driven by witness size, predicate complexity, and CU compute class.</p>
+    <span class="ballpark">measure first · highly workload-dependent</span>
+  </div>
+
+  <div class="bench-card">
+    <h3>Aggregation per level</h3>
+    <p>Combining two child proofs into one parent. Roughly fixed cost per level regardless of children's coverage.</p>
+    <span class="ballpark">seconds to minutes</span>
+  </div>
+
+  <div class="bench-card">
+    <h3>Arweave persistence</h3>
+    <p>SU writing a message + slot. Bundled writes amortize cost. Witness manifest writes are larger.</p>
+    <span class="ballpark">seconds per bundle</span>
+  </div>
+
+  <div class="bench-card">
+    <h3>Genesis-to-head projection</h3>
+    <p>Don't extrapolate until step 06 of the build order is done. Numbers from a real tree depth measurement are the only honest projection.</p>
+    <span class="ballpark">measure first · claim later</span>
+  </div>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     T-600 · BOUNDARY OF THE CLAIM
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet T-600"></div>
+
+<div id="t-600">
+<div class="section-mark">T-600 · Boundary of the Claim</div>
+<h2 class="section-title">Composability,<br><em>not total compute.</em></h2>
+<p class="section-strap">
+What this architecture claims and — equally important — what it does
+not. Read this sheet before extrapolating from <a href="#t-500">T-500</a>
+to a public statement.
+</p>
+
+<div class="prose">
+<p class="lead">The design intent is that proof work runs on AO CUs in parallel — many lightweight CUs each handling one bounded shard, with recursive aggregation compressing the result. External provers exist as a fallback for workloads that exceed CU capacity, not as the default path.</p>
+
+<p>This page does not claim that every historical Ethereum transition can be cheaply proven on commodity CUs today; some workloads will require the fallback path until CU-side proving capability matures, until shard sizing improves, or until aggregation circuits absorb more of the heavy work.</p>
+</div>
+
+<div class="callout bound">
+  <div class="callout-header">
+    <span class="callout-tag">Boundary</span>
+    <span>What is being claimed, and what is not</span>
+    <span class="callout-id">T-600 / B.01</span>
+  </div>
+  <div class="callout-body">
+    <p>The composability claim is about <strong>who can participate</strong> in proving — many CUs in parallel rather than one big prover or one bonded marketplace — <strong>not</strong> about reducing total proving compute.</p>
+    <p>Total compute is what it is for a given proof system and predicate. The architecture's contribution is that the compute can be distributed across lightweight participants, with the persistence and ordering substrate (SU + Arweave) providing the audit trail that makes the distribution coherent.</p>
+  </div>
+</div>
+</div>
+
+<!-- ═════════════════════════════════════════════
+     T-700 · MINIMUM VIABLE PROVING PATH
+     ═════════════════════════════════════════════ -->
+
+<div class="page-break" data-sheet="Sheet T-700"></div>
+
+<div id="t-700">
+<div class="section-mark">T-700 · Minimum Viable Proving Path</div>
+<h2 class="section-title">Three deliverables,<br><em>end to end.</em></h2>
+<p class="section-strap">
+The smallest set of demonstrations that show the architecture works
+without yet claiming the full genesis-to-head ambition. Each one stands
+on its own as a publishable milestone and as a credibility artifact.
+</p>
+
+<ol class="steps">
+  <li>
+    <div class="step-title">Prove one bounded Ethereum state predicate</div>
+    <p class="step-body">Storage inclusion or <code>uniswap_v3_slot0</code> verification against a known block state root. The verifier accepts the public input and proof artifact.</p>
+    <div class="step-measure">verifier accepts artifact end-to-end</div>
+  </li>
+  <li>
+    <div class="step-title">Persist witness manifest and receipt lineage through AO</div>
+    <p class="step-body">Store the job, witness pointer, prover receipt, verifier result, and output commitment via AO/Arweave. Anyone can replay the proving event from public data.</p>
+    <div class="step-measure">auditable replay path exists</div>
+  </li>
+  <li>
+    <div class="step-title">Aggregate two bounded ranges into one parent proof</div>
+    <p class="step-body">Combine sibling results only when boundary commitments match. The parent proof has a deterministic lineage traceable back to the segmentation manifest.</p>
+    <div class="step-measure">range proof has deterministic lineage</div>
+  </li>
+</ol>
+
+<div class="callout note">
+  <div class="callout-header">
+    <span class="callout-tag">Cross-reference</span>
+    <span>Where this lands in the broader build</span>
+    <span class="callout-id">T-700 / N.01</span>
+  </div>
+  <div class="callout-body">
+    <p>The architecture described here is the substrate beneath the A-Series Phase 1 service catalog. Service 02 (sync committee verification) is the first product to ship; its primitive is documented in <a href="/paxiom-operations-runbook.html#o-700">O-700 BLS Sync Committee Primitive</a>. The verifiable records produced by every dispatcher action are specified in <a href="/paxiom-compliance-architecture.html">CA.01 Verifiable Records Architecture</a>.</p>
+  </div>
+</div>
+</div>
+
+</div>
+
+<div class="sheet-footer">
+  <div>Paxiom · paxiom.org</div>
+  <div class="center">Technical Architecture · T.01 Rev. A · 2026.05.01</div>
+  <div class="right">Sheet Set T-000 / 8</div>
+</div>
 
 </div>
 </body>
