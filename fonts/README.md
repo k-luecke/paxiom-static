@@ -1,84 +1,99 @@
-# `fonts/` — licensing audit pending
+# `fonts/` — Brandon Grotesque (licensed brand face)
 
-> **OPEN, operator action required.** This directory commits eight
-> Neutraface Text `.woff2` files to a **public** GitHub repository.
-> Neutraface is a commercial House Industries family. No license file
-> is present in this repo documenting the rights under which these
-> files are redistributed. Until that is resolved, treat as a known
-> open compliance question.
+Paxiom's brand body face is **Brandon Grotesque** by HVD Fonts /
+Hannes von Döhren. It's a commercial font; redistributing the
+`.woff2` files via this public repository would violate the EULA
+regardless of which weights are shipped.
 
-## Why this matters
+## What lives here
 
-Two distinct surfaces:
+This directory is **intentionally empty in the public repo.** The
+`.woff2` files for the licensed Brandon Grotesque faces are provided
+to `paxiom.org` at deploy time, not via this checkout. Two equivalent
+ways to make that work:
 
-1. **Serving from paxiom.org.** Most commercial web-font EULAs allow
-   self-hosted serving on a single domain after license purchase. If
-   you have a Neutraface web license and `paxiom.org` is on the
-   licensed domain list, this surface is fine.
-2. **Hosting in a public GitHub repo.** Even with a valid web license,
-   most commercial font EULAs prohibit redistribution. A public repo
-   that ships the `.woff2` files lets anyone download the font without
-   attribution or licensing — which is a separate violation from the
-   serving question.
+1. **Deploy-time copy.** The deploy pipeline (Netlify / Cloudflare /
+   GH Pages publish step) copies the `.woff2` files from a private
+   location into `paxiom.org/fonts/` before publishing. The public
+   repo never touches them.
+2. **Separate font origin.** The `@font-face` declarations in
+   `/fonts.css` reference an absolute URL on a separately-hosted
+   origin (e.g. `https://fonts.paxiom.org/...`) governed by
+   referrer-locked CDN access. Same effect; trades complexity for
+   stricter control.
 
-The first is your call once the license is verified; the second is
-unambiguous and should be addressed regardless.
+The repo's `fonts.css` currently uses `/fonts/...` paths, which
+matches option (1). If you switch to option (2), update the URL
+prefixes in `fonts.css` and document the new origin here.
 
-## Three concrete options
+## Expected file names (option 1)
 
-Pick one (any of them resolves both surfaces):
+The `@font-face` rules in `fonts.css` reference these paths.
+Ten files; pair regular + italic at five weights:
 
-### 1. Verify license + restrict hosting
+```
+fonts/BrandonGrotesque-Light.woff2
+fonts/BrandonGrotesque-LightItalic.woff2
+fonts/BrandonGrotesque-Regular.woff2
+fonts/BrandonGrotesque-RegularItalic.woff2
+fonts/BrandonGrotesque-Medium.woff2
+fonts/BrandonGrotesque-MediumItalic.woff2
+fonts/BrandonGrotesque-Bold.woff2
+fonts/BrandonGrotesque-BoldItalic.woff2
+fonts/BrandonGrotesque-Black.woff2
+fonts/BrandonGrotesque-BlackItalic.woff2
+```
 
-- Confirm the Neutraface web license covers paxiom.org.
-- Move the `.woff2` files out of the public repo. Two ways to do that:
-  - Build step: copy from a private location into the `gh-pages`
-    deploy branch, but keep `main` clean.
-  - Server-side serving: host the fonts behind paxiom.org/_fonts/
-    with a separate origin/CDN that doesn't expose them as
-    downloadable artifacts (Netlify/Cloudflare access policies, etc.).
-- Add a `fonts/LICENSE.txt` describing the license and link to House
-  Industries' EULA reference.
+CSS weight mapping:
 
-### 2. Swap to a permissively-licensed equivalent
+| weight | file                                |
+|-------:|-------------------------------------|
+|    300 | `Light` / `LightItalic`             |
+|    400 | `Regular` / `RegularItalic`         |
+|    500 | `Medium` / `MediumItalic`           |
+|    600 | `Bold` / `BoldItalic`               |
+|    700 | `Black` / `BlackItalic`             |
 
-Several open-source families approximate Neutraface's geometric-with-
-character feel and are SIL-OFL or SIL-OFL-with-RFN:
+If any weight is missing at deploy time, the system-font fallback
+(`system-ui, -apple-system, sans-serif`) takes over for that weight
+— the page renders correctly, just without the licensed face. This
+is by design: the public repo is a working dev environment by itself.
 
-- **Cabin** (SIL OFL) — geometric, slightly rounded, comfortable on
-  long-form text. Closest visual match.
-- **Public Sans** (SIL OFL) — US gov standard, sans-serif workhorse,
-  unambiguously redistributable.
-- **Inter** (SIL OFL) — already widely used in tech docs; if the
-  display feel matters less than the body comfort, this is the safest.
+## License audit trail
 
-Switching is a one-file change to `fonts.css` plus committing the new
-`.woff2` files in place of the Neutraface ones. Visual diff: small.
+- **Family:** Brandon Grotesque
+- **Foundry:** HVD Fonts / Hannes von Döhren
+- **License type:** commercial; web license required for paxiom.org
+- **Web license file:** *operator action — record the EULA reference
+  and seat count in a private record once the licence is in hand*
+- **Repository disposition:** `.woff2` files NOT committed; provided
+  via deploy pipeline. This README replaces a `LICENSE.txt` because
+  the licence covers a private deployment seat, not a redistribution
+  grant — there is nothing for a public reader of this repo to
+  download under licence.
 
-### 3. Drop bundled fonts entirely; ship the system font stack
+## Earlier history
 
-The body rule on every paxiom-static page already cascades to
-`'Neutraface Text', system-ui, -apple-system, sans-serif`. Removing
-the `@font-face` blocks (and the `.woff2` files) is harmless to the
-fallback layout — modern macOS / Windows / Linux all render the system
-stack acceptably for the binder aesthetic. Cheapest option, smallest
-download, no licensing overhead.
+Phase 0 of the public site shipped Neutraface Text `.woff2` files in
+this directory by mistake — also a commercial font, also redistributed
+without licence. They were removed and the brand face swapped to
+Brandon Grotesque in the same commit (`paxiom-static@…`). Anyone with
+a clone of the older history still has the Neutraface files locally;
+the active repo no longer redistributes them.
 
-## What I recommend (pick one)
+## If the licence is not yet in hand
 
-For a public-website-on-a-public-repo posture, **Option 2 or Option 3**
-is the simplest path. The architectural-binder visual identity does
-not depend on Neutraface specifically — what carries the look is the
-combination of generous whitespace, JetBrains Mono for labels, and
-serif headers (Times New Roman, which is universally available).
-Swapping the body face for Public Sans or dropping it for the system
-stack preserves the identity at near-zero implementation cost.
+The `@font-face` rules will produce 404s on the live site until the
+files are provisioned. The page still renders via the system-font
+fallback, so the public site does not break visually — it just
+doesn't carry the brand face yet. Provision via option (1) or (2)
+above when the licence arrives.
 
-If the brand identity does require Neutraface, **Option 1** is the
-correct path and the work is licensing administration plus a deploy
-pipeline change — not a code change in this repo.
+## Open question (if relevant)
 
-This README is the explicit prompt for that decision. Until it
-resolves, the public site continues to serve Neutraface as it has;
-nothing here breaks. The risk surface is licensing, not user
-experience.
+If at any point Brandon Grotesque becomes licensing-prohibitive (for
+instance: per-pageview pricing on a high-traffic public site), the
+two open-source visual neighbours worth evaluating are **DM Sans**
+(closer to geometric architectural feel) and **Outfit** (slightly
+warmer, more character). Both are SIL-OFL and may be self-hosted
+without licence overhead.

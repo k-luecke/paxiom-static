@@ -1,51 +1,67 @@
-/* Paxiom — local Neutraface Text faces */
+/* Paxiom — local Brandon Grotesque faces.
+ *
+ * The .woff2 files are NOT committed to this public repository — Brandon
+ * Grotesque is a commercial face (HVD Fonts / Hannes von Döhren) whose
+ * EULA does not permit redistribution. The deploy pipeline (or a private
+ * origin) provides the files at /fonts/ so the live site renders the
+ * licensed font; the public repo stays licence-clean.
+ *
+ * The `font-display: swap` directive plus the system-stack fallback
+ * declared on every page (`'Brandon Grotesque', system-ui, -apple-system,
+ * sans-serif`) means the page renders correctly even when the fonts are
+ * missing — the public repo is a working dev environment by itself,
+ * just without the licensed brand face.
+ *
+ * See fonts/README.md for the deployment workflow.
+ */
+
 @font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-300.woff2') format('woff2');
+  font-family: 'Brandon Grotesque';
+  src: url('/fonts/BrandonGrotesque-Light.woff2') format('woff2');
   font-weight: 300; font-style: normal; font-display: swap;
 }
 @font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-300i.woff2') format('woff2');
+  font-family: 'Brandon Grotesque';
+  src: url('/fonts/BrandonGrotesque-LightItalic.woff2') format('woff2');
   font-weight: 300; font-style: italic; font-display: swap;
 }
 @font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-400.woff2') format('woff2');
+  font-family: 'Brandon Grotesque';
+  src: url('/fonts/BrandonGrotesque-Regular.woff2') format('woff2');
   font-weight: 400; font-style: normal; font-display: swap;
 }
 @font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-400i.woff2') format('woff2');
+  font-family: 'Brandon Grotesque';
+  src: url('/fonts/BrandonGrotesque-RegularItalic.woff2') format('woff2');
   font-weight: 400; font-style: italic; font-display: swap;
 }
 @font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-600.woff2') format('woff2');
+  font-family: 'Brandon Grotesque';
+  src: url('/fonts/BrandonGrotesque-Medium.woff2') format('woff2');
   font-weight: 500; font-style: normal; font-display: swap;
 }
 @font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-600i.woff2') format('woff2');
+  font-family: 'Brandon Grotesque';
+  src: url('/fonts/BrandonGrotesque-MediumItalic.woff2') format('woff2');
   font-weight: 500; font-style: italic; font-display: swap;
 }
 @font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-600.woff2') format('woff2');
+  font-family: 'Brandon Grotesque';
+  src: url('/fonts/BrandonGrotesque-Bold.woff2') format('woff2');
   font-weight: 600; font-style: normal; font-display: swap;
 }
 @font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-600i.woff2') format('woff2');
+  font-family: 'Brandon Grotesque';
+  src: url('/fonts/BrandonGrotesque-BoldItalic.woff2') format('woff2');
   font-weight: 600; font-style: italic; font-display: swap;
 }
 @font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-700.woff2') format('woff2');
+  font-family: 'Brandon Grotesque';
+  src: url('/fonts/BrandonGrotesque-Black.woff2') format('woff2');
   font-weight: 700; font-style: normal; font-display: swap;
 }
 @font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-700i.woff2') format('woff2');
+  font-family: 'Brandon Grotesque';
+  src: url('/fonts/BrandonGrotesque-BlackItalic.woff2') format('woff2');
   font-weight: 700; font-style: italic; font-display: swap;
 }
