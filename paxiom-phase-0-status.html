@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom · Phase 0 Status</title>
+<meta name="description" content="Paxiom Phase 0 substrate gates — HyperBEAM, sync committee verifier, Load Network — status, evidence, and operator commands.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F1E8;
+  --paper-dark: #EDE6D3;
+  --ink: #1A2332;
+  --ink-mid: #3A4555;
+  --ink-faint: #6B7280;
+  --rule: #1A2332;
+  --rule-faint: #B8AE96;
+  --blue: #1E3A5F;
+  --blue-light: #4A6B8A;
+  --red: #8B2E1F;
+  --amber: #B8860B;
+  --green: #2D6A4F;
+  --grid: rgba(26, 35, 50, 0.04);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-size: 14px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+.sheet { max-width: 1080px; margin: 40px auto; background: var(--paper); border: 2px solid var(--ink); position: relative; }
+@media (max-width: 900px) { .sheet { margin: 16px 8px; border-width: 1px; } }
+.sheet-header { display: grid; grid-template-columns: auto 1fr auto; border-bottom: 2px solid var(--ink); padding: 16px 24px; align-items: end; gap: 24px; }
+.sheet-mark { width: 44px; height: 44px; color: var(--ink); display: block; flex-shrink: 0; }
+.sheet-mark-link { display: block; line-height: 0; transition: opacity 0.15s ease; }
+.sheet-mark-link:hover { opacity: 0.65; }
+.sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
+.sheet-project { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.sheet-title { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
+.sheet-subtitle { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
+.sheet-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 16px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.04em; text-align: right; }
+.sheet-meta dt { color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
+.sheet-meta dd { color: var(--ink); font-weight: 500; }
+.sheet-body { padding: 48px 56px; }
+@media (max-width: 700px) { .sheet-body { padding: 28px 20px; } .sheet-header { grid-template-columns: auto 1fr; } .sheet-meta { grid-column: 1 / -1; text-align: left; padding-top: 8px; border-top: 1px solid var(--rule-faint); } }
+
+.page-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+.page-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+h1.page-title { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: clamp(36px, 5vw, 52px); line-height: 1.05; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 14px; max-width: 24ch; }
+h1.page-title em { font-style: italic; color: var(--ink-mid); }
+.page-strap { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 17px; color: var(--ink-mid); max-width: 64ch; line-height: 1.5; margin-bottom: 36px; }
+
+.gate-card { border: 1.5px solid var(--ink); background: var(--paper); margin-bottom: 16px; position: relative; }
+.gate-card.scaffolded::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--blue); }
+.gate-card.operator-pending::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--amber); }
+.gate-card.closed::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--green); }
+.gate-card-header { background: var(--ink); color: var(--paper); padding: 10px 16px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.gate-card-header .gate-id { font-weight: 600; }
+.gate-card-header .gate-status { display: inline-flex; align-items: center; gap: 6px; }
+.gate-card-header .gate-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; }
+.gate-card.scaffolded .gate-status::before { background: var(--blue); box-shadow: 0 0 0 2px rgba(30,58,95,0.3); }
+.gate-card.operator-pending .gate-status::before { background: var(--amber); box-shadow: 0 0 0 2px rgba(184,134,11,0.3); }
+.gate-card.closed .gate-status::before { background: var(--green); box-shadow: 0 0 0 2px rgba(45,106,79,0.3); }
+
+.gate-card-body { padding: 18px 20px 22px; }
+.gate-card-title { font-family: 'Times New Roman', Times, serif; font-size: 22px; font-weight: 500; letter-spacing: -0.005em; color: var(--ink); margin-bottom: 6px; line-height: 1.2; }
+.gate-card-acceptance { font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55; color: var(--ink); margin-bottom: 14px; max-width: 64ch; }
+.gate-card-grid { display: grid; grid-template-columns: 1fr; gap: 18px; border-top: 1px solid var(--rule-faint); padding-top: 16px; }
+@media (min-width: 768px) { .gate-card-grid { grid-template-columns: 1fr 1fr; gap: 22px; } }
+.gate-card-cell .label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; font-weight: 600; }
+.gate-card-cell ul { list-style: none; font-family: 'Times New Roman', Times, serif; font-size: 14px; line-height: 1.55; color: var(--ink); }
+.gate-card-cell li { padding: 3px 0 3px 14px; position: relative; }
+.gate-card-cell li::before { content: '·'; position: absolute; left: 0; color: var(--rule-faint); font-weight: bold; }
+.gate-card-cell li code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 5px; border-radius: 2px; color: var(--blue); font-weight: 500; }
+
+pre.cmd { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--paper-dark); padding: 10px 14px; border-left: 3px solid var(--blue); margin: 10px 0; overflow-x: auto; color: var(--ink); }
+
+.legend { display: flex; gap: 18px; flex-wrap: wrap; padding-top: 14px; margin-top: 14px; border-top: 1px solid var(--rule-faint); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.08em; color: var(--ink-faint); }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-swatch { width: 16px; height: 10px; border: 1.5px solid var(--ink); }
+.legend-swatch.scaffolded { background: var(--blue); border-color: var(--blue); }
+.legend-swatch.operator-pending { background: var(--amber); border-color: var(--amber); }
+.legend-swatch.closed { background: var(--green); border-color: var(--green); }
+
+.section { margin-bottom: 36px; }
+.section-mark-text { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.section-mark-text::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.section h2 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 22px; letter-spacing: -0.01em; margin-bottom: 12px; color: var(--ink); }
+.section p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; color: var(--ink); max-width: 64ch; margin-bottom: 14px; }
+
+.sheet-footer { border-top: 1.5px solid var(--ink); padding: 14px 24px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); align-items: center; }
+.sheet-footer .center { text-align: center; }
+.sheet-footer .right { text-align: right; color: var(--ink); font-weight: 600; }
+
+a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--red); }
+
+.paxiom-bar { position: sticky; top: 0; z-index: 100; background: rgba(245, 241, 232, 0.88); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule-faint); }
+.paxiom-bar-inner { max-width: 1200px; margin: 0 auto; padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.paxiom-bar-mark { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; transition: color 0.15s ease; }
+.paxiom-bar-mark svg { width: 22px; height: 22px; display: block; }
+.paxiom-bar-mark:hover { color: var(--blue); }
+.paxiom-bar-nav { display: flex; gap: 18px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+.paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; transition: color 0.15s ease; padding-bottom: 2px; }
+.paxiom-bar-nav a:hover { color: var(--ink); }
+.paxiom-bar-nav a.active { color: var(--ink); border-bottom: 1.5px solid var(--ink); }
+
+@media print { body { background: white; } .sheet { border: 2px solid black; } }
+</style>
+</head>
+<body>
+<div class="paxiom-bar">
+  <div class="paxiom-bar-inner">
+    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
+      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg>
+      <span>Paxiom</span>
+    </a>
+    <nav class="paxiom-bar-nav" aria-label="Primary">
+      <a href="/docs.html">Docs</a>
+      <a href="/services.html">Services</a>
+      <a href="/status.html">Status</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </div>
+</div>
+
+<div class="sheet">
+
+<div class="sheet-header">
+  <a class="sheet-mark-link" href="/" aria-label="Paxiom — home"><svg class="sheet-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50,14 L76,64 L24,64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg></a>
+  <div class="sheet-title-block">
+    <div class="sheet-project">Paxiom · Phase 0 · Substrate Gate Status</div>
+    <div class="sheet-title">Phase 0 Status</div>
+    <div class="sheet-subtitle">A-120 / S.01–S.03. Substrate gates that block all of Phase 1.</div>
+  </div>
+  <dl class="sheet-meta">
+    <dt>Project No.</dt><dd>PXM-001-G</dd>
+    <dt>Issue</dt><dd>Public / Rev. A</dd>
+    <dt>Date</dt><dd>2026.05.02</dd>
+    <dt>Drawn By</dt><dd>K. Luecke</dd>
+  </dl>
+</div>
+
+<div class="sheet-body">
+
+<div class="page-mark">Sheet PXM-G-100</div>
+<h1 class="page-title">Three gates. <em>One substrate.</em></h1>
+<p class="page-strap">Phase 0 closes when the operator runs three commands and each one exits 0. The code is scaffolded in companion repositories, the runbooks are written. What remains is the operator running the documented commands on real infrastructure — and the companion repos becoming publicly browse-able so the evidence is independently auditable.</p>
+
+<!-- Gate S.01 -->
+<article class="gate-card scaffolded" id="s01">
+  <div class="gate-card-header">
+    <span class="gate-id">A-120 / S.01 · HyperBEAM operational locally</span>
+    <span class="gate-status">Scaffolded · operator-pending live verification</span>
+  </div>
+  <div class="gate-card-body">
+    <div class="gate-card-title">HyperBEAM running locally via <code>rebar3 shell</code>.</div>
+    <p class="gate-card-acceptance">Acceptance: <code>rebar3 shell</code> opens a working HyperBEAM session, the <code>~evm@1.0</code> device executes, and <code>hb_ao:dispatch(&lt;&lt;"~evm@1.0"&gt;&gt;, #{action =&gt; ping})</code> returns <code>{ok, _}</code>.</p>
+
+    <div class="gate-card-grid">
+      <div class="gate-card-cell">
+        <div class="label">Evidence</div>
+        <ul>
+          <li><a href="https://github.com/k-luecke/paxiom/tree/claude/build-hyperbeam-network-uIaMZ/hyperbeam">paxiom/hyperbeam/</a> — bring-up scripts and device registry</li>
+          <li><a href="https://github.com/k-luecke/paxiom/blob/claude/build-hyperbeam-network-uIaMZ/docs/hyperbeam-bringup.md">paxiom/docs/hyperbeam-bringup.md</a> — operator runbook</li>
+          <li><a href="https://github.com/permaweb/HyperBEAM">permaweb/HyperBEAM</a> — upstream</li>
+        </ul>
+      </div>
+      <div class="gate-card-cell">
+        <div class="label">Operator command</div>
+<pre class="cmd">./hyperbeam/bringup/install.sh
+./hyperbeam/bringup/smoke-test.sh
+# expected: PASS A-120/S.01</pre>
+      </div>
+    </div>
+  </div>
+</article>
+
+<!-- Gate S.02 -->
+<article class="gate-card scaffolded" id="s02">
+  <div class="gate-card-header">
+    <span class="gate-id">A-120 / S.02 · Sync committee verifier wrapped as HyperBEAM device</span>
+    <span class="gate-status">Scaffolded · operator-pending live verification</span>
+  </div>
+  <div class="gate-card-body">
+    <div class="gate-card-title">Service A-202 device on a real recent slot.</div>
+    <p class="gate-card-acceptance">Acceptance: the <code>~bls-sync-committee@1.0</code> device is registered with a running HyperBEAM node, <code>POST /v1/sync-committee/verify</code> returns <code>verified: true</code> for a real recent slot, and the request emits an AO compliance message logged to Arweave.</p>
+
+    <div class="gate-card-grid">
+      <div class="gate-card-cell">
+        <div class="label">Evidence</div>
+        <ul>
+          <li><a href="https://github.com/k-luecke/bls-verifier/tree/claude/build-hyperbeam-network-uIaMZ/bls-device">bls-verifier/bls-device/</a> — Rust harness implementing the eight-stage O-701 pipeline</li>
+          <li><a href="https://github.com/k-luecke/bls-verifier/blob/claude/build-hyperbeam-network-uIaMZ/docs/O-702-bls-device-runbook.md">bls-verifier/docs/O-702-bls-device-runbook.md</a></li>
+          <li><a href="https://github.com/k-luecke/paxiom/tree/claude/build-hyperbeam-network-uIaMZ/hyperbeam/devices/bls-sync-committee">paxiom/hyperbeam/devices/bls-sync-committee/</a> — manifest, vendored wasm, register.sh</li>
+          <li><a href="https://github.com/k-luecke/paxiom/tree/claude/build-hyperbeam-network-uIaMZ/services/sync-committee">paxiom/services/sync-committee/</a> — HTTP front-end</li>
+        </ul>
+      </div>
+      <div class="gate-card-cell">
+        <div class="label">Operator command</div>
+<pre class="cmd"># build wasm + harness
+cargo build --release \
+  --target wasm32-unknown-unknown -p bls-verifier
+cargo build --release -p bls-device
+
+# in three terminals:
+./hyperbeam/bringup/shell.sh
+./hyperbeam/devices/bls-sync-committee/register.sh
+node services/sync-committee/server.mjs
+
+# verify
+curl -X POST localhost:8080/v1/sync-committee/verify \
+  -d @real_slot.json</pre>
+      </div>
+    </div>
+  </div>
+</article>
+
+<!-- Gate S.03 -->
+<article class="gate-card scaffolded" id="s03">
+  <div class="gate-card-header">
+    <span class="gate-id">A-120 / S.03 · Load Network state reconstruction tested end-to-end</span>
+    <span class="gate-status">Scaffolded · operator-pending live verification</span>
+  </div>
+  <div class="gate-card-body">
+    <div class="gate-card-title">No-RPC architectural moat, exercised on at least one historical block.</div>
+    <p class="gate-card-acceptance">Acceptance: state reconstruction from a Load Network archive bundle works end-to-end for at least one historical block — both fixture-driven (CI) and live against <a href="https://load.network">https://load.network</a> (operator).</p>
+
+    <div class="gate-card-grid">
+      <div class="gate-card-cell">
+        <div class="label">Evidence</div>
+        <ul>
+          <li><a href="https://github.com/k-luecke/paxiom/tree/claude/build-hyperbeam-network-uIaMZ/load-network">paxiom/load-network/</a> — client + reconstructor + fixtures</li>
+          <li><a href="https://github.com/k-luecke/paxiom/blob/claude/build-hyperbeam-network-uIaMZ/docs/load-network-integration.md">paxiom/docs/load-network-integration.md</a></li>
+          <li>Fixture anchor: WETH at Ethereum mainnet block 19 000 000</li>
+        </ul>
+      </div>
+      <div class="gate-card-cell">
+        <div class="label">Operator command</div>
+<pre class="cmd"># Test suite (synthesised tries; companion repo)
+npm run test:load-network
+
+# operator gate
+LOAD_NETWORK_API_KEY=... \
+LOAD_NETWORK_LIVE=1 \
+  npm run test:load-network</pre>
+      </div>
+    </div>
+  </div>
+</article>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-swatch scaffolded"></span> Scaffolded — code + tests in companion repo</div>
+  <div class="legend-item"><span class="legend-swatch operator-pending"></span> Operator-pending live verification</div>
+  <div class="legend-item"><span class="legend-swatch closed"></span> Closed</div>
+</div>
+
+<div class="section" style="margin-top:36px;">
+  <div class="section-mark-text">G-200 · Why this page exists</div>
+  <h2>The discipline of evidence.</h2>
+  <p>The build map (<a href="/paxiom-build-map.html">PXM-R-100</a>) flips four items into "What's done" the moment the substrate scaffolding lands. This page is the audit trail underneath those flips: each gate names its acceptance criteria, points at the source of evidence, and quotes the exact command the operator runs to close the live side.</p>
+  <p>Where a build-map flip says "done", this page says <em>scaffolded plus operator-pending live verification</em>. Both forms of "done" are honest; this is where they're disambiguated.</p>
+  <p><strong>About the evidence links.</strong> The links above point at the companion repos <code>k-luecke/paxiom</code> and <code>k-luecke/bls-verifier</code>. They resolve when those repos are public; if you encounter a 404, the companion is currently private and the public proof is operator-runnable rather than browse-able. The page will tighten its language to "closed" once both the operator-side commands have been run and the companion repos are publicly readable.</p>
+</div>
+
+<div class="section">
+  <div class="section-mark-text">G-300 · Related sheets</div>
+  <h2>Where this fits.</h2>
+  <p>
+    <a href="/paxiom-build-map.html">Build Map</a> · phase trajectory and how Phase 0 unlocks Phase 1.<br>
+    <a href="/paxiom-phase-1-blueprint.html">Phase 1 Blueprint</a> · the A-120 source for these gate definitions.<br>
+    <a href="/paxiom-operations-runbook.html">Operations Runbook</a> · O-700 / O-701 / O-702 underneath the BLS device.<br>
+    <a href="/ao-zk-proving-architecture.html">Technical Architecture</a> · AO dispatcher topology that consumes this substrate.
+  </p>
+</div>
+
+</div>
+
+<div class="sheet-footer">
+  <div>Paxiom · paxiom.org</div>
+  <div class="center">Phase 0 Status · Rev. A · 2026.05.02</div>
+  <div class="right">Sheet PXM-G-100</div>
+</div>
+
+</div>
+</body>
+</html>

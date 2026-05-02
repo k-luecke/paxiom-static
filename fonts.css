@@ -1,51 +1,17 @@
-/* Paxiom — local Neutraface Text faces */
-@font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-300.woff2') format('woff2');
-  font-weight: 300; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-300i.woff2') format('woff2');
-  font-weight: 300; font-style: italic; font-display: swap;
-}
-@font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-400.woff2') format('woff2');
-  font-weight: 400; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-400i.woff2') format('woff2');
-  font-weight: 400; font-style: italic; font-display: swap;
-}
-@font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-600.woff2') format('woff2');
-  font-weight: 500; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-600i.woff2') format('woff2');
-  font-weight: 500; font-style: italic; font-display: swap;
-}
-@font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-600.woff2') format('woff2');
-  font-weight: 600; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-600i.woff2') format('woff2');
-  font-weight: 600; font-style: italic; font-display: swap;
-}
-@font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-700.woff2') format('woff2');
-  font-weight: 700; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Neutraface Text';
-  src: url('/fonts/NeutrafaceText-700i.woff2') format('woff2');
-  font-weight: 700; font-style: italic; font-display: swap;
-}
+/* Paxiom — body face is DM Sans, served via the Google Fonts CDN.
+ *
+ * The @font-face rules live on Google's CSS endpoint
+ * (https://fonts.googleapis.com/css2?family=DM+Sans:...&display=swap)
+ * and are loaded by the <link rel="stylesheet"> tag in every page's <head>.
+ * This file stays as a stable href so a future swap to self-hosting only
+ * has to update one location.
+ *
+ * DM Sans is licensed under the SIL Open Font License (OFL). See
+ * fonts/README.md for the licence audit trail and the rationale for
+ * choosing it over the earlier commercial faces.
+ *
+ * If/when self-hosting becomes preferable (perf, privacy, no third-party
+ * CDN), drop the .woff2 files into /fonts/ and replace this file's
+ * contents with @font-face rules pointing at them. The font-family name
+ * stays 'DM Sans' so no page changes needed.
+ */

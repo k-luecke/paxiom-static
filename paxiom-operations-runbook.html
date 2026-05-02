@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --paper: #F5F1E8;
@@ -32,7 +32,7 @@ html { scroll-behavior: smooth; }
 body {
   background: var(--paper);
   color: var(--ink);
-  font-family: 'Neutraface Text', system-ui, -apple-system, sans-serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   font-size: 14px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -2690,6 +2690,22 @@ device-level operations (build, deploy, monitor) and pointing back to
 this sheet for the primitive contract. Subsequent verification
 primitives (audit relay signatures, identity signing keys) extend the
 same series: <code>O-720</code>, <code>O-730</code>, and so on.
+</p>
+
+<p>
+<strong>Status update (2026-05-02).</strong> <code>O-701</code> exists as
+a sketch and a scaffolded implementation. The harness lives in
+<code>k-luecke/bls-verifier</code>'s <code>bls-device/</code> crate;
+the production runbook is
+<a href="https://github.com/k-luecke/bls-verifier/blob/master/docs/O-702-bls-device-runbook.md"><code>O-702</code></a>.
+Operator commands for the local bring-up of the device, plus the matching
+HTTP front-end, are documented in
+<a href="https://github.com/k-luecke/paxiom/blob/main/docs/hyperbeam-bringup.md"><code>paxiom/docs/hyperbeam-bringup.md</code></a>
+and
+<a href="https://github.com/k-luecke/paxiom/blob/main/docs/sync-committee-service.md"><code>paxiom/docs/sync-committee-service.md</code></a>.
+The Phase 0 substrate gate audit trail —
+<a href="/paxiom-phase-0-status.html">PXM-G-100</a> — names what counts
+as "closed" for each gate.
 </p>
 
 </div>
