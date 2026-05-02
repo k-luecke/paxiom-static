@@ -1,67 +1,17 @@
-/* Paxiom — local Brandon Grotesque faces.
+/* Paxiom — body face is DM Sans, served via the Google Fonts CDN.
  *
- * The .woff2 files are NOT committed to this public repository — Brandon
- * Grotesque is a commercial face (HVD Fonts / Hannes von Döhren) whose
- * EULA does not permit redistribution. The deploy pipeline (or a private
- * origin) provides the files at /fonts/ so the live site renders the
- * licensed font; the public repo stays licence-clean.
+ * The @font-face rules live on Google's CSS endpoint
+ * (https://fonts.googleapis.com/css2?family=DM+Sans:...&display=swap)
+ * and are loaded by the <link rel="stylesheet"> tag in every page's <head>.
+ * This file stays as a stable href so a future swap to self-hosting only
+ * has to update one location.
  *
- * The `font-display: swap` directive plus the system-stack fallback
- * declared on every page (`'Brandon Grotesque', system-ui, -apple-system,
- * sans-serif`) means the page renders correctly even when the fonts are
- * missing — the public repo is a working dev environment by itself,
- * just without the licensed brand face.
+ * DM Sans is licensed under the SIL Open Font License (OFL). See
+ * fonts/README.md for the licence audit trail and the rationale for
+ * choosing it over the earlier commercial faces.
  *
- * See fonts/README.md for the deployment workflow.
+ * If/when self-hosting becomes preferable (perf, privacy, no third-party
+ * CDN), drop the .woff2 files into /fonts/ and replace this file's
+ * contents with @font-face rules pointing at them. The font-family name
+ * stays 'DM Sans' so no page changes needed.
  */
-
-@font-face {
-  font-family: 'Brandon Grotesque';
-  src: url('/fonts/BrandonGrotesque-Light.woff2') format('woff2');
-  font-weight: 300; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Brandon Grotesque';
-  src: url('/fonts/BrandonGrotesque-LightItalic.woff2') format('woff2');
-  font-weight: 300; font-style: italic; font-display: swap;
-}
-@font-face {
-  font-family: 'Brandon Grotesque';
-  src: url('/fonts/BrandonGrotesque-Regular.woff2') format('woff2');
-  font-weight: 400; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Brandon Grotesque';
-  src: url('/fonts/BrandonGrotesque-RegularItalic.woff2') format('woff2');
-  font-weight: 400; font-style: italic; font-display: swap;
-}
-@font-face {
-  font-family: 'Brandon Grotesque';
-  src: url('/fonts/BrandonGrotesque-Medium.woff2') format('woff2');
-  font-weight: 500; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Brandon Grotesque';
-  src: url('/fonts/BrandonGrotesque-MediumItalic.woff2') format('woff2');
-  font-weight: 500; font-style: italic; font-display: swap;
-}
-@font-face {
-  font-family: 'Brandon Grotesque';
-  src: url('/fonts/BrandonGrotesque-Bold.woff2') format('woff2');
-  font-weight: 600; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Brandon Grotesque';
-  src: url('/fonts/BrandonGrotesque-BoldItalic.woff2') format('woff2');
-  font-weight: 600; font-style: italic; font-display: swap;
-}
-@font-face {
-  font-family: 'Brandon Grotesque';
-  src: url('/fonts/BrandonGrotesque-Black.woff2') format('woff2');
-  font-weight: 700; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Brandon Grotesque';
-  src: url('/fonts/BrandonGrotesque-BlackItalic.woff2') format('woff2');
-  font-weight: 700; font-style: italic; font-display: swap;
-}

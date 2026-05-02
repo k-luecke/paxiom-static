@@ -1,99 +1,105 @@
-# `fonts/` — Brandon Grotesque (licensed brand face)
+# `fonts/` — body face is DM Sans (SIL OFL, served via Google Fonts CDN)
 
-Paxiom's brand body face is **Brandon Grotesque** by HVD Fonts /
-Hannes von Döhren. It's a commercial font; redistributing the
-`.woff2` files via this public repository would violate the EULA
-regardless of which weights are shipped.
+Paxiom's brand body face is **DM Sans**, an SIL-Open-Font-License geometric
+sans-serif designed by Colophon Foundry / Indian Type Foundry. Loaded
+on every page via the existing Google Fonts CDN link in `<head>` —
+no `.woff2` files committed to this repo, no licence audit trail
+needed, no deploy-time wiring required.
 
-## What lives here
+The earlier `fonts.css` / vendored-`.woff2` scaffolding is gone. This
+directory is intentionally empty in the public repo.
 
-This directory is **intentionally empty in the public repo.** The
-`.woff2` files for the licensed Brandon Grotesque faces are provided
-to `paxiom.org` at deploy time, not via this checkout. Two equivalent
-ways to make that work:
+## Why DM Sans
 
-1. **Deploy-time copy.** The deploy pipeline (Netlify / Cloudflare /
-   GH Pages publish step) copies the `.woff2` files from a private
-   location into `paxiom.org/fonts/` before publishing. The public
-   repo never touches them.
-2. **Separate font origin.** The `@font-face` declarations in
-   `/fonts.css` reference an absolute URL on a separately-hosted
-   origin (e.g. `https://fonts.paxiom.org/...`) governed by
-   referrer-locked CDN access. Same effect; trades complexity for
-   stricter control.
+After two iterations on commercial faces (Neutraface Text, Brandon
+Grotesque) — both of which would have required either a deploy-time
+asset pipeline or careful licence administration to ship correctly
+from a public repo — we landed on the SIL-OFL path. DM Sans is the
+closest practical OFL match for the architectural-binder body face
+the brand identity calls for: geometric proportions, slightly
+humanist warmth, low x-height, designed for body sizes.
 
-The repo's `fonts.css` currently uses `/fonts/...` paths, which
-matches option (1). If you switch to option (2), update the URL
-prefixes in `fonts.css` and document the new origin here.
+The visual identity does not depend on a specific commercial face.
+What carries the binder feel is JetBrains Mono on labels, Times New
+Roman on serif headers, generous whitespace, and the colour palette.
+The body sans-serif is one of several variables; picking the OFL
+option keeps the repo licence-clean for free.
 
-## Expected file names (option 1)
+If at any point the brand identity is found to genuinely require
+Brandon Grotesque or another commercial face, the path back is
+documented at the bottom of this file.
 
-The `@font-face` rules in `fonts.css` reference these paths.
-Ten files; pair regular + italic at five weights:
+## Self-hosting (optional, for later)
 
-```
-fonts/BrandonGrotesque-Light.woff2
-fonts/BrandonGrotesque-LightItalic.woff2
-fonts/BrandonGrotesque-Regular.woff2
-fonts/BrandonGrotesque-RegularItalic.woff2
-fonts/BrandonGrotesque-Medium.woff2
-fonts/BrandonGrotesque-MediumItalic.woff2
-fonts/BrandonGrotesque-Bold.woff2
-fonts/BrandonGrotesque-BoldItalic.woff2
-fonts/BrandonGrotesque-Black.woff2
-fonts/BrandonGrotesque-BlackItalic.woff2
-```
+DM Sans is currently loaded from `https://fonts.googleapis.com/...`
+because that's the simplest path that ships license-clean now.
+Reasons you might want to self-host instead:
 
-CSS weight mapping:
+- **Privacy.** Google Fonts CDN sees a request from every page-view.
+  Self-hosting keeps that off Google's logs.
+- **Performance.** One fewer DNS + TLS handshake on the critical
+  path; same-origin CSS preloads more aggressively.
+- **Resilience.** No external CDN dependency; the site keeps
+  rendering correctly during a Google outage.
 
-| weight | file                                |
-|-------:|-------------------------------------|
-|    300 | `Light` / `LightItalic`             |
-|    400 | `Regular` / `RegularItalic`         |
-|    500 | `Medium` / `MediumItalic`           |
-|    600 | `Bold` / `BoldItalic`               |
-|    700 | `Black` / `BlackItalic`             |
+To switch, drop OFL `.woff2` files for the weights in use into
+`/fonts/`, replace `fonts.css` with the matching `@font-face` rules,
+and remove the `https://fonts.googleapis.com/...` `<link>` tag from
+each page's `<head>` (DM Sans portion only — JetBrains Mono is also
+on Google Fonts and stays).
 
-If any weight is missing at deploy time, the system-font fallback
-(`system-ui, -apple-system, sans-serif`) takes over for that weight
-— the page renders correctly, just without the licensed face. This
-is by design: the public repo is a working dev environment by itself.
+The OFL license requires you to:
+1. Bundle the OFL.txt file alongside the redistributed .woff2 files.
+2. Not sell the fonts as a standalone product.
+3. Not use the original font names if you modify the font files.
 
-## License audit trail
+None of those are tricky for a normal self-hosted deployment.
 
-- **Family:** Brandon Grotesque
-- **Foundry:** HVD Fonts / Hannes von Döhren
-- **License type:** commercial; web license required for paxiom.org
-- **Web license file:** *operator action — record the EULA reference
-  and seat count in a private record once the licence is in hand*
-- **Repository disposition:** `.woff2` files NOT committed; provided
-  via deploy pipeline. This README replaces a `LICENSE.txt` because
-  the licence covers a private deployment seat, not a redistribution
-  grant — there is nothing for a public reader of this repo to
-  download under licence.
+## Earlier history (audit trail)
 
-## Earlier history
+The repo went through three brand-face iterations:
 
-Phase 0 of the public site shipped Neutraface Text `.woff2` files in
-this directory by mistake — also a commercial font, also redistributed
-without licence. They were removed and the brand face swapped to
-Brandon Grotesque in the same commit (`paxiom-static@…`). Anyone with
-a clone of the older history still has the Neutraface files locally;
-the active repo no longer redistributes them.
+1. **Neutraface Text** (Phase 0 launch) — commercial; House
+   Industries. Eight `.woff2` files were committed to a public repo,
+   which is almost always prohibited regardless of whether a web
+   licence exists. Caught in PR-#9 audit review.
+2. **Brandon Grotesque** (interim) — also commercial; HVD Fonts.
+   Same redistribution posture. CSS swapped, no `.woff2` files
+   committed; would have required a deploy-time pipeline to render
+   the licensed face on the live site.
+3. **DM Sans** (current) — SIL OFL. License-clean for both serving
+   and redistribution. Loaded via Google Fonts CDN with no
+   committed bytes; self-hosting is a one-file-change follow-up if
+   ever desired.
 
-## If the licence is not yet in hand
+Anyone with a clone of the older history still has the Neutraface
+files locally; the active repo no longer redistributes them.
 
-The `@font-face` rules will produce 404s on the live site until the
-files are provisioned. The page still renders via the system-font
-fallback, so the public site does not break visually — it just
-doesn't carry the brand face yet. Provision via option (1) or (2)
-above when the licence arrives.
+## If a commercial face becomes genuinely necessary later
 
-## Open question (if relevant)
+The two commercial faces evaluated are visually adjacent:
 
-If at any point Brandon Grotesque becomes licensing-prohibitive (for
-instance: per-pageview pricing on a high-traffic public site), the
-two open-source visual neighbours worth evaluating are **DM Sans**
-(closer to geometric architectural feel) and **Outfit** (slightly
-warmer, more character). Both are SIL-OFL and may be self-hosted
-without licence overhead.
+- **Neutraface Text** — geometric, architectural, low x-height,
+  square dot on `i`. Closest to Richard Neutra's lettering.
+- **Brandon Grotesque** — geometric humanist, slightly rounder,
+  warmer than Neutraface. Less architectural feel.
+
+Either would require:
+
+1. A web licence covering paxiom.org (single domain or unlimited).
+2. A deploy pipeline that injects `.woff2` files from a private
+   location into `paxiom.org/fonts/` at publish time, NOT into
+   this public repo.
+3. Updating `fonts.css` to declare `@font-face` rules for the
+   licensed face, paths pointing at `/fonts/...` populated by the
+   pipeline.
+4. Updating each page's body `font-family` to put the licensed
+   face first in the stack: `'Brandon Grotesque', 'DM Sans',
+   system-ui, -apple-system, sans-serif`. Keeping DM Sans as a
+   fallback before the system stack means the licensed face is
+   the brand expression and DM Sans is the cleanly-licensed
+   fallback if a deploy fails or a contributor builds locally
+   without licence access.
+
+That's a deferred change with a clear path. Today's posture is
+DM Sans across the board.
