@@ -156,13 +156,13 @@ a:hover { color: var(--red); }
 
 <div class="page-mark">Sheet PXM-G-100</div>
 <h1 class="page-title">Three gates. <em>One substrate.</em></h1>
-<p class="page-strap">Phase 0 closes when the operator runs three commands and each one exits 0. The code is scaffolded, the CI gates pass, the runbooks are written. What remains is the operator, on their machine, doing the bring-up.</p>
+<p class="page-strap">Phase 0 closes when the operator runs three commands and each one exits 0. The code is scaffolded, the test suites pass in the companion repos, the runbooks are written. What remains is the operator, on their machine, doing the bring-up.</p>
 
 <!-- Gate S.01 -->
 <article class="gate-card scaffolded" id="s01">
   <div class="gate-card-header">
     <span class="gate-id">A-120 / S.01 · HyperBEAM operational locally</span>
-    <span class="gate-status">Scaffolded · operator gate pending</span>
+    <span class="gate-status">Scaffolded · operator-pending live verification</span>
   </div>
   <div class="gate-card-body">
     <div class="gate-card-title">HyperBEAM running locally via <code>rebar3 shell</code>.</div>
@@ -191,7 +191,7 @@ a:hover { color: var(--red); }
 <article class="gate-card scaffolded" id="s02">
   <div class="gate-card-header">
     <span class="gate-id">A-120 / S.02 · Sync committee verifier wrapped as HyperBEAM device</span>
-    <span class="gate-status">Scaffolded · CI gate passes · operator gate pending</span>
+    <span class="gate-status">Scaffolded · operator-pending live verification</span>
   </div>
   <div class="gate-card-body">
     <div class="gate-card-title">Service A-202 device on a real recent slot.</div>
@@ -231,7 +231,7 @@ curl -X POST localhost:8080/v1/sync-committee/verify \
 <article class="gate-card scaffolded" id="s03">
   <div class="gate-card-header">
     <span class="gate-id">A-120 / S.03 · Load Network state reconstruction tested end-to-end</span>
-    <span class="gate-status">Scaffolded · CI gate passes · operator gate pending</span>
+    <span class="gate-status">Scaffolded · operator-pending live verification</span>
   </div>
   <div class="gate-card-body">
     <div class="gate-card-title">No-RPC architectural moat, exercised on at least one historical block.</div>
@@ -248,7 +248,7 @@ curl -X POST localhost:8080/v1/sync-committee/verify \
       </div>
       <div class="gate-card-cell">
         <div class="label">Operator command</div>
-<pre class="cmd"># CI gate (passes today)
+<pre class="cmd"># Test suite (synthesised tries; companion repo)
 npm run test:load-network
 
 # operator gate
@@ -261,8 +261,8 @@ LOAD_NETWORK_LIVE=1 \
 </article>
 
 <div class="legend">
-  <div class="legend-item"><span class="legend-swatch scaffolded"></span> Scaffolded — code + CI gate</div>
-  <div class="legend-item"><span class="legend-swatch operator-pending"></span> Operator gate pending</div>
+  <div class="legend-item"><span class="legend-swatch scaffolded"></span> Scaffolded — code + tests in companion repo</div>
+  <div class="legend-item"><span class="legend-swatch operator-pending"></span> Operator-pending live verification</div>
   <div class="legend-item"><span class="legend-swatch closed"></span> Closed</div>
 </div>
 
@@ -270,7 +270,8 @@ LOAD_NETWORK_LIVE=1 \
   <div class="section-mark-text">G-200 · Why this page exists</div>
   <h2>The discipline of evidence.</h2>
   <p>The build map (<a href="/paxiom-build-map.html">PXM-R-100</a>) flips four items into "What's done" the moment the substrate scaffolding lands. This page is the audit trail underneath those flips: each gate names its acceptance criteria, points at the source of evidence, and quotes the exact command the operator runs to close the live side.</p>
-  <p>Where a build-map flip says "done", this page says <em>scaffolded plus CI gate plus operator command</em>. Both forms of "done" are honest; this is where they're disambiguated.</p>
+  <p>Where a build-map flip says "done", this page says <em>scaffolded plus operator-pending live verification</em>. Both forms of "done" are honest; this is where they're disambiguated.</p>
+  <p><strong>About the evidence links.</strong> The links above point at the companion repos <code>k-luecke/paxiom</code> and <code>k-luecke/bls-verifier</code>. They resolve when those repos are public; if you encounter a 404, the companion is currently private and the public proof is operator-runnable rather than browse-able. The page will tighten its language to "closed" once both the operator-side commands have been run and the companion repos are publicly readable.</p>
 </div>
 
 <div class="section">
