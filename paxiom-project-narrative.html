@@ -1728,7 +1728,7 @@ to return wrong data. When regulatory or audit requirements demand
 that the input data chain be verifiable.
 </p>
 
-<h3>What replacing RPCs looks like</h3>
+<h3>What replacing RPC trust looks like</h3>
 
 <p>
 Paxiom's architectural answer is to separate witness retrieval from
@@ -1750,8 +1750,8 @@ not by trusting another data vendor.
 </p>
 
 <p>
-That is the Paxiom thesis in one sentence. Verification that does
-not depend on the trust assumption that just failed.
+That is the Paxiom thesis in one sentence. Useful data sources are allowed;
+unverifiable claims are not.
 </p>
 
 </div>
@@ -2032,10 +2032,11 @@ consumption.
 </p>
 
 <p>
-Most of them depend on RPC providers for input data, which means
-their proofs inherit the RPC trust assumption. This is the gap
-B-300 covered. None of them have publicly committed to RPC-free
-architecture as a structural property.
+Most of them are not built around permanent evidence packets and
+replayable input verification as the product surface. This is the gap
+B-300 covered. The question is not whether a service ever touches an
+RPC-shaped interface; the question is whether the answer depends on
+trusting that interface.
 </p>
 
 <p>
@@ -2112,11 +2113,10 @@ the competitive shape of the bet.
 <div class="prose">
 
 <p class="lead">
-Paxiom is a verified compute platform. Agent-callable services that
-return cryptographically verifiable outputs, settled through x402,
-anchored in HyperBEAM compute and AO/Arweave audit, with
-architectural properties that defeat the trust failures in adjacent
-categories.
+Paxiom is a verified-claims platform. Agent-callable services that return
+cryptographically verifiable outputs, settled through x402, exposed through
+MCP, anchored in HyperBEAM compute and AO/Arweave audit, with permanent
+evidence trails that let outside readers replay why an answer was accepted.
 </p>
 
 <h3>The five Phase 1 services</h3>
@@ -2124,9 +2124,9 @@ categories.
 <p>
 Phase 1 launches five services that overlap deliberately with what
 existing verified compute providers already sell. The strategy is
-not to invent a new category. The strategy is to enter an
-established category with x402-native delivery and architectural
-properties that competitors cannot easily match.
+not to outbuild the largest coprocessor networks at their own game.
+The strategy is to turn verified facts into x402-payable, MCP-callable
+service responses with durable evidence attached.
 </p>
 
 <p>
@@ -2151,8 +2151,8 @@ The five services, in summary:
   High volume, low margin, uses the HyperBEAM EVM device natively.</li>
   <li><strong>Service 5 — Verified historical state queries.</strong>
   Verifiable answers to questions about historical chain state. Where
-  the no-RPC architecture matters most. Where Paxiom's identity gets
-  established.</li>
+  archive-node witnesses, permanent evidence, and replayable verification
+  matter most. Where Paxiom's identity gets established.</li>
 </ul>
 
 <p>
@@ -2177,10 +2177,10 @@ property of the platform matters at once. It needs verified state
 proofs (Service 1, Service 5). It needs verified consensus
 attestation (Service 2). It needs verified cross-chain message
 passing (Service 3). It benefits from simulation for pre-flight
-checking (Service 4). It demands no-RPC architecture because the
-trust failures in cross-chain infrastructure are exactly what take
-out cross-chain protocols. It demands permanent audit because
-cross-chain operations are subject to regulatory scrutiny.
+checking (Service 4). It demands verifiable inputs because the trust
+failures in cross-chain infrastructure are exactly what take out
+cross-chain protocols. It demands permanent audit because cross-chain
+operations are subject to regulatory scrutiny.
 </p>
 
 <p>
@@ -3052,8 +3052,8 @@ as the trust anchor.
 
 <p>
 This is the structural moat that B-320 referenced. A competitor
-who notices the no-RPC opportunity and decides to extend their
-service in that direction is undertaking a multi-quarter
+who notices the replayable-evidence opportunity and decides to extend
+their service in that direction is undertaking a multi-quarter
 engineering effort. A startup that builds on this substrate from
 the start ships the property natively. The advantage is not
 inventing the technique; it is committing to it from Phase 1.
@@ -3250,7 +3250,7 @@ Total agent-economy x402 transaction volume is roughly $28k per day
 genuine, $600M annualized at projected growth. The fraction
 involving high-stakes financial decisions is probably 5-15% based
 on observable patterns. The fraction of those that would benefit
-from verified state proofs versus accepting RPC trust is maybe
+from verified state proofs or replayable tool outputs is maybe
 10-30% — most current decisions are low-enough stakes that
 verification overhead is not justified, but the high-value tail is
 real.
@@ -3285,12 +3285,12 @@ take on more responsibility. The high-stakes fraction grows from
 </p>
 
 <p>
-Share that recognizes RPC trust as a problem. Today most agent
-applications do not consider RPC trust. As trust failures
-accumulate — Kelp DAO is one example, others will follow — more
-applications recognize that RPC trust is something they need to
-solve. The fraction grows from 10-30% today toward majority over
-the next 3-5 years.
+Share that recognizes unverifiable inputs as a problem. Today most agent
+applications do not ask whether a tool's answer can be checked later.
+As trust failures accumulate — Kelp DAO is one example, others will
+follow — more applications recognize that tool outputs need evidence,
+not just signatures. The fraction grows from 10-30% today toward
+majority over the next 3-5 years.
 </p>
 
 <p>
@@ -3854,15 +3854,14 @@ the arbitrage focus was repositioned.
 </p>
 
 <p>
-The current version is the platform thesis as articulated
-throughout this document. Verified compute as a category, x402-native
-delivery, AO/Arweave audit, no-RPC architecture. Cross-chain
-settlement as the reference application. The five Phase 1 services
-as the engine that funds the moat work. This thesis incorporates
-what the earlier iterations established and responds to the
-landscape that emerged around the work — x402's institutional
-embedding, KYA's category formation, the Kelp DAO incident's
-demonstration of RPC trust failure.
+The current version is the platform thesis as articulated throughout this
+document. Verified claims as a category, x402-native delivery, MCP-readable
+tools, AO/Arweave audit, and permanent evidence. Cross-chain settlement and
+private opportunity feeds remain reference applications when they are packaged
+as paid routes, simulations, or attestations. This thesis incorporates what
+the earlier iterations established and responds to the landscape that emerged
+around the work — x402's institutional embedding, KYA's category formation,
+the Kelp DAO incident's demonstration of input-trust failure.
 </p>
 
 <p>
@@ -3961,13 +3960,12 @@ open right now.
 </p>
 
 <p>
-The specific bet — verified compute, x402-native delivery, no-RPC
-architecture, AO-anchored audit — is one specific way to participate.
-There are other valid bets. Other people are making them. The
-ecosystem will need many of them. What matters is that the bet I am
-making is grounded in real architectural advantages, fits a real
-gap in the existing landscape, and compounds in the directions the
-ecosystem is actually moving.
+The specific bet — verified claims, x402-native delivery, MCP-readable tools,
+AO-anchored audit, and permanent evidence — is one specific way to participate.
+There are other valid bets. Other people are making them. The ecosystem will
+need many of them. What matters is that the bet I am making is grounded in
+real architectural advantages, fits a real gap in the existing landscape, and
+compounds in the directions the ecosystem is actually moving.
 </p>
 
 <p>
@@ -4004,10 +4002,10 @@ stagnates, if Visa's Trusted Agent Protocol or some alternative
 displaces it, if a critical security flaw forces a rewrite — any
 of these would change the substrate the platform is built on. The
 platform's mitigation is that the architectural advantages
-(no-RPC, audit trail, KYA primitive) are not specific to x402. The
-verified compute capabilities translate to whatever payment
-protocol the ecosystem consolidates around. The migration cost is
-real but the platform survives.
+(verifiable inputs, permanent audit trail, KYA primitive) are not specific to
+x402. The verified-claims capabilities translate to whatever payment protocol
+the ecosystem consolidates around. The migration cost is real but the platform
+survives.
 </p>
 
 <p>
@@ -4210,8 +4208,8 @@ Phase 3 introduces capabilities that competitors cannot easily
 replicate. Recursive proving for composable cross-chain settlement
 through Polyhedra Expander integration. ZK proofs of computation
 on private data, opening the HIPAA-grade compliance market.
-Verified historical state at scale, where the no-RPC architecture
-provides genuinely rare capability.
+Verified historical state at scale, where permanent evidence and
+replayable verification provide genuinely rare capability.
 </p>
 
 <p>
@@ -4333,7 +4331,7 @@ substitutable. Customer switching costs grow.
 </p>
 
 <p>
-Architectural advantages. The no-RPC, AO-audit, KYA-primitive
+Architectural advantages. The verifiable-input, AO-audit, KYA-primitive
 properties become more valuable as the agent economy matures.
 Today they are differentiators. By Phase 4 or 5, they may be
 table stakes — the entire ecosystem has migrated toward them, and

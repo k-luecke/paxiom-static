@@ -361,8 +361,8 @@ a:hover { color: var(--red); }
 
   <section class="section">
     <div class="section-mark">What is being built</div>
-    <h2>A verification layer, <em>not a payment rail.</em></h2>
-    <p>The agent economy needs a substrate where machines can transact across chains, services, and trust boundaries without relying on any single intermediary's honesty. Paxiom is one specific bet on what part of that substrate should look like — proof services, audit relay mechanics, identity-bound service access — built on permanent autonomous compute and zero-knowledge verification.</p>
+    <h2>Verified facts, <em>not unverifiable claims.</em></h2>
+    <p>The agent economy needs a substrate where machines can transact across chains, services, and trust boundaries without inheriting blind trust in the service that answered. Paxiom is one specific bet on that substrate: x402-payable, MCP-callable attestations whose inputs are verified, whose computation can be replayed, and whose evidence trail is permanent.</p>
     <p>The drawing set goes deeper. The Project Narrative explains the territory and the bet. The Phase 1 Blueprint details the five services that ship first. The Operations Runbook covers what happens on the days things go wrong, and the days they don't.</p>
     <p><strong>Phase 0 substrate.</strong> HyperBEAM bring-up scripts and the <code>~bls-sync-committee@1.0</code> device are written and tested in their companion repos; S.01 and S.02 close when the operator runs the documented commands on real infrastructure. S.03 is being rebuilt as an Ethereum L1 reconstruction path: Erigon or Reth serves live MPT witnesses, Load Network/Arweave stores the permanent evidence trail, and AO replays the verifier. <a href="/paxiom-phase-0-status.html">See the gate status →</a></p>
     <a class="read-more" href="/docs.html">View the Drawing Set →</a>
@@ -371,8 +371,8 @@ a:hover { color: var(--red); }
   <section class="section">
     <div class="section-mark">Why this exists</div>
     <h2>The proof is the point.</h2>
-    <p>Most agent infrastructure being built today asks the consumer to trust the operator. Paxiom is built on the opposite assumption: every output the platform produces is independently verifiable, and the audit trail is permanent rather than retained at the operator's discretion.</p>
-    <p>This is a slower way to build. It requires substrate decisions — HyperBEAM compute, AO/Arweave audit, archive-anchored state reconstruction — that competitors using commodity infrastructure don't make. The bet is that as trust failures accumulate in adjacent agent service categories, the customers who care about verifiable outputs will be the ones who matter most.</p>
+    <p>Most agent infrastructure being built today asks the consumer to trust the operator. Paxiom is built on the opposite assumption: data sources can be useful without being trusted. Every serious output should carry the evidence needed to verify it later.</p>
+    <p>This is a slower way to build. It requires substrate decisions — HyperBEAM compute, AO/Arweave audit, archive-node witnesses, Load Network evidence storage — that commodity API services don't make. The bet is that as agents begin paying for routes, proofs, simulations, and private opportunity feeds, the winning services will be the ones whose claims survive replay.</p>
   </section>
 
   <footer class="sheet-footer">

@@ -241,7 +241,7 @@ curl -X POST localhost:8080/v1/sync-committee/verify \
     <span class="gate-status">Active design · live witness + permanent evidence split</span>
   </div>
   <div class="gate-card-body">
-    <div class="gate-card-title">No-RPC architectural moat, sharpened into two paths.</div>
+    <div class="gate-card-title">No unverifiable claims, sharpened into two paths.</div>
     <p class="gate-card-acceptance">Open acceptance target: an Ethereum L1 historical state query verifies end-to-end against a sync-committee-trusted block header. The hot path uses Erigon or Reth to serve <code>eth_getProof</code>/MPT witnesses; the cold path stores headers, proof packets, and L1 evidence on Load Network/Arweave so the derivation remains permanently auditable and replayable.</p>
 
     <div class="gate-card-grid">
