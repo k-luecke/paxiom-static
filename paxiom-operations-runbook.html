@@ -1271,7 +1271,8 @@ more than the format.
       </div></div>
       <div class="step"><div class="step-text">
         <strong>Check upstream dependencies.</strong> Beacon endpoint,
-        Load Network, AO process, RunPod GPU availability. Service can
+        archive node, Load Network/Arweave evidence path, AO process,
+        RunPod GPU availability. Service can
         appear "down" when an upstream dependency is the actual problem.
       </div></div>
     </div>
@@ -1378,9 +1379,10 @@ more than the format.
       </div></div>
       <div class="step"><div class="step-text">
         <strong>Check upstream data integrity.</strong> If the service
-        depends on Load Network state or beacon chain data, verify the
-        source data is correct. The service can fail because the data
-        feeding it is wrong.
+        depends on archive-node witnesses, Load Network/Arweave evidence,
+        or beacon chain data, verify the source data and proof packet are
+        consistent. The service can fail because the data feeding it is
+        wrong.
       </div></div>
       <div class="step"><div class="step-text">
         <strong>Check the verifier itself.</strong> Run the verifier with

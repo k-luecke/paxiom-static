@@ -790,7 +790,7 @@ look like.
 <div class="toc-row"><div class="toc-num">B-520</div><div class="toc-title">Quantum Readiness<em>NIST, Google, the migration coming</em></div><div class="toc-page"><a href="#b-520">B-520</a></div></div>
 <div class="toc-row"><div class="toc-num">B-530</div><div class="toc-title">HyperBEAM &amp; Devices<em>where compute happens</em></div><div class="toc-page"><a href="#b-530">B-530</a></div></div>
 <div class="toc-row"><div class="toc-num">B-540</div><div class="toc-title">AO &amp; Arweave<em>audit as native property</em></div><div class="toc-page"><a href="#b-540">B-540</a></div></div>
-<div class="toc-row"><div class="toc-num">B-550</div><div class="toc-title">Load Network<em>state without RPCs</em></div><div class="toc-page"><a href="#b-550">B-550</a></div></div>
+<div class="toc-row"><div class="toc-num">B-550</div><div class="toc-title">Load Network<em>permanent evidence, replayable state</em></div><div class="toc-page"><a href="#b-550">B-550</a></div></div>
 
 <div class="toc-section-label">Section 6 — The Economics</div>
 <div class="toc-row"><div class="toc-num">B-600</div><div class="toc-title">Phase 1 Pro Forma<em>per-service unit economics</em></div><div class="toc-page"><a href="#b-600">B-600</a></div></div>
@@ -1731,21 +1731,22 @@ that the input data chain be verifiable.
 <h3>What replacing RPCs looks like</h3>
 
 <p>
-Paxiom's architectural answer is to replace the RPC trust assumption
-with cryptographic state reconstruction from Arweave archives. The
-mechanism is Load Network — an Arweave-based archive of Ethereum
-transaction data, deterministically reconstructible into any
-historical state without depending on any single party.
+Paxiom's architectural answer is to separate witness retrieval from
+trust. A live archive node can provide the Merkle Patricia Trie witness,
+but the witness is checked against a sync-committee-trusted Ethereum
+state root. Load Network and Arweave hold the permanent evidence trail:
+headers, proof packets, archival inputs, and enough metadata for the
+answer to be audited or replayed later.
 </p>
 
 <p>
 The full mechanics are covered in section B-550. The structural
-property worth establishing here is this: a verification proof
-generated against Load Network state has no RPC trust assumption to
-break. The state is reconstructed from data that is permanently
-archived on Arweave with cryptographic integrity. There is no
-centralized party to compromise. The Kelp DAO attack class becomes
-mathematically impossible against this architecture.
+property worth establishing here is this: a verification proof does not
+inherit the honesty assumption of the witness source. If the archive
+node lies, the MPT verification fails. If the proof packet is questioned
+later, the evidence trail is permanently stored and replayable. The Kelp
+DAO attack class is addressed by verification against Ethereum consensus,
+not by trusting another data vendor.
 </p>
 
 <p>
@@ -2072,9 +2073,10 @@ retrofit.
 </p>
 
 <ul>
-  <li><strong>No-RPC architecture</strong> through Load Network state
-  reconstruction. Adding this to an existing RPC-dependent service is
-  not a feature flip; it is a redesign.</li>
+  <li><strong>Replayable no-trust input path</strong> through
+  sync-committee-anchored headers, MPT-verified witnesses, and
+  Load Network/Arweave evidence storage. Adding this to an existing
+  RPC-dependent service is not a feature flip; it is a redesign.</li>
   <li><strong>AO-anchored audit trail</strong> as a native property
   of the substrate. Bolting permanent public auditability onto a
   service that wasn't built for it produces a different and weaker
@@ -2194,9 +2196,11 @@ The platform's distinguishing properties, named in plain language:
 </p>
 
 <ul>
-  <li><strong>No RPC dependence.</strong> State reconstruction from
-  Arweave archives via Load Network. The trust failures that took out
-  Kelp DAO are mathematically impossible against this architecture.</li>
+  <li><strong>No RPC trust dependence.</strong> MPT witnesses are verified
+  against sync-committee-anchored Ethereum headers, then the proof packet
+  and evidence trail are preserved on Load Network/Arweave. The trust
+  failures that took out Kelp DAO are the failure mode this architecture
+  is designed to remove.</li>
   <li><strong>Live recursive proofs</strong> via Polyhedra Expander.
   Composable verification with bounded verification cost.</li>
   <li><strong>Permanent public audit trail</strong> through AO and
@@ -2386,8 +2390,9 @@ root. Service 2, sync committee verification: the statement is "the
 sync committee for slot N signed header H," and the witness is the
 aggregate BLS signature plus the participation bitfield. Service 5,
 verified historical state queries: the statement varies by query
-type, and the witness includes the relevant state-trie data
-reconstructed from Load Network archives.
+type, and the witness includes the relevant state-trie data from an
+archive node plus the permanent evidence packet stored on
+Load Network/Arweave.
 </p>
 
 <p>
@@ -2939,117 +2944,110 @@ monitoring surface.
 
 <div id="b-550">
 <div class="section-mark">Section 5 · B-550</div>
-<h2 class="section-title">Load Network.<br><em>State without RPCs.</em></h2>
+<h2 class="section-title">Load Network.<br><em>Permanent evidence, replayable state.</em></h2>
 
 <div class="prose">
 
 <p class="lead">
-Load Network is the piece that makes Paxiom's no-RPC architecture
-real. The previous sections argued why replacing RPCs matters. This
-section explains how it actually works.
+Load Network is the piece that makes Paxiom's verification trail
+permanent. The previous sections argued why replacing RPC trust matters.
+This section explains the split: live witness retrieval is fast and
+local; evidence, replay, and auditability live on Arweave.
 </p>
 
 <h3>What Load Network archives</h3>
 
 <p>
-Load Network operates a permanent archive of Ethereum transaction
-data on Arweave. Every Ethereum block, every transaction, every
-state change since genesis is preserved on the Arweave ledger. The
-archive is decentralized, immutable, and independently verifiable
-through Arweave's own integrity guarantees.
+Load Network gives Paxiom an Arweave-backed place for permanent evidence:
+headers, proof packets, transaction or receipt evidence, and replay
+metadata. Paxiom does not need Load Network to serve live trie nodes.
+The live witness can come from Erigon or Reth; Load Network preserves
+the derivation trail after the answer is produced.
 </p>
 
 <p>
-The size of the archive is substantial — Ethereum's history
-through the current block is measured in terabytes — but Arweave's
-economic model is designed for permanent storage at predictable
-cost. The archive is paid for once and persists indefinitely. This
-is structurally different from RPC providers, who maintain state
-data for a window (typically the recent blocks) and either prune
-older data or charge premium for archive node access.
+The size of Ethereum history is substantial, so the evidence format must
+be intentional. Paxiom's current working design is to store small,
+tagged artifacts — headers, proof packets, receipts, transaction
+fragments, and index metadata — rather than treating Load Network as a
+drop-in replacement for an archive-node database. That keeps Arweave's
+permanence in the architecture without pretending object storage is a
+low-latency state trie.
 </p>
 
 <h3>What state reconstruction means</h3>
 
 <p>
-Given the full transaction history, the Ethereum state at any
-historical block can be deterministically reconstructed. Apply the
-Ethereum state transition function to each transaction in order,
-starting from genesis. After applying the transactions in block N,
-the resulting state is exactly the state at block N. The
-computation is deterministic — anyone with the transaction history
-arrives at the same state.
+There are two reconstruction paths. The hot path asks an Erigon or Reth
+archive node for an <code>eth_getProof</code> witness, then verifies the
+account proof and storage proof against a block state root anchored by
+the sync committee verifier. The cold path uses Arweave-resident
+evidence to replay or audit the derivation later.
 </p>
 
 <p>
-This is computationally expensive in the naive case. Reconstructing
-state from genesis to a recent block requires processing every
-historical transaction. Load Network optimizes this by maintaining
-checkpoints — periodic snapshots of state that can be used as
-starting points for reconstruction. Reconstructing state at a
-target block requires processing transactions only between the
-nearest checkpoint and the target.
+The cold path is not a fast query interface. It is an audit and recovery
+interface. Re-executing from raw archival evidence is slower than asking
+an archive node for a witness, but it gives Paxiom a stronger public
+claim: the answer is not only verified at issuance time, it has a
+permanent evidence trail that a third party can inspect and replay.
 </p>
 
 <h3>The trust property</h3>
 
 <p>
-The structural property is that this reconstruction has no trust
-assumption. The archive is permanently stored on Arweave with
-Arweave's integrity guarantees. The state transition function is
-the public Ethereum specification. The reconstruction is
-deterministic. There is no centralized party whose word the
-reconstruction depends on.
+The structural property is that the witness source is not trusted. The
+archive node is useful because it is fast, but it cannot make a false
+storage value verify against the wrong Ethereum state root. Load
+Network/Arweave then make the resulting proof packet and evidence trail
+durable, public, and replayable.
 </p>
 
 <p>
-Compare to the alternative. An RPC provider returns "the state at
-block N is X." The verifier has to trust that the RPC provider
-read the state correctly, returned the unmodified value, and is
-not colluding with anyone. The Kelp DAO attack exploited exactly
-this trust assumption. Load Network reconstruction does not have
-this assumption to break.
+Compare to the alternative. An RPC provider returns "the state at block
+N is X." The consumer has to trust that the provider read the state
+correctly, returned the unmodified value, and is not colluding with
+anyone. Paxiom instead asks for a witness and verifies it. The provider
+can be wrong or malicious; the verifier is the authority.
 </p>
 
 <h3>What this enables for Paxiom</h3>
 
 <p>
-Service 5 (verified historical state queries) depends entirely on
-Load Network. The customer asks "what was the value of contract C
-at block N?" The platform reconstructs state from Load Network,
-extracts the requested value, and produces a ZK proof of the
-extraction. The customer verifies the proof. No RPC was consulted.
-The trust chain ends at Arweave's integrity guarantees and the
-correctness of the Ethereum state transition function.
+Service 5 (verified historical state queries) depends on this split. The
+customer asks "what was the value of contract C at block N?" The platform
+retrieves a live MPT witness from an archive node, verifies it against a
+sync-committee-trusted state root, produces the proof, and stores the
+proof packet/evidence on Load Network/Arweave. The customer verifies the
+proof. The archive node is a witness source, not a trust root.
 </p>
 
 <p>
 Services 1 (slot storage proofs) and 3 (cross-chain message
-verification) optionally use Load Network in the same way. The v1
-versions of these services may use RPC for witness data initially
-because the Load Network integration is not yet mature for
-real-time use. The v1.5 or Phase 2 versions migrate to Load
-Network as the integration matures, eliminating RPC trust from
-those services as well.
+verification) use the same trust shape. The v1 services can launch with
+archive-node witnesses because the proof is checked cryptographically.
+As the Load Network evidence format matures, more of the input and audit
+trail moves onto Arweave, reducing operational dependency without making
+Load Network the live database.
 </p>
 
 <h3>Why this is the architectural moat</h3>
 
 <p>
-Most existing verified compute providers depend on RPC providers
-for witness data. They could in principle migrate to Load Network
-or equivalent archive-based reconstruction, but the migration is
-not a feature flip. It is a fundamental change to how their
-service obtains its inputs. The integration work is meaningful and
-the testing is extensive.
+Most existing verified compute providers can retrieve witnesses, but the
+derivation trail is not usually permanent and replayable by default.
+They could in principle add Arweave-backed evidence storage and AO-style
+replayability, but the migration is not a feature flip. It is a
+fundamental change to how their service obtains, verifies, stores, and
+audits its inputs.
 </p>
 
 <p>
-Paxiom's architecture is built around Load Network from the start.
-The integration pattern, the witness format, the proof generation
-pipeline — all of these are designed for archive-based input.
-There is no migration required because there is no RPC dependency
-to migrate from.
+Paxiom's architecture is built around the split from the start. The
+witness format, proof generation pipeline, AO verifier, and
+Load Network/Arweave evidence trail are designed as one surface. There
+is no migration required because the live data source is never treated
+as the trust anchor.
 </p>
 
 <p>

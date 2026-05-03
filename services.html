@@ -308,7 +308,7 @@ a:hover { color: var(--red); }
       </div>
       <div class="service-card-body">
         <div class="title">Slot Storage Proofs</div>
-        <p class="desc">A ZK proof that a specific contract storage slot held a specific value at a specific block. The canonical "verified state" service, with input witness data sourced from Load Network archive rather than from RPC.</p>
+        <p class="desc">A ZK proof that a specific contract storage slot held a specific value at a specific block. The canonical "verified state" service: hot MPT witnesses from an archive node, verified against a sync-committee-trusted header, with proof packets and evidence stored permanently on Load Network/Arweave.</p>
         <div class="service-card-meta">
           <div class="cell"><span class="label">Price (draft)</span><span class="value price">$1.00 / proof</span></div>
           <div class="cell"><span class="label">Target Volume</span><span class="value">~800 / mo</span></div>
@@ -376,7 +376,7 @@ a:hover { color: var(--red); }
       </div>
       <div class="service-card-body">
         <div class="title">Verified Historical State</div>
-        <p class="desc">"What was the state of contract X at block N six months ago?" Verified answers using Load Network's archive reconstruction. Most existing providers focus on recent state because that's what's easily available; historical state with verification is rare in the existing landscape.</p>
+        <p class="desc">"What was the state of contract X at block N six months ago?" Verified answers using archive-node MPT witnesses plus Load Network/Arweave evidence replay. Most existing providers focus on recent state because that's what's easily available; permanently auditable historical state is rare in the existing landscape.</p>
         <div class="service-card-meta">
           <div class="cell"><span class="label">Price (draft)</span><span class="value price">$2.00 / query</span></div>
           <div class="cell"><span class="label">Target Volume</span><span class="value">~300 / mo</span></div>

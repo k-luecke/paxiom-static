@@ -990,7 +990,7 @@ in that order, on a timeline that matches the household.
 </div>
 <div class="toc-row">
   <div class="toc-num">A-205</div>
-  <div class="toc-title">Service 5 · Verified Historical State<em>Load Network archive reconstruction, no RPC</em></div>
+  <div class="toc-title">Service 5 · Verified Historical State<em>archive-node witnesses, Load evidence, AO replay</em></div>
   <div class="toc-page"><a href="#a-205">A-205</a></div>
 </div>
 
@@ -1312,9 +1312,9 @@ activity.
 </p>
 
 <p>
-<strong>Load Network historical state</strong> — Arweave-archived Ethereum
-transaction data, deterministically reconstructible. The piece that
-eliminates RPC trust for state-related services.
+<strong>Load Network evidence layer</strong> — Arweave-resident Ethereum
+headers, proof packets, and archival evidence. The piece that makes
+state-related services permanently replayable rather than merely signed.
 </p>
 
 <div class="callout spec">
@@ -1558,14 +1558,15 @@ consensus data (slot 13883119, state root confirmed). Substrate for Service 2.
 <div class="callout spec">
   <div class="callout-header">
     <span class="callout-tag">SPEC · Phase 0 Gate</span>
-    <span>Load Network integration tested</span>
+    <span>L1 evidence/reconstruction path tested</span>
     <span class="callout-id">A-120 / S.03</span>
   </div>
   <div class="callout-body">
     <p>
-      State reconstruction from Load Network archive working end-to-end
-      for at least one historical block. Required for Service 5; useful
-      for Services 1 and 3.
+      One Ethereum L1 historical state query verifies end-to-end: hot MPT
+      witness from Erigon/Reth, state root anchored by the sync committee
+      verifier, and proof packet/evidence written to Load Network/Arweave.
+      Required for Service 5; useful for Services 1 and 3.
     </p>
   </div>
 </div>
@@ -1659,17 +1660,18 @@ Axiom, Herodotus.
       <h5>Backend</h5>
       <p>
         SP1 or RISC Zero guest program performing Merkle inclusion against
-        block state root. Witness data sourced from Load Network archive
-        (preferred) or RPC fallback (initial launch acceptable).
+        the block state root. Witness data comes from an archive node on the
+        hot path; Load Network/Arweave stores the header, proof packet, and
+        evidence needed for cold replay.
       </p>
 
       <h5>Differentiation</h5>
       <p>
-        Existing providers depend on RPC for witness data. Paxiom uses
-        Load Network archive — no RPC trust assumption. This is the
-        architectural moat for this category. Marketing: "the proof is
-        as trustworthy as Ethereum itself, not as trustworthy as your
-        RPC provider."
+        Existing providers commonly depend on opaque RPC/indexer trust for
+        inputs. Paxiom's moat is the composition: sync-committee-anchored
+        state roots, MPT-verified witnesses, AO-replayable verification, and
+        permanent Load Network/Arweave evidence. Marketing: "the proof is
+        replayable from the evidence trail, not just signed by a service."
       </p>
 
       <h5>Build complexity</h5>
@@ -1836,17 +1838,17 @@ base. The Kelp DAO incident is the marketing case study.
       <h5>Backend</h5>
       <p>
         Composes Service 1 (state proof on source chain) with destination-chain
-        verification logic. Requires Load Network coverage for source chain.
-        Multi-chain support adds operational complexity beyond single-chain
-        services.
+        verification logic. Requires a verifiable witness source and permanent
+        evidence trail for the source chain. Multi-chain support adds
+        operational complexity beyond single-chain services.
       </p>
 
       <h5>Differentiation</h5>
       <p>
         The Kelp DAO attack on April 18, 2026 drained $292M because a
         LayerZero DVN was fed false data via compromised RPC infrastructure.
-        Paxiom's Load Network architecture would have made that attack
-        impossible. The marketing pitch writes itself: <em>verification that
+        Paxiom's witness-verification architecture is aimed directly at that
+        failure mode. The marketing pitch writes itself: <em>verification that
         doesn't depend on the trust assumption that just failed.</em>
       </p>
 
@@ -2030,27 +2032,28 @@ no-RPC architecture matters most. Where Paxiom's identity gets established.
 
       <h5>Backend</h5>
       <p>
-        Load Network archive provides historical block data. Deterministic
-        state reconstruction yields the storage trie at the requested block.
-        Proof generation against the reconstructed state. The whole pipeline
-        runs without any RPC dependency.
+        Erigon or Reth provides the live <code>eth_getProof</code>/MPT witness.
+        The verifier checks it against a sync-committee-trusted state root.
+        Load Network/Arweave stores the proof packet, header, and archival
+        evidence so the answer can be audited and replayed later.
       </p>
 
       <h5>Differentiation</h5>
       <p>
         This is where Paxiom is genuinely rare. Most existing providers
-        focus on recent state because that's what's easily available from
-        archive nodes. Historical state beyond a few hundred blocks is
-        harder, and most existing services rely on archive nodes that
-        customers have to trust. Paxiom's Load Network integration removes
-        that trust requirement entirely.
+        can answer historical-state queries, but the derivation trail is
+        not usually permanent and replayable by default. Paxiom separates
+        live witness retrieval from trust: the archive node can provide data,
+        but the MPT verifier and sync-committee header decide whether it is
+        true, and Load Network/Arweave keeps the evidence trail.
       </p>
 
       <h5>Build complexity</h5>
       <p>
-        Higher than Services 1 and 2. Requires Load Network integration
-        plus proof generation. Estimated 6–8 weeks. Ships in middle of
-        Phase 1, after Service 2 has validated the launch pattern.
+        Higher than Services 1 and 2. Requires archive-node operation,
+        MPT verification, evidence-packet design, and Load Network/Arweave
+        persistence. Estimated 6–8 weeks. Ships in middle of Phase 1,
+        after Service 2 has validated the launch pattern.
       </p>
 
       <h5>Customer fit</h5>
@@ -2214,8 +2217,8 @@ The discipline: all five earning before runway is touched.
 <h3>Gate 0 — Foundations clear</h3>
 
 <p>
-HyperBEAM running locally. Sync committee verifier located. Load Network
-integration tested. x402 facilitator stub working on Base testnet. KYA
+HyperBEAM running locally. Sync committee verifier located. L1
+evidence/reconstruction path tested. x402 facilitator stub working on Base testnet. KYA
 keypair generated and public key published.
 </p>
 
