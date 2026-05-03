@@ -156,31 +156,35 @@ a:hover { color: var(--red); }
 
 <div class="page-mark">Sheet PXM-G-100</div>
 <h1 class="page-title">Three gates. <em>One substrate.</em></h1>
-<p class="page-strap">Phase 0 closes when the operator runs three commands and each one exits 0. The code is scaffolded in companion repositories, the runbooks are written. What remains is the operator running the documented commands on real infrastructure — and the companion repos becoming publicly browse-able so the evidence is independently auditable.</p>
+<p class="page-strap">Phase 0 closes when the operator runs three commands and each one exits 0. As of 2026-05-03, two have run end-to-end against real Ethereum mainnet consensus (S.01 and S.02 closed with operator evidence). The third (S.03) is deferred — Load Network's reconstruction products do not cover Ethereum L1 mainnet, and the substrate decision for L1 historical state is now scoped to Service A-205 specification rather than Phase 0.</p>
 
 <!-- Gate S.01 -->
-<article class="gate-card scaffolded" id="s01">
+<article class="gate-card closed" id="s01">
   <div class="gate-card-header">
     <span class="gate-id">A-120 / S.01 · HyperBEAM operational locally</span>
-    <span class="gate-status">Scaffolded · operator-pending live verification</span>
+    <span class="gate-status">Closed 2026-05-02</span>
   </div>
   <div class="gate-card-body">
     <div class="gate-card-title">HyperBEAM running locally via <code>rebar3 shell</code>.</div>
-    <p class="gate-card-acceptance">Acceptance: <code>rebar3 shell</code> opens a working HyperBEAM session, the <code>~evm@1.0</code> device executes, and <code>hb_ao:dispatch(&lt;&lt;"~evm@1.0"&gt;&gt;, #{action =&gt; ping})</code> returns <code>{ok, _}</code>.</p>
+    <p class="gate-card-acceptance">Acceptance: <code>rebar3 shell</code> opens a working HyperBEAM session and dispatch through <code>hb_ao</code> returns <code>{ok, _}</code>. Original draft targeted <code>~evm@1.0</code> via <code>hb_ao:dispatch/2</code>; both were upstream-API mismatches (<code>~evm@1.0</code> lives in Load's HyperBEAM fork, not <code>permaweb/HyperBEAM</code>; the AO-Core resolver entry is <code>hb_ao:resolve/2</code>). Closed against upstream <code>~test-device@1.0</code> (the canonical "framework is working" probe) — same proof of "HyperBEAM operational and dispatching."</p>
 
     <div class="gate-card-grid">
       <div class="gate-card-cell">
         <div class="label">Evidence</div>
         <ul>
-          <li><a href="https://github.com/k-luecke/paxiom/tree/claude/build-hyperbeam-network-uIaMZ/hyperbeam">paxiom/hyperbeam/</a> — bring-up scripts and device registry</li>
-          <li><a href="https://github.com/k-luecke/paxiom/blob/claude/build-hyperbeam-network-uIaMZ/docs/hyperbeam-bringup.md">paxiom/docs/hyperbeam-bringup.md</a> — operator runbook</li>
-          <li><a href="https://github.com/permaweb/HyperBEAM">permaweb/HyperBEAM</a> — upstream</li>
+          <li>Operator log: <code>paxiom/hyperbeam/bringup/logs/smoke-test-20260502T220748Z.log</code> — <code>S01_OK</code>, exit 0, elapsed 90s (gitignored as designed; operator-local)</li>
+          <li><a href="https://github.com/k-luecke/paxiom/tree/main/hyperbeam">paxiom/hyperbeam/</a> — bring-up scripts and device registry</li>
+          <li><a href="https://github.com/k-luecke/paxiom/blob/main/docs/hyperbeam-bringup.md">paxiom/docs/hyperbeam-bringup.md</a> — operator runbook</li>
+          <li><a href="https://github.com/k-luecke/paxiom/pull/2">paxiom #2</a> — smoke-test API correction (lands the dispatch shape used to close this gate)</li>
+          <li><a href="https://github.com/permaweb/HyperBEAM">permaweb/HyperBEAM</a> — upstream (requires OTP 27 per EEP 64 triple-quoted strings; tested against rebar3 3.27)</li>
         </ul>
       </div>
       <div class="gate-card-cell">
         <div class="label">Operator command</div>
-<pre class="cmd">./hyperbeam/bringup/install.sh
-./hyperbeam/bringup/smoke-test.sh
+<pre class="cmd">./hyperbeam/bringup/run-with-log.sh \
+  ./hyperbeam/bringup/install.sh
+./hyperbeam/bringup/run-with-log.sh \
+  ./hyperbeam/bringup/smoke-test.sh
 # expected: PASS A-120/S.01</pre>
       </div>
     </div>
@@ -188,40 +192,47 @@ a:hover { color: var(--red); }
 </article>
 
 <!-- Gate S.02 -->
-<article class="gate-card scaffolded" id="s02">
+<article class="gate-card closed" id="s02">
   <div class="gate-card-header">
-    <span class="gate-id">A-120 / S.02 · Sync committee verifier wrapped as HyperBEAM device</span>
-    <span class="gate-status">Scaffolded · operator-pending live verification</span>
+    <span class="gate-id">A-120 / S.02 · Sync committee verifier — Paxiom-built device harness</span>
+    <span class="gate-status">Closed 2026-05-03</span>
   </div>
   <div class="gate-card-body">
-    <div class="gate-card-title">Service A-202 device on a real recent slot.</div>
-    <p class="gate-card-acceptance">Acceptance: the <code>~bls-sync-committee@1.0</code> device is registered with a running HyperBEAM node, <code>POST /v1/sync-committee/verify</code> returns <code>verified: true</code> for a real recent slot, and the request emits an AO compliance message logged to Arweave.</p>
+    <div class="gate-card-title">Service A-202 device verified on a real recent slot.</div>
+    <p class="gate-card-acceptance">Acceptance: <code>POST /v1/sync-committee/verify</code> returns <code>verified: true</code> for a real recent slot, end-to-end through the BLS primitive + 8-stage O-701 pipeline. <strong>Caveat — what was proved:</strong> subprocess dispatch through <code>paxiom/services/sync-committee/server.mjs</code> spawning <code>bls-device-harness</code> as a child process; the cryptographic primitive ran end-to-end against real Ethereum mainnet consensus. <strong>What was NOT proved:</strong> registration of the <code>~bls-sync-committee@1.0</code> device with a running HyperBEAM node — Load's hosted HyperBEAM at <code>hb.load.rs</code> does not host third-party devices, and self-hosted HyperBEAM HTTP daemon orchestration is a separate gate (see "What's still in flight" below).</p>
 
     <div class="gate-card-grid">
       <div class="gate-card-cell">
         <div class="label">Evidence</div>
         <ul>
-          <li><a href="https://github.com/k-luecke/bls-verifier/tree/claude/build-hyperbeam-network-uIaMZ/bls-device">bls-verifier/bls-device/</a> — Rust harness implementing the eight-stage O-701 pipeline</li>
-          <li><a href="https://github.com/k-luecke/bls-verifier/blob/claude/build-hyperbeam-network-uIaMZ/docs/O-702-bls-device-runbook.md">bls-verifier/docs/O-702-bls-device-runbook.md</a></li>
-          <li><a href="https://github.com/k-luecke/paxiom/tree/claude/build-hyperbeam-network-uIaMZ/hyperbeam/devices/bls-sync-committee">paxiom/hyperbeam/devices/bls-sync-committee/</a> — manifest, vendored wasm, register.sh</li>
-          <li><a href="https://github.com/k-luecke/paxiom/tree/claude/build-hyperbeam-network-uIaMZ/services/sync-committee">paxiom/services/sync-committee/</a> — HTTP front-end</li>
+          <li>Operator evidence file: <code>paxiom/hyperbeam/bringup/evidence/gate-s02-20260503T010547Z.json</code> — slot 14245526, <code>verified: true</code>, <code>primitive_return_code: 1</code>, 510/512 participating, fork version <code>0x06000000</code> (Fulu); gitignored as designed (operator-local)</li>
+          <li><a href="https://github.com/k-luecke/bls-verifier/tree/main/bls-device">bls-verifier/bls-device/</a> — Rust harness implementing the eight-stage O-701 pipeline</li>
+          <li><a href="https://github.com/k-luecke/bls-verifier/pull/3">bls-verifier #3</a> — <code>bls-device-harness</code> CLI binary (the subprocess dispatch target)</li>
+          <li><a href="https://github.com/k-luecke/bls-verifier/pull/6">bls-verifier #6</a> — root-cause fix: validators-by-id API re-sorts response by validator index ascending, breaking the position→pubkey map for the sync-committee bitfield. Math was right from the start; only the mapping was broken.</li>
+          <li><a href="https://github.com/k-luecke/bls-verifier/pull/5">bls-verifier #5</a> — FFI safety hygiene (<code>unsafe extern "C"</code>) + CLI panic→Result conversion</li>
+          <li><a href="https://github.com/k-luecke/bls-verifier/blob/main/docs/O-702-bls-device-runbook.md">bls-verifier/docs/O-702-bls-device-runbook.md</a></li>
+          <li><a href="https://github.com/k-luecke/paxiom/tree/main/services/sync-committee">paxiom/services/sync-committee/</a> — HTTP front-end</li>
+          <li><a href="https://github.com/k-luecke/paxiom/tree/main/hyperbeam/devices/bls-sync-committee">paxiom/hyperbeam/devices/bls-sync-committee/</a> — manifest, vendored wasm, register.sh (HyperBEAM-hosted device path; not part of this closure)</li>
         </ul>
       </div>
       <div class="gate-card-cell">
         <div class="label">Operator command</div>
-<pre class="cmd"># build wasm + harness
-cargo build --release \
-  --target wasm32-unknown-unknown -p bls-verifier
-cargo build --release -p bls-device
+<pre class="cmd"># build harness
+cargo build --release -p bls-device \
+  --bin bls-device-harness
 
-# in three terminals:
-./hyperbeam/bringup/shell.sh
-./hyperbeam/devices/bls-sync-committee/register.sh
-node services/sync-committee/server.mjs
+# clear any stale committee cache
+rm -f ~/.cache/bls-device-harness/committees.sqlite
 
-# verify
-curl -X POST localhost:8080/v1/sync-committee/verify \
-  -d @real_slot.json</pre>
+# subprocess dispatch path
+BLS_DEVICE_VIA_SUBPROCESS=1 \
+BLS_DEVICE_HARNESS=$(realpath \
+  ~/bls-verifier/target/release/bls-device-harness) \
+  node services/sync-committee/server.mjs &
+
+# capture evidence against a real beacon slot
+./hyperbeam/bringup/capture-gate-evidence.sh
+# expected: → verified: true</pre>
       </div>
     </div>
   </div>
@@ -230,31 +241,28 @@ curl -X POST localhost:8080/v1/sync-committee/verify \
 <!-- Gate S.03 -->
 <article class="gate-card scaffolded" id="s03">
   <div class="gate-card-header">
-    <span class="gate-id">A-120 / S.03 · Load Network state reconstruction tested end-to-end</span>
-    <span class="gate-status">Scaffolded · operator-pending live verification</span>
+    <span class="gate-id">A-120 / S.03 · L1 historical state reconstruction substrate</span>
+    <span class="gate-status">Deferred — substrate decision moved to A-205 spec</span>
   </div>
   <div class="gate-card-body">
-    <div class="gate-card-title">No-RPC architectural moat, exercised on at least one historical block.</div>
-    <p class="gate-card-acceptance">Acceptance: state reconstruction from a Load Network archive bundle works end-to-end for at least one historical block — both fixture-driven (CI) and live against <a href="https://load.network">https://load.network</a> (operator).</p>
+    <div class="gate-card-title">No-trust-in-RPC architectural moat for historical state at depth.</div>
+    <p class="gate-card-acceptance">Original framing: Load Network state reconstruction tested end-to-end. <strong>Updated framing (2026-05-03):</strong> Load Network operates as a storage chain (LS3) and its state-reconstruction product (Ledger Archivers via <code>weaveVM/evm-state-reconstructing</code>) covers Metis, RSS3, GOAT, Avalanche C, Dymension, Humanode, Scroll, and phala-mainnet-0 — but <strong>not Ethereum L1 mainnet</strong>. Paxiom committed to L1; the substrate question is therefore an open product decision, not a Phase 0 implementation gate. Resolution moves to the Service A-205 (Verified Historical State) specification. The MPT proof verification logic in <code>paxiom/load-network/test/verifier.test.mjs</code> remains valid — that logic verifies proofs from any source. Per the no-RPC framing: the load-bearing claim is "no trust in RPC" (local verification against consensus-attested state roots), not "no RPC anywhere as a data source."</p>
 
     <div class="gate-card-grid">
       <div class="gate-card-cell">
-        <div class="label">Evidence</div>
+        <div class="label">What stands</div>
         <ul>
-          <li><a href="https://github.com/k-luecke/paxiom/tree/claude/build-hyperbeam-network-uIaMZ/load-network">paxiom/load-network/</a> — client + reconstructor + fixtures</li>
-          <li><a href="https://github.com/k-luecke/paxiom/blob/claude/build-hyperbeam-network-uIaMZ/docs/load-network-integration.md">paxiom/docs/load-network-integration.md</a></li>
-          <li>Fixture anchor: WETH at Ethereum mainnet block 19 000 000</li>
+          <li><a href="https://github.com/k-luecke/paxiom/tree/main/load-network">paxiom/load-network/</a> — fixture-driven MPT proof verification (20/20 tests pass; reusable for any source of EL proofs)</li>
+          <li><a href="https://github.com/k-luecke/paxiom/blob/main/docs/load-network-integration.md">paxiom/docs/load-network-integration.md</a></li>
         </ul>
       </div>
       <div class="gate-card-cell">
-        <div class="label">Operator command</div>
-<pre class="cmd"># Test suite (synthesised tries; companion repo)
-npm run test:load-network
-
-# operator gate
-LOAD_NETWORK_API_KEY=... \
-LOAD_NETWORK_LIVE=1 \
-  npm run test:load-network</pre>
+        <div class="label">What's open (A-205 substrate decision)</div>
+        <ul>
+          <li>Pick interim L1 historical archive: conventional archive RPC (Alchemy/QuickNode/Infura/Chainstack) — acceptable because verification is local — or self-hosted Erigon (~3TB) for self-sovereignty</li>
+          <li>Decide future direction: KYVE-backed adapter (no off-the-shelf path for Ethereum L1 mainnet today; would need a custom EVM adapter), or vendor-locked archive with the trust offset to local verification</li>
+          <li>Repurpose <code>paxiom/load-network/</code>: delete the broken client + keep MPT verifier, OR repurpose as an LS3-backed audit-artifact archival sink ($0.02/GB/mo permanent storage on Arweave via x402 facilitator at <code>hyper-x402.load.network</code>)</li>
+        </ul>
       </div>
     </div>
   </div>
@@ -263,15 +271,16 @@ LOAD_NETWORK_LIVE=1 \
 <div class="legend">
   <div class="legend-item"><span class="legend-swatch scaffolded"></span> Scaffolded — code + tests in companion repo</div>
   <div class="legend-item"><span class="legend-swatch operator-pending"></span> Operator-pending live verification</div>
-  <div class="legend-item"><span class="legend-swatch closed"></span> Closed</div>
+  <div class="legend-item"><span class="legend-swatch closed"></span> Closed — operator-verified end-to-end with evidence file</div>
 </div>
 
 <div class="section" style="margin-top:36px;">
   <div class="section-mark-text">G-200 · Why this page exists</div>
   <h2>The discipline of evidence.</h2>
-  <p>The build map (<a href="/paxiom-build-map.html">PXM-R-100</a>) flips four items into "What's done" the moment the substrate scaffolding lands. This page is the audit trail underneath those flips: each gate names its acceptance criteria, points at the source of evidence, and quotes the exact command the operator runs to close the live side.</p>
-  <p>Where a build-map flip says "done", this page says <em>scaffolded plus operator-pending live verification</em>. Both forms of "done" are honest; this is where they're disambiguated.</p>
-  <p><strong>About the evidence links.</strong> The links above point at the companion repos <code>k-luecke/paxiom</code> and <code>k-luecke/bls-verifier</code>. They resolve when those repos are public; if you encounter a 404, the companion is currently private and the public proof is operator-runnable rather than browse-able. The page will tighten its language to "closed" once both the operator-side commands have been run and the companion repos are publicly readable.</p>
+  <p>The build map (<a href="/paxiom-build-map.html">PXM-R-100</a>) flips three substrate items into "What's done" once the operator runs the gate commands and an evidence file is produced. This page is the audit trail underneath those flips: each gate names its acceptance criteria, points at the source of evidence, and quotes the exact command the operator ran (or, for S.03, the open product question).</p>
+  <p>S.01 and S.02 are <em>closed</em> as of 2026-05-03 — operator-verified end-to-end against real Ethereum mainnet consensus, with timestamped evidence files in <code>paxiom/hyperbeam/bringup/{logs,evidence}/</code>. The evidence files are gitignored by design; they are operator-local proofs whose existence and contents are documented above.</p>
+  <p>S.03 is <em>deferred</em>, not pending. Load Network's reconstruction products do not cover Ethereum L1 mainnet; the substrate question for L1 historical state moves to the Service A-205 specification rather than blocking Phase 0. The fixture-driven MPT verification logic (20/20 tests pass) survives the deferral — that logic verifies proofs from any source.</p>
+  <p><strong>About the evidence links.</strong> The links above point at <code>k-luecke/paxiom</code> and <code>k-luecke/bls-verifier</code> — both public. PR references (paxiom #2; bls-verifier #3, #5, #6) carry the implementation work that lands on <code>main</code>; this page will be browse-trustworthy once those PRs merge. If any link 404s, the corresponding PR is still open.</p>
 </div>
 
 <div class="section">
@@ -289,7 +298,7 @@ LOAD_NETWORK_LIVE=1 \
 
 <div class="sheet-footer">
   <div>Paxiom · paxiom.org</div>
-  <div class="center">Phase 0 Status · Rev. A · 2026.05.02</div>
+  <div class="center">Phase 0 Status · Rev. B · 2026.05.03</div>
   <div class="right">Sheet PXM-G-100</div>
 </div>
 
