@@ -1,0 +1,12 @@
+# Pages site identity files — review required.
+#
+# These files define the site's domain binding (CNAME) and Pages
+# rendering mode (.nojekyll). Mutation or deletion causes immediate
+# user-visible breakage. Per audit panel review of paxiom-static#37
+# (audit/I-2), require Code Owner review on PRs touching them.
+#
+# CODEOWNERS only binds when "Require review from Code Owners" is
+# enabled on branch protection for the default branch.
+
+/CNAME      @k-luecke
+/.nojekyll  @k-luecke
