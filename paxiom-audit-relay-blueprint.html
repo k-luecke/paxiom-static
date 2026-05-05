@@ -1030,7 +1030,9 @@ APIs, libraries, conventions. Every external dependency named.
       <code>anthropic</code> Python package. Used for: long-form audit
       role and revision role.
     </p>
-    <p><em>Auth:</em> <code>ANTHROPIC_API_KEY</code> in environment.</p>
+    <p><em>Auth:</em> <code>ANTHROPIC_API_KEY</code> in environment.
+    Never commit secrets — load from a process env or an untracked
+    <code>.env</code>.</p>
   </div>
 </div>
 
@@ -1046,7 +1048,9 @@ APIs, libraries, conventions. Every external dependency named.
       SDK: <code>openai</code> Python package. Used for: alternate audit
       role and rotated revision role.
     </p>
-    <p><em>Auth:</em> <code>OPENAI_API_KEY</code> in environment.</p>
+    <p><em>Auth:</em> <code>OPENAI_API_KEY</code> in environment.
+    Never commit secrets — load from a process env or an untracked
+    <code>.env</code>.</p>
     <p><em>Note:</em> Avoid the Monday persona for this work — register
     the model with a clinical system prompt that suppresses snark.</p>
   </div>
@@ -1065,7 +1069,9 @@ APIs, libraries, conventions. Every external dependency named.
       refinement role only — sharpen and consolidate, never originate.
     </p>
     <p><em>Auth:</em> <code>GOOGLE_API_KEY</code> in environment, or
-    application default credentials if going through Cloud.</p>
+    application default credentials if going through Cloud. Never
+    commit secrets — load from a process env or an untracked
+    <code>.env</code>.</p>
   </div>
 </div>
 
