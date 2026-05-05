@@ -23,6 +23,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Forbid inline JS / dynamic content (audit I-3)
+        run: |
+          # Active-content guard: matches opening <script> tags AND inline
+          # event handlers (onclick=, onload=, onerror=, ...). External
+          # <script src=...> would also match — by design. Ungate this
+          # gate when intentional JS lands.
+          if grep -rEn --include='*.html' \
+              '<script(\s[^>]*)?>|\son[a-z]+\s*=' .; then
+            echo "::error::Active-content pattern detected — see audit/I-3."
+            exit 1
+          fi
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
