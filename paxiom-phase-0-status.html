@@ -166,14 +166,14 @@ a:hover { color: var(--red); }
   </div>
   <div class="gate-card-body">
     <div class="gate-card-title">HyperBEAM running locally via <code>rebar3 shell</code>.</div>
-    <p class="gate-card-acceptance">Acceptance met: the local HyperBEAM smoke test completed with <code>S01_OK</code> and exit 0. Evidence log: <code>paxiom-ops-wt/hyperbeam/bringup/logs/smoke-test-20260502T220748Z.log</code>.</p>
+    <p class="gate-card-acceptance">Acceptance met: the local HyperBEAM smoke test completed with <code>S01_OK</code> and exit 0. Evidence log: <code>hyperbeam/bringup/logs/smoke-test-20260502T220748Z.log</code>.</p>
 
     <div class="gate-card-grid">
       <div class="gate-card-cell">
         <div class="label">Evidence</div>
         <ul>
-          <li><a href="https://github.com/k-luecke/paxiom/tree/claude/build-hyperbeam-network-uIaMZ/hyperbeam">paxiom/hyperbeam/</a> — bring-up scripts and device registry</li>
-          <li><a href="https://github.com/k-luecke/paxiom/blob/claude/build-hyperbeam-network-uIaMZ/docs/hyperbeam-bringup.md">paxiom/docs/hyperbeam-bringup.md</a> — operator runbook</li>
+          <li><a href="https://github.com/k-luecke/paxiom/tree/main/hyperbeam">paxiom/hyperbeam/</a> — bring-up scripts and device registry</li>
+          <li><a href="https://github.com/k-luecke/paxiom/blob/main/docs/hyperbeam-bringup.md">paxiom/docs/hyperbeam-bringup.md</a> — operator runbook</li>
           <li><a href="https://github.com/k-luecke/paxiom/pull/2">paxiom#2</a> — smoke-test API fix required for reproducible S.01 evidence</li>
           <li><code>smoke-test-20260502T220748Z.log</code> — operator evidence: <code>S01_OK</code>, exit 0</li>
           <li><a href="https://github.com/permaweb/HyperBEAM">permaweb/HyperBEAM</a> — upstream</li>
@@ -204,14 +204,14 @@ a:hover { color: var(--red); }
       <div class="gate-card-cell">
         <div class="label">Evidence</div>
         <ul>
-          <li><a href="https://github.com/k-luecke/bls-verifier/tree/claude/build-hyperbeam-network-uIaMZ/bls-device">bls-verifier/bls-device/</a> — Rust harness implementing the eight-stage O-701 pipeline</li>
-          <li><a href="https://github.com/k-luecke/bls-verifier/blob/claude/build-hyperbeam-network-uIaMZ/docs/O-702-bls-device-runbook.md">bls-verifier/docs/O-702-bls-device-runbook.md</a></li>
+          <li><a href="https://github.com/k-luecke/bls-verifier/tree/master/bls-device">bls-verifier/bls-device/</a> — Rust harness implementing the eight-stage O-701 pipeline</li>
+          <li><a href="https://github.com/k-luecke/bls-verifier/blob/master/docs/O-702-bls-device-runbook.md">bls-verifier/docs/O-702-bls-device-runbook.md</a></li>
           <li><a href="https://github.com/k-luecke/bls-verifier/pull/3">bls-verifier#3</a> — harness binary required for reproducible subprocess dispatch</li>
           <li><a href="https://github.com/k-luecke/bls-verifier/pull/5">bls-verifier#5</a> — FFI and CLI hygiene for the verifier surface</li>
           <li><a href="https://github.com/k-luecke/bls-verifier/pull/6">bls-verifier#6</a> — validator-order fix required for <code>verified: true</code></li>
           <li><code>gate-s02-20260503T010547Z.json</code> — slot <code>14245526</code>, <code>verified: true</code>, <code>primitive_return_code: 1</code></li>
-          <li><a href="https://github.com/k-luecke/paxiom/tree/claude/build-hyperbeam-network-uIaMZ/hyperbeam/devices/bls-sync-committee">paxiom/hyperbeam/devices/bls-sync-committee/</a> — manifest, vendored wasm, register.sh</li>
-          <li><a href="https://github.com/k-luecke/paxiom/tree/claude/build-hyperbeam-network-uIaMZ/services/sync-committee">paxiom/services/sync-committee/</a> — HTTP front-end</li>
+          <li><a href="https://github.com/k-luecke/paxiom/tree/main/hyperbeam/devices/bls-sync-committee">paxiom/hyperbeam/devices/bls-sync-committee/</a> — manifest, vendored wasm, register.sh</li>
+          <li><a href="https://github.com/k-luecke/paxiom/tree/main/services/sync-committee">paxiom/services/sync-committee/</a> — HTTP front-end</li>
         </ul>
       </div>
       <div class="gate-card-cell">
