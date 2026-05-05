@@ -217,7 +217,8 @@ a:hover { color: var(--red); }
       </div>
       <div class="gate-card-cell">
         <div class="label">Operator command</div>
-<pre class="cmd"># build wasm + harness
+<pre class="cmd"># operator-only — runs against a locally-started service; not a public endpoint
+# build wasm + harness
 cargo build --release \
   --target wasm32-unknown-unknown -p bls-verifier
 cargo build --release -p bls-device
