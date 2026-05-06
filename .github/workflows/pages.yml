@@ -36,10 +36,27 @@ jobs:
           fi
       - name: Configure Pages
         uses: actions/configure-pages@v5
+      - name: Stage publish directory (audit L-12)
+        run: |
+          # Build dist/ containing only the public assets. Excludes repo
+          # meta (.git*, .github/) and audit/contributor docs that have
+          # no business being served (AUDIT_REPORT.md, README.md).
+          # upload-pages-artifact@v3 takes a single path, so we stage
+          # instead of globbing.
+          mkdir -p dist
+          rsync -a \
+            --exclude='dist' \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.gitignore' \
+            --exclude='.gitattributes' \
+            --exclude='AUDIT_REPORT.md' \
+            --exclude='README.md' \
+            ./ dist/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: dist
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

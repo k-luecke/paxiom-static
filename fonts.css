@@ -12,6 +12,25 @@
  *
  * If/when self-hosting becomes preferable (perf, privacy, no third-party
  * CDN), drop the .woff2 files into /fonts/ and replace this file's
- * contents with @font-face rules pointing at them. The font-family name
+ * @font-face section with rules pointing at them. The font-family name
  * stays 'DM Sans' so no page changes needed.
  */
+
+/* Audit L-7: shared design tokens.
+ *
+ * These 9 vars are identical across every public page. Pages that need
+ * additional tokens (--rule, --blue-light, --green, --grid, --redacted)
+ * declare them in their inline <style> block; the cascade lets a page
+ * :root override anything below if it ever needs to.
+ */
+:root {
+  --paper: #F5F1E8;
+  --paper-dark: #EDE6D3;
+  --ink: #1A2332;
+  --ink-mid: #3A4555;
+  --ink-faint: #6B7280;
+  --rule-faint: #B8AE96;
+  --blue: #1E3A5F;
+  --red: #8B2E1F;
+  --amber: #B8860B;
+}

@@ -13,17 +13,8 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --paper: #F5F1E8;
-  --paper-dark: #EDE6D3;
-  --ink: #1A2332;
-  --ink-mid: #3A4555;
-  --ink-faint: #6B7280;
   --rule: #1A2332;
-  --rule-faint: #B8AE96;
-  --blue: #1E3A5F;
   --blue-light: #4A6B8A;
-  --red: #8B2E1F;
-  --amber: #B8860B;
   --grid: rgba(26, 35, 50, 0.04);
   --redacted: #2A2F38;
 }
@@ -566,7 +557,7 @@ body {
 
 .tier-body { padding: 28px; }
 
-.tier-body h5 {
+.tier-body h4 {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px;
   letter-spacing: 0.18em;
@@ -576,7 +567,7 @@ body {
   margin-bottom: 8px;
 }
 
-.tier-body h5:first-child { margin-top: 0; }
+.tier-body h4:first-child { margin-top: 0; }
 
 .tier-body p {
   font-family: 'Times New Roman', Times, serif;
@@ -876,10 +867,11 @@ a:hover { color: var(--red); }
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
 <div class="paxiom-bar">
   <div class="paxiom-bar-inner">
     <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
-      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg>
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
       <span>Paxiom</span>
     </a>
     <nav class="paxiom-bar-nav" aria-label="Primary">
@@ -899,13 +891,7 @@ a:hover { color: var(--red); }
 
 <div class="sheet-header">
   <a class="title-mark" href="/" aria-label="Paxiom — home">
-    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true">
-      <circle cx="50" cy="50" r="40"/>
-      <path d="M50 14 L76 64 L24 64 Z"/>
-      <line x1="50" y1="30" x2="50" y2="80"/>
-      <line x1="38" y1="80" x2="62" y2="80"/>
-      <circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/>
-    </svg>
+    <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
   </a>
   <div class="sheet-title-block">
     <div class="sheet-project">Paxiom · Electrical · Drawing Set</div>
@@ -1490,7 +1476,7 @@ Available continuously. Automated. Scoped narrowly so compromise is survivable.
       </div>
     </div>
 
-    <h5>Operational properties</h5>
+    <h4>Operational properties</h4>
 
     <p>
       Hot-tier keys live on the production server. They sign in real time
@@ -1500,7 +1486,7 @@ Available continuously. Automated. Scoped narrowly so compromise is survivable.
       same volume.
     </p>
 
-    <h5>Storage at rest</h5>
+    <h4>Storage at rest</h4>
 
     <p>
       Keys encrypted with a passphrase known only to the operator. Passphrase
@@ -1515,7 +1501,7 @@ Available continuously. Automated. Scoped narrowly so compromise is survivable.
       attention. That friction is acceptable because reboots are rare.
     </p>
 
-    <h5>Process memory hygiene</h5>
+    <h4>Process memory hygiene</h4>
 
     <ul>
       <li>Key material zeroed after each signing operation where the
@@ -1527,7 +1513,7 @@ Available continuously. Automated. Scoped narrowly so compromise is survivable.
       paging key material to disk.</li>
     </ul>
 
-    <h5>Bounded blast radius</h5>
+    <h4>Bounded blast radius</h4>
 
     <p>
       The hot tier is the most reachable, so it is engineered to be the
@@ -1547,7 +1533,7 @@ Available continuously. Automated. Scoped narrowly so compromise is survivable.
       a new wallet and updating the facilitator integration.</li>
     </ul>
 
-    <h5>Audit and observability</h5>
+    <h4>Audit and observability</h4>
 
     <p>
       Every hot-tier signature gets logged to AO/Arweave permanently.
@@ -1563,7 +1549,7 @@ Available continuously. Automated. Scoped narrowly so compromise is survivable.
       the operator.
     </p>
 
-    <h5>Compromise response</h5>
+    <h4>Compromise response</h4>
 
     <p>
       Detection triggers immediate operator notification. Operator initiates
@@ -1618,7 +1604,7 @@ and cold's ceremony.
       </div>
     </div>
 
-    <h5>Operational properties</h5>
+    <h4>Operational properties</h4>
 
     <p>
       Warm-tier keys handle operations that recur but don't require
@@ -1627,7 +1613,7 @@ and cold's ceremony.
       occasions — not seconds.
     </p>
 
-    <h5>Storage and attachment</h5>
+    <h4>Storage and attachment</h4>
 
     <p>
       Hardware wallet (Ledger, Trezor, or equivalent) attached to the
@@ -1644,7 +1630,7 @@ and cold's ceremony.
       as the hardware wallet — present only during use, absent otherwise.
     </p>
 
-    <h5>Per-operation discipline</h5>
+    <h4>Per-operation discipline</h4>
 
     <ul>
       <li>Workstation booted into a known-clean state before attachment
@@ -1658,7 +1644,7 @@ and cold's ceremony.
       when, what the outcome was.</li>
     </ul>
 
-    <h5>Compromise response</h5>
+    <h4>Compromise response</h4>
 
     <p>
       Warm-tier compromise is detected through unauthorized operations
@@ -1720,7 +1706,7 @@ The keys whose loss is catastrophic.
       </div>
     </div>
 
-    <h5>Architectural properties</h5>
+    <h4>Architectural properties</h4>
 
     <p>
       The cold tier is engineered to be the hardest target for the keys
@@ -1760,7 +1746,7 @@ The keys whose loss is catastrophic.
       </div>
     </div>
 
-    <h5>Why pre-modern hardware</h5>
+    <h4>Why pre-modern hardware</h4>
 
     <p>
       The argument is structural. Modern hardware has a substantially larger
@@ -1790,7 +1776,7 @@ The keys whose loss is catastrophic.
       signs rarely and runs minimal software, the trade-off is acceptable.
     </p>
 
-    <h5>Signing protocol</h5>
+    <h4>Signing protocol</h4>
 
     <p>
       Signing requests enter the cold-tier machine through the defined
@@ -1806,7 +1792,7 @@ The keys whose loss is catastrophic.
       transferred out periodically through the same controlled transport.
     </p>
 
-    <h5>Compromise response</h5>
+    <h4>Compromise response</h4>
 
     <p>
       Cold-tier compromise is the worst case. Detection requires noticing
