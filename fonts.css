@@ -1,7 +1,7 @@
 /* Paxiom — system fonts only.
  *
- * Audit follow-up #54 (2026-05-06): the site previously loaded DM Sans and
- * JetBrains Mono from fonts.googleapis.com / fonts.gstatic.com, which leaked
+ * Audit follow-up #54 (2026-05-06): the site previously loaded external sans font and
+ * external mono font from third-party font CDN / third-party font CDN, which leaked
  * client IPs to a third party on every visit and required Google domains in
  * the meta CSP. Self-hosting the .woff2 files would have closed the privacy
  * problem but introduced a packaging/licensing/subsetting tail.

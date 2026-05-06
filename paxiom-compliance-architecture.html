@@ -3,14 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <title>Paxiom · Compliance Architecture · CA.01 Verifiable Records</title>
 <meta name="description" content="Verifiable Records Architecture — what is recorded, where, and how to verify it independently of any Paxiom-operated infrastructure.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/fonts.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --rule: #1A2332;
@@ -22,7 +19,7 @@
 html { scroll-behavior: smooth; }
 body {
   background: var(--paper); color: var(--ink);
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 14px; line-height: 1.6;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
   background-image:
@@ -42,10 +39,10 @@ body {
 .sheet-mark-link { display: block; line-height: 0; transition: opacity 0.15s ease; }
 .sheet-mark-link:hover { opacity: 0.65; }
 .sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
-.sheet-project { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.sheet-project { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
 .sheet-title { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
 .sheet-subtitle { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
-.sheet-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 16px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.04em; text-align: right; }
+.sheet-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 16px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.04em; text-align: right; }
 .sheet-meta dt { color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
 .sheet-meta dd { color: var(--ink); font-weight: 500; }
 .sheet-body { padding: 56px 72px; }
@@ -54,7 +51,7 @@ body {
   .sheet-header { grid-template-columns: auto 1fr; }
   .sheet-meta { grid-column: 1 / -1; text-align: left; padding-top: 8px; border-top: 1px solid var(--rule-faint); }
 }
-.cover-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
+.cover-mark { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
 .cover-mark::after { content: ''; flex: 1; height: 1px; background: var(--rule-faint); }
 .cover-title { font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: clamp(48px, 7.5vw, 88px); line-height: 0.96; letter-spacing: -0.025em; color: var(--ink); margin-bottom: 28px; }
 .cover-title em { font-style: italic; font-weight: 400; color: var(--ink-mid); }
@@ -65,18 +62,18 @@ body {
 .cover-cell:nth-child(2n) { border-right: none; }
 .cover-cell:nth-last-child(-n+2) { border-bottom: none; }
 @media (max-width: 700px) { .cover-cell { border-right: none; border-bottom: 1px solid var(--rule-faint); } .cover-cell:last-child { border-bottom: none; } }
-.cover-cell-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+.cover-cell-label { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
 .cover-cell-value { font-family: 'Times New Roman', Times, serif; font-size: 17px; color: var(--ink); line-height: 1.35; }
 .cover-cell-value em { font-style: italic; color: var(--ink-mid); }
-.toc-section-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-top: 36px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-faint); }
+.toc-section-label { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-top: 36px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-faint); }
 .toc-section-label:first-child { margin-top: 0; }
 .toc-row { display: grid; grid-template-columns: 80px 1fr auto; gap: 24px; padding: 10px 0; border-bottom: 1px dotted var(--rule-faint); align-items: baseline; }
 .toc-row:last-of-type { border-bottom: none; }
-.toc-num { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; font-weight: 500; color: var(--blue); letter-spacing: 0.04em; }
+.toc-num { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 13px; font-weight: 500; color: var(--blue); letter-spacing: 0.04em; }
 .toc-title { font-family: 'Times New Roman', Times, serif; font-size: 16px; color: var(--ink); }
 .toc-title em { font-style: italic; color: var(--ink-mid); font-size: 14px; display: block; margin-top: 2px; }
-.toc-page { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--ink-faint); letter-spacing: 0.04em; }
-.section-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.toc-page { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; color: var(--ink-faint); letter-spacing: 0.04em; }
+.section-mark { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
 .section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
 .section-title { font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: 40px; line-height: 1.05; letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px; }
 .section-title em { font-style: italic; color: var(--ink-mid); }
@@ -84,14 +81,14 @@ body {
 .prose p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.65; margin-bottom: 18px; max-width: 68ch; color: var(--ink); }
 .prose p.lead { font-size: 19px; line-height: 1.55; color: var(--ink-mid); font-style: italic; margin-bottom: 28px; }
 .prose h3 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 22px; margin-top: 40px; margin-bottom: 14px; color: var(--ink); letter-spacing: -0.005em; }
-.prose h4 { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); margin-top: 32px; margin-bottom: 10px; }
+.prose h4 { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); margin-top: 32px; margin-bottom: 10px; }
 .prose strong { font-weight: 600; color: var(--ink); }
 .prose em { font-style: italic; color: var(--ink-mid); }
-.prose code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); word-break: break-all; }
+.prose code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); word-break: break-all; }
 .prose ul, .prose ol { margin: 12px 0 22px 28px; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.65; max-width: 68ch; }
 .prose li { margin-bottom: 8px; }
 .callout { border: 1px solid var(--ink); margin: 32px 0; background: var(--paper); }
-.callout-header { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; padding: 9px 18px; background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; align-items: center; }
+.callout-header { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; padding: 9px 18px; background: var(--ink); color: var(--paper); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; align-items: center; }
 .callout-tag { font-weight: 600; }
 .callout-id { color: var(--paper-dark); opacity: 0.7; }
 .callout-body { padding: 20px 24px; }
@@ -99,7 +96,7 @@ body {
 .callout-body p:last-child { margin-bottom: 0; }
 .callout-body ul { margin: 10px 0 6px 22px; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; }
 .callout-body li { margin-bottom: 6px; }
-.callout-body code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); }
+.callout-body code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); }
 .callout.note { border-style: dashed; border-color: var(--ink-faint); }
 .callout.note .callout-header { background: transparent; color: var(--ink-faint); border-bottom: 1px dashed var(--ink-faint); }
 .callout.note .callout-id { color: var(--ink-faint); }
@@ -115,14 +112,14 @@ body {
   content: counter(step, decimal-leading-zero);
   position: absolute;
   left: 0; top: 19px;
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 13px;
   color: var(--blue);
   letter-spacing: 0.05em;
   font-weight: 500;
 }
 .steps .step-name {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -131,31 +128,31 @@ body {
 }
 .steps p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; color: var(--ink); margin: 0; max-width: 68ch; }
 .schedule { margin: 24px 0; border: 1.5px solid var(--ink); width: 100%; border-collapse: collapse; }
-.schedule th { background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; text-align: left; padding: 10px 12px; font-weight: 500; }
+.schedule th { background: var(--ink); color: var(--paper); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; text-align: left; padding: 10px 12px; font-weight: 500; }
 .schedule td { padding: 12px; border-bottom: 1px solid var(--rule-faint); border-right: 1px solid var(--rule-faint); font-family: 'Times New Roman', Times, serif; font-size: 14px; vertical-align: top; color: var(--ink); }
 .schedule td:last-child { border-right: none; }
 .schedule tr:last-child td { border-bottom: none; }
-.schedule .addr { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; word-break: break-all; }
+.schedule .addr { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11px; word-break: break-all; }
 .schedule .addr a { color: var(--blue); text-decoration: none; }
 .schedule .addr a:hover { color: var(--red); text-decoration: underline; }
-.schedule .status { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--green); white-space: nowrap; letter-spacing: 0.1em; text-transform: uppercase; }
-.schedule .net { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--ink-mid); white-space: nowrap; }
+.schedule .status { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11px; color: var(--green); white-space: nowrap; letter-spacing: 0.1em; text-transform: uppercase; }
+.schedule .net { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11px; color: var(--ink-mid); white-space: nowrap; }
 .diagram { background: var(--paper-dark); border: 1.5px solid var(--ink); padding: 24px; margin: 28px 0 12px; }
 .diagram svg { display: block; width: 100%; height: auto; max-width: 720px; margin: 0 auto; }
-.diagram-caption { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 8px 0 28px; padding-top: 8px; border-top: 1px solid var(--rule-faint); }
+.diagram-caption { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 8px 0 28px; padding-top: 8px; border-top: 1px solid var(--rule-faint); }
 .diagram-caption .fig-num { color: var(--blue); margin-right: 8px; font-weight: 500; }
 .xrefs { list-style: none; margin: 12px 0 0; padding: 0; }
 .xrefs li { display: grid; grid-template-columns: 130px 1fr auto; gap: 18px; padding: 12px 0; border-bottom: 1px dotted var(--rule-faint); align-items: baseline; }
 .xrefs li:last-child { border-bottom: none; }
-.xrefs .ref { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--blue); font-weight: 500; letter-spacing: 0.04em; }
+.xrefs .ref { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; color: var(--blue); font-weight: 500; letter-spacing: 0.04em; }
 .xrefs .ref-label { font-family: 'Times New Roman', Times, serif; font-size: 15px; color: var(--ink); font-style: italic; }
-.xrefs .planned-tag { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); }
+.xrefs .planned-tag { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); }
 .xrefs a { color: var(--blue); text-decoration: none; }
 .xrefs a:hover { color: var(--red); text-decoration: underline; }
 .page-break { border-top: 2px solid var(--ink); margin: 96px -72px 64px; position: relative; }
 @media (max-width: 700px) { .page-break { margin: 56px -24px 40px; } }
-.page-break::before { content: attr(data-sheet); position: absolute; top: -10px; left: 72px; background: var(--paper); padding: 0 12px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
-.sheet-footer { border-top: 1.5px solid var(--ink); padding: 14px 24px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); align-items: center; }
+.page-break::before { content: attr(data-sheet); position: absolute; top: -10px; left: 72px; background: var(--paper); padding: 0 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.sheet-footer { border-top: 1.5px solid var(--ink); padding: 14px 24px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); align-items: center; }
 .sheet-footer .center { text-align: center; }
 .sheet-footer .right { text-align: right; color: var(--ink); font-weight: 600; }
 a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
@@ -177,7 +174,7 @@ a:hover { color: var(--red); }
 .paxiom-bar-mark {
   display: inline-flex; align-items: center; gap: 10px;
   text-decoration: none; color: var(--ink);
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
   transition: color 0.15s ease;
 }
@@ -185,7 +182,7 @@ a:hover { color: var(--red); }
 .paxiom-bar-mark:hover { color: var(--blue); }
 .paxiom-bar-nav {
   display: flex; gap: 18px;
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
 }
 .paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; transition: color 0.15s ease; padding-bottom: 2px; }
@@ -480,7 +477,7 @@ written to Arweave as the permanent record.
 
     <!-- AO Coordinator banner -->
     <rect x="200" y="20" width="280" height="60" fill="#F5F1E8" stroke="#1E3A5F" stroke-width="1.5"/>
-    <text x="340" y="45" font-family="JetBrains Mono, monospace" font-size="12" fill="#1E3A5F" text-anchor="middle" letter-spacing="2.5">AO COORDINATOR</text>
+    <text x="340" y="45" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="12" fill="#1E3A5F" text-anchor="middle" letter-spacing="2.5">AO COORDINATOR</text>
     <text x="340" y="65" font-family="Times New Roman, serif" font-style="italic" font-size="11" fill="#3A4555" text-anchor="middle">initiates simultaneous execution on both chains</text>
 
     <!-- Tree from AO down to chains -->
@@ -490,40 +487,40 @@ written to Arweave as the permanent record.
     <line x1="540" y1="110" x2="540" y2="143" stroke="#B8AE96" stroke-width="1" marker-end="url(#arrSoftA)"/>
 
     <!-- Coordination labels -->
-    <text x="240" y="105" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280" letter-spacing="1" text-anchor="middle">coordination</text>
-    <text x="440" y="105" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280" letter-spacing="1" text-anchor="middle">coordination</text>
+    <text x="240" y="105" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9" fill="#6B7280" letter-spacing="1" text-anchor="middle">coordination</text>
+    <text x="440" y="105" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9" fill="#6B7280" letter-spacing="1" text-anchor="middle">coordination</text>
 
     <!-- Chain A box -->
     <rect x="20" y="145" width="240" height="120" fill="#F5F1E8" stroke="#1A2332" stroke-width="1"/>
-    <text x="35" y="167" font-family="JetBrains Mono, monospace" font-size="11" fill="#1E3A5F" letter-spacing="2">CHAIN A</text>
-    <text x="35" y="183" font-family="JetBrains Mono, monospace" font-size="10" fill="#6B7280" letter-spacing="0.5">Optimism Sepolia</text>
+    <text x="35" y="167" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11" fill="#1E3A5F" letter-spacing="2">CHAIN A</text>
+    <text x="35" y="183" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10" fill="#6B7280" letter-spacing="0.5">Optimism Sepolia</text>
     <line x1="35" y1="195" x2="245" y2="195" stroke="#B8AE96" stroke-width="1"/>
     <text x="140" y="225" font-family="Times New Roman, serif" font-style="italic" font-size="13" fill="#1A2332" text-anchor="middle">execution leg</text>
-    <text x="140" y="248" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280" text-anchor="middle" letter-spacing="1.5">[ to be specified ]</text>
+    <text x="140" y="248" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9" fill="#6B7280" text-anchor="middle" letter-spacing="1.5">[ to be specified ]</text>
 
     <!-- Chain B box -->
     <rect x="420" y="145" width="240" height="120" fill="#F5F1E8" stroke="#1A2332" stroke-width="1"/>
-    <text x="435" y="167" font-family="JetBrains Mono, monospace" font-size="11" fill="#1E3A5F" letter-spacing="2">CHAIN B</text>
-    <text x="435" y="183" font-family="JetBrains Mono, monospace" font-size="10" fill="#6B7280" letter-spacing="0.5">Base Sepolia</text>
+    <text x="435" y="167" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11" fill="#1E3A5F" letter-spacing="2">CHAIN B</text>
+    <text x="435" y="183" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10" fill="#6B7280" letter-spacing="0.5">Base Sepolia</text>
     <line x1="435" y1="195" x2="645" y2="195" stroke="#B8AE96" stroke-width="1"/>
     <text x="540" y="225" font-family="Times New Roman, serif" font-style="italic" font-size="13" fill="#1A2332" text-anchor="middle">execution leg</text>
-    <text x="540" y="248" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280" text-anchor="middle" letter-spacing="1.5">[ to be specified ]</text>
+    <text x="540" y="248" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9" fill="#6B7280" text-anchor="middle" letter-spacing="1.5">[ to be specified ]</text>
 
     <!-- OApp bidirectional arrow between chains -->
-    <text x="340" y="200" font-family="JetBrains Mono, monospace" font-size="10" fill="#1E3A5F" text-anchor="middle" letter-spacing="2">OApp</text>
+    <text x="340" y="200" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10" fill="#1E3A5F" text-anchor="middle" letter-spacing="2">OApp</text>
     <line x1="265" y1="210" x2="415" y2="210" stroke="#1E3A5F" stroke-width="1.2" marker-start="url(#arrA)" marker-end="url(#arrA)"/>
-    <text x="340" y="227" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280" text-anchor="middle" letter-spacing="0.5">cross-chain messaging</text>
+    <text x="340" y="227" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9" fill="#6B7280" text-anchor="middle" letter-spacing="0.5">cross-chain messaging</text>
 
     <!-- Chain to Arweave merge -->
     <line x1="140" y1="265" x2="140" y2="295" stroke="#B8AE96" stroke-width="1"/>
     <line x1="540" y1="265" x2="540" y2="295" stroke="#B8AE96" stroke-width="1"/>
     <line x1="140" y1="295" x2="540" y2="295" stroke="#B8AE96" stroke-width="1"/>
-    <text x="340" y="288" font-family="JetBrains Mono, monospace" font-size="9" fill="#1E3A5F" text-anchor="middle" letter-spacing="1.5">AO observes both legs · writes settled state</text>
+    <text x="340" y="288" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9" fill="#1E3A5F" text-anchor="middle" letter-spacing="1.5">AO observes both legs · writes settled state</text>
     <line x1="340" y1="295" x2="340" y2="333" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrA)"/>
 
     <!-- Arweave banner -->
     <rect x="200" y="335" width="280" height="60" fill="#F5F1E8" stroke="#1E3A5F" stroke-width="1.5"/>
-    <text x="340" y="360" font-family="JetBrains Mono, monospace" font-size="12" fill="#1E3A5F" text-anchor="middle" letter-spacing="2.5">ARWEAVE</text>
+    <text x="340" y="360" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="12" fill="#1E3A5F" text-anchor="middle" letter-spacing="2.5">ARWEAVE</text>
     <text x="340" y="380" font-family="Times New Roman, serif" font-style="italic" font-size="11" fill="#3A4555" text-anchor="middle">final data frame · permanent record</text>
   </svg>
 </div>

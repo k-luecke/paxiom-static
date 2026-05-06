@@ -3,14 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <title>Paxiom · Technical Architecture · T.01 AO Dispatcher</title>
 <meta name="description" content="AO as distributed dispatcher for verifiable Ethereum proof work — components, message schemas, build order, benchmarks.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/fonts.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --rule: #1A2332;
@@ -22,7 +19,7 @@
 html { scroll-behavior: smooth; }
 body {
   background: var(--paper); color: var(--ink);
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 14px; line-height: 1.6;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
   background-image:
@@ -42,10 +39,10 @@ body {
 .sheet-mark-link { display: block; line-height: 0; transition: opacity 0.15s ease; }
 .sheet-mark-link:hover { opacity: 0.65; }
 .sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
-.sheet-project { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.sheet-project { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
 .sheet-title { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
 .sheet-subtitle { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
-.sheet-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 16px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.04em; text-align: right; }
+.sheet-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 16px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.04em; text-align: right; }
 .sheet-meta dt { color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
 .sheet-meta dd { color: var(--ink); font-weight: 500; }
 .sheet-body { padding: 56px 72px; }
@@ -54,7 +51,7 @@ body {
   .sheet-header { grid-template-columns: auto 1fr; }
   .sheet-meta { grid-column: 1 / -1; text-align: left; padding-top: 8px; border-top: 1px solid var(--rule-faint); }
 }
-.cover-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
+.cover-mark { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
 .cover-mark::after { content: ''; flex: 1; height: 1px; background: var(--rule-faint); }
 .cover-title { font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: clamp(48px, 7.5vw, 88px); line-height: 0.96; letter-spacing: -0.025em; color: var(--ink); margin-bottom: 28px; }
 .cover-title em { font-style: italic; font-weight: 400; color: var(--ink-mid); }
@@ -65,18 +62,18 @@ body {
 .cover-cell:nth-child(2n) { border-right: none; }
 .cover-cell:nth-last-child(-n+2) { border-bottom: none; }
 @media (max-width: 700px) { .cover-cell { border-right: none; border-bottom: 1px solid var(--rule-faint); } .cover-cell:last-child { border-bottom: none; } }
-.cover-cell-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+.cover-cell-label { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
 .cover-cell-value { font-family: 'Times New Roman', Times, serif; font-size: 17px; color: var(--ink); line-height: 1.35; }
 .cover-cell-value em { font-style: italic; color: var(--ink-mid); }
-.toc-section-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-top: 36px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-faint); }
+.toc-section-label { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-top: 36px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-faint); }
 .toc-section-label:first-child { margin-top: 0; }
 .toc-row { display: grid; grid-template-columns: 80px 1fr auto; gap: 24px; padding: 10px 0; border-bottom: 1px dotted var(--rule-faint); align-items: baseline; }
 .toc-row:last-of-type { border-bottom: none; }
-.toc-num { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; font-weight: 500; color: var(--blue); letter-spacing: 0.04em; }
+.toc-num { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 13px; font-weight: 500; color: var(--blue); letter-spacing: 0.04em; }
 .toc-title { font-family: 'Times New Roman', Times, serif; font-size: 16px; color: var(--ink); }
 .toc-title em { font-style: italic; color: var(--ink-mid); font-size: 14px; display: block; margin-top: 2px; }
-.toc-page { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--ink-faint); letter-spacing: 0.04em; }
-.section-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.toc-page { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; color: var(--ink-faint); letter-spacing: 0.04em; }
+.section-mark { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
 .section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
 .section-title { font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: 40px; line-height: 1.05; letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px; }
 .section-title em { font-style: italic; color: var(--ink-mid); }
@@ -84,14 +81,14 @@ body {
 .prose p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.65; margin-bottom: 18px; max-width: 68ch; color: var(--ink); }
 .prose p.lead { font-size: 19px; line-height: 1.55; color: var(--ink-mid); font-style: italic; margin-bottom: 28px; }
 .prose h3 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 22px; margin-top: 40px; margin-bottom: 14px; color: var(--ink); letter-spacing: -0.005em; }
-.prose h4 { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); margin-top: 32px; margin-bottom: 10px; }
+.prose h4 { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); margin-top: 32px; margin-bottom: 10px; }
 .prose strong { font-weight: 600; color: var(--ink); }
 .prose em { font-style: italic; color: var(--ink-mid); }
-.prose code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); word-break: break-all; }
+.prose code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); word-break: break-all; }
 .prose ul, .prose ol { margin: 12px 0 22px 28px; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.65; max-width: 68ch; }
 .prose li { margin-bottom: 8px; }
 .callout { border: 1px solid var(--ink); margin: 32px 0; background: var(--paper); }
-.callout-header { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; padding: 9px 18px; background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; align-items: center; }
+.callout-header { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; padding: 9px 18px; background: var(--ink); color: var(--paper); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; align-items: center; }
 .callout-tag { font-weight: 600; }
 .callout-id { color: var(--paper-dark); opacity: 0.7; }
 .callout-body { padding: 20px 24px; }
@@ -99,7 +96,7 @@ body {
 .callout-body p:last-child { margin-bottom: 0; }
 .callout-body ul { margin: 10px 0 6px 22px; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; }
 .callout-body li { margin-bottom: 6px; }
-.callout-body code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); }
+.callout-body code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); }
 .callout.note { border-style: dashed; border-color: var(--ink-faint); }
 .callout.note .callout-header { background: transparent; color: var(--ink-faint); border-bottom: 1px dashed var(--ink-faint); }
 .callout.note .callout-id { color: var(--ink-faint); }
@@ -110,26 +107,26 @@ body {
 /* Diagram + legend */
 .diagram { background: var(--paper-dark); border: 1.5px solid var(--ink); padding: 24px; margin: 8px 0 12px; overflow-x: auto; }
 .diagram svg { display: block; min-width: 880px; width: 100%; height: auto; }
-.diagram-caption { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 4px 0 28px; padding-top: 8px; border-top: 1px solid var(--rule-faint); }
+.diagram-caption { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 4px 0 28px; padding-top: 8px; border-top: 1px solid var(--rule-faint); }
 .diagram-caption .fig-num { color: var(--blue); margin-right: 8px; font-weight: 500; }
 .diagram-note { font-family: 'Times New Roman', Times, serif; font-size: 14px; color: var(--ink-mid); line-height: 1.55; margin: 12px 0 24px; max-width: 68ch; font-style: italic; }
 .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; padding: 18px 22px; background: var(--paper-dark); border: 1px solid var(--rule-faint); margin-bottom: 18px; }
 @media (max-width: 700px) { .legend { grid-template-columns: 1fr; gap: 18px; } }
 .legend-group { display: flex; flex-direction: column; gap: 8px; }
-.legend-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px; }
+.legend-label { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px; }
 .legend-item { display: flex; align-items: center; gap: 10px; font-family: 'Times New Roman', Times, serif; font-size: 14px; color: var(--ink); line-height: 1.4; }
 .swatch { width: 14px; height: 14px; border: 1px solid var(--rule); flex-shrink: 0; }
 
 /* Components table — schedule style */
 .schedule { margin: 24px 0; border: 1.5px solid var(--ink); width: 100%; border-collapse: collapse; }
-.schedule th { background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; text-align: left; padding: 10px 12px; font-weight: 500; }
+.schedule th { background: var(--ink); color: var(--paper); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; text-align: left; padding: 10px 12px; font-weight: 500; }
 .schedule td { padding: 14px 12px; border-bottom: 1px solid var(--rule-faint); border-right: 1px solid var(--rule-faint); font-family: 'Times New Roman', Times, serif; font-size: 15px; vertical-align: top; color: var(--ink); line-height: 1.5; }
 .schedule td:last-child { border-right: none; }
 .schedule tr:last-child td { border-bottom: none; }
 .schedule .comp { font-weight: 600; color: var(--ink); }
-.schedule .role { display: block; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 500; color: var(--ink-faint); margin-top: 4px; letter-spacing: 0.05em; text-transform: uppercase; }
-.schedule code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 5px; color: var(--blue); }
-.schedule .tag { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 8px; border: 1px solid var(--rule-faint); display: inline-block; white-space: nowrap; }
+.schedule .role { display: block; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; font-weight: 500; color: var(--ink-faint); margin-top: 4px; letter-spacing: 0.05em; text-transform: uppercase; }
+.schedule code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 5px; color: var(--blue); }
+.schedule .tag { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 8px; border: 1px solid var(--rule-faint); display: inline-block; white-space: nowrap; }
 .schedule .tag.ao { color: var(--green); border-color: var(--green); }
 .schedule .tag.ext { color: var(--red); border-color: var(--red); }
 .schedule .tag.store { color: var(--amber); border-color: var(--amber); }
@@ -137,8 +134,8 @@ body {
 /* Schemas */
 .schemas { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 24px 0; }
 .schema { background: var(--paper-dark); border: 1px solid var(--ink); padding: 16px 18px; }
-.schema-name { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; font-weight: 600; color: var(--blue); letter-spacing: 0.05em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-faint); text-transform: uppercase; }
-.schema pre { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.65; color: var(--ink-mid); white-space: pre-wrap; margin: 0; }
+.schema-name { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11px; font-weight: 600; color: var(--blue); letter-spacing: 0.05em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-faint); text-transform: uppercase; }
+.schema pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11.5px; line-height: 1.65; color: var(--ink-mid); white-space: pre-wrap; margin: 0; }
 .schema pre .key { color: var(--ink); font-weight: 500; }
 
 /* Numbered build steps */
@@ -158,8 +155,8 @@ body {
 }
 .steps .step-title { font-family: 'Times New Roman', Times, serif; font-weight: 600; font-size: 17px; color: var(--ink); margin-bottom: 8px; line-height: 1.3; }
 .steps .step-body { font-family: 'Times New Roman', Times, serif; font-size: 15px; color: var(--ink); line-height: 1.6; margin-bottom: 10px; max-width: 68ch; }
-.steps .step-body code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 5px; color: var(--blue); }
-.steps .step-measure { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); }
+.steps .step-body code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 5px; color: var(--blue); }
+.steps .step-measure { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); }
 .steps .step-measure::before { content: '→ Measure: '; color: var(--ink-faint); }
 
 /* Benchmark cards */
@@ -173,13 +170,13 @@ body {
 }
 .bench-card h3 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 18px; margin-bottom: 8px; color: var(--ink); line-height: 1.25; letter-spacing: -0.005em; }
 .bench-card p { font-family: 'Times New Roman', Times, serif; font-size: 14px; color: var(--ink); line-height: 1.55; margin: 0; }
-.bench-card p code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 5px; color: var(--blue); }
-.bench-card .ballpark { display: block; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--blue); margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--rule-faint); letter-spacing: 0.04em; font-weight: 500; }
+.bench-card p code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 5px; color: var(--blue); }
+.bench-card .ballpark { display: block; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 11px; color: var(--blue); margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--rule-faint); letter-spacing: 0.04em; font-weight: 500; }
 
 .page-break { border-top: 2px solid var(--ink); margin: 96px -72px 64px; position: relative; }
 @media (max-width: 700px) { .page-break { margin: 56px -24px 40px; } }
-.page-break::before { content: attr(data-sheet); position: absolute; top: -10px; left: 72px; background: var(--paper); padding: 0 12px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
-.sheet-footer { border-top: 1.5px solid var(--ink); padding: 14px 24px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); align-items: center; }
+.page-break::before { content: attr(data-sheet); position: absolute; top: -10px; left: 72px; background: var(--paper); padding: 0 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.sheet-footer { border-top: 1.5px solid var(--ink); padding: 14px 24px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); align-items: center; }
 .sheet-footer .center { text-align: center; }
 .sheet-footer .right { text-align: right; color: var(--ink); font-weight: 600; }
 a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
@@ -201,7 +198,7 @@ a:hover { color: var(--red); }
 .paxiom-bar-mark {
   display: inline-flex; align-items: center; gap: 10px;
   text-decoration: none; color: var(--ink);
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
   transition: color 0.15s ease;
 }
@@ -209,7 +206,7 @@ a:hover { color: var(--red); }
 .paxiom-bar-mark:hover { color: var(--blue); }
 .paxiom-bar-nav {
   display: flex; gap: 18px;
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
 }
 .paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; transition: color 0.15s ease; padding-bottom: 2px; }
@@ -365,26 +362,26 @@ recursively to a root proof.
 
     <!-- Coordinator -->
     <rect x="380" y="20" width="240" height="60" fill="#F5F1E8" stroke="#2D6A4F" stroke-width="1.5"/>
-    <text x="500" y="44" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">PAXIOM COORDINATOR</text>
-    <text x="500" y="62" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">AO process · partitions chain into ranges</text>
+    <text x="500" y="44" text-anchor="middle" fill="#1A2332" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="13" font-weight="700">PAXIOM COORDINATOR</text>
+    <text x="500" y="62" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">AO process · partitions chain into ranges</text>
 
     <!-- Arrow down to MU -->
     <line x1="500" y1="80" x2="500" y2="115" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrow)"/>
-    <text x="510" y="100" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">ProofShardJob × N</text>
+    <text x="510" y="100" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">ProofShardJob × N</text>
 
     <!-- MU layer -->
     <rect x="380" y="120" width="240" height="50" fill="#F5F1E8" stroke="#2D6A4F" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <text x="500" y="142" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700">MU · MESSENGER UNIT</text>
-    <text x="500" y="158" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">routes / pushes message</text>
+    <text x="500" y="142" text-anchor="middle" fill="#1A2332" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="12" font-weight="700">MU · MESSENGER UNIT</text>
+    <text x="500" y="158" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">routes / pushes message</text>
 
     <!-- Arrow down to SU -->
     <line x1="500" y1="170" x2="500" y2="205" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrow)"/>
 
     <!-- × N parallel badge -->
-    <text x="180" y="290" text-anchor="middle" fill="#2D6A4F" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">× N parallel</text>
-    <text x="180" y="306" text-anchor="middle" fill="#2D6A4F" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">shard processes</text>
-    <text x="180" y="326" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">each shard runs on</text>
-    <text x="180" y="338" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">its own CU</text>
+    <text x="180" y="290" text-anchor="middle" fill="#2D6A4F" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11" font-weight="700">× N parallel</text>
+    <text x="180" y="306" text-anchor="middle" fill="#2D6A4F" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11" font-weight="700">shard processes</text>
+    <text x="180" y="326" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9">each shard runs on</text>
+    <text x="180" y="338" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9">its own CU</text>
     <line x1="220" y1="350" x2="320" y2="350" stroke="#2D6A4F" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
 
     <!-- Stacked outline behind SU (parallelization cue) -->
@@ -393,19 +390,19 @@ recursively to a root proof.
 
     <!-- SU layer -->
     <rect x="380" y="210" width="240" height="50" fill="#F5F1E8" stroke="#2D6A4F" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <text x="500" y="232" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700">SU · SCHEDULER UNIT</text>
-    <text x="500" y="248" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">assigns ordered slot · persists</text>
+    <text x="500" y="232" text-anchor="middle" fill="#1A2332" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="12" font-weight="700">SU · SCHEDULER UNIT</text>
+    <text x="500" y="248" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">assigns ordered slot · persists</text>
 
     <!-- Arrow to Arweave (right) -->
     <line x1="620" y1="235" x2="780" y2="235" stroke="#B8860B" stroke-width="1.2" marker-end="url(#arrow-amber)"/>
-    <text x="700" y="227" text-anchor="middle" fill="#B8860B" font-family="JetBrains Mono, monospace" font-size="10">slot + msg</text>
+    <text x="700" y="227" text-anchor="middle" fill="#B8860B" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">slot + msg</text>
 
     <!-- Arweave -->
     <rect x="780" y="195" width="180" height="80" fill="#F5F1E8" stroke="#B8860B" stroke-width="1.5"/>
-    <text x="870" y="220" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">ARWEAVE</text>
-    <text x="870" y="238" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">message history</text>
-    <text x="870" y="252" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">witness manifests</text>
-    <text x="870" y="266" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">proof lineage</text>
+    <text x="870" y="220" text-anchor="middle" fill="#1A2332" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="13" font-weight="700">ARWEAVE</text>
+    <text x="870" y="238" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">message history</text>
+    <text x="870" y="252" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">witness manifests</text>
+    <text x="870" y="266" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">proof lineage</text>
 
     <!-- Arrow down from SU to CU -->
     <line x1="500" y1="260" x2="500" y2="295" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrow)"/>
@@ -416,73 +413,73 @@ recursively to a root proof.
 
     <!-- CU layer -->
     <rect x="320" y="300" width="360" height="100" fill="#F5F1E8" stroke="#2D6A4F" stroke-width="1.5"/>
-    <text x="500" y="320" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">CU · COMPUTE UNIT</text>
-    <text x="500" y="335" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">witness · proof · verify — all CU-native, parallelized across N CUs</text>
+    <text x="500" y="320" text-anchor="middle" fill="#1A2332" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="13" font-weight="700">CU · COMPUTE UNIT</text>
+    <text x="500" y="335" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9">witness · proof · verify — all CU-native, parallelized across N CUs</text>
     <line x1="340" y1="346" x2="660" y2="346" stroke="#B8AE96" stroke-width="1"/>
     <line x1="440" y1="350" x2="440" y2="396" stroke="#B8AE96" stroke-width="1" stroke-dasharray="2,2"/>
     <line x1="560" y1="350" x2="560" y2="396" stroke="#B8AE96" stroke-width="1" stroke-dasharray="2,2"/>
     <!-- Column 1: Witness Gen -->
-    <text x="380" y="364" text-anchor="middle" fill="#2D6A4F" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">WITNESS GEN</text>
-    <text x="380" y="378" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">read state</text>
-    <text x="380" y="389" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">build manifest</text>
+    <text x="380" y="364" text-anchor="middle" fill="#2D6A4F" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10" font-weight="700">WITNESS GEN</text>
+    <text x="380" y="378" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9">read state</text>
+    <text x="380" y="389" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9">build manifest</text>
     <!-- Column 2: Proof Gen -->
-    <text x="500" y="364" text-anchor="middle" fill="#2D6A4F" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">PROOF GEN</text>
-    <text x="500" y="378" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">run circuit</text>
-    <text x="500" y="389" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">emit artifact</text>
+    <text x="500" y="364" text-anchor="middle" fill="#2D6A4F" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10" font-weight="700">PROOF GEN</text>
+    <text x="500" y="378" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9">run circuit</text>
+    <text x="500" y="389" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9">emit artifact</text>
     <!-- Column 3: Verify + Emit -->
-    <text x="620" y="364" text-anchor="middle" fill="#2D6A4F" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">VERIFY + EMIT</text>
-    <text x="620" y="378" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">check result</text>
-    <text x="620" y="389" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9">emit outbox</text>
+    <text x="620" y="364" text-anchor="middle" fill="#2D6A4F" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10" font-weight="700">VERIFY + EMIT</text>
+    <text x="620" y="378" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9">check result</text>
+    <text x="620" y="389" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9">emit outbox</text>
 
     <!-- Arrow CU → External Prover (faded, dashed - fallback path) -->
     <line x1="680" y1="380" x2="780" y2="430" stroke="#8B2E1F" stroke-width="1" stroke-dasharray="4,3" opacity="0.55" marker-end="url(#arrow-red)"/>
-    <text x="755" y="395" fill="#8B2E1F" font-family="JetBrains Mono, monospace" font-size="9" opacity="0.7">if needed</text>
+    <text x="755" y="395" fill="#8B2E1F" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9" opacity="0.7">if needed</text>
 
     <!-- External Prover (FALLBACK - faded, dashed) -->
     <rect x="780" y="410" width="180" height="80" fill="#F5F1E8" stroke="#8B2E1F" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.65"/>
-    <text x="870" y="432" text-anchor="middle" fill="#8B2E1F" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" opacity="0.8">EXTERNAL PROVER</text>
-    <text x="870" y="448" text-anchor="middle" fill="#8B2E1F" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" opacity="0.8">FALLBACK ONLY</text>
-    <text x="870" y="466" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9" opacity="0.7">when CU exceeds capacity</text>
-    <text x="870" y="480" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="9" opacity="0.7">untrusted until verified</text>
+    <text x="870" y="432" text-anchor="middle" fill="#8B2E1F" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11" font-weight="700" opacity="0.8">EXTERNAL PROVER</text>
+    <text x="870" y="448" text-anchor="middle" fill="#8B2E1F" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9" font-weight="700" opacity="0.8">FALLBACK ONLY</text>
+    <text x="870" y="466" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9" opacity="0.7">when CU exceeds capacity</text>
+    <text x="870" y="480" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9" opacity="0.7">untrusted until verified</text>
 
     <!-- Arrow External → CU (faded, dashed) -->
     <path d="M 780 470 Q 720 470 680 410" stroke="#8B2E1F" stroke-width="1" stroke-dasharray="4,3" opacity="0.55" fill="none" marker-end="url(#arrow-red)"/>
-    <text x="710" y="495" fill="#8B2E1F" font-family="JetBrains Mono, monospace" font-size="9" opacity="0.7">artifact (CU verifies)</text>
+    <text x="710" y="495" fill="#8B2E1F" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="9" opacity="0.7">artifact (CU verifies)</text>
 
     <!-- Arrow down from CU to Result -->
     <line x1="500" y1="400" x2="500" y2="445" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrow)"/>
-    <text x="510" y="425" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">ProofShardResult</text>
+    <text x="510" y="425" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">ProofShardResult</text>
 
     <!-- Aggregator -->
     <rect x="320" y="450" width="360" height="80" fill="#F5F1E8" stroke="#2D6A4F" stroke-width="1.5"/>
-    <text x="500" y="474" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">AGGREGATOR PROCESS</text>
-    <text x="500" y="490" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">CU receives left + right child proofs</text>
-    <text x="500" y="504" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">checks boundary · runs aggregation circuit (CU-native)</text>
-    <text x="500" y="520" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">emits AggregationResult</text>
+    <text x="500" y="474" text-anchor="middle" fill="#1A2332" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="13" font-weight="700">AGGREGATOR PROCESS</text>
+    <text x="500" y="490" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">CU receives left + right child proofs</text>
+    <text x="500" y="504" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">checks boundary · runs aggregation circuit (CU-native)</text>
+    <text x="500" y="520" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">emits AggregationResult</text>
 
     <!-- Recursion arrow -->
     <path d="M 320 490 Q 240 490 240 320 Q 240 200 320 235" stroke="#1E3A5F" stroke-width="1.2" fill="none" marker-end="url(#arrow)" stroke-dasharray="3,3"/>
-    <text x="180" y="380" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">recurse:</text>
-    <text x="180" y="395" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">aggregation tree</text>
+    <text x="180" y="380" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10" text-anchor="middle">recurse:</text>
+    <text x="180" y="395" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10" text-anchor="middle">aggregation tree</text>
 
     <!-- Arrow from Aggregator side to Arweave -->
     <line x1="680" y1="490" x2="780" y2="490" stroke="#B8860B" stroke-width="1.2" stroke-dasharray="2,2" marker-end="url(#arrow-amber)" opacity="0.7"/>
 
     <!-- Arrow down to Final Proof -->
     <line x1="500" y1="530" x2="500" y2="575" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrow)"/>
-    <text x="510" y="555" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">at root of tree</text>
+    <text x="510" y="555" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">at root of tree</text>
 
     <!-- Final Proof -->
     <rect x="340" y="580" width="320" height="60" fill="#F5F1E8" stroke="#B8860B" stroke-width="2"/>
-    <text x="500" y="604" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">PROOF[GENESIS, HEAD]</text>
-    <text x="500" y="622" text-anchor="middle" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="10">compact verifier-checkable artifact</text>
+    <text x="500" y="604" text-anchor="middle" fill="#1A2332" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="13" font-weight="700">PROOF[GENESIS, HEAD]</text>
+    <text x="500" y="622" text-anchor="middle" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10">compact verifier-checkable artifact</text>
 
     <!-- Arrow to Subscriber -->
     <line x1="500" y1="640" x2="500" y2="675" stroke="#1E3A5F" stroke-width="1.2" marker-end="url(#arrow)"/>
 
     <!-- Subscriber -->
     <rect x="340" y="680" width="320" height="30" fill="#F5F1E8" stroke="#6B7280" stroke-width="1"/>
-    <text x="500" y="700" text-anchor="middle" fill="#1A2332" font-family="JetBrains Mono, monospace" font-size="12">SUBSCRIBER · RISK SYSTEM · CLEARING LAYER</text>
+    <text x="500" y="700" text-anchor="middle" fill="#1A2332" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="12">SUBSCRIBER · RISK SYSTEM · CLEARING LAYER</text>
   </svg>
 </div>
 

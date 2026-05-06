@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <title>Paxiom · Drawing Set</title>
 <meta name="description" content="The Paxiom drawing set — Project Narrative, Phase 1 Blueprint, Audit Relay, Key Custody, Operations Runbook, Build Map.">
 <meta property="og:title" content="Paxiom · Drawing Set">
@@ -13,16 +13,13 @@
 <meta name="twitter:card" content="summary">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/fonts.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
   background: var(--paper); color: var(--ink);
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.6;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; line-height: 1.6;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 .frame { max-width: 1080px; margin: 0 auto; padding: 20px 18px 32px; }
@@ -31,7 +28,7 @@ body {
 .title-mark { display: block; margin-bottom: 12px; }
 .paxiom-mark { width: 42px; height: 42px; color: var(--ink); display: block; }
 .title-block .project-mark {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
   color: var(--ink-faint); margin-bottom: 4px;
 }
@@ -45,7 +42,7 @@ body {
   font-size: 14px; color: var(--ink-mid); margin-top: 4px; max-width: 36ch;
 }
 .title-block .meta {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 10px; letter-spacing: 0.04em; color: var(--ink-faint);
   margin-top: 12px; line-height: 1.7;
 }
@@ -57,7 +54,7 @@ nav.primary {
 }
 nav.primary ul {
   list-style: none; display: flex; gap: 22px; padding: 12px 0;
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
 }
 nav.primary a { color: var(--ink-mid); text-decoration: none; padding-bottom: 4px; }
@@ -66,7 +63,7 @@ nav.primary a:hover { color: var(--blue); }
 
 .page-header { margin-bottom: 32px; padding: 8px 0 16px; }
 .page-header .mark {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--blue); margin-bottom: 8px;
   display: flex; align-items: center; gap: 12px;
@@ -95,7 +92,7 @@ nav.primary a:hover { color: var(--blue); }
   display: grid; grid-template-columns: auto 1fr;
   gap: 16px; padding: 12px 16px;
   background: var(--ink); color: var(--paper);
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   align-items: center;
 }
@@ -113,7 +110,7 @@ nav.primary a:hover { color: var(--blue); }
   color: var(--ink-mid); margin-bottom: 12px; max-width: 56ch;
 }
 .doc-card-body .open {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--blue);
 }
@@ -127,7 +124,7 @@ nav.primary a:hover { color: var(--blue); }
   background: var(--paper-dark); margin-bottom: 28px;
 }
 .note-block .note-label {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--amber); margin-bottom: 6px;
 }
@@ -139,7 +136,7 @@ nav.primary a:hover { color: var(--blue); }
 /* Subsection */
 .subsection { margin-bottom: 32px; }
 .subsection-mark {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--blue); margin-bottom: 8px;
   display: flex; align-items: center; gap: 12px;
@@ -158,7 +155,7 @@ nav.primary a:hover { color: var(--blue); }
 /* Footer */
 .sheet-footer {
   border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px;
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--ink-faint);
   display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;
@@ -202,7 +199,7 @@ a:hover { color: var(--red); }
 .paxiom-bar-mark {
   display: inline-flex; align-items: center; gap: 10px;
   text-decoration: none; color: var(--ink);
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
   transition: color 0.15s ease;
 }
@@ -210,7 +207,7 @@ a:hover { color: var(--red); }
 .paxiom-bar-mark:hover { color: var(--blue); }
 .paxiom-bar-nav {
   display: flex; gap: 18px;
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
 }
 .paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; transition: color 0.15s ease; padding-bottom: 2px; }
