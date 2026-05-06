@@ -1,19 +1,19 @@
-/* Paxiom — body face is DM Sans, served via the Google Fonts CDN.
+/* Paxiom — system fonts only.
  *
- * The @font-face rules live on Google's CSS endpoint
- * (https://fonts.googleapis.com/css2?family=DM+Sans:...&display=swap)
- * and are loaded by the <link rel="stylesheet"> tag in every page's <head>.
- * This file stays as a stable href so a future swap to self-hosting only
- * has to update one location.
+ * Audit follow-up #54 (2026-05-06): the site previously loaded DM Sans and
+ * JetBrains Mono from fonts.googleapis.com / fonts.gstatic.com, which leaked
+ * client IPs to a third party on every visit and required Google domains in
+ * the meta CSP. Self-hosting the .woff2 files would have closed the privacy
+ * problem but introduced a packaging/licensing/subsetting tail.
  *
- * DM Sans is licensed under the SIL Open Font License (OFL). See
- * fonts/README.md for the licence audit trail and the rationale for
- * choosing it over the earlier commercial faces.
+ * Resolution: drop the custom faces entirely. Pages now use OS-native system
+ * stacks (sans + monospace) and Times New Roman for the binder/drawing-set
+ * voice. No font binaries are vendored under /fonts/. No third-party font
+ * domains appear in CSP. Browser network panel shows zero font requests.
  *
- * If/when self-hosting becomes preferable (perf, privacy, no third-party
- * CDN), drop the .woff2 files into /fonts/ and replace this file's
- * @font-face section with rules pointing at them. The font-family name
- * stays 'DM Sans' so no page changes needed.
+ * If a custom face is reintroduced later, replace the system stacks below
+ * AND restore @font-face rules pointing at /fonts/*.woff2 here -- never load
+ * from a third-party CDN.
  */
 
 /* Audit L-7: shared design tokens.
