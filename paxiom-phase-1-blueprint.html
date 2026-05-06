@@ -13,17 +13,8 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --paper: #F5F1E8;
-  --paper-dark: #EDE6D3;
-  --ink: #1A2332;
-  --ink-mid: #3A4555;
-  --ink-faint: #6B7280;
   --rule: #1A2332;
-  --rule-faint: #B8AE96;
-  --blue: #1E3A5F;
   --blue-light: #4A6B8A;
-  --red: #8B2E1F;
-  --amber: #B8860B;
   --grid: rgba(26, 35, 50, 0.04);
 }
 
@@ -588,7 +579,7 @@ body {
 
 .service-prose p { margin-bottom: 14px; }
 
-.service-prose h5 {
+.service-prose h4 {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px;
   letter-spacing: 0.18em;
@@ -844,10 +835,11 @@ a:hover {
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
 <div class="paxiom-bar">
   <div class="paxiom-bar-inner">
     <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
-      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg>
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
       <span>Paxiom</span>
     </a>
     <nav class="paxiom-bar-nav" aria-label="Primary">
@@ -867,13 +859,7 @@ a:hover {
 
 <div class="sheet-header">
   <a class="title-mark" href="/" aria-label="Paxiom — home">
-    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true">
-      <circle cx="50" cy="50" r="40"/>
-      <path d="M50 14 L76 64 L24 64 Z"/>
-      <line x1="50" y1="30" x2="50" y2="80"/>
-      <line x1="38" y1="80" x2="62" y2="80"/>
-      <circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/>
-    </svg>
+    <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
   </a>
   <div class="sheet-title-block">
     <div class="sheet-project">Paxiom · Phase 1 · Drawing Set</div>
@@ -1648,20 +1634,20 @@ Axiom, Herodotus.
 
     <div class="service-prose">
 
-      <h5>Inputs</h5>
+      <h4>Inputs</h4>
       <p>
         Contract address, storage slot (bytes32), block number. Optional:
         chain identifier (default Ethereum mainnet, expand later).
       </p>
 
-      <h5>Outputs</h5>
+      <h4>Outputs</h4>
       <p>
         Groth16 or Plonky-family proof artifact (depending on backend),
         verifiable on-chain at &lt;400k gas. Public inputs: contract address,
         slot, block, claimed value. Response signed with platform key.
       </p>
 
-      <h5>Backend</h5>
+      <h4>Backend</h4>
       <p>
         SP1 or RISC Zero guest program performing Merkle inclusion against
         the block state root. Witness data comes from an archive node on the
@@ -1669,7 +1655,7 @@ Axiom, Herodotus.
         evidence needed for cold replay.
       </p>
 
-      <h5>Differentiation</h5>
+      <h4>Differentiation</h4>
       <p>
         Existing providers commonly depend on opaque RPC/indexer trust for
         inputs. Paxiom's moat is the composition: sync-committee-anchored
@@ -1678,7 +1664,7 @@ Axiom, Herodotus.
         replayable from the evidence trail, not just signed by a service."
       </p>
 
-      <h5>Build complexity</h5>
+      <h4>Build complexity</h4>
       <p>
         Moderate. Proving math is well-understood; you're integrating
         components rather than inventing them. Estimated 4–6 weeks at
@@ -1733,13 +1719,13 @@ to first revenue if the existing Rust verifier code is recoverable.
 
     <div class="service-prose">
 
-      <h5>Inputs</h5>
+      <h4>Inputs</h4>
       <p>
         Beacon chain slot number. Optionally: claimed header hash, claimed
         state root for verification rather than retrieval.
       </p>
 
-      <h5>Outputs</h5>
+      <h4>Outputs</h4>
       <p>
         Proof that the sync committee for that slot signed the specified
         header. Public inputs: slot, header hash, sync committee root.
@@ -1747,7 +1733,7 @@ to first revenue if the existing Rust verifier code is recoverable.
         platform key.
       </p>
 
-      <h5>Backend</h5>
+      <h4>Backend</h4>
       <p>
         Existing Rust verifier (40KB WASM), located in Phase 0. Wraps
         BLS aggregate signature verification over BLS12-381 with SHA-256
@@ -1755,7 +1741,7 @@ to first revenue if the existing Rust verifier code is recoverable.
         ark-relations stack.
       </p>
 
-      <h5>Differentiation</h5>
+      <h4>Differentiation</h4>
       <p>
         The differentiator is packaging, not invention of the primitive.
         Telepathy, Helios, and Polyhedra serve this need but require SDK
@@ -1763,14 +1749,14 @@ to first revenue if the existing Rust verifier code is recoverable.
         capability as an x402/MCP service with evidence and audit attached.
       </p>
 
-      <h5>Build complexity</h5>
+      <h4>Build complexity</h4>
       <p>
         Lowest of the five. Existing code wrapped in x402 endpoint, AO
         orchestration for audit, MCP server for discovery. Estimated
         4–6 weeks at focused pace, conditional on locating working verifier.
       </p>
 
-      <h5>Why this ships first</h5>
+      <h4>Why this ships first</h4>
       <p>
         Speed to first transaction matters more than perfection at launch.
         Service 2 reaches "first paying customer" fastest. Validates the
@@ -1826,20 +1812,20 @@ base. The Kelp DAO incident is the marketing case study.
 
     <div class="service-prose">
 
-      <h5>Inputs</h5>
+      <h4>Inputs</h4>
       <p>
         Source chain ID, source transaction hash or message ID, destination
         chain ID, claim about the message contents.
       </p>
 
-      <h5>Outputs</h5>
+      <h4>Outputs</h4>
       <p>
         Proof that the message exists in the source chain's canonical state
         with the claimed contents. Verifiable on the destination chain.
         Response signed with platform key.
       </p>
 
-      <h5>Backend</h5>
+      <h4>Backend</h4>
       <p>
         Composes Service 1 (state proof on source chain) with destination-chain
         verification logic. Requires a verifiable witness source and permanent
@@ -1847,7 +1833,7 @@ base. The Kelp DAO incident is the marketing case study.
         operational complexity beyond single-chain services.
       </p>
 
-      <h5>Differentiation</h5>
+      <h4>Differentiation</h4>
       <p>
         The Kelp DAO attack on April 18, 2026 drained $292M because a
         LayerZero DVN was fed false data via compromised RPC infrastructure.
@@ -1856,7 +1842,7 @@ base. The Kelp DAO incident is the marketing case study.
         doesn't depend on the trust assumption that just failed.</em>
       </p>
 
-      <h5>Build complexity</h5>
+      <h4>Build complexity</h4>
       <p>
         High. Bridges have strict correctness requirements; mistakes in
         this category lose hundreds of millions. Estimated 6–10 weeks.
@@ -1928,20 +1914,20 @@ execution via greenzone is the upsell.
 
     <div class="service-prose">
 
-      <h5>Inputs</h5>
+      <h4>Inputs</h4>
       <p>
         Sender address, target contract, calldata, value, optional block
         number for state context. Optional: TEE attestation request flag.
       </p>
 
-      <h5>Outputs</h5>
+      <h4>Outputs</h4>
       <p>
         Execution result, gas used, state changes, event logs. With TEE flag:
         attestation chain proving execution happened in genuine hardware
         running registered code. Response signed with platform key.
       </p>
 
-      <h5>Backend</h5>
+      <h4>Backend</h4>
       <p>
         HyperBEAM <code>~evm@1.0</code> device for execution. Optional
         <code>~greenzone@1.0</code> wrapping for TEE attestation. The
@@ -1949,7 +1935,7 @@ execution via greenzone is the upsell.
         workload.
       </p>
 
-      <h5>Differentiation</h5>
+      <h4>Differentiation</h4>
       <p>
         Tenderly, Alchemy simulation API, Foundry tooling all exist but
         are RPC-based and not verified. TEE-attested simulation is a
@@ -1957,7 +1943,7 @@ execution via greenzone is the upsell.
         work because per-simulation cost is genuinely low.
       </p>
 
-      <h5>Build complexity</h5>
+      <h4>Build complexity</h4>
       <p>
         Moderate, gated entirely on HyperBEAM Phase 0. Once
         <code>~evm@1.0</code> is operational, wrapping it in x402 is
@@ -2013,7 +1999,7 @@ gets established.
 
     <div class="service-prose">
 
-      <h5>Inputs</h5>
+      <h4>Inputs</h4>
       <p>
         Initial query types (v1):
       </p>
@@ -2027,7 +2013,7 @@ gets established.
         to be general at launch.
       </p>
 
-      <h5>Outputs</h5>
+      <h4>Outputs</h4>
       <p>
         Verified answer plus proof artifact. Public inputs include the
         block number, block hash (canonically attested), and the claimed
@@ -2035,7 +2021,7 @@ gets established.
         permanently.
       </p>
 
-      <h5>Backend</h5>
+      <h4>Backend</h4>
       <p>
         Erigon or Reth provides the live <code>eth_getProof</code>/MPT witness.
         The verifier checks it against a sync-committee-trusted state root.
@@ -2043,7 +2029,7 @@ gets established.
         evidence so the answer can be audited and replayed later.
       </p>
 
-      <h5>Differentiation</h5>
+      <h4>Differentiation</h4>
       <p>
         This is where Paxiom is genuinely rare. Most existing providers
         can answer historical-state queries, but the derivation trail is
@@ -2053,7 +2039,7 @@ gets established.
         true, and Load Network/Arweave keeps the evidence trail.
       </p>
 
-      <h5>Build complexity</h5>
+      <h4>Build complexity</h4>
       <p>
         Higher than Services 1 and 2. Requires archive-node operation,
         MPT verification, evidence-packet design, and Load Network/Arweave
@@ -2061,7 +2047,7 @@ gets established.
         after Service 2 has validated the launch pattern.
       </p>
 
-      <h5>Customer fit</h5>
+      <h4>Customer fit</h4>
       <p>
         Compliance teams, audit firms, regulatory reporting use cases,
         historical analysis for institutional buyers. These are higher-value

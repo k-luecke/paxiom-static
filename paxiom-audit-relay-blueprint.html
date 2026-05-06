@@ -13,17 +13,8 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --paper: #F5F1E8;
-  --paper-dark: #EDE6D3;
-  --ink: #1A2332;
-  --ink-mid: #3A4555;
-  --ink-faint: #6B7280;
   --rule: #1A2332;
-  --rule-faint: #B8AE96;
-  --blue: #1E3A5F;
   --blue-light: #4A6B8A;
-  --red: #8B2E1F;
-  --amber: #B8860B;
   --grid: rgba(26, 35, 50, 0.04);
 }
 
@@ -625,7 +616,7 @@ pre.codeblock .label { color: #98B0CC; }
 
 .component-body { padding: 28px; }
 
-.component-body h5 {
+.component-body h4 {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px;
   letter-spacing: 0.18em;
@@ -635,7 +626,7 @@ pre.codeblock .label { color: #98B0CC; }
   margin-bottom: 8px;
 }
 
-.component-body h5:first-child { margin-top: 0; }
+.component-body h4:first-child { margin-top: 0; }
 
 .component-body p {
   font-family: 'Times New Roman', Times, serif;
@@ -756,10 +747,11 @@ a:hover { color: var(--red); }
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
 <div class="paxiom-bar">
   <div class="paxiom-bar-inner">
     <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
-      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg>
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
       <span>Paxiom</span>
     </a>
     <nav class="paxiom-bar-nav" aria-label="Primary">
@@ -779,13 +771,7 @@ a:hover { color: var(--red); }
 
 <div class="sheet-header">
   <a class="title-mark" href="/" aria-label="Paxiom — home">
-    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true">
-      <circle cx="50" cy="50" r="40"/>
-      <path d="M50 14 L76 64 L24 64 Z"/>
-      <line x1="50" y1="30" x2="50" y2="80"/>
-      <line x1="38" y1="80" x2="62" y2="80"/>
-      <circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/>
-    </svg>
+    <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
   </a>
   <div class="sheet-title-block">
     <div class="sheet-project">Paxiom · Operational · Drawing Set</div>
@@ -1427,7 +1413,7 @@ processes. Each invocation does one thing and exits.
   </div>
   <div class="component-body">
 
-    <h5>Subcommands</h5>
+    <h4>Subcommands</h4>
 
 <pre class="codeblock"><span class="keyword">relay start</span> &lt;service-id&gt;     <span class="comment"># Begin new cycle. Returns UUID.</span>
 <span class="keyword">relay status</span>                <span class="comment"># Show all in-flight cycles.</span>
@@ -1441,7 +1427,7 @@ processes. Each invocation does one thing and exits.
 <span class="keyword">relay cost</span>                  <span class="comment"># Token usage and $ to date.</span>
 <span class="keyword">relay logs</span> [--tail]          <span class="comment"># Activity log, optionally follow.</span></pre>
 
-    <h5>Exit codes</h5>
+    <h4>Exit codes</h4>
 
     <ul>
       <li><code>0</code> — operation completed.</li>
@@ -1456,7 +1442,7 @@ processes. Each invocation does one thing and exits.
       let the operator wire the relay into their existing terminal flow.
     </p>
 
-    <h5>Configuration resolution order</h5>
+    <h4>Configuration resolution order</h4>
 
     <ul>
       <li>Built-in defaults.</li>
@@ -1465,7 +1451,7 @@ processes. Each invocation does one thing and exits.
       <li>Per-cycle overrides (e.g., <code>--model claude-opus-4-7</code> on the start command).</li>
     </ul>
 
-    <h5>Logging</h5>
+    <h4>Logging</h4>
 
     <p>
       Every API call, state transition, and operator command logs to
@@ -1672,7 +1658,7 @@ the terminal you already have open.
   </div>
   <div class="component-body">
 
-    <h5>Notification mechanisms (in priority order)</h5>
+    <h4>Notification mechanisms (in priority order)</h4>
 
     <ul>
       <li><strong>WSLg <code>notify-send</code></strong> — desktop toast
@@ -1689,7 +1675,7 @@ the terminal you already have open.
       summary suitable for <code>status-right</code>.</li>
     </ul>
 
-    <h5>Plan review interface</h5>
+    <h4>Plan review interface</h4>
 
     <p>
       <code>relay review &lt;uuid&gt;</code> opens the consolidated plan
@@ -1714,7 +1700,7 @@ the terminal you already have open.
       standard.
     </p>
 
-    <h5>Status display</h5>
+    <h4>Status display</h4>
 
 <pre class="codeblock">$ relay status
 
@@ -1735,7 +1721,7 @@ Google      $0.42     8,103 input  /    718 output tokens
 3 cycle(s) need your attention. Run `relay queue`.</pre>
 <div class="code-caption">relay status · what awaits the operator at a glance</div>
 
-    <h5>tmux pane recipe (optional)</h5>
+    <h4>tmux pane recipe (optional)</h4>
 
 <pre class="codeblock">$ tmux new-session -d -s paxiom
 $ tmux send-keys -t paxiom 'cd ~/projects/paxiom' C-m
@@ -1770,7 +1756,7 @@ Multiple cycles in flight without conflict.
   </div>
   <div class="component-body">
 
-    <h5>Cycle states</h5>
+    <h4>Cycle states</h4>
 
     <ul>
       <li><code>INITIALIZED</code> — UUID created, branch checked out, ready to dispatch.</li>
@@ -1786,7 +1772,7 @@ Multiple cycles in flight without conflict.
       <li><code>ABORTED</code> — operator killed cycle. State preserved for review.</li>
     </ul>
 
-    <h5>State file</h5>
+    <h4>State file</h4>
 
 <pre class="codeblock"><span class="comment">// .relay/cycles/&lt;uuid&gt;/state.json</span>
 {
@@ -1807,7 +1793,7 @@ Multiple cycles in flight without conflict.
 }</pre>
 <div class="code-caption">One file per cycle · journaled · grep-able</div>
 
-    <h5>Crash recovery</h5>
+    <h4>Crash recovery</h4>
 
     <p>
       If the orchestrator dies mid-cycle (network fail, system reboot,
@@ -1818,7 +1804,7 @@ Multiple cycles in flight without conflict.
       checks for cached results before re-issuing.
     </p>
 
-    <h5>Parallel cycle coordination</h5>
+    <h4>Parallel cycle coordination</h4>
 
     <ul>
       <li><strong>Branch isolation.</strong> Each cycle owns a unique branch.
@@ -1835,7 +1821,7 @@ Multiple cycles in flight without conflict.
       surfaces both views.</li>
     </ul>
 
-    <h5>Git integration</h5>
+    <h4>Git integration</h4>
 
     <p>
       Each state transition with a code change produces a commit on the

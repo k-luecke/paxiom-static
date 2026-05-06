@@ -13,17 +13,8 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --paper: #F5F1E8;
-  --paper-dark: #EDE6D3;
-  --ink: #1A2332;
-  --ink-mid: #3A4555;
-  --ink-faint: #6B7280;
   --rule: #1A2332;
-  --rule-faint: #B8AE96;
-  --blue: #1E3A5F;
   --blue-light: #4A6B8A;
-  --red: #8B2E1F;
-  --amber: #B8860B;
   --green: #4A6B3A;
   --grid: rgba(26, 35, 50, 0.04);
 }
@@ -515,7 +506,7 @@ body {
 
 .procedure-body { padding: 24px; }
 
-.procedure-body h5 {
+.procedure-body h4 {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 10px;
   letter-spacing: 0.18em;
@@ -525,7 +516,7 @@ body {
   margin-bottom: 8px;
 }
 
-.procedure-body h5:first-child { margin-top: 0; }
+.procedure-body h4:first-child { margin-top: 0; }
 
 .procedure-body p {
   font-family: 'Times New Roman', Times, serif;
@@ -797,10 +788,11 @@ a:hover { color: var(--red); }
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
 <div class="paxiom-bar">
   <div class="paxiom-bar-inner">
     <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
-      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg>
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
       <span>Paxiom</span>
     </a>
     <nav class="paxiom-bar-nav" aria-label="Primary">
@@ -816,13 +808,7 @@ a:hover { color: var(--red); }
 
 <div class="sheet-header">
   <a class="title-mark" href="/" aria-label="Paxiom — home">
-    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true">
-      <circle cx="50" cy="50" r="40"/>
-      <path d="M50 14 L76 64 L24 64 Z"/>
-      <line x1="50" y1="30" x2="50" y2="80"/>
-      <line x1="38" y1="80" x2="62" y2="80"/>
-      <circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/>
-    </svg>
+    <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
   </a>
   <div class="sheet-title-block">
     <div class="sheet-project">Paxiom · Operations · Drawing Set</div>
@@ -1231,7 +1217,7 @@ more than the format.
       </div>
     </div>
 
-    <h5>Immediate actions</h5>
+    <h4>Immediate actions</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1255,7 +1241,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Diagnosis</h5>
+    <h4>Diagnosis</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1280,7 +1266,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Resolution paths</h5>
+    <h4>Resolution paths</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1305,7 +1291,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Post-incident</h5>
+    <h4>Post-incident</h4>
 
     <p>
       Write the incident summary per O-900. If the cause was a class of
@@ -1351,7 +1337,7 @@ more than the format.
       </div>
     </div>
 
-    <h5>Immediate actions</h5>
+    <h4>Immediate actions</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1372,7 +1358,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Diagnosis</h5>
+    <h4>Diagnosis</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1400,7 +1386,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Resolution paths</h5>
+    <h4>Resolution paths</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1424,7 +1410,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Customer communication</h5>
+    <h4>Customer communication</h4>
 
     <p>
       Customers who paid for failed proofs get refunded. Customers who
@@ -1470,7 +1456,7 @@ more than the format.
       </div>
     </div>
 
-    <h5>Diagnosis</h5>
+    <h4>Diagnosis</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1495,7 +1481,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Resolution paths</h5>
+    <h4>Resolution paths</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1558,7 +1544,7 @@ more than the format.
       </div>
     </div>
 
-    <h5>Diagnosis</h5>
+    <h4>Diagnosis</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1582,7 +1568,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Resolution paths</h5>
+    <h4>Resolution paths</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1645,7 +1631,7 @@ more than the format.
       </div>
     </div>
 
-    <h5>Immediate actions (in this order)</h5>
+    <h4>Immediate actions (in this order)</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1676,7 +1662,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Diagnosis (after immediate actions)</h5>
+    <h4>Diagnosis (after immediate actions)</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1696,7 +1682,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Customer communication</h5>
+    <h4>Customer communication</h4>
 
     <p>
       Customers who received signatures during the compromise window need
@@ -1711,7 +1697,7 @@ more than the format.
       hidden until later disclosed.
     </p>
 
-    <h5>Recovery completion</h5>
+    <h4>Recovery completion</h4>
 
     <p>
       Once new keys are operational, the recovery is not complete until
@@ -1758,7 +1744,7 @@ more than the format.
       </div>
     </div>
 
-    <h5>Investigation</h5>
+    <h4>Investigation</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1779,7 +1765,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Resolution paths</h5>
+    <h4>Resolution paths</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1802,7 +1788,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Reputation discipline</h5>
+    <h4>Reputation discipline</h4>
 
     <p>
       Disputes are public information once they enter discovery layers
@@ -1850,7 +1836,7 @@ more than the format.
       </div>
     </div>
 
-    <h5>Assessment</h5>
+    <h4>Assessment</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1872,7 +1858,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Response options</h5>
+    <h4>Response options</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1933,7 +1919,7 @@ more than the format.
       </div>
     </div>
 
-    <h5>Diagnosis</h5>
+    <h4>Diagnosis</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -1956,7 +1942,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Resolution paths</h5>
+    <h4>Resolution paths</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -2014,7 +2000,7 @@ more than the format.
       </div>
     </div>
 
-    <h5>Pre-deployment</h5>
+    <h4>Pre-deployment</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -2033,7 +2019,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Deployment</h5>
+    <h4>Deployment</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -2055,7 +2041,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Post-deployment</h5>
+    <h4>Post-deployment</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -2111,7 +2097,7 @@ more than the format.
       </div>
     </div>
 
-    <h5>Why this exists</h5>
+    <h4>Why this exists</h4>
 
     <p>
       The hot-tier settlement wallet (K-002) is exposed to internet attack
@@ -2121,7 +2107,7 @@ more than the format.
       to the cold-tier treasury wallet (K-006) on a defined cadence.
     </p>
 
-    <h5>Procedure</h5>
+    <h4>Procedure</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -2153,7 +2139,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>What this procedure is not</h5>
+    <h4>What this procedure is not</h4>
 
     <p>
       This is not a treasury disbursement. Sweeping funds <em>into</em>
@@ -2200,7 +2186,7 @@ more than the format.
       </div>
     </div>
 
-    <h5>The check</h5>
+    <h4>The check</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -2229,7 +2215,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Why daily</h5>
+    <h4>Why daily</h4>
 
     <p>
       Daily cadence catches issues while they're small. A wallet balance
@@ -2282,7 +2268,7 @@ more than the format.
       </div>
     </div>
 
-    <h5>Revenue and economics</h5>
+    <h4>Revenue and economics</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -2305,7 +2291,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Reputation and ecosystem</h5>
+    <h4>Reputation and ecosystem</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -2328,7 +2314,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Capacity and pace</h5>
+    <h4>Capacity and pace</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -2347,7 +2333,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Output</h5>
+    <h4>Output</h4>
 
     <p>
       Monthly review produces a written summary preserved in the build
@@ -2392,7 +2378,7 @@ more than the format.
       </div>
     </div>
 
-    <h5>Pre-launch (services already feature-complete)</h5>
+    <h4>Pre-launch (services already feature-complete)</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -2417,7 +2403,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Soft launch</h5>
+    <h4>Soft launch</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
@@ -2435,7 +2421,7 @@ more than the format.
       </div></div>
     </div>
 
-    <h5>Public launch</h5>
+    <h4>Public launch</h4>
 
     <div class="steps">
       <div class="step"><div class="step-text">
