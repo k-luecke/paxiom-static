@@ -4,6 +4,25 @@ Public static website for `paxiom.org`.
 
 This repository is intentionally separate from the private Paxiom core repo. It contains only public website and documentation assets suitable for GitHub Pages.
 
+## Status — May 2026
+
+Paxiom is an early-stage verification infrastructure project. Recent work
+focused on audit remediation, repository hardening, public documentation
+structure, and narrowing the system toward a replayable verified-compute
+kernel.
+
+Current focus:
+
+1. preserve a clean public build record;
+2. expose one narrow end-to-end verification loop;
+3. avoid production/mainnet claims until the evidence trail, signing
+   boundaries, and operator runbook are complete.
+
+Audit-remediation closure point is tagged `paxiom-static-h1.3` here, with
+parallel tags `paxiom-h1.3`, `bls-verifier-h1.3`, and `zkfwdbld-h1.3` on the
+sibling repositories. Original audit findings are closed; remaining
+follow-ups are preserved as scoped, non-blocking work items.
+
 ## Deploy
 
 Pages is published via the GitHub Actions workflow at
