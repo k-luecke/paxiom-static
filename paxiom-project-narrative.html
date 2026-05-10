@@ -779,7 +779,7 @@ look like.
 <div class="toc-row"><div class="toc-num">B-520</div><div class="toc-title">Quantum Readiness<em>NIST, Google, the migration coming</em></div><div class="toc-page"><a href="#b-520">B-520</a></div></div>
 <div class="toc-row"><div class="toc-num">B-530</div><div class="toc-title">HyperBEAM &amp; Devices<em>where compute happens</em></div><div class="toc-page"><a href="#b-530">B-530</a></div></div>
 <div class="toc-row"><div class="toc-num">B-540</div><div class="toc-title">AO &amp; Arweave<em>audit as native property</em></div><div class="toc-page"><a href="#b-540">B-540</a></div></div>
-<div class="toc-row"><div class="toc-num">B-550</div><div class="toc-title">Load Network<em>permanent evidence, replayable state</em></div><div class="toc-page"><a href="#b-550">B-550</a></div></div>
+<div class="toc-row"><div class="toc-num">B-550</div><div class="toc-title">Paxiom Proof Archive<em>encrypted evidence, replayable state</em></div><div class="toc-page"><a href="#b-550">B-550</a></div></div>
 
 <div class="toc-section-label">Section 6 — The Economics</div>
 <div class="toc-row"><div class="toc-num">B-600</div><div class="toc-title">Phase 1 Pro Forma<em>per-service unit economics</em></div><div class="toc-page"><a href="#b-600">B-600</a></div></div>
@@ -2933,42 +2933,47 @@ monitoring surface.
 
 <div id="b-550">
 <div class="section-mark">Section 5 · B-550</div>
-<h2 class="section-title">Load Network.<br><em>Permanent evidence, replayable state.</em></h2>
+<h2 class="section-title">Paxiom Proof Archive.<br><em>Encrypted evidence, replayable state.</em></h2>
 
 <div class="prose">
 
 <p class="lead">
-Load Network is the piece that makes Paxiom's verification trail
-permanent. The previous sections argued why replacing RPC trust matters.
-This section explains the split: live witness retrieval is fast and
-local; evidence, replay, and auditability live on Arweave.
+Paxiom's proof archive is the piece that makes the verification trail
+permanent without turning public storage into a free bypass around the
+service. The previous sections argued why replacing RPC trust matters.
+This section explains the split: witness retrieval is fast and local;
+evidence, replay, and auditability live on Arweave, with commercially
+useful proof bundles encrypted and indexed by Paxiom.
 </p>
 
-<h3>What Load Network archives</h3>
+<h3>What the proof archive stores</h3>
 
 <p>
-Load Network gives Paxiom an Arweave-backed place for permanent evidence:
-headers, proof packets, transaction or receipt evidence, and replay
-metadata. Paxiom does not need Load Network to serve live trie nodes.
-The live witness can come from Erigon or Reth; Load Network preserves
-the derivation trail after the answer is produced.
+The archive gives Paxiom an Arweave-backed place for durable evidence:
+headers, proof packets, transaction or receipt evidence, encrypted
+witness bundles, and replay metadata. Paxiom does not need Arweave to
+serve live trie nodes. The live witness can come from Erigon or Reth;
+the archive preserves the derivation trail after the answer is produced.
 </p>
 
 <p>
 The size of Ethereum history is substantial, so the evidence format must
 be intentional. Paxiom's current working design is to store small,
 tagged artifacts — headers, proof packets, receipts, transaction
-fragments, and index metadata — rather than treating Load Network as a
-drop-in replacement for an archive-node database. That keeps Arweave's
-permanence in the architecture without pretending object storage is a
-low-latency state trie.
+fragments, encrypted witness bundles, and Paxiom-controlled index metadata
+— rather than treating public storage as a drop-in replacement for an
+archive-node database. That keeps Arweave's permanence in the architecture
+without pretending object storage is a low-latency state trie or exposing
+the whole commercial corpus for free.
 </p>
 
 <h3>What state reconstruction means</h3>
 
 <p>
-There are two reconstruction paths. The hot path asks an Erigon or Reth
-archive node for an <code>eth_getProof</code> witness, then verifies the
+There are now two live-read paths and one cold audit path. The Helios
+path uses a HyperBEAM-hosted consensus light client to turn upstream
+JSON-RPC into verifiable JSON-RPC. The sovereignty path asks an Erigon or
+Reth archive node for an <code>eth_getProof</code> witness, then verifies the
 account proof and storage proof against a block state root anchored by
 the sync committee verifier. The cold path uses Arweave-resident
 evidence to replay or audit the derivation later.
@@ -2976,20 +2981,24 @@ evidence to replay or audit the derivation later.
 
 <p>
 The cold path is not a fast query interface. It is an audit and recovery
-interface. Re-executing from raw archival evidence is slower than asking
-an archive node for a witness, but it gives Paxiom a stronger public
-claim: the answer is not only verified at issuance time, it has a
-permanent evidence trail that a third party can inspect and replay.
+interface. Re-executing from archival evidence is slower than asking
+an archive node for a witness, but it gives Paxiom a stronger claim:
+the answer is not only verified at issuance time, it has a durable
+evidence trail. Public artifacts can be inspected directly; encrypted
+proof bundles can be revealed selectively when the customer, audit, or
+dispute path requires it.
 </p>
 
 <h3>The trust property</h3>
 
 <p>
-The structural property is that the witness source is not trusted. The
-archive node is useful because it is fast, but it cannot make a false
-storage value verify against the wrong Ethereum state root. Load
-Network/Arweave then make the resulting proof packet and evidence trail
-durable, public, and replayable.
+The structural property is that the witness source is not trusted. A
+Helios-backed RPC is useful because it reduces blind RPC trust with light-client
+verification. An archive node is useful because it is fast and sovereign.
+Neither can make a false storage value verify against the wrong Ethereum state
+root. Arweave then makes the resulting proof packet and evidence trail durable,
+while Paxiom controls the index and decryption path for proof material that
+should not be a public bypass.
 </p>
 
 <p>
@@ -3005,19 +3014,20 @@ can be wrong or malicious; the verifier is the authority.
 <p>
 Service 5 (verified historical state queries) depends on this split. The
 customer asks "what was the value of contract C at block N?" The platform
-retrieves a live MPT witness from an archive node, verifies it against a
-sync-committee-trusted state root, produces the proof, and stores the
-proof packet/evidence on Load Network/Arweave. The customer verifies the
-proof. The archive node is a witness source, not a trust root.
+retrieves a live witness from Helios-backed JSON-RPC or from an archive node,
+verifies it against a sync-committee-trusted state root, produces the proof,
+and stores the proof packet/evidence in the Paxiom archive. The customer
+verifies the proof. The RPC or archive node is a witness source, not a trust
+root.
 </p>
 
 <p>
 Services 1 (slot storage proofs) and 3 (cross-chain message
 verification) use the same trust shape. The v1 services can launch with
 archive-node witnesses because the proof is checked cryptographically.
-As the Load Network evidence format matures, more of the input and audit
-trail moves onto Arweave, reducing operational dependency without making
-Load Network the live database.
+As the archive format matures, more of the input and audit trail moves onto
+Arweave, reducing operational dependency without making public storage the
+live database or a complete substitute for Paxiom's paid service.
 </p>
 
 <h3>Why this is the architectural moat</h3>
@@ -3033,8 +3043,8 @@ audits its inputs.
 
 <p>
 Paxiom's architecture is built around the split from the start. The
-witness format, proof generation pipeline, AO verifier, and
-Load Network/Arweave evidence trail are designed as one surface. There
+witness format, proof generation pipeline, AO verifier, encrypted Arweave
+storage, and Paxiom index/key layer are designed as one surface. There
 is no migration required because the live data source is never treated
 as the trust anchor.
 </p>

@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
-<title>Paxiom · Public Index</title>
-<meta name="description" content="Paxiom is a verification layer for the agent economy. Phase 1 ships proof services for cross-chain settlement, chain-state verification, audit relay, and identity-bound service access.">
+<title>Paxiom Â· Public Index</title>
+<meta name="description" content="Paxiom is a verification layer for the agent economy, moving from RPC trust toward Ethereum-root-verified proof services, encrypted Arweave evidence, and AO-assisted proof work.">
 <meta property="og:title" content="Paxiom · Public Index">
-<meta property="og:description" content="Paxiom is a verification layer for the agent economy. Phase 1 ships proof services for cross-chain settlement, chain-state verification, audit relay, and identity-bound service access.">
+<meta property="og:description" content="Paxiom is a verification layer for the agent economy, moving from RPC trust toward Ethereum-root-verified proof services, encrypted Arweave evidence, and AO-assisted proof work.">
 <meta property="og:url" content="https://paxiom.org/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
@@ -138,7 +138,7 @@ nav.primary a:hover { color: var(--blue); }
 }
 .build-cell ul { list-style: none; font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.5; }
 .build-cell li { padding: 4px 0 4px 14px; position: relative; color: var(--ink); }
-.build-cell li::before { content: '·'; position: absolute; left: 0; color: var(--rule-faint); font-weight: bold; }
+.build-cell li::before { content: 'Â·'; position: absolute; left: 0; color: var(--rule-faint); font-weight: bold; }
 .build-cell.not-claimed li { color: var(--ink-faint); font-style: italic; }
 
 /* Section */
@@ -248,7 +248,7 @@ a:hover { color: var(--red); }
   .paxiom-bar-nav { gap: 14px; font-size: 9.5px; letter-spacing: 0.12em; }
 }
 
-/* Softened corners — binder pages only */
+/* Softened corners â€” binder pages only */
 .btn,
 .doc-card, .doc-card-header,
 .build-state, .build-state-header, .build-cell,
@@ -278,7 +278,7 @@ a:hover { color: var(--red); }
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
 <div class="paxiom-bar">
   <div class="paxiom-bar-inner">
-    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
+    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom â€” home">
       <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
       <span>Paxiom</span>
     </a>
@@ -295,22 +295,22 @@ a:hover { color: var(--red); }
   <header class="title-block">
     <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg></div>
     <div>
-      <div class="project-mark">Paxiom · Public Index</div>
+      <div class="project-mark">Paxiom Â· Public Index</div>
       <div class="project-title">Paxiom</div>
       <div class="project-subtitle">A verification layer for the agent economy.</div>
     </div>
     <div class="meta">
-      <span>Project No. PXM-001</span><span class="sep">·</span>
-      <span>Issue: Public / Rev. A</span><span class="sep">·</span>
-      <span>Status: Active Build</span><span class="sep">·</span>
-      <span>Updated 2026.05.05</span>
+      <span>Project No. PXM-001</span><span class="sep">Â·</span>
+      <span>Issue: Public / Rev. A</span><span class="sep">Â·</span>
+      <span>Status: Testnet Hardening</span><span class="sep">·</span>
+      <span>Updated 2026.05.10</span>
     </div>
   </header>
 
   <section class="hero">
     <h1>The substrate is being laid <em>right now.</em></h1>
-    <p class="lede">Paxiom is a verification layer for the agent economy. Phase 1 ships proof services for cross-chain settlement, chain-state verification, audit relay, and identity-bound service access.</p>
-    <p class="meta-line">The project is early. The drawings are public. The build is being sequenced from the infrastructure up.</p>
+    <p class="lede">Paxiom is a verification layer for the agent economy. Phase 1 is hardening paid proof services that return signed response envelopes, verify state against Ethereum commitments, and keep payment/notary truth fields explicit.</p>
+    <p class="meta-line">The long-term direction is a Paxiom-owned historical proof archive: encrypted evidence on Arweave, AO-assisted proof work where safe, and no RPC provider treated as the authority.</p>
     <div class="actions">
       <a class="btn primary" href="/docs.html">Read the Brief</a>
       <a class="btn" href="/status.html">Current Status</a>
@@ -320,7 +320,7 @@ a:hover { color: var(--red); }
   <section class="build-state" id="build-state" aria-labelledby="build-state-heading">
     <div class="build-state-header">
       <span id="build-state-heading">Current Build State</span>
-      <span>2026.05.05</span>
+      <span>2026.05.10</span>
     </div>
     <div class="build-state-grid">
       <div class="build-cell designed">
@@ -331,6 +331,7 @@ a:hover { color: var(--red); }
           <li>Key custody model</li>
           <li>Operations runbook</li>
           <li>Build sequence</li>
+          <li>RPC trust boundary</li>
         </ul>
       </div>
       <div class="build-cell in-progress">
@@ -341,6 +342,10 @@ a:hover { color: var(--red); }
           <li>Proof job routing</li>
           <li>Public repo structure</li>
           <li>Service metadata</li>
+          <li>A-202 subprocess proof path</li>
+          <li>Encrypted proof archive design</li>
+          <li>Local Erigon proof warehouse sync</li>
+          <li>A-201/A-205 Erigon proof-source adapter</li>
         </ul>
       </div>
       <div class="build-cell not-claimed">
@@ -360,22 +365,24 @@ a:hover { color: var(--red); }
     <div class="section-mark">What is being built</div>
     <h2>Verified facts, <em>not unverifiable claims.</em></h2>
     <p>The agent economy needs a substrate where machines can transact across chains, services, and trust boundaries without inheriting blind trust in the service that answered. Paxiom is one specific bet on that substrate: x402-payable, MCP-callable attestations whose inputs are verified, whose computation can be replayed, and whose evidence trail is permanent.</p>
+    <p>The current build is explicit about what is and is not proven. Phase 1 services are testnet/reference software. Mock paths are refused in strict deployments, disabled payments are not called settled payments, and A-202 rejects device responses whose slot does not match the customer's request before the platform signs an envelope.</p>
+    <p>Paxiom's local historical-state path is now being exercised with Erigon running against a Google Drive-backed cold warehouse and a local hot tier. That path is allowed to be slow; it is not allowed to be trusted blindly. A-201 and A-205 are being wired to consume local <code>eth_getProof</code> witnesses and verify them before signing customer-facing envelopes.</p>
     <p>The drawing set goes deeper. The Project Narrative explains the territory and the bet. The Phase 1 Blueprint details the five services that ship first. The Operations Runbook covers what happens on the days things go wrong, and the days they don't.</p>
-    <p><strong>Phase 0 substrate.</strong> HyperBEAM bring-up scripts and the <code>~bls-sync-committee@1.0</code> device are written and tested in their companion repos; S.01 and S.02 are <strong>closed</strong> with operator evidence captured 2026-05-02 and 2026-05-03. S.03 is being rebuilt as an Ethereum L1 reconstruction path: Erigon or Reth serves live MPT witnesses, Load Network/Arweave stores the permanent evidence trail, and AO replays the verifier. <a href="/paxiom-phase-0-status.html">See the gate status →</a></p>
-    <a class="read-more" href="/docs.html">View the Drawing Set →</a>
+    <p><strong>Phase 0 substrate.</strong> HyperBEAM bring-up scripts and the <code>~bls-sync-committee@1.0</code> device are written and tested in their companion repos; S.01 and S.02 are operator-evidence gates, while S.03 is being rebuilt around Paxiom-owned Ethereum L1 reconstruction. Load/Ultraviolet remains useful context, but the working direction is encrypted Arweave proof storage, AO-assisted compute, and local verification against Ethereum roots. <a href="/paxiom-phase-0-status.html">See the gate status â†’</a></p>
+    <a class="read-more" href="/docs.html">View the Drawing Set â†’</a>
   </section>
 
   <section class="section">
     <div class="section-mark">Why this exists</div>
     <h2>The proof is the point.</h2>
     <p>Most agent infrastructure being built today asks the consumer to trust the operator. Paxiom is built on the opposite assumption: data sources can be useful without being trusted. Every serious output should carry the evidence needed to verify it later.</p>
-    <p>This is a slower way to build. It requires substrate decisions — HyperBEAM compute, AO/Arweave audit, archive-node witnesses, Load Network evidence storage — that commodity API services don't make. The bet is that as agents begin paying for routes, proofs, simulations, and private opportunity feeds, the winning services will be the ones whose claims survive replay.</p>
+    <p>This is a slower way to build. It requires substrate decisions â€” HyperBEAM dispatch, AO/Arweave audit, archive-node witnesses, encrypted proof storage, and signed response envelopes â€” that commodity API services don't make. The bet is that as agents begin paying for routes, proofs, simulations, and private opportunity feeds, the winning services will be the ones whose claims survive replay.</p>
   </section>
 
   <footer class="sheet-footer">
-    <div>Paxiom · paxiom.org</div>
-    <div>Public · Rev. A · 2026.05.05</div>
-    <div class="sheet-id">PXM-B-000 · Public Index</div>
+    <div>Paxiom Â· paxiom.org</div>
+    <div>Public · Rev. A · 2026.05.10</div>
+    <div class="sheet-id">PXM-B-000 Â· Public Index</div>
   </footer>
 
 </div>

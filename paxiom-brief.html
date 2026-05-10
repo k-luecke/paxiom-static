@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom Brief</title>
+<meta name="description" content="A compact printable brief explaining Paxiom's verified-claims architecture, agent-market positioning, and near-term build plan.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F7F3EA;
+  --ink: #182231;
+  --ink-mid: #3E4857;
+  --ink-faint: #6B7280;
+  --rule: #B8AE96;
+  --blue: #1E3A5F;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "DM Sans", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.page {
+  width: min(100%, 860px);
+  margin: 0 auto;
+  padding: 34px 28px 46px;
+}
+.title-block {
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 18px;
+  margin-bottom: 24px;
+}
+.kicker, .meta, .eyebrow {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.kicker {
+  color: var(--ink-faint);
+  font-size: 10px;
+  margin-bottom: 10px;
+}
+h1, h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+h1 {
+  font-size: 40px;
+  line-height: 1.05;
+  max-width: 14ch;
+  margin-bottom: 12px;
+}
+h1 em, h2 em { color: var(--ink-mid); font-style: italic; font-weight: 400; }
+.dek {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.45;
+  max-width: 62ch;
+}
+.meta {
+  margin-top: 16px;
+  color: var(--ink-faint);
+  font-size: 10px;
+}
+.summary {
+  border: 1.5px solid var(--ink);
+  padding: 16px 18px;
+  margin: 24px 0 28px;
+  background: rgba(255, 255, 255, 0.28);
+}
+.summary strong { color: var(--ink); }
+.summary p + p { margin-top: 10px; }
+section {
+  border-top: 1px solid var(--rule);
+  padding-top: 18px;
+  margin-top: 24px;
+}
+.eyebrow {
+  color: var(--ink-faint);
+  font-size: 10px;
+  margin-bottom: 7px;
+}
+h2 {
+  font-size: 24px;
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+p { max-width: 72ch; }
+p + p { margin-top: 10px; }
+ul {
+  margin: 10px 0 0 18px;
+  max-width: 72ch;
+}
+li { margin-bottom: 7px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.card {
+  border: 1px solid var(--rule);
+  padding: 13px 14px;
+  background: rgba(255, 255, 255, 0.22);
+}
+.card h3 {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.card p { font-size: 14px; line-height: 1.45; }
+.quote {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  line-height: 1.35;
+  border-left: 3px solid var(--blue);
+  padding-left: 14px;
+  margin-top: 12px;
+  max-width: 56ch;
+}
+.small {
+  color: var(--ink-mid);
+  font-size: 13px;
+}
+.footer {
+  border-top: 2px solid var(--ink);
+  margin-top: 30px;
+  padding-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--ink-faint);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+code {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.92em;
+}
+@media (max-width: 720px) {
+  .page { padding: 24px 18px 34px; }
+  h1 { font-size: 33px; }
+  .grid { grid-template-columns: 1fr; }
+}
+@media print {
+  @page { size: letter; margin: 0.55in; }
+  body { background: #fff; color: #111827; font-size: 10.8pt; }
+  .page { width: auto; margin: 0; padding: 0; }
+  .title-block { margin-bottom: 16px; }
+  h1 { font-size: 30pt; }
+  h2 { font-size: 17pt; }
+  .dek { font-size: 13pt; }
+  section { break-inside: avoid; margin-top: 18px; padding-top: 14px; }
+  .summary, .card { background: #fff; break-inside: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="title-block">
+    <div class="kicker">Paxiom Brief</div>
+    <h1>Verified facts for autonomous agents.</h1>
+    <p class="dek">Paxiom packages public-chain claims as paid, machine-callable attestations whose inputs can be checked, whose computation can be replayed, and whose evidence trail is permanent.</p>
+    <div class="meta">Public draft / 2026.05.10 / paxiom.org</div>
+  </header>
+
+  <div class="summary">
+    <p><strong>In one sentence:</strong> Paxiom is an x402-payable, MCP-callable verification layer for agents, tools, and services that need answers they can verify later rather than claims they must trust now.</p>
+    <p><strong>The shift in framing:</strong> Paxiom is not trying to replace every RPC, archive node, or data source. It is trying to remove blind trust from the answer. Data sources can be useful; unverifiable claims are not.</p>
+  </div>
+
+  <section>
+    <div class="eyebrow">01 / Problem</div>
+    <h2>Agents can pay for answers faster than they can trust them.</h2>
+    <p>Agent infrastructure is moving toward machine-callable tools, automatic payments, and cross-service workflows. x402 gives agents a way to pay for an API call. MCP gives agents a way to discover and invoke tools. But neither protocol proves that a returned answer was correct.</p>
+    <p>That gap matters when the answer drives money movement, access control, cross-chain execution, compliance reporting, or private opportunity routing. A service can return a signed response, but a signature only proves who said it. It does not prove the claim itself.</p>
+    <p>Paxiom's core question is: when an agent receives a paid answer, can another party later verify why that answer was accepted?</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">02 / Product</div>
+    <h2>Paxiom sells verifiable claims, not generic compute.</h2>
+    <p>The Phase 1 product surface is a set of small, paid attestations: storage-slot proofs, sync-committee verification, cross-chain message verification, simulations, and verified historical-state queries. The buyer is not only a human developer. The buyer can be an agent, MCP tool, bridge monitor, compliance workflow, or private routing system.</p>
+    <div class="quote">The product is not "we know the answer." The product is "here is the answer, the proof packet, and the evidence needed to replay it."</div>
+    <p>Paxiom can also support private cross-chain opportunity feeds. AO messaging can coordinate observation and settlement across chains. That becomes an x402/MCP product only when packaged as something an agent can buy: a route, a simulation, a feed item, or an attestation.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">03 / Architecture</div>
+    <h2>The source can be useful without becoming trusted.</h2>
+    <p>For Ethereum L1 historical state, Paxiom is moving toward a sovereign witness path first. Erigon or Reth can retrieve <code>eth_getProof</code> witnesses from infrastructure Paxiom controls. The current rehearsal path is a local Erigon archive syncing into a Google Drive-backed cold warehouse, with a local hot tier for active work. Any RPC-like path is treated as transport or convenience, not authority; the answer is checked against Ethereum state roots anchored by sync-committee verification.</p>
+    <p>The cold path is about auditability and replay. Paxiom's working direction is encrypted proof material on Arweave, Paxiom-controlled indexes and keys, and AO/HyperBEAM-assisted verification where data exposure is acceptable. Ultraviolet remains useful reference work, but Paxiom is no longer waiting on it to close the historical-state gate.</p>
+    <div class="grid">
+      <div class="card">
+        <h3>Transport Path</h3>
+        <p>RPC-like sources can still move data, but they do not decide truth. Paxiom verifies witnesses against Ethereum roots before signing a response.</p>
+      </div>
+      <div class="card">
+        <h3>Sovereign Path</h3>
+        <p>Erigon/Reth returns MPT witnesses from infrastructure Paxiom controls. Paxiom verifies the witness against a sync-committee-trusted Ethereum state root.</p>
+      </div>
+      <div class="card">
+        <h3>Cold Path</h3>
+        <p>Encrypted Arweave storage preserves evidence and proof packets. AO/HyperBEAM make verification replayable where the data can safely be revealed.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">04 / Difference</div>
+    <h2>Paxiom is not trying to out-Lagrange Lagrange.</h2>
+    <p>Lagrange, Axiom, Herodotus, Succinct, RISC Zero, and related systems are serious proof infrastructure. Some are better positioned for large coprocessor workloads, SQL-style proofs over on-chain data, universal proving, or direct protocol integrations.</p>
+    <p>Paxiom's lane is narrower and more agent-native: package verified public-chain facts as paid tool responses. The differentiator is not inventing MPT verification or running the biggest prover network. The differentiator is the combined product surface: x402 payment, MCP discovery, verified inputs, replayable execution, permanent evidence, and service-level packaging.</p>
+    <p>Competitors can add payment endpoints. Retrofitting replayable evidence as a native property is harder.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">05 / Moat</div>
+    <h2>The moat is the composition.</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Verifiable Inputs</h3>
+        <p>Witnesses are checked cryptographically instead of trusted because a provider returned them.</p>
+      </div>
+      <div class="card">
+        <h3>Agent-Native Sales</h3>
+        <p>x402 makes each attestation payable by software. MCP makes the service discoverable and callable by agent frameworks.</p>
+      </div>
+      <div class="card">
+        <h3>Permanent Evidence</h3>
+        <p>Encrypted Arweave bundles preserve proof packets and supporting evidence beyond Paxiom's own database while keeping the useful index and keys inside Paxiom.</p>
+      </div>
+      <div class="card">
+        <h3>Replayable Verification</h3>
+        <p>AO/HyperBEAM gives the audit trail an execution surface, not just a storage location.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">06 / Immediate Build Target</div>
+    <h2>A-202 first, then local historical-state rehearsal.</h2>
+    <p>The immediate revenue target is A-202: a sync-committee verification endpoint that is x402-payable, MCP-discoverable, signed by Paxiom's Ed25519 platform key, and packaged with replayable evidence fields. It is intentionally narrow because the goal is to prove the paid attestation loop while the local Erigon proof warehouse catches up for A-201 and A-205. The current hardening work rejects slot-mismatched device responses and keeps disabled/stub payment states from being described as settled.</p>
+    <ul>
+      <li>Publish the deployed <code>/.well-known/paxiom-platform-pubkey.json</code>.</li>
+      <li>Deploy the Base Sepolia endpoint with <code>REQUIRE_X402=1</code> and a real receiving wallet.</li>
+      <li>Confirm unpaid <code>402</code>, paid <code>200</code>, <code>PAYMENT-RESPONSE</code>, and <code>X-PAXIOM-SIGNATURE</code> together.</li>
+      <li>Verify the response signature locally from the published public key.</li>
+      <li>Only then run the MCP end-to-end rehearsal and compute mainnet unit economics.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="eyebrow">07 / Position</div>
+    <h2>The concise thesis.</h2>
+    <p>Paxiom is infrastructure for autonomous economic activity that needs accountable answers. It does not depend on purity about data transport. It depends on proof: the answer must be independently checkable, replayable, and durable.</p>
+    <p class="quote">Data sources can be useful. Claims must be verifiable.</p>
+  </section>
+
+  <footer class="footer">
+    <span>Paxiom / Brief</span>
+    <span>Printable Draft</span>
+  </footer>
+</main>
+</body>
+</html>

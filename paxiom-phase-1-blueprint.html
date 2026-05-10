@@ -913,7 +913,7 @@ in that order, on a timeline that matches the household.
   </div>
   <div class="cover-cell">
     <div class="cover-cell-label">Substrate</div>
-    <div class="cover-cell-value">HyperBEAM + AO + Arweave <em>+ Load Network</em></div>
+    <div class="cover-cell-value">HyperBEAM + AO + Arweave <em>+ Paxiom proof archive</em></div>
   </div>
 </div>
 
@@ -951,7 +951,7 @@ in that order, on a timeline that matches the household.
 </div>
 <div class="toc-row">
   <div class="toc-num">A-120</div>
-  <div class="toc-title">Foundations<em>HyperBEAM, AO, Load Network, KYA primitive</em></div>
+  <div class="toc-title">Foundations<em>HyperBEAM, AO, encrypted Arweave archive, KYA primitive</em></div>
   <div class="toc-page"><a href="#a-120">A-120</a></div>
 </div>
 
@@ -1195,18 +1195,20 @@ Every load-bearing dependency, named. The platform's architectural manifest.
 <div class="callout ref">
   <div class="callout-header">
     <span class="callout-tag">REF · State</span>
-    <span>Load Network</span>
+    <span>Paxiom proof archive</span>
     <span class="callout-id">A-020 / R.06</span>
   </div>
   <div class="callout-body">
     <p>
-      Ethereum transaction data archived permanently on Arweave. Deterministic
-      reconstruction of historical world state from archive. Eliminates RPC
-      trust assumption — the differentiator versus every existing verified
-      compute provider that depends on RPC-sourced witness data.
+      Ethereum headers, proof packets, and encrypted witness bundles archived
+      permanently on Arweave with Paxiom-controlled indexes and keys.
+      Deterministic reconstruction of historical world state from archive.
+      Eliminates blind RPC trust without publishing the full commercial proof
+      corpus as a free public bypass.
     </p>
     <p><em>v1 stance:</em> Required for Service 5 (historical state).
-    Useful enhancement for Services 1, 3.</p>
+    Useful enhancement for Services 1, 3. Load/Ultraviolet remains useful
+    reference work, but this path does not wait on it.</p>
   </div>
 </div>
 
@@ -1300,9 +1302,10 @@ activity.
 </p>
 
 <p>
-<strong>Load Network evidence layer</strong> — Arweave-resident Ethereum
-headers, proof packets, and archival evidence. The piece that makes
-state-related services permanently replayable rather than merely signed.
+<strong>Paxiom proof archive</strong> — encrypted Arweave-resident Ethereum
+headers, proof packets, witness bundles, and archival evidence, indexed by
+Paxiom. The piece that makes state-related services replayable without
+turning public storage into a free bypass around the paid service.
 </p>
 
 <div class="callout spec">
@@ -1553,9 +1556,10 @@ consensus data (slot 13883119, state root confirmed). Substrate for Service 2.
   </div>
   <div class="callout-body">
     <p>
-      One Ethereum L1 historical state query verifies end-to-end: hot MPT
-      witness from Erigon/Reth, state root anchored by the sync committee
-      verifier, and proof packet/evidence written to Load Network/Arweave.
+      One Ethereum L1 historical state query verifies end-to-end: an
+      Erigon/Reth MPT witness, state root anchored by the sync committee
+      verifier, and proof packet/evidence written to encrypted Arweave storage
+      with Paxiom-controlled index metadata.
       Required for Service 5; useful for Services 1 and 3.
     </p>
   </div>
@@ -1650,8 +1654,9 @@ Axiom, Herodotus.
       <h4>Backend</h4>
       <p>
         SP1 or RISC Zero guest program performing Merkle inclusion against
-        the block state root. Witness data comes from an archive node on the
-        hot path; Load Network/Arweave stores the header, proof packet, and
+        the block state root. Witness data comes from Erigon/Reth for sovereign
+        reads; any RPC-like transport is treated as convenience only, never as
+        authority. Encrypted Arweave storage holds the header, proof packet, and
         evidence needed for cold replay.
       </p>
 
@@ -1660,7 +1665,7 @@ Axiom, Herodotus.
         Existing providers commonly depend on opaque RPC/indexer trust for
         inputs. Paxiom's moat is the composition: sync-committee-anchored
         state roots, MPT-verified witnesses, AO-replayable verification, and
-        permanent Load Network/Arweave evidence. Marketing: "the proof is
+        permanent encrypted Arweave evidence. Marketing: "the proof is
         replayable from the evidence trail, not just signed by a service."
       </p>
 
@@ -2023,10 +2028,11 @@ gets established.
 
       <h4>Backend</h4>
       <p>
-        Erigon or Reth provides the live <code>eth_getProof</code>/MPT witness.
-        The verifier checks it against a sync-committee-trusted state root.
-        Load Network/Arweave stores the proof packet, header, and archival
-        evidence so the answer can be audited and replayed later.
+        Erigon or Reth provides the sovereign <code>eth_getProof</code>/MPT witness
+        path. The verifier checks the witness against a sync-committee-trusted
+        state root. Encrypted Arweave storage holds the proof packet, header, and
+        archival evidence so the answer can be audited and replayed later without
+        exposing the full archive as a public bypass.
       </p>
 
       <h4>Differentiation</h4>
@@ -2036,13 +2042,13 @@ gets established.
         not usually permanent and replayable by default. Paxiom separates
         live witness retrieval from trust: the archive node can provide data,
         but the MPT verifier and sync-committee header decide whether it is
-        true, and Load Network/Arweave keeps the evidence trail.
+        true, and the Paxiom proof archive keeps the evidence trail.
       </p>
 
       <h4>Build complexity</h4>
       <p>
         Higher than Services 1 and 2. Requires archive-node operation,
-        MPT verification, evidence-packet design, and Load Network/Arweave
+        MPT verification, evidence-packet design, and encrypted Arweave
         persistence. Estimated 6–8 weeks. Ships in middle of Phase 1,
         after Service 2 has validated the launch pattern.
       </p>
@@ -2470,7 +2476,7 @@ Better to have these named on a sheet than discovered in production.
     <span class="callout-id">Legend</span>
   </div>
   <div class="callout-body">
-    <p>Used for x402, ERC-8004, ERC-8183, HyperBEAM, AO, Load Network, proving systems.</p>
+    <p>Used for x402, ERC-8004, ERC-8183, HyperBEAM, AO, Arweave proof storage, proving systems.</p>
   </div>
 </div>
 

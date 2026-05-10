@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paxiom - A-202 Sync Committee API</title>
+<meta name="description" content="A-202 Sync Committee Verification API: x402-payable Ethereum beacon-chain sync committee verification with MCP metadata, signed envelopes, and explicit payment truth fields.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F1E8; --paper-dark: #EDE6D3; --ink: #1A2332; --ink-mid: #3A4555;
+  --ink-faint: #6B7280; --rule-faint: #B8AE96; --blue: #1E3A5F; --red: #8B2E1F; --amber: #B8860B;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.frame { max-width: 1080px; margin: 0 auto; padding: 20px 18px 36px; }
+.paxiom-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(245, 241, 232, 0.88);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule-faint);
+}
+.paxiom-bar-inner {
+  max-width: 1200px; margin: 0 auto; padding: 10px 18px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.paxiom-bar-mark, .paxiom-bar-nav {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  text-transform: uppercase; letter-spacing: 0.14em; font-size: 10px;
+}
+.paxiom-bar-mark { color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 10px; }
+.paxiom-bar-mark svg { width: 22px; height: 22px; }
+.paxiom-bar-nav { display: flex; gap: 18px; }
+.paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; }
+.paxiom-bar-nav a.active { color: var(--ink); border-bottom: 1.5px solid var(--ink); }
+.title-block { border-bottom: 2px solid var(--ink); padding-bottom: 20px; margin-bottom: 22px; }
+.project-mark, .eyebrow, .label, .pill {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  text-transform: uppercase; letter-spacing: 0.14em;
+}
+.project-mark { color: var(--ink-faint); font-size: 10px; margin-bottom: 7px; }
+h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; font-weight: 500; letter-spacing: -0.01em; }
+h1 { font-size: clamp(34px, 7vw, 58px); line-height: 1.03; max-width: 14ch; margin-bottom: 14px; }
+h1 em, h2 em { color: var(--ink-mid); font-style: italic; font-weight: 400; }
+.strap { font-family: Georgia, 'Times New Roman', serif; font-size: 18px; line-height: 1.48; max-width: 62ch; color: var(--ink-mid); }
+.status {
+  border: 1.5px solid var(--amber); background: var(--paper-dark);
+  padding: 14px 16px; margin: 22px 0 30px;
+}
+.status .label { color: var(--amber); font-size: 10px; margin-bottom: 4px; }
+.grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 18px 0 30px; }
+.card { border: 1.5px solid var(--ink); background: var(--paper); padding: 15px 17px; border-radius: 8px; }
+.card .label { color: var(--blue); font-size: 10px; margin-bottom: 6px; }
+.card .value { font-family: Georgia, 'Times New Roman', serif; font-size: 23px; line-height: 1.15; }
+.card p { color: var(--ink-mid); margin-top: 8px; }
+section { margin-bottom: 32px; }
+.eyebrow { color: var(--blue); font-size: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.eyebrow::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+h2 { font-size: 26px; line-height: 1.15; margin-bottom: 12px; }
+p { font-family: Georgia, 'Times New Roman', serif; font-size: 16px; line-height: 1.6; max-width: 70ch; margin-bottom: 12px; }
+ul, ol { font-family: Georgia, 'Times New Roman', serif; font-size: 15px; line-height: 1.55; max-width: 72ch; margin: 8px 0 16px 22px; }
+li { margin-bottom: 7px; }
+code, pre {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 13px;
+}
+code { background: var(--paper-dark); padding: 1px 5px; border-radius: 4px; color: var(--blue); }
+pre {
+  border: 1px solid var(--rule-faint); background: rgba(255,255,255,0.25);
+  padding: 14px; overflow-x: auto; margin: 12px 0 16px; border-radius: 8px;
+}
+.flow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.pill {
+  border: 1px solid var(--rule-faint); background: var(--paper-dark);
+  padding: 6px 9px; font-size: 10px; border-radius: 999px;
+}
+.sheet-footer {
+  border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-faint); display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between;
+}
+a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+@media (min-width: 760px) {
+  body {
+    background-image:
+      linear-gradient(rgba(26, 35, 50, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26, 35, 50, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .frame { padding: 40px 32px 52px; }
+  .grid { grid-template-columns: repeat(4, 1fr); }
+  h2 { font-size: 30px; }
+}
+@media print {
+  body { background: white; background-image: none; font-size: 11pt; }
+  .paxiom-bar { display: none; }
+  .frame { max-width: none; padding: 0; }
+  section, .card, .status { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="paxiom-bar" role="banner">
+  <div class="paxiom-bar-inner">
+    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom home">
+      <svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="2"/><path d="M32 10L54 48H10L32 10Z" stroke="currentColor" stroke-width="2"/><circle cx="32" cy="32" r="7" fill="currentColor"/></svg>
+      <span>Paxiom</span>
+    </a>
+    <nav class="paxiom-bar-nav" aria-label="Primary">
+      <a href="/docs.html">Docs</a>
+      <a class="active" href="/services.html">Services</a>
+      <a href="/status.html">Status</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </div>
+</div>
+
+<main class="frame">
+  <header class="title-block">
+    <div class="project-mark">Service A-202</div>
+    <h1>Sync Committee Verification <em>as a paid API.</em></h1>
+    <p class="strap">A small x402-ready endpoint that verifies Ethereum beacon-chain sync-committee evidence, is prepared for hosted-facilitator settlement, and returns a signed evidence packet that can be inspected later.</p>
+  </header>
+
+  <div class="status" role="note">
+    <div class="label">Pre-wallet posture</div>
+    <p>The endpoint code, MCP metadata, response signing, fail-closed checks, and public documentation are prepared for the Base Sepolia rehearsal. No production wallet has been configured yet. The next public step is publishing the deployed Ed25519 public key, then running a real testnet x402 payment through the hosted facilitator.</p>
+  </div>
+
+  <div class="grid" aria-label="API launch facts">
+    <div class="card">
+      <div class="label">Testnet price</div>
+      <div class="value">$0.001</div>
+      <p>Base Sepolia rehearsal for wallet, client, and facilitator flow.</p>
+    </div>
+    <div class="card">
+      <div class="label">Mainnet pilot</div>
+      <div class="value">$0.01</div>
+      <p>Base mainnet USDC, after rehearsal and receiving wallet checks.</p>
+    </div>
+    <div class="card">
+      <div class="label">Payment flow</div>
+      <div class="value">x402</div>
+      <p>Hosted facilitator first; self-host only if revenue or reliability justifies it.</p>
+    </div>
+    <div class="card">
+      <div class="label">Discovery</div>
+      <div class="value">MCP</div>
+      <p>Tool metadata is public, while the verification route is paid.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="eyebrow">What the endpoint does</div>
+    <h2>It turns a beacon-chain verification into a machine-payable fact.</h2>
+    <p>The API accepts a slot, block root, parent root, sync-committee bits, and aggregate signature. It validates the request shape, verifies the sync-committee evidence through the A-202 device path, records an evidence packet, and returns the verification response.</p>
+    <p>The commercial point is not that Paxiom replaces every RPC or data source. The point is that an agent, tool, or compliance workflow can pay for a specific verified claim and receive enough evidence to audit the answer later.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Who this is for</div>
+    <h2>The first customer is Paxiom's own clearing layer.</h2>
+    <p>Paxiom needs verified Ethereum consensus attestations before it can settle cross-chain obligations. A-202 is the first rehearsal interface for that internal need: HTTP for integration, x402 for payment, MCP for agent discovery, and a Paxiom platform signature for downstream audit trails.</p>
+    <p>The second customer is an outside agent, monitor, service, or compliance workflow that wants a paid, signed, replayable Ethereum sync-committee attestation without integrating BLS verification. This is not for light clients, consensus client operators, or teams that only want commodity BLS arithmetic.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Revenue flow</div>
+    <h2>Payment gates the work, not the mock.</h2>
+    <div class="flow" aria-label="Request flow">
+      <span class="pill">verify payment</span>
+      <span class="pill">run sync-committee work</span>
+      <span class="pill">sign attestation</span>
+      <span class="pill">settle payment</span>
+      <span class="pill">return result</span>
+    </div>
+    <p>The service refuses to start with both <code>REQUIRE_X402=1</code> and <code>MOCK_DEVICE=1</code>. Mock responses are useful for local testing, but they are never billable. The paid path starts with <code>BLS_DEVICE_VIA_SUBPROCESS=1</code> and moves to the HyperBEAM-hosted <code>~bls-sync-committee@1.0</code> device after registration is proven.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Rehearsal standard</div>
+    <h2>Success is defined before the wallet is configured.</h2>
+    <p>The Base Sepolia rehearsal only counts as successful when a public unpaid call returns a valid <code>402</code> challenge, an MCP client can discover the tool metadata, a funded testnet wallet produces a real <code>PAYMENT-SIGNATURE</code>, the paid retry returns <code>200</code> with <code>PAYMENT-RESPONSE</code>, and the returned platform signature verifies against the published well-known key.</p>
+    <p>Partial outcomes are not treated as launch success. A working <code>402</code> challenge without settlement is only a gate test. A signed local response without a facilitator <code>PAYMENT-RESPONSE</code> is only a service test. A paid response without <code>X-PAXIOM-SIGNATURE</code> is not an A-202 attestation.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Failure posture</div>
+    <h2>Unavailable is safer than fake.</h2>
+    <p>If malformed traffic crashes the subprocess path, the rollback is to remove public routing or disable x402 exposure, restart the service under its supervisor, preserve logs and request hashes, and reproduce the crash locally. The rollback is never <code>MOCK_DEVICE</code> on a billable route.</p>
+    <p>If facilitator integration is broken, the symptom is concrete: a paid retry does not produce <code>200</code>, <code>PAYMENT-RESPONSE</code>, and <code>X-PAXIOM-SIGNATURE</code> together. That state blocks the rehearsal. It is not papered over as a partial success.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">API surface</div>
+    <h2>The public surface is intentionally small.</h2>
+    <pre><code>POST /v1/sync-committee/verify
+GET  /healthz
+GET  /mcp/tools.json
+GET  /mcp/paxiom-sync-committee.json
+GET  /.well-known/paxiom-platform-pubkey.json</code></pre>
+    <p>The paid route uses x402 v2 headers: <code>PAYMENT-SIGNATURE</code> on the retry, <code>PAYMENT-REQUIRED</code> on the challenge, and <code>PAYMENT-RESPONSE</code> after settlement. Unpaid calls receive <code>402</code> with payment requirements. Disabled or stubbed payment paths are labeled as not settled; MCP metadata remains public so agents can discover the tool before payment.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Signed answer</div>
+    <h2>The product is the attestation, not the arithmetic.</h2>
+    <p>Every paid <code>200</code> response includes a <code>signed_payload</code>, <code>platform_signature</code>, <code>X-PAXIOM-SIGNATURE</code>, and <code>X-PAXIOM-SIGNED-PAYLOAD-HASH</code>. Paxiom signs <code>sha256(canonical_json(signed_payload))</code> with Ed25519. Before signing, the service rejects a device response whose slot does not match the request, preventing a verifier result for one slot from being wrapped as a response for another. The public key is published at <code>/.well-known/paxiom-platform-pubkey.json</code>.</p>
+    <p>The well-known key is the verification anchor. If it rotates, the replacement key is published with a new <code>key_id</code>, a <code>rotated_at</code> timestamp, and the previous key retained for old response verification.</p>
+    <pre><code>// JavaScript
+const keyDoc = await fetch('/.well-known/paxiom-platform-pubkey.json').then(r => r.json());
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const canonicalJson = v => Array.isArray(v) ? `[${v.map(canonicalJson).join(',')}]`
+  : v && typeof v === 'object'
+    ? `{${Object.keys(v).sort().map(k => `${JSON.stringify(k)}:${canonicalJson(v[k])}`).join(',')}}`
+    : JSON.stringify(v);
+const key = await crypto.subtle.importKey('spki', b64(keyDoc.public_key), 'Ed25519', false, ['verify']);
+const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonicalJson(response.signed_payload)));
+const ok = await crypto.subtle.verify('Ed25519', key, b64(response.platform_signature), digest);</code></pre>
+    <pre><code># Python
+import base64, hashlib, json
+from cryptography.hazmat.primitives import serialization
+canonical = json.dumps(response["signed_payload"], sort_keys=True, separators=(",", ":")).encode()
+digest = hashlib.sha256(canonical).digest()
+pub = serialization.load_der_public_key(base64.b64decode(key_doc["public_key"]))
+pub.verify(base64.b64decode(response["platform_signature"]), digest)</code></pre>
+  </section>
+
+  <section>
+    <div class="eyebrow">Boundless</div>
+    <h2>A-202 is packaged as an agent-payable attestation endpoint.</h2>
+    <p>Boundless proves Ethereum consensus through a serverless ZK marketplace. Paxiom A-202 is a narrower product surface: pay per HTTP call, discover it through MCP, receive a Paxiom-signed attestation, and inspect the evidence packet. Boundless could package this shape too; A-202's claim is that it is being hardened now for agent and compliance workflows.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Why this matters</div>
+    <h2>A modest endpoint is still a meaningful first revenue test.</h2>
+    <p>A-202 is not the whole Paxiom quest. It is the smallest credible paid proof service: narrow input, clear output, existing real verification evidence, low price, and a route to MCP/x402 consumption. If it can take a real payment and return a real verified result, Paxiom has crossed from project narrative into revenue-capable infrastructure.</p>
+  </section>
+
+  <footer class="sheet-footer">
+    <div>Paxiom - paxiom.org</div>
+    <div>Sheet A-202 - Sync Committee API - 2026.05.03</div>
+  </footer>
+</main>
+</body>
+</html>

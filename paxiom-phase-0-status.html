@@ -149,7 +149,7 @@ a:hover { color: var(--red); }
 
 <div class="page-mark">Sheet PXM-G-100</div>
 <h1 class="page-title">Three gates. <em>One substrate.</em></h1>
-<p class="page-strap">Phase 0 closes by evidence, not by assertion. S.01 and S.02 now have operator evidence on real infrastructure. S.03 remains open while Paxiom splits the L1 reconstruction path into hot MPT witness retrieval from Erigon/Reth, permanent evidence storage on Load Network/Arweave, and AO-replayable verification.</p>
+<p class="page-strap">Phase 0 closes by evidence, not by assertion. S.01 and S.02 now have operator evidence on real infrastructure. S.03 remains open while Paxiom moves toward its own Ethereum historical-state proof archive: Erigon/Reth for sovereign MPT witness retrieval, encrypted Arweave evidence for durable storage, and AO-assisted proof work where data exposure is acceptable. Load/Ultraviolet remains useful reference work, not a dependency to wait on.</p>
 
 <!-- Gate S.01 -->
 <article class="gate-card closed" id="s01">
@@ -232,32 +232,38 @@ curl -X POST localhost:8080/v1/sync-committee/verify \
 <article class="gate-card operator-pending" id="s03">
   <div class="gate-card-header">
     <span class="gate-id">A-120 / S.03 · Ethereum L1 archival reconstruction path</span>
-    <span class="gate-status">Active design · live witness + permanent evidence split</span>
+    <span class="gate-status">Active design · Paxiom-owned proof archive</span>
   </div>
   <div class="gate-card-body">
-    <div class="gate-card-title">No unverifiable claims, sharpened into two paths.</div>
-    <p class="gate-card-acceptance">Open acceptance target: an Ethereum L1 historical state query verifies end-to-end against a sync-committee-trusted block header. The hot path uses Erigon or Reth to serve <code>eth_getProof</code>/MPT witnesses; the cold path stores headers, proof packets, and L1 evidence on Load Network/Arweave so the derivation remains permanently auditable and replayable.</p>
+    <div class="gate-card-title">No unverifiable claims, sharpened into two live-read paths.</div>
+    <p class="gate-card-acceptance">Open acceptance target: an Ethereum L1 historical state query verifies end-to-end against a sync-committee-trusted block header. The gate-closing sovereignty path is Erigon/Reth serving local <code>eth_getProof</code>/MPT witnesses. Proof packets and L1 evidence are written to a Paxiom-owned archive: encrypted Arweave storage, Paxiom-controlled indexing and keys, and AO-assisted proof work where the data can safely be revealed.</p>
 
     <div class="gate-card-grid">
       <div class="gate-card-cell">
         <div class="label">Evidence</div>
         <ul>
           <li>L1 commitment retained: the substrate target remains Ethereum L1 mainnet data, not a substitute chain surface.</li>
-          <li>Load Network remains in-scope as the permanent evidence and cold reconstruction layer, not the live trie-node database.</li>
-          <li>Next evidence target: a concrete proof packet for one Ethereum L1 historical storage query, with MPT witness verification against a sync-committee-trusted state root.</li>
+          <li>Erigon/Reth is the institutional path: local witness retrieval with no upstream RPC dependency.</li>
+          <li>Helios-on-HyperBEAM remains useful as a verifiable transport experiment, but it is no longer the dependency Paxiom waits on for S.03.</li>
+          <li>Load/Ultraviolet remains useful reference work; Paxiom's working path is its own encrypted Arweave proof archive and verification pipeline.</li>
+          <li>Next evidence target: verify one Ethereum L1 historical storage query through local Erigon/Reth witnesses against a sync-committee-trusted state root, then write the proof packet to encrypted Arweave storage with a Paxiom index entry.</li>
           <li>Feasibility target: measure Turbo sub-100 KiB item coverage for recent L1 transactions/receipts before committing the evidence-stream format.</li>
         </ul>
       </div>
       <div class="gate-card-cell">
         <div class="label">Operator command</div>
-<pre class="cmd"># hot path target
+<pre class="cmd"># Helios path under evaluation
+curl https://eth.rpc.rs \
+  -d '{"method":"eth_getProof",...}'
+
+# sovereignty path target
 eth_getProof(address, [slot], block)
-# verify account + storage proof against
-# S.02 sync-committee-trusted state root
+# from Erigon/Reth; verify account + storage
+# proof against S.02 sync-committee-trusted root
 
 # cold path target
 # write proof packet + header + evidence tags
-# to Load Network/Arweave for replay.</pre>
+# to encrypted Arweave storage for replay.</pre>
       </div>
     </div>
   </div>
@@ -273,7 +279,7 @@ eth_getProof(address, [slot], block)
   <div class="section-mark-text">G-200 · Why this page exists</div>
   <h2>The discipline of evidence.</h2>
   <p>The build map (<a href="/paxiom-build-map.html">PXM-R-100</a>) now distinguishes closed operator evidence from unresolved substrate decisions. This page is the audit trail underneath those flips: each gate names its acceptance criteria, points at the source of evidence, and quotes the exact command or evidence artifact that closes the live side.</p>
-  <p>S.01 and S.02 are closed by operator evidence. S.03 is deliberately not closed yet: the current design keeps Load Network in the architecture, but uses it where it fits best — permanent evidence and cold replay — while a local archive node supplies the live MPT witness data.</p>
+  <p>S.01 and S.02 are closed by operator evidence. S.03 is deliberately not closed yet: the gate closes only when Paxiom proves a live L1 state query against a sync-committee-trusted root and preserves the evidence trail in the Paxiom-owned archive. Erigon/Reth remains the fallback-free sovereignty path for high-stakes reads.</p>
   <p><strong>About the evidence links.</strong> The links above point at the companion repos <code>k-luecke/paxiom</code> and <code>k-luecke/bls-verifier</code> or at named local evidence artifacts. They resolve when those repos and evidence paths are published; until then, the public claim is limited to the specific operator artifacts named here.</p>
 </div>
 

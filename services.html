@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
-<title>Paxiom · Services</title>
-<meta name="description" content="Paxiom Phase 1 Service Schedule — draft pricing assumptions, target volumes, and what each service does.">
+<title>Paxiom Â· Services</title>
+<meta name="description" content="Paxiom Phase 1 Service Schedule — testnet/reference proof services, signed envelopes, draft pricing, and current trust boundaries.">
 <meta property="og:title" content="Paxiom · Services">
-<meta property="og:description" content="Paxiom Phase 1 Service Schedule — draft pricing assumptions, target volumes, and what each service does.">
+<meta property="og:description" content="Paxiom Phase 1 Service Schedule — testnet/reference proof services, signed envelopes, draft pricing, and current trust boundaries.">
 <meta property="og:url" content="https://paxiom.org/services.html">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
@@ -234,7 +234,7 @@ a:hover { color: var(--red); }
   .paxiom-bar-nav { gap: 14px; font-size: 9.5px; letter-spacing: 0.12em; }
 }
 
-/* Softened corners — binder pages only */
+/* Softened corners â€” binder pages only */
 .btn,
 .doc-card, .doc-card-header,
 .build-state, .build-state-header, .build-cell,
@@ -264,7 +264,7 @@ a:hover { color: var(--red); }
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
 <div class="paxiom-bar">
   <div class="paxiom-bar-inner">
-    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
+    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom â€” home">
       <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
       <span>Paxiom</span>
     </a>
@@ -281,38 +281,38 @@ a:hover { color: var(--red); }
   <header class="title-block">
     <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg></div>
     <div>
-      <div class="project-mark">Paxiom · Services</div>
+      <div class="project-mark">Paxiom Â· Services</div>
       <div class="project-title">Phase 1 Service Schedule</div>
-      <div class="project-subtitle">Five services. Draft pricing. Pending Phase 1 launch.</div>
+      <div class="project-subtitle">Five services. Draft pricing. Testnet/reference hardening.</div>
     </div>
     <div class="meta">
-      <span>Project No. PXM-001</span><span class="sep">·</span>
-      <span>Sheet PXM-V-100</span><span class="sep">·</span>
-      <span>Updated 2026.05.05</span>
+      <span>Project No. PXM-001</span><span class="sep">Â·</span>
+      <span>Sheet PXM-V-100</span><span class="sep">Â·</span>
+      <span>Updated 2026.05.10</span>
     </div>
   </header>
 
   <section class="page-header">
     <div class="mark">Sheet PXM-V-100</div>
     <h1>What ships <em>in Phase 1.</em></h1>
-    <p class="strap">Five services that land first. Each one targets a specific use case in agent commerce, has a working price assumption, and a target volume that informs the cost model. None are live yet. The schedule below is the published intent, not a production offer.</p>
+    <p class="strap">Five services that land first. Each one targets a specific use case in agent commerce, has a working price assumption, and returns a signed evidence envelope. The current branch is testnet/reference hardening, not a production settlement claim.</p>
   </section>
 
   <div class="status-banner" role="note">
-    <span class="label">Status · Draft pricing assumptions, not production offer</span>
-    <span class="text">All five services are <em>pending Phase 1 launch.</em> Prices below are the working numbers used in the project's cost model. They will be revised after live workload data is observed. The schedule is published so operators evaluating the platform can compare against alternatives, not as a binding price list.</span>
+    <span class="label">Status Â· Phase 1 testnet/reference hardening</span>
+    <span class="text">A-202 now rejects slot-mismatched device responses before signing an envelope. A-201 and A-205 are being wired to a local Erigon proof source while the Google Drive cold warehouse syncs. Strict deployments refuse mock paths and unsigned response envelopes. Disabled or stubbed payment paths are labeled as such and do not claim settlement. Prices below remain pilot assumptions.</span>
   </div>
 
   <section class="schedule" aria-label="Phase 1 service schedule">
 
     <article class="service-card">
       <div class="service-card-header">
-        <span class="id">Service 01 · A-201</span>
+        <span class="id">Service 01 Â· A-201</span>
         <span class="pending">Pending Phase 1 Launch</span>
       </div>
       <div class="service-card-body">
         <div class="title">Slot Storage Proofs</div>
-        <p class="desc">A ZK proof that a specific contract storage slot held a specific value at a specific block. The canonical "verified state" service: hot MPT witnesses from an archive node, verified against a sync-committee-trusted header, with proof packets and evidence stored permanently on Load Network/Arweave.</p>
+        <p class="desc">A proof packet that a specific contract storage slot held a specific value at a specific block. The canonical "verified state" service: MPT witnesses are checked against an Ethereum state root, then packaged into a signed response envelope. The current rehearsal path uses local Erigon <code>eth_getProof</code> witnesses; the archive direction is encrypted proof material on Arweave with Paxiom-controlled indexing and keys.</p>
         <div class="service-card-meta">
           <div class="cell"><span class="label">Price (draft)</span><span class="value price">$1.00 / proof</span></div>
           <div class="cell"><span class="label">Target Volume</span><span class="value">~800 / mo</span></div>
@@ -324,29 +324,30 @@ a:hover { color: var(--red); }
 
     <article class="service-card">
       <div class="service-card-header">
-        <span class="id">Service 02 · A-202</span>
-        <span class="pending">Pending Phase 1 Launch</span>
+        <span class="id">Service 02 Â· A-202</span>
+        <span class="pending">Base Sepolia rehearsal next</span>
       </div>
       <div class="service-card-body">
         <div class="title">Sync Committee Verification</div>
-        <p class="desc">A proof that the Ethereum beacon chain sync committee for a given slot signed a specific header. Lower complexity than slot storage proofs, faster path to launch, broad applicability across cross-chain applications and light clients.</p>
+        <p class="desc">A paid x402 endpoint for verifying that an Ethereum beacon-chain sync committee signed a specific header. This is the first revenue rehearsal: subprocess device runtime, Ed25519 platform signature, public MCP metadata, explicit payment/notary truth fields, and pre-signing rejection when the device response slot does not match the request.</p>
         <div class="service-card-meta">
-          <div class="cell"><span class="label">Price (draft)</span><span class="value price">$0.50 / verification</span></div>
-          <div class="cell"><span class="label">Target Volume</span><span class="value">~1,500 / mo</span></div>
-          <div class="cell"><span class="label">Settlement</span><span class="value">x402 / Base / USDC</span></div>
-          <div class="cell"><span class="label">Build Order</span><span class="value">First service to ship</span></div>
+          <div class="cell"><span class="label">Testnet</span><span class="value price">$0.001 / call</span></div>
+          <div class="cell"><span class="label">Mainnet Pilot</span><span class="value price">$0.01 / call</span></div>
+          <div class="cell"><span class="label">Settlement</span><span class="value">x402 / Base USDC</span></div>
+          <div class="cell"><span class="label">Runtime</span><span class="value">Subprocess first</span></div>
         </div>
+        <a class="read-more" href="/sync-committee-api.html">Open API sheet -&gt;</a>
       </div>
     </article>
 
     <article class="service-card">
       <div class="service-card-header">
-        <span class="id">Service 03 · A-203</span>
+        <span class="id">Service 03 Â· A-203</span>
         <span class="pending">Pending Phase 1 Launch</span>
       </div>
       <div class="service-card-body">
         <div class="title">Cross-Chain Message Verification</div>
-        <p class="desc">Bridge-grade verification of messages originating on chain A, with proofs verifiable on chain B. The Kelp DAO incident is the reference case — what would have prevented that attack is what this service provides.</p>
+        <p class="desc">Bridge-grade verification of messages originating on chain A, with proofs verifiable on chain B. The Kelp DAO incident is the reference case â€” what would have prevented that attack is what this service provides.</p>
         <div class="service-card-meta">
           <div class="cell"><span class="label">Price (draft)</span><span class="value price">$3.00 / attestation</span></div>
           <div class="cell"><span class="label">Target Volume</span><span class="value">~200 / mo</span></div>
@@ -358,7 +359,7 @@ a:hover { color: var(--red); }
 
     <article class="service-card">
       <div class="service-card-header">
-        <span class="id">Service 04 · A-204</span>
+        <span class="id">Service 04 Â· A-204</span>
         <span class="pending">Pending Phase 1 Launch</span>
       </div>
       <div class="service-card-body">
@@ -375,12 +376,12 @@ a:hover { color: var(--red); }
 
     <article class="service-card">
       <div class="service-card-header">
-        <span class="id">Service 05 · A-205</span>
+        <span class="id">Service 05 Â· A-205</span>
         <span class="pending">Pending Phase 1 Launch</span>
       </div>
       <div class="service-card-body">
         <div class="title">Verified Historical State</div>
-        <p class="desc">"What was the state of contract X at block N six months ago?" Verified answers using archive-node MPT witnesses plus Load Network/Arweave evidence replay. Most existing providers focus on recent state because that's what's easily available; permanently auditable historical state is rare in the existing landscape.</p>
+        <p class="desc">"What was the state of contract X at block N six months ago?" Verified answers using MPT witnesses and replayable evidence. The working direction is a Paxiom-owned historical proof archive: local Erigon/Reth witnesses first, encrypted Arweave storage next, AO-assisted proof work where safe, and local verification against Ethereum roots before a customer-facing envelope is signed.</p>
         <div class="service-card-meta">
           <div class="cell"><span class="label">Price (draft)</span><span class="value price">$2.00 / query</span></div>
           <div class="cell"><span class="label">Target Volume</span><span class="value">~300 / mo</span></div>
@@ -393,21 +394,23 @@ a:hover { color: var(--red); }
   </section>
 
   <section class="subsection">
-    <div class="subsection-mark">V-200 · What's included</div>
+    <div class="subsection-mark">V-200 Â· What's included</div>
     <h2>What you get with every service.</h2>
     <ul>
       <li>A signed response from the platform's published key, allowing independent verification that the response originated from Paxiom.</li>
-      <li>A permanent audit record written to AO/Arweave, retrievable by any party for the life of the network.</li>
+      <li>Explicit truth fields for payment, settlement, notary status, and reference/testnet mode so downstream consumers do not confuse transport success with verified settlement.</li>
+      <li>A replayable evidence trail. Where evidence is sensitive or commercially useful, proof material can be encrypted before permanent Arweave storage so the public storage layer does not become a free bypass around Paxiom.</li>
       <li>The verification artifact (ZK proof, attestation, simulation receipt) in the format specified for the service.</li>
       <li>x402-native payment flow with no API key provisioning, no contract negotiation, and no relationship requirement.</li>
     </ul>
   </section>
 
   <section class="subsection">
-    <div class="subsection-mark">V-300 · What's not included</div>
+    <div class="subsection-mark">V-300 Â· What's not included</div>
     <h2>What the platform <em>doesn't</em> do.</h2>
     <ul>
       <li>No custody of customer assets. The platform holds no wallets, balances, or tokens belonging to customers.</li>
+      <li>No production settlement claim in the current testnet/reference phase. Disabled or stubbed x402 paths remain explicitly labeled.</li>
       <li>No SLA in v1. Service level commitments will be added as Phase 1 services accumulate operational track record.</li>
       <li>No enterprise features (single sign-on, dedicated tenancy, custom retention) at the launch tier. These belong to later phases.</li>
       <li>No chargebacks or dispute resolution. Settlement is final at the protocol level.</li>
@@ -416,16 +419,17 @@ a:hover { color: var(--red); }
   </section>
 
   <section class="subsection">
-    <div class="subsection-mark">V-400 · Beyond Phase 1</div>
+    <div class="subsection-mark">V-400 Â· Beyond Phase 1</div>
     <h2>What's coming, but not yet.</h2>
-    <p>Phase 2 expands into ZK proofs of computation on private data — HIPAA-compliant medical workflows, financial-data verification with regulatory transparency. Phase 3 adds verified AI inference. Phase 4 extends into IoT telemetry. Phase 5 completes the migration to post-quantum proving systems.</p>
+    <p>Phase 2 expands into ZK proofs of computation on private data â€” HIPAA-compliant medical workflows, financial-data verification with regulatory transparency. The proof archive becomes part of the moat: Arweave supplies durable storage, AO supplies subsidized parallel compute, and Paxiom keeps the index, keys, verification pipeline, and paid customer interface.</p>
+    <p>Phase 3 adds verified AI inference. Phase 4 extends into IoT telemetry. Phase 5 completes the migration to post-quantum proving systems.</p>
     <p>None of these are part of the schedule above. Each comes online in its own phase, with its own pricing model, on its own timeline. The <a href="/paxiom-project-narrative.html">Project Narrative</a> covers the longer arc; this page covers what ships first.</p>
   </section>
 
   <footer class="sheet-footer">
-    <div>Paxiom · paxiom.org</div>
-    <div>Public · Rev. A · 2026.05.05</div>
-    <div class="sheet-id">PXM-V-100 · Service Schedule</div>
+    <div>Paxiom Â· paxiom.org</div>
+    <div>Public · Rev. A · 2026.05.10</div>
+    <div class="sheet-id">PXM-V-100 Â· Service Schedule</div>
   </footer>
 
 </div>
