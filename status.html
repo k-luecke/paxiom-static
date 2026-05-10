@@ -3,21 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <title>Paxiom · Status</title>
 <meta name="description" content="Current state, build log, known constraints, and open questions for the Paxiom build.">
-<meta property="og:title" content="Paxiom · Status">
-<meta property="og:description" content="Current state, build log, known constraints, and open questions for the Paxiom build.">
-<meta property="og:url" content="https://paxiom.org/status.html">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-
+:root {
+  --paper: #F5F1E8; --paper-dark: #EDE6D3; --ink: #1A2332; --ink-mid: #3A4555;
+  --ink-faint: #6B7280; --rule-faint: #B8AE96; --blue: #1E3A5F; --red: #8B2E1F; --amber: #B8860B;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
@@ -281,11 +278,10 @@ a:hover { color: var(--red); }
 </style>
 </head>
 <body>
-<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
 <div class="paxiom-bar">
   <div class="paxiom-bar-inner">
     <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
-      <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
+      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg>
       <span>Paxiom</span>
     </a>
     <nav class="paxiom-bar-nav" aria-label="Primary">
@@ -299,7 +295,7 @@ a:hover { color: var(--red); }
 <div class="frame">
 
   <header class="title-block">
-    <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg></div>
+    <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg></div>
     <div>
       <div class="project-mark">Paxiom · Status</div>
       <div class="project-title">Status</div>
@@ -308,7 +304,7 @@ a:hover { color: var(--red); }
     <div class="meta">
       <span>Project No. PXM-001</span><span class="sep">·</span>
       <span>Sheet PXM-S-100</span><span class="sep">·</span>
-      <span>Last Updated 2026.05.06</span>
+      <span>Last Updated 2026.05.10</span>
     </div>
   </header>
 
@@ -321,7 +317,7 @@ a:hover { color: var(--red); }
   <section class="status-key" aria-labelledby="key-status">
     <div class="status-key-header">
       <span id="key-status">Key Status</span>
-      <span>2026.05.06</span>
+      <span>2026.05.10</span>
     </div>
     <div class="status-key-grid">
       <div class="status-key-cell">
@@ -330,11 +326,11 @@ a:hover { color: var(--red); }
       </div>
       <div class="status-key-cell">
         <div class="label">Primary Objective</div>
-        <div class="value">A working reference path for proof work, audit relay, and service settlement.</div>
+        <div class="value">A working testnet path for proof work, signed service envelopes, and Ethereum-root-verified historical state from Paxiom-controlled infrastructure.</div>
       </div>
       <div class="status-key-cell">
         <div class="label">Funding</div>
-        <div class="value">Self-funded. Day job pays the rent.</div>
+        <div class="value">Self-funded. Day job pays the rent; internal operator tooling may help fund the build, but is not a public product.</div>
       </div>
     </div>
   </section>
@@ -355,6 +351,9 @@ a:hover { color: var(--red); }
         <li>AO compliance process loaded with real events and seeded with test data</li>
         <li>First mainnet AO process storing real Ethereum consensus data</li>
         <li>Working proof generation for slot storage and Uniswap V3 pool state predicates (substrate work for Phase 1 Service 01)</li>
+        <li>Phase 1 service tests passing across sync committee, load-network, service, and UI surfaces</li>
+        <li>A-202 slot-mismatch rejection added before response-envelope signing</li>
+        <li>Strict deployment checks refuse mock paths and unsigned response envelopes</li>
       </ul>
     </div>
 
@@ -364,7 +363,11 @@ a:hover { color: var(--red); }
         <li>Reference implementation of Phase 1 services</li>
         <li>AO dispatcher experiments and proof job routing</li>
         <li>Public repository structure and service metadata</li>
-        <li>Sync committee verifier rebuild after laptop migration</li>
+        <li>Sync committee subprocess harness proof and HyperBEAM device dispatch hardening</li>
+        <li>Paxiom-owned proof archive design: encrypted Arweave evidence, Paxiom-controlled index and keys, AO-assisted proof work</li>
+        <li>Local Erigon archive sync into a Google Drive-backed cold warehouse with a local hot tier for active work</li>
+        <li>A-201 and A-205 source-selection path for local Erigon <code>eth_getProof</code> witnesses</li>
+        <li>Private operator tooling for internal capital rehearsal; this remains separate from the public proof-service catalog</li>
         <li>Site v1 — public binder structure (this page is part of that work)</li>
       </ul>
     </div>
@@ -397,8 +400,11 @@ a:hover { color: var(--red); }
       <div class="list-label">Not Claimed</div>
       <ul>
         <li>No production deployment yet — testnet and reference work only</li>
+        <li>No production settlement claim — disabled or stubbed payment paths remain labeled as not settled</li>
+        <li>No public proof archive bypass — commercially useful historical proof bundles are intended to be encrypted before Arweave storage</li>
         <li>No custody offering — the platform does not hold customer assets</li>
         <li>No mainnet-scale reliability — load characteristics are unverified at production volume</li>
+        <li>No public trading, arbitrage, yield, or investment product — internal operator tooling is not a customer-facing service</li>
         <li>No regulated custody attestations or third-party security audit</li>
         <li>No enterprise SLA — service level commitments will be added as Phase 1 services mature</li>
         <li>No fully autonomous service market participation — ERC-8183 marketplace integration is forward-compatible but not active</li>
@@ -419,10 +425,23 @@ a:hover { color: var(--red); }
       </div>
 
       <div class="log-entry">
+        <div class="log-date">2026.05.10</div>
+        <ul>
+          <li>A-202 hardened against downstream-consumer confusion by rejecting slot-mismatched device responses before platform signing</li>
+          <li>Service envelope posture tightened: payment, settlement, notary, and mock/reference states remain explicit</li>
+          <li>Public direction updated from waiting on Load/Ultraviolet to building a Paxiom-owned historical proof archive over encrypted Arweave evidence and AO-assisted compute</li>
+          <li>Erigon started against a Google Drive-backed cold warehouse; initial archive sync is in progress, not yet a production archive claim</li>
+          <li>A local Erigon proof-source adapter now maps <code>eth_getBlockByNumber</code> and <code>eth_getProof</code> into Paxiom's existing MPT verification pipeline for A-201/A-205 rehearsal</li>
+          <li>Internal operator-capital tooling reached a Base path-validation milestone with live funds; this remains private infrastructure, not a public product surface</li>
+          <li>RPC providers remain transport, not authority; Ethereum roots and locally verified proofs are the trust anchor</li>
+        </ul>
+      </div>
+
+      <div class="log-entry">
         <div class="log-date">2026.05.06</div>
         <ul>
           <li>Audit resolution closed across all four repos — every Critical, High, Medium, Low, and Info finding addressed (181 total). Tracker reconciled with code state.</li>
-          <li>Resolution methodology: 5+1+1 panel (5 implementers + asshole + moderator) for architectural items; cluster-PR for mechanical hygiene. Multi-implementer consensus reversed by the asshole on ~12 panels where the unanimous proposal had a real defect.</li>
+          <li>Resolution methodology used parallel implementation review plus a red-team reviewer and moderator for architectural items, with cluster PRs for mechanical hygiene.</li>
           <li>Open follow-ups remain (env-floor + UI-mutates cluster, font self-host, six paxiom UI surfaces) — explicitly scoped, not audit-blocking.</li>
         </ul>
       </div>
@@ -472,7 +491,7 @@ a:hover { color: var(--red); }
 
   <footer class="sheet-footer">
     <div>Paxiom · paxiom.org</div>
-    <div>Public · Rev. A · 2026.05.06</div>
+    <div>Public · Rev. A · 2026.05.10</div>
     <div class="sheet-id">PXM-S-100 · Status</div>
   </footer>
 
