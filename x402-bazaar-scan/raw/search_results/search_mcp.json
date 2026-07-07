@@ -1,0 +1,14 @@
+{
+  "term": "mcp",
+  "source": "offline-corpus (catalog snapshot + awesome-x402)",
+  "catalog_matches": [],
+  "ecosystem_matches": [
+    "@tensorfeed/x402-base-mcp",
+    "skill-audit / tokenguard / contract-guard",
+    "ShieldAPI MCP",
+    "Agent402",
+    "Aigregator",
+    "ZKProofport MCP",
+    "ALTER MCP"
+  ]
+}

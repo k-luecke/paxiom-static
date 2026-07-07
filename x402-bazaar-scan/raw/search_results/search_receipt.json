@@ -1,0 +1,22 @@
+{
+  "term": "receipt",
+  "source": "offline-corpus (catalog snapshot + awesome-x402)",
+  "catalog_matches": [],
+  "ecosystem_matches": [
+    "swornly",
+    "Mycelium Trails",
+    "PayPerByte",
+    "@larkinsh/x402",
+    "@tensorfeed/x402-base-mcp",
+    "SYNTHORA md-extract",
+    "TWZRD Agent Intel",
+    "AI Growth (verification)",
+    "Agent Passport System (APS)",
+    "SafeAgent Execution Guard",
+    "Boundary Guard",
+    "Hive Civilization",
+    "presidio-hardened-x402",
+    "romefeller.app",
+    "Agent Commerce Desk"
+  ]
+}

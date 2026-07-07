@@ -1,0 +1,18 @@
+{
+  "term": "security",
+  "source": "offline-corpus (catalog snapshot + awesome-x402)",
+  "catalog_matches": [
+    "https://x402-secure-api.t54.ai/x402/tools/get_overall_score",
+    "https://x402-secure-api.t54.ai/x402/tools/get_webpage_trust"
+  ],
+  "ecosystem_matches": [
+    "melis.ai x402 Tools",
+    "t54.ai secure-api",
+    "skill-audit / tokenguard / contract-guard",
+    "ShieldAPI MCP",
+    "Daizyx402 Security Research",
+    "GPT55 x402",
+    "SolProbe / RugGuard / SolSignal",
+    "Sentinel"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "term": "verification",
+  "source": "offline-corpus (catalog snapshot + awesome-x402)",
+  "catalog_matches": [],
+  "ecosystem_matches": [
+    "swornly",
+    "@tensorfeed/x402-base-mcp",
+    "AI Growth (verification)",
+    "presidio-hardened-x402",
+    "romefeller.app",
+    "Ontario Protocol",
+    "Sentinel"
+  ]
+}

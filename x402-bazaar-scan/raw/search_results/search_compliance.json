@@ -1,0 +1,13 @@
+{
+  "term": "compliance",
+  "source": "offline-corpus (catalog snapshot + awesome-x402)",
+  "catalog_matches": [],
+  "ecosystem_matches": [
+    "LION",
+    "OSF - Open Source Filings",
+    "GlobalAPI",
+    "CYBERA Compliance API",
+    "Sanctions Screening API",
+    "romefeller.app"
+  ]
+}
