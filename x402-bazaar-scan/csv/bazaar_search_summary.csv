@@ -1,0 +1,40 @@
+term,bucket,catalog_matches,ecosystem_matches,total_matches,example_hosts
+receipt,direct,0,15,15,boundary-guard.vercel.app;github.com;intel.twzrd.xyz;kjtirbnxxymeumycrhqv.supabase.co;pay.hergertsynthora.com;pypi.org
+signed receipt,direct,0,3,3,github.com;intel.twzrd.xyz;www.npmjs.com
+payment receipt,direct,0,0,0,
+settlement receipt,direct,0,0,0,
+proof of delivery,direct,0,0,0,
+proof-of-delivery,direct,0,1,1,api.trustboost.dev
+delivery proof,direct,0,0,0,
+output receipt,direct,0,0,0,
+request receipt,direct,0,0,0,
+payment proof,direct,0,1,1,x402-parser-edge-mainnet.epicblubber.workers.dev
+x402 receipt,direct,0,1,1,www.npmjs.com
+receipt verification,direct,0,0,0,
+verify receipt,direct,0,0,0,
+signed response,direct,0,1,1,signals.nsgoods.org
+proof-bound receipt,direct,0,0,0,
+proof,adjacent,0,8,8,anchor-x402.com;api.trustboost.dev;api.voidly.ai;github.com;kjtirbnxxymeumycrhqv.supabase.co;n0brains.com
+verification,adjacent,0,7,7,kjtirbnxxymeumycrhqv.supabase.co;ontarioprotocol.com;pypi.org;romefeller.app;sentinel-awms.onrender.com;swornly.luci.ws
+verify,adjacent,0,5,5,api.trustboost.dev;lionx402.com;romefeller.app;swornly.luci.ws;www.npmjs.com
+attestation,adjacent,0,10,10,anchor-x402.com;api.trustboost.dev;github.com;intel.twzrd.xyz;lionx402.com;mcp.truealter.com
+provenance,adjacent,0,4,4,api.melvea.com;n0brains.com;osf-master-server.com;romefeller.app
+audit,adjacent,0,7,7,agents.melis.ai;eltociear-skill-audit.hf.space;github.com;gpt55.558686.xyz;n0brains.com;safeagent-production.up.railway.app
+compliance,adjacent,0,6,6,compliance-api-ruddy.vercel.app;globalapi.dev;lionx402.com;osf-master-server.com;romefeller.app;sanctions.hugen.tokyo
+evidence,adjacent,0,0,0,
+notary,adjacent,0,0,0,
+signature,adjacent,0,0,0,
+signed,adjacent,2,12,14,anchor-x402.com;api.questflow.ai;api.voidly.ai;github.com;intel.twzrd.xyz;mcp.truealter.com
+agent,adjacent,28,11,39,agent402.tools;agents.melis.ai;api.questflow.ai;boundary-guard.vercel.app;github.com;intel.twzrd.xyz
+mcp,adjacent,0,7,7,agent402.tools;eltociear-skill-audit.hf.space;github.com;mcp.truealter.com;www.npmjs.com;x402.aigregator.com
+blockchain data,adjacent,0,0,0,
+state proof,adjacent,0,0,0,
+storage proof,adjacent,0,0,0,
+transaction proof,adjacent,0,0,0,
+security,adjacent,2,8,10,agents.melis.ai;api.solprobe.xyz;daizyx402.com:5402;eltociear-skill-audit.hf.space;gpt55.558686.xyz;sentinel-awms.onrender.com
+vulnerability,adjacent,0,0,0,
+risk,adjacent,8,6,14,api.ping.observer;api.solprobe.xyz;boofy.fun;compliance-api-ruddy.vercel.app;data.crestsystems.ai;eltociear-skill-audit.hf.space
+oracle,adjacent,0,1,1,x402.payperbyte.io
+report,adjacent,1,1,2,anchor-x402.com;x402-secure-api.t54.ai
+api proxy,adjacent,0,0,0,
+paid api,adjacent,0,0,0,

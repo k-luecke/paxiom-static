@@ -1,0 +1,12 @@
+{
+  "term": "verify",
+  "source": "offline-corpus (catalog snapshot + awesome-x402)",
+  "catalog_matches": [],
+  "ecosystem_matches": [
+    "swornly",
+    "@tensorfeed/x402-base-mcp",
+    "TrustBoost PII Sanitizer",
+    "LION",
+    "romefeller.app"
+  ]
+}

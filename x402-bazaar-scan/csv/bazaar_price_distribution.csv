@@ -1,0 +1,6 @@
+price_bucket,n_resources
+sub-cent (<$0.01),2
+micro ($0.01-$0.10),30
+cent-scale ($0.10-$1),18
+dollar-scale ($1-$10),31
+premium (>$10),9

@@ -1,0 +1,8 @@
+{
+  "term": "oracle",
+  "source": "offline-corpus (catalog snapshot + awesome-x402)",
+  "catalog_matches": [],
+  "ecosystem_matches": [
+    "PayPerByte oracles"
+  ]
+}

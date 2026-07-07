@@ -1,0 +1,10 @@
+{
+  "term": "signed receipt",
+  "source": "offline-corpus (catalog snapshot + awesome-x402)",
+  "catalog_matches": [],
+  "ecosystem_matches": [
+    "@larkinsh/x402",
+    "TWZRD Agent Intel",
+    "Agent Passport System (APS)"
+  ]
+}

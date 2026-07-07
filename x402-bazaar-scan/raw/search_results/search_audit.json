@@ -1,0 +1,14 @@
+{
+  "term": "audit",
+  "source": "offline-corpus (catalog snapshot + awesome-x402)",
+  "catalog_matches": [],
+  "ecosystem_matches": [
+    "Mycelium Trails",
+    "SafeAgent Execution Guard",
+    "n0brains (/proof)",
+    "melis.ai x402 Tools",
+    "skill-audit / tokenguard / contract-guard",
+    "ShieldAPI MCP",
+    "GPT55 x402"
+  ]
+}

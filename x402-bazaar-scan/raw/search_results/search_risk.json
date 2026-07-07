@@ -1,0 +1,22 @@
+{
+  "term": "risk",
+  "source": "offline-corpus (catalog snapshot + awesome-x402)",
+  "catalog_matches": [
+    "https://x402-secure-api.t54.ai/x402/tools/get_overall_score",
+    "https://boofy.fun/api/mint",
+    "https://api.ping.observer/mint",
+    "https://api.ping.observer/test-mint",
+    "https://api.ping.observer/ping",
+    "https://api.ping.observer/mint-v3",
+    "https://api.ping.observer/mint-v2",
+    "https://x402-secure-api.t54.ai/x402/tools/get_webpage_trust"
+  ],
+  "ecosystem_matches": [
+    "t54.ai secure-api",
+    "skill-audit / tokenguard / contract-guard",
+    "GPT55 x402",
+    "SolProbe / RugGuard / SolSignal",
+    "CYBERA Compliance API",
+    "Crest x402 Data"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "term": "attestation",
+  "source": "offline-corpus (catalog snapshot + awesome-x402)",
+  "catalog_matches": [],
+  "ecosystem_matches": [
+    "PayPerByte",
+    "anchor-x402",
+    "SYNTHORA md-extract",
+    "TWZRD Agent Intel",
+    "TrustBoost PII Sanitizer",
+    "LION",
+    "Agent Passport System (APS)",
+    "Hive Civilization",
+    "ZKProofport MCP",
+    "ALTER MCP"
+  ]
+}
