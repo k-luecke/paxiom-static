@@ -1,0 +1,13 @@
+{
+  "name": "paxiom-receipt-verifier-runtime",
+  "version": "0.0.0-preview",
+  "private": true,
+  "type": "module",
+  "description": "Deployable public runtime for the free, offline Paxiom Receipt Verifier (paxiom.receipt.v0, developer preview). No dependencies, no secrets, no x402 gating.",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/"
+  },
+  "license": "UNLICENSED"
+}
