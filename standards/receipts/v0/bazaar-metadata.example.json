@@ -1,0 +1,30 @@
+{
+  "_comment": "EXAMPLE ONLY — NOT LIVE x402 discovery metadata. This is a template showing the shape a Paxiom x402 resource entry would take IF/when the endpoint is deployed to a public runtime and x402-settling. It is intentionally NOT placed at /.well-known/x402.json, because that path implies a live, discoverable, settling resource. The v0 verifier is currently FREE and OFFLINE with no public runtime. Do not submit this to the Bazaar until a real endpoint exists and has settled at least one payment. payTo below is a placeholder.",
+  "_status": "example / developer-preview / not-deployed",
+  "x402Version": 1,
+  "resource": "https://api.example.invalid/v1/receipt/verify",
+  "type": "http",
+  "accepts": [
+    {
+      "scheme": "exact",
+      "network": "base",
+      "maxAmountRequired": "0",
+      "asset": "USDC",
+      "payTo": "0xPLACEHOLDER_NOT_A_REAL_ADDRESS",
+      "resource": "https://api.example.invalid/v1/receipt/verify",
+      "description": "Verify a proof-bound paxiom.receipt.v0 receipt: schema, Ed25519 signature, output binding, and honest settlement/evidence status. Developer preview — currently free and offline; this entry is a template only.",
+      "mimeType": "application/json",
+      "maxTimeoutSeconds": 30,
+      "outputSchema": {
+        "input": { "type": "object", "required": ["receipt"], "properties": { "receipt": { "type": "object" }, "output": {} } },
+        "output": { "$ref": "https://paxiom.org/standards/receipts/v0/openapi.json#/components/schemas/VerifyResult" }
+      },
+      "extra": {
+        "spec": "https://paxiom.org/standards/receipts/v0/README.md",
+        "openapi": "https://paxiom.org/standards/receipts/v0/openapi.json",
+        "trustStates": "https://paxiom.org/standards/receipts/v0/trust-states.md",
+        "claimBoundary": "v0 does NOT independently verify onchain settlement or proof-source evidence."
+      }
+    }
+  ]
+}

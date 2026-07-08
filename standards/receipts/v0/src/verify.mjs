@@ -72,7 +72,9 @@ const CHECK = { PASS: 'pass', FAIL: 'fail', SKIP: 'not_checked' };
  * @returns {{valid:boolean, trustState:string, checks:object, receiptHash:(string|null), summary:string}}
  */
 export function verifyReceipt(receipt, opts = {}) {
-  const hasOutput = Object.prototype.hasOwnProperty.call(opts, 'output');
+  // Finding A: an explicit `output: undefined` must behave exactly like omitting
+  // output (no throw during hashing), not like supplying a value to hash.
+  const hasOutput = Object.prototype.hasOwnProperty.call(opts, 'output') && opts.output !== undefined;
   const checks = {
     schema: CHECK.SKIP,
     signature: CHECK.SKIP,
@@ -137,7 +139,15 @@ export function verifyReceipt(receipt, opts = {}) {
 
   // (8) output hash — only when an output is supplied
   if (hasOutput) {
-    const recomputed = hashCanonical(opts.output);
+    let recomputed;
+    try {
+      recomputed = hashCanonical(opts.output);
+    } catch (err) {
+      // Finding B: un-canonicalizable output (pathological nesting depth, or a
+      // non-representable value) -> clean `error` result, never a process crash.
+      checks.outputHash = 'error';
+      return done('error', `Could not canonicalize supplied output: ${(err && err.message) || err}.`);
+    }
     if (recomputed !== p.delivery.outputHash) {
       checks.outputHash = CHECK.FAIL;
       return done('output_hash_mismatch',

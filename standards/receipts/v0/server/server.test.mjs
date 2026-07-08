@@ -80,3 +80,17 @@ test('unknown path -> 404', async () => {
   assert.equal(res.status, 404);
   assert.equal((await res.json()).error.code, 'not_found');
 });
+
+test('Finding B: deeply nested output (under cap) -> structured result, no crash', async () => {
+  let deep = {};
+  let cur = deep;
+  for (let i = 0; i < 1000; i++) { cur.a = {}; cur = cur.a; } // parses fine, exceeds MAX_DEPTH
+  const res = await post('/v1/receipt/verify', JSON.stringify({ receipt: validReceipt, output: deep }));
+  assert.equal(res.status, 200); // verifier ran and returned a structured result
+  const j = await res.json();
+  assert.equal(j.valid, false);
+  assert.equal(j.trustState, 'error');
+  // server is still alive afterwards:
+  const health = await fetch(base + '/health');
+  assert.equal(health.status, 200);
+});

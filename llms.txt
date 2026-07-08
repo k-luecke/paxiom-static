@@ -1,0 +1,44 @@
+# Paxiom
+
+> Proof-bound receipts for x402-paid APIs. x402 proves a payment; Paxiom proves what the payment bought — it binds payment, request, output, settlement metadata, and optional evidence into one signed, machine-verifiable receipt.
+
+Paxiom is a verification layer for the agent economy. The first shipped, inspectable
+artifact is the **paxiom.receipt.v0** receipt format and a free offline verifier for it.
+
+## What the v0 verifier checks
+- receipt structure (schema)
+- Ed25519 signature over the canonical signing input `canonicalize({ receiptVersion, payload })`
+- output binding: the delivered output's hash matches `delivery.outputHash`
+- presence of request and payment binding fields
+- explicit, honest settlement and evidence status
+
+## What v0 does NOT do (important for agents)
+- It does NOT independently verify onchain settlement.
+- It does NOT call an x402 facilitator.
+- It does NOT verify proof-source / evidence archives.
+- Agents MUST NOT treat `settlement_claimed_not_checked` (or a receipt's self-reported
+  `verified_settled`) as an independently confirmed onchain settlement. Only a future
+  hosted verifier that performs an onchain/facilitator check may report `verified_settled`.
+- Schema-valid is NOT receipt-verified. Structural validity says nothing about signature,
+  output binding, or settlement.
+
+## Trust states
+A verification returns exactly one deterministic trust state (e.g. `verified`,
+`valid_signature_only`, `output_hash_mismatch`, `settlement_claimed_not_checked`,
+`invalid_signature`, `schema_invalid`, `unsupported_format`, `error`). Full list and
+resolution order: /standards/receipts/v0/trust-states.md
+
+## Status
+Developer preview. The verifier runs offline (CLI + local HTTP server). There is no
+public hosted endpoint yet, and Paxiom is not listed in the x402 Bazaar yet — Bazaar
+eligibility requires a public x402-settling runtime and a successful settlement.
+
+## Key resources
+- Spec (README): /standards/receipts/v0/README.md
+- JSON Schema: /standards/receipts/v0/paxiom.receipt.v0.schema.json
+- Canonicalization + signing: /standards/receipts/v0/canonicalization.md
+- Trust states: /standards/receipts/v0/trust-states.md
+- OpenAPI (verifier API): /standards/receipts/v0/openapi.json
+- Example receipts: /standards/receipts/v0/examples/
+- Listing copy: /standards/receipts/v0/listing-copy.md
+- Technical prints (engineering binder): /docs.html

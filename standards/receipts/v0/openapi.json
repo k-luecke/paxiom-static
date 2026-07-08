@@ -1,0 +1,165 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Paxiom Receipt Verifier",
+    "version": "0.0.0-preview",
+    "x-status": "developer preview",
+    "description": "Offline verifier for paxiom.receipt.v0 — proof-bound receipts for x402-paid APIs. x402 proves a payment; a Paxiom receipt binds payment + request + output + settlement metadata + optional evidence into one Ed25519-signed object, and this service reports what was actually checked via a trust state.\n\n**Developer preview. v0 scope:** verifies receipt structure, Ed25519 signature over the canonical signing input, output-hash binding, request/payment binding presence, and honest settlement/evidence status. **It does NOT perform onchain settlement verification, facilitator checks, or proof-source verification.** A receipt that merely claims an onchain settlement is reported as `settlement_claimed_not_checked`, never `verified`. Schema-valid is not receipt-verified.\n\nThis is a free verifier: no x402 payment gating in v0.",
+    "contact": { "name": "Paxiom", "url": "https://paxiom.org" }
+  },
+  "servers": [
+    { "url": "http://localhost:8787", "description": "Local developer server (node standards/receipts/v0/server/server.mjs). No public runtime yet." }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Liveness check",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Service is up",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Health" },
+              "example": { "ok": true, "service": "paxiom-receipt-verifier", "version": "v0" } } }
+          }
+        }
+      }
+    },
+    "/v1/receipt/demo": {
+      "get": {
+        "summary": "Canonical demo receipt + output",
+        "description": "Returns a cryptographically real demo receipt and its delivered output, plus a hint for posting them to /v1/receipt/verify.",
+        "operationId": "getDemo",
+        "responses": {
+          "200": {
+            "description": "Demo fixtures",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Demo" } } }
+          }
+        }
+      }
+    },
+    "/v1/receipt/verify": {
+      "post": {
+        "summary": "Verify a paxiom.receipt.v0 receipt (offline)",
+        "operationId": "verifyReceipt",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/VerifyRequest" },
+              "example": { "receipt": { "receiptVersion": "paxiom.receipt.v0", "payload": {}, "signature": {} }, "output": {} }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verification ran. Body is the result — including non-verified outcomes (a receipt that failed a check is still a successful verification at the transport layer).",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/VerifyResult" },
+                "examples": {
+                  "verified": {
+                    "summary": "verified",
+                    "value": {
+                      "valid": true, "trustState": "verified",
+                      "checks": { "schema": "pass", "signature": "pass", "outputHash": "pass", "requestBinding": "pass", "paymentBinding": "pass", "settlement": "verify_only", "proof": "not_provided" },
+                      "receiptHash": "0xc6ceba580eda748250339f20d482c347d31c0b3260b3c813a3750814298f912e",
+                      "summary": "Receipt verified: schema, Ed25519 signature, output binding, and settlement (verify_only) all consistent."
+                    }
+                  },
+                  "output_hash_mismatch": {
+                    "summary": "output_hash_mismatch",
+                    "value": {
+                      "valid": false, "trustState": "output_hash_mismatch",
+                      "checks": { "schema": "pass", "signature": "pass", "outputHash": "fail", "requestBinding": "pass", "paymentBinding": "pass", "settlement": "not_checked", "proof": "not_checked" },
+                      "receiptHash": "0xc6ceba580eda748250339f20d482c347d31c0b3260b3c813a3750814298f912e",
+                      "summary": "Supplied output hash 0x793f… != receipt delivery.outputHash 0x36b3…."
+                    }
+                  },
+                  "settlement_claimed_not_checked": {
+                    "summary": "settlement_claimed_not_checked",
+                    "value": {
+                      "valid": false, "trustState": "settlement_claimed_not_checked",
+                      "checks": { "schema": "pass", "signature": "pass", "outputHash": "pass", "requestBinding": "pass", "paymentBinding": "pass", "settlement": "claimed_not_checked", "proof": "not_provided" },
+                      "receiptHash": "0x…",
+                      "summary": "Signature and output hash verified. Receipt claims an onchain settlement that this offline verifier did not check."
+                    }
+                  },
+                  "invalid_signature": {
+                    "summary": "invalid_signature",
+                    "value": {
+                      "valid": false, "trustState": "invalid_signature",
+                      "checks": { "schema": "pass", "signature": "fail", "outputHash": "not_checked", "requestBinding": "not_checked", "paymentBinding": "not_checked", "settlement": "not_checked", "proof": "not_checked" },
+                      "receiptHash": "0x…",
+                      "summary": "Ed25519 signature does not verify over the canonical signing input."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed request (invalid JSON, or missing `receipt`).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResult" },
+              "example": { "valid": false, "trustState": "error", "error": { "code": "invalid_json", "message": "Request body is not valid JSON" } } } }
+          },
+          "413": {
+            "description": "Request body exceeds 256 KiB.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResult" },
+              "example": { "valid": false, "trustState": "error", "error": { "code": "body_too_large", "message": "Request body exceeds 256 KiB" } } } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "properties": { "ok": { "type": "boolean" }, "service": { "type": "string" }, "version": { "type": "string" } }
+      },
+      "Demo": {
+        "type": "object",
+        "properties": {
+          "receiptVersion": { "type": "string", "example": "paxiom.receipt.v0" },
+          "output": { "type": "object", "description": "Delivered output bytes (JSON)." },
+          "receipt": { "type": "object", "description": "A paxiom.receipt.v0 receipt." },
+          "verify": { "type": "object", "description": "Hint: how to POST these back to the verifier." }
+        }
+      },
+      "VerifyRequest": {
+        "type": "object",
+        "required": ["receipt"],
+        "properties": {
+          "receipt": { "type": "object", "description": "A paxiom.receipt.v0 receipt. See standards/receipts/v0/paxiom.receipt.v0.schema.json." },
+          "output": { "description": "Optional delivered output. When present, enables the payment-to-output binding check. Omit to check signature only." }
+        }
+      },
+      "VerifyResult": {
+        "type": "object",
+        "required": ["valid", "trustState", "checks"],
+        "properties": {
+          "valid": { "type": "boolean", "description": "true only when trustState === \"verified\"." },
+          "trustState": {
+            "type": "string",
+            "description": "One deterministic verdict. See standards/receipts/v0/trust-states.md.",
+            "enum": ["verified", "valid_signature_only", "schema_invalid", "unsupported_format", "invalid_signature", "request_binding_missing", "payment_binding_missing", "output_hash_mismatch", "settlement_claimed_not_checked", "settlement_failed", "proof_not_provided", "proof_unavailable", "proof_invalid", "expired", "error"]
+          },
+          "checks": { "type": "object", "description": "Per-dimension breakdown (schema, signature, outputHash, requestBinding, paymentBinding, settlement, proof)." },
+          "receiptHash": { "type": ["string", "null"], "description": "Non-authoritative display hash derived by the verifier; not part of the signed payload." },
+          "summary": { "type": "string" }
+        }
+      },
+      "ErrorResult": {
+        "type": "object",
+        "properties": {
+          "valid": { "type": "boolean", "example": false },
+          "trustState": { "type": "string", "example": "error" },
+          "error": {
+            "type": "object",
+            "properties": { "code": { "type": "string" }, "message": { "type": "string" } }
+          }
+        }
+      }
+    }
+  }
+}

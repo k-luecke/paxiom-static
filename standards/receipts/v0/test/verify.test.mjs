@@ -80,3 +80,25 @@ test('verifyFromFiles matches in-memory verify', () => {
   const r = verifyFromFiles(path('valid.receipt.json'), path('valid.output.json'));
   assert.equal(r.trustState, 'verified');
 });
+
+// --- hardening regressions (Findings A & B) ---
+
+test('Finding A: { output: undefined } does not throw; behaves as no output', () => {
+  let r;
+  assert.doesNotThrow(() => { r = verifyReceipt(validReceipt, { output: undefined }); });
+  assert.equal(r.trustState, 'valid_signature_only');
+  assert.equal(r.valid, false);
+  assert.equal(r.checks.signature, 'pass');
+  assert.equal(r.checks.outputHash, 'not_provided'); // identical to omitting output
+});
+
+test('Finding B: pathologically deep output does not throw; returns error', () => {
+  let deep = {};
+  let cur = deep;
+  for (let i = 0; i < 1000; i++) { cur.a = {}; cur = cur.a; } // depth 1000 > MAX_DEPTH
+  let r;
+  assert.doesNotThrow(() => { r = verifyReceipt(validReceipt, { output: deep }); });
+  assert.equal(r.trustState, 'error');
+  assert.equal(r.valid, false);
+  assert.equal(r.checks.outputHash, 'error');
+});
