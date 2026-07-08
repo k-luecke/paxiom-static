@@ -128,18 +128,37 @@ trust-state outcomes) runs with plain Node:
 node standards/receipts/v0/scripts/validate.mjs   # run from repo root
 ```
 
-## Conformance targets (what "verify" will mean)
+## Reference verifier (CLI)
 
-A verifier consuming a v0 receipt and the delivered output should:
-1. validate structure against `paxiom.receipt.v0.schema.json`;
-2. recompute canonical JSON of `{ receiptVersion, payload }` and verify `signature`;
-3. recompute `delivery.outputHash` over the supplied output and compare;
-4. confirm request/payment binding fields are present;
-5. resolve settlement + evidence status **without overclaiming**;
-6. emit a single trust state plus a per-check breakdown.
+A dependency-free reference verifier ships alongside the spec. It is **offline
+only** — it verifies the local receipt object and never makes chain, facilitator,
+or network calls.
 
-That verifier (CLI first, then HTTP) is the next sprint step and will live outside
-this spec directory.
+```bash
+node standards/receipts/v0/bin/paxiom-receipt.mjs verify \
+  standards/receipts/v0/examples/valid.receipt.json \
+  --output standards/receipts/v0/examples/valid.output.json
+# -> ✓ VERIFIED   (exit 0)
+
+# machine-readable:
+node standards/receipts/v0/bin/paxiom-receipt.mjs verify <receipt.json> --output <output.json> --json
+```
+
+Exit codes: `0` when `trustState === "verified"`, `1` for any other trust state,
+`2` for usage/IO errors. Result shape:
+
+```json
+{ "valid": true, "trustState": "verified", "checks": { "...": "..." }, "receiptHash": "0x…", "summary": "…" }
+```
+
+What it checks (and only this in v0): version gate → schema shape → Ed25519
+signature over `canonicalize({receiptVersion, payload})` → `delivery.outputHash`
+vs supplied output → request/payment binding presence → honest settlement/evidence
+interpretation → one deterministic trust state. It does **not** check onchain
+settlement, facilitator responses, evidence retrieval, or foreign receipt formats.
+
+Source: `src/{canonicalize,hash,verify,explain}.mjs`, CLI `bin/paxiom-receipt.mjs`.
+Tests: `node --test standards/receipts/v0/test/` (one case per trust state).
 
 ## Versioning
 
