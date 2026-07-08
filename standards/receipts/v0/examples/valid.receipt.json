@@ -1,0 +1,54 @@
+{
+  "receiptVersion": "paxiom.receipt.v0",
+  "payload": {
+    "receiptId": "rcpt_demo_001",
+    "issuedAt": "2026-07-07T00:00:00.000Z",
+    "issuer": {
+      "name": "paxiom-demo",
+      "uri": "https://paxiom.org",
+      "keyId": "paxiom-demo-key-001"
+    },
+    "service": {
+      "name": "Paxiom Receipt Demo",
+      "resource": "https://paxiom.org/v1/receipt/demo",
+      "method": "POST"
+    },
+    "request": {
+      "requestHash": "0x47c86b42d0b761b96ed6676406d9a2e96a73184c76bbff3836b66a9af092ec7a",
+      "resourceHash": "0xbcf52e751d2733e071e21ad9cd4206445f64602768574de002d0048474f50286",
+      "bodyHash": "0x8370e9bafcfa99853ed5c209559b1130ad125a7155ebc824746b95fdd26b2d1d"
+    },
+    "payment": {
+      "scheme": "x402",
+      "network": "base",
+      "asset": "USDC",
+      "amountAtomic": "1000",
+      "amountDisplay": "0.001",
+      "paymentRequirementsHash": "0x810c301531f1fbea54af8678c9da442ef218920c66169a6f8ea2e6bcea65d699",
+      "paymentPayloadHash": "0xc387405a4fab105788f3926832694243e0f4ed658b17fe8f2713dcb907fb3df6",
+      "settlement": {
+        "status": "verify_only",
+        "transactionHash": null,
+        "checkedByPaxiom": false
+      }
+    },
+    "delivery": {
+      "outputHash": "0x36b33b7db29c8eacf3acc6bbff312ebbeabbaf53b70b956b5fc02d2c1281baf6",
+      "mimeType": "application/json"
+    },
+    "evidence": [
+      {
+        "type": "none",
+        "status": "not_provided",
+        "hash": null,
+        "uri": null
+      }
+    ]
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "keyId": "paxiom-demo-key-001",
+    "publicKey": "cZASqM+TIUtIt4+ejhPvIOYxOeDBX/ofbG86H/NNLpQ=",
+    "value": "P/1YDKMwtFmODNZ8p449sdpRdOJILW2Yc07lSInDu8+jMWdsdS8c+om/RTQnXvy0t9tdHmGcqimX/Wu4Nan9Cw=="
+  }
+}

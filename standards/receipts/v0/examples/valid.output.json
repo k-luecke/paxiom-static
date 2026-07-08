@@ -1,0 +1,6 @@
+{
+  "demo": true,
+  "message": "Paxiom receipt demo output. This is the bytes the payment bought.",
+  "service": "Paxiom Receipt Demo",
+  "value": "42"
+}
