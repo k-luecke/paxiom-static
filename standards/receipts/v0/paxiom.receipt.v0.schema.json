@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://paxiom.org/standards/receipts/v0/paxiom.receipt.v0.schema.json",
+  "title": "Paxiom Receipt v0",
+  "description": "Developer-preview (v0 draft) schema for a proof-bound receipt for x402-paid APIs. x402 proves a payment; a Paxiom receipt binds payment, request, output, settlement metadata, and optional evidence into a single signed, machine-verifiable object. This schema validates STRUCTURE only; it does not assert that a receipt was settled onchain or that any proof is valid. Those are the verifier's job and are reported as trust states.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["receiptVersion", "payload", "signature"],
+  "properties": {
+    "receiptVersion": {
+      "type": "string",
+      "const": "paxiom.receipt.v0"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["receiptId", "issuedAt", "issuer", "service", "request", "payment", "delivery", "evidence"],
+      "properties": {
+        "receiptId": { "type": "string", "minLength": 1 },
+        "issuedAt": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" },
+        "issuer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "keyId"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "uri": { "type": "string" },
+            "keyId": { "type": "string", "minLength": 1 }
+          }
+        },
+        "service": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "resource", "method"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "resource": { "type": "string", "minLength": 1 },
+            "method": { "type": "string", "minLength": 1 }
+          }
+        },
+        "request": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["requestHash", "resourceHash", "bodyHash"],
+          "properties": {
+            "requestHash": { "$ref": "#/$defs/sha256Hex" },
+            "resourceHash": { "$ref": "#/$defs/sha256Hex" },
+            "bodyHash": { "$ref": "#/$defs/sha256Hex" }
+          }
+        },
+        "payment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scheme", "network", "asset", "amountAtomic", "amountDisplay", "paymentRequirementsHash", "paymentPayloadHash", "settlement"],
+          "properties": {
+            "scheme": { "type": "string", "minLength": 1 },
+            "network": { "type": "string", "minLength": 1 },
+            "asset": { "type": "string", "minLength": 1 },
+            "amountAtomic": { "type": "string", "pattern": "^[0-9]+$" },
+            "amountDisplay": { "type": "string", "minLength": 1 },
+            "paymentRequirementsHash": { "$ref": "#/$defs/sha256Hex" },
+            "paymentPayloadHash": { "$ref": "#/$defs/sha256Hex" },
+            "settlement": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["status", "transactionHash", "checkedByPaxiom"],
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": ["not_required", "disabled", "verify_only", "claimed_not_checked", "verified_settled", "failed", "unknown"]
+                },
+                "transactionHash": {
+                  "oneOf": [{ "$ref": "#/$defs/sha256Hex" }, { "type": "null" }]
+                },
+                "checkedByPaxiom": { "type": "boolean" }
+              }
+            }
+          }
+        },
+        "delivery": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["outputHash", "mimeType"],
+          "properties": {
+            "outputHash": { "$ref": "#/$defs/sha256Hex" },
+            "mimeType": { "type": "string", "minLength": 1 }
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "status", "hash", "uri"],
+            "properties": {
+              "type": { "type": "string", "enum": ["none", "zk", "attestation", "tee", "archive", "other"] },
+              "status": { "type": "string", "enum": ["not_provided", "provided", "unavailable", "invalid", "verified"] },
+              "hash": { "oneOf": [{ "$ref": "#/$defs/sha256Hex" }, { "type": "null" }] },
+              "uri": { "oneOf": [{ "type": "string" }, { "type": "null" }] }
+            }
+          }
+        }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "keyId", "publicKey", "value"],
+      "properties": {
+        "algorithm": { "type": "string", "const": "ed25519" },
+        "keyId": { "type": "string", "minLength": 1 },
+        "publicKey": { "type": "string", "minLength": 1 },
+        "value": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "$defs": {
+    "sha256Hex": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{64}$",
+      "description": "SHA-256 digest, lowercase hex, 0x-prefixed."
+    }
+  }
+}
