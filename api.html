@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<title>Paxiom &middot; Receipt Verifier API</title>
+<meta name="description" content="Paxiom Receipt Verifier API — a free, offline-semantics verifier for paxiom.receipt.v0. Developer preview. Endpoints, examples, and the claim boundaries: no x402 gating, no onchain settlement or proof-source verification.">
+<meta property="og:title" content="Paxiom Receipt Verifier API">
+<meta property="og:description" content="Free, offline-semantics verifier for paxiom.receipt.v0. Developer preview.">
+<meta property="og:url" content="https://paxiom.org/api.html">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-size: 15px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.frame { max-width: 1080px; margin: 0 auto; padding: 20px 18px 32px; }
+
+.title-block { border-bottom: 2px solid var(--ink); padding-bottom: 16px; margin-bottom: 14px; }
+.title-mark { display: block; margin-bottom: 12px; }
+.paxiom-mark { width: 42px; height: 42px; color: var(--ink); display: block; }
+.title-block .project-mark { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px; }
+.title-block .project-title { font-family: 'Times New Roman', Times, serif; font-size: 28px; font-weight: 500; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
+.title-block .project-subtitle { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 14px; color: var(--ink-mid); margin-top: 4px; max-width: 46ch; }
+.title-block .meta { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.04em; color: var(--ink-faint); margin-top: 12px; line-height: 1.7; }
+.title-block .meta span { display: inline-block; }
+.title-block .meta .sep { margin: 0 6px; color: var(--rule-faint); }
+
+.hero { margin-bottom: 26px; padding: 8px 0 8px; }
+.hero h1 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: clamp(28px, 6vw, 40px); line-height: 1.05; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 16px; max-width: 22ch; }
+.hero h1 em { font-style: italic; color: var(--ink-mid); font-weight: 400; }
+.hero .lede { font-family: 'Times New Roman', Times, serif; font-size: 17px; line-height: 1.55; color: var(--ink); max-width: 60ch; margin-bottom: 14px; }
+
+/* Status banner */
+.status {
+  border: 1.5px solid var(--amber); border-radius: 8px; padding: 14px 16px; margin: 4px 0 28px; background: var(--paper);
+  display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+}
+.status .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--amber); display: inline-block; flex: none; align-self: center; }
+.status .k { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--amber); }
+.status p { font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.5; color: var(--ink); max-width: 66ch; margin: 0; }
+.status.live { border-color: var(--blue); }
+.status.live .dot, .status.live .k { background: var(--blue); color: var(--blue); }
+.status.live .dot { background: var(--blue); }
+
+.section { margin-bottom: 36px; }
+.section .section-mark { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.section .section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.section h2 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 24px; letter-spacing: -0.01em; margin-bottom: 14px; color: var(--ink); }
+.section h2 em { font-style: italic; color: var(--ink-mid); }
+.section p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; color: var(--ink); max-width: 64ch; margin-bottom: 14px; }
+.section p code, td code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); font-weight: 500; }
+
+.baseurl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 14px;
+  background: var(--ink); color: var(--paper); padding: 12px 16px; border-radius: 8px;
+  display: inline-block; margin-bottom: 6px;
+}
+.baseurl .pending { color: var(--amber); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-left: 8px; }
+
+/* Endpoint table */
+.endpoints { width: 100%; border-collapse: collapse; margin: 4px 0 14px; font-size: 14px; }
+.endpoints th, .endpoints td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--rule-faint); vertical-align: top; }
+.endpoints th { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); }
+.endpoints .m { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; }
+.endpoints .m.get { color: var(--blue); }
+.endpoints .m.post { color: var(--amber); }
+.endpoints .path { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; color: var(--ink); }
+.endpoints .purpose { font-family: 'Times New Roman', Times, serif; color: var(--ink-mid); }
+.endpoints-wrap { overflow-x: auto; }
+
+pre.cmd { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.6; background: var(--ink); color: var(--paper); padding: 16px 18px; border-radius: 8px; overflow-x: auto; margin: 6px 0 18px; max-width: 100%; white-space: pre; }
+pre.cmd .c { color: var(--rule-faint); }
+
+.note { border: 1.5px solid var(--rule-faint); border-radius: 8px; padding: 14px 16px; margin: 6px 0 22px; background: var(--paper); }
+.note .note-label { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+.note ul { list-style: none; }
+.note li { font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55; color: var(--ink); max-width: 68ch; padding: 3px 0 3px 16px; position: relative; }
+.note li::before { content: '\2013'; position: absolute; left: 0; color: var(--rule-faint); }
+
+.linklist { list-style: none; margin: 4px 0 14px; }
+.linklist li { padding: 6px 0; border-bottom: 1px solid var(--rule-faint); }
+.linklist li:last-child { border-bottom: none; }
+.linklist a { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; color: var(--blue); }
+.linklist .desc { font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--ink-mid); font-size: 14px; }
+
+.sheet-footer { border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; }
+.sheet-footer .sheet-id { color: var(--ink); font-weight: 600; }
+
+a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--red); }
+
+@media (min-width: 768px) {
+  .frame { padding: 40px 32px 48px; }
+  body { background-image: linear-gradient(rgba(26,35,50,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(26,35,50,0.04) 1px, transparent 1px); background-size: 24px 24px; }
+  .title-block { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 24px; padding-bottom: 20px; }
+  .title-mark { margin-bottom: 0; } .paxiom-mark { width: 54px; height: 54px; }
+  .title-block .project-title { font-size: 36px; } .title-block .meta { text-align: right; margin-top: 0; }
+  .hero h1 { font-size: clamp(34px, 5vw, 48px); } .hero .lede { font-size: 19px; }
+  .section h2 { font-size: 28px; }
+}
+@media print { body { background: white; background-image: none; } }
+
+.paxiom-bar { position: sticky; top: 0; z-index: 100; background: rgba(245,241,232,0.88); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule-faint); }
+.paxiom-bar-inner { max-width: 1200px; margin: 0 auto; padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.paxiom-bar-mark { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; transition: color 0.15s ease; }
+.paxiom-bar-mark svg { width: 22px; height: 22px; display: block; } .paxiom-bar-mark:hover { color: var(--blue); }
+.paxiom-bar-nav { display: flex; gap: 18px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+.paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; transition: color 0.15s ease; padding-bottom: 2px; }
+.paxiom-bar-nav a:hover { color: var(--ink); } .paxiom-bar-nav a.active { color: var(--ink); border-bottom: 1.5px solid var(--ink); }
+@media (max-width: 640px) { .paxiom-bar-inner { padding: 8px 14px; } .paxiom-bar-mark span { display: none; } .paxiom-bar-nav { gap: 12px; font-size: 9.5px; letter-spacing: 0.09em; } }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
+<div class="paxiom-bar">
+  <div class="paxiom-bar-inner">
+    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
+      <span>Paxiom</span>
+    </a>
+    <nav class="paxiom-bar-nav" aria-label="Primary">
+      <a href="/receipts.html">Receipts</a>
+      <a href="/api.html" class="active">API</a>
+      <a href="/docs.html">Docs</a>
+      <a href="/services.html">Services</a>
+      <a href="/status.html">Status</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </div>
+</div>
+<div class="frame">
+
+  <header class="title-block">
+    <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg></div>
+    <div>
+      <div class="project-mark">Paxiom &middot; Receipt Verifier API</div>
+      <div class="project-title">Verifier API</div>
+      <div class="project-subtitle">A free, offline-semantics verifier for paxiom.receipt.v0.</div>
+    </div>
+    <div class="meta">
+      <span>Project No. PXM-001</span><span class="sep">&middot;</span>
+      <span>Sheet PXM-API-100</span><span class="sep">&middot;</span>
+      <span>Status: Developer Preview</span><span class="sep">&middot;</span>
+      <span>Receipt v0</span>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1>The Paxiom Receipt <em>Verifier API.</em></h1>
+    <p class="lede">A small HTTP service that verifies a <a href="/receipts.html">proof-bound receipt</a>: schema, Ed25519 signature, output binding, and honest settlement/proof status. Free, and offline in what it checks &mdash; no accounts, no payment, no chain calls.</p>
+  </section>
+
+  <!-- STATUS: flip to .live and update copy once the runtime is deployed -->
+  <div class="status" role="note">
+    <span class="dot" aria-hidden="true"></span>
+    <span class="k">Runtime status &middot; Pending public deployment</span>
+    <p>The public endpoint at <code>api.paxiom.org</code> is not live yet. The reference verifier can be run locally today (see below); this page documents the API it exposes. When the runtime is deployed, this banner turns to &ldquo;live developer preview.&rdquo;</p>
+  </div>
+
+  <section class="section">
+    <div class="section-mark">Base URL</div>
+    <h2>Where it will <em>answer.</em></h2>
+    <div class="baseurl">https://api.paxiom.org <span class="pending">pending deploy</span></div>
+    <p>Until the public runtime is live, run the same service locally at <code>http://localhost:8787</code>.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-mark">Endpoints</div>
+    <h2>Four routes.</h2>
+    <div class="endpoints-wrap">
+    <table class="endpoints">
+      <thead><tr><th>Method</th><th>Path</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><span class="m get">GET</span></td><td class="path">/health</td><td class="purpose">Liveness. Returns <code>{ ok: true, &hellip; }</code>.</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="path">/version</td><td class="purpose">Service identity plus explicit <code>checks</code> / <code>notChecked</code> claim boundaries.</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="path">/v1/receipt/demo</td><td class="purpose">A canonical demo receipt and its delivered output.</td></tr>
+        <tr><td><span class="m post">POST</span></td><td class="path">/v1/receipt/verify</td><td class="purpose">Body <code>{ receipt, output? }</code> &rarr; verifier result JSON (trust state + per-check breakdown).</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Status codes: <code>200</code> for any verification result (including non-verified), <code>400</code> malformed request, <code>413</code> body over 256&nbsp;KiB, <code>404</code> unknown route.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-mark">Example</div>
+    <h2>Verify the demo receipt.</h2>
+    <p>Fetch the demo pair and POST it back to the verifier:</p>
+<pre class="cmd">API=http://localhost:8787   <span class="c"># or https://api.paxiom.org once live</span>
+
+curl -s "$API/v1/receipt/demo" &gt; demo.json
+node -e 'const d=JSON.parse(require("fs").readFileSync("demo.json"));\
+  process.stdout.write(JSON.stringify({receipt:d.receipt,output:d.output}))' \
+  | curl -s -X POST "$API/v1/receipt/verify" \
+      -H 'content-type: application/json' --data @-</pre>
+    <p>Expected result:</p>
+<pre class="cmd">{
+  "valid": true,
+  "trustState": "verified",
+  "checks": { "schema": "pass", "signature": "pass", "outputHash": "pass",
+              "settlement": "verify_only", "proof": "not_provided" },
+  "receiptHash": "0x…",
+  "summary": "Receipt verified: …"
+}</pre>
+  </section>
+
+  <section class="section">
+    <div class="section-mark">Run it now</div>
+    <h2>Locally, today.</h2>
+    <p>The verifier is dependency-free. Clone <a href="https://github.com/k-luecke/paxiom-static">the repo</a> and start it with Node:</p>
+<pre class="cmd">node runtime/receipt-verifier/server.mjs
+
+curl http://localhost:8787/health
+curl http://localhost:8787/version
+curl http://localhost:8787/v1/receipt/demo</pre>
+  </section>
+
+  <section class="section">
+    <div class="section-mark">Boundaries</div>
+    <h2>What this API does <em>not</em> do.</h2>
+    <div class="note">
+      <div class="note-label">Developer-preview claim boundaries</div>
+      <ul>
+        <li>No x402 payment gating &mdash; verification is free.</li>
+        <li>No independent onchain settlement verification.</li>
+        <li>No x402 facilitator checks.</li>
+        <li>No proof-source / evidence-archive verification.</li>
+        <li>Schema-valid is not receipt-verified; <code>settlement_claimed_not_checked</code> is not <code>verified_settled</code>.</li>
+      </ul>
+    </div>
+    <p>These are honest limits of v0, not permanent ones &mdash; onchain settlement and proof-source checks are planned as later adapters and a later paid route.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-mark">Machine-readable</div>
+    <h2>Specs and schemas.</h2>
+    <ul class="linklist">
+      <li><a href="/standards/receipts/v0/openapi.json">OpenAPI</a> <span class="desc">the verifier HTTP API</span></li>
+      <li><a href="/standards/receipts/v0/README.md">Receipt v0 &mdash; README</a> <span class="desc">the format and claim boundaries</span></li>
+      <li><a href="/standards/receipts/v0/trust-states.md">Trust states</a> <span class="desc">the fifteen verdicts and resolution order</span></li>
+      <li><a href="/standards/receipts/v0/paxiom.receipt.v0.schema.json">JSON Schema</a> <span class="desc">structure validation</span></li>
+      <li><a href="/llms.txt">llms.txt</a> <span class="desc">agent-facing summary and boundaries</span></li>
+    </ul>
+  </section>
+
+  <footer class="sheet-footer">
+    <div>Paxiom &middot; paxiom.org</div>
+    <div>Public &middot; Receipt v0 &middot; Developer Preview</div>
+    <div class="sheet-id">PXM-API-100 &middot; Verifier API</div>
+  </footer>
+
+</div>
+</body>
+</html>
