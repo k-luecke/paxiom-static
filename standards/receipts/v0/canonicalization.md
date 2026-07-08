@@ -32,6 +32,14 @@ function canonicalize(value) {
 }
 ```
 
+**Implementation guidance (does not change canonical bytes for valid input):** a
+conforming verifier SHOULD reject `undefined` (not representable) and SHOULD bound
+recursion depth so that pathological deeply-nested *externally-supplied* data
+(e.g. an untrusted `output` being hashed) fails with a catchable error instead of
+overflowing the process stack. The Paxiom reference verifier caps depth at 256 and
+returns a structured `error` trust state in that case. Receipt payloads are
+depth-bounded by the schema, so this only affects hashing of supplied outputs.
+
 ## Signing input
 
 The signature covers the canonical JSON of **exactly** this object:
