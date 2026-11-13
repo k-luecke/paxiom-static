@@ -48,7 +48,10 @@ export function publicKeyFromPrivateKey(privateKey) {
 /**
  * Generate a fresh Ed25519 signing keypair formatted for paxiom.receipt.v0.
  */
-export function generateReceiptKeyPair({ keyId = `key_${crypto.randomBytes(6).toString('hex')}` } = {}) {
+export function generateReceiptKeyPair(opts = {}) {
+  const keyId = typeof opts === 'string'
+    ? opts
+    : (opts?.keyId ?? `key_${crypto.randomBytes(6).toString('hex')}`);
   const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
   const jwk = publicKey.export({ format: 'jwk' });
   const publicKeyB64 = Buffer.from(jwk.x, 'base64url').toString('base64');

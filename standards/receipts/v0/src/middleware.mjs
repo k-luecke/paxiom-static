@@ -30,13 +30,15 @@ function tryDecodePaymentResponseTx(headerVal) {
  */
 export function withPaxiomReceipt(handler, options = {}) {
   const {
-    privateKey,
+    privateKey: rawPrivateKey,
+    privateKeyPem,
     issuer,
     serviceName,
     paymentDefaults = {},
     resolvePayment,
     onReceipt
   } = options;
+  const privateKey = rawPrivateKey || privateKeyPem;
   if (!privateKey) throw new TypeError('withPaxiomReceipt requires options.privateKey');
   if (!issuer || !issuer.name || !issuer.keyId) {
     throw new TypeError('withPaxiomReceipt requires options.issuer { name, keyId }');
@@ -137,7 +139,8 @@ export function withPaxiomReceipt(handler, options = {}) {
  */
 export function createReceiptMiddleware(options = {}) {
   const {
-    privateKey,
+    privateKey: rawPrivateKey,
+    privateKeyPem,
     issuer,
     serviceName,
     baseUrl = '',
@@ -145,6 +148,7 @@ export function createReceiptMiddleware(options = {}) {
     resolvePayment,
     onReceipt
   } = options;
+  const privateKey = rawPrivateKey || privateKeyPem;
   if (!privateKey) throw new TypeError('createReceiptMiddleware requires options.privateKey');
   if (!issuer || !issuer.name || !issuer.keyId) {
     throw new TypeError('createReceiptMiddleware requires options.issuer { name, keyId }');
