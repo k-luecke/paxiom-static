@@ -176,16 +176,15 @@ import {
   withPaxiomReceipt
 } from './src/index.mjs';
 
-const keys = generateReceiptKeyPair('seller-key-01');
+const keys = generateReceiptKeyPair({ keyId: 'seller-key-01' });
 
 // Wrap any Fetch-style handler `(Request) => Promise<Response>` to attach `X-Paxiom-Receipt`:
 const handler = withPaxiomReceipt(
   async () => Response.json({ forecast: 'sunny', tempC: 23 }),
   {
+    privateKey: keys.privateKeyPem,
     issuer: { name: 'weather-seller', uri: 'https://seller.example', keyId: keys.keyId },
-    serviceName: 'Weather Forecast API',
-    privateKeyPem: keys.privateKeyPem,
-    publicKeyBase64: keys.publicKeyBase64
+    serviceName: 'Weather Forecast API'
   }
 );
 ```
@@ -196,11 +195,11 @@ Express / Node `http.Server` middleware is also exported via `createReceiptMiddl
 
 ```bash
 # 1. Generate an Ed25519 signing keypair (writes 0600 private key PEM + metadata JSON)
-node standards/receipts/v0/bin/paxiom-receipt.mjs keygen --out-dir ./keys --key-id seller-key-01
+node standards/receipts/v0/bin/paxiom-receipt.mjs keygen --out ./seller-key-01.private.pem --key-id seller-key-01
 
 # 2. Sign a receipt binding output bytes + request + x402 payment metadata
 node standards/receipts/v0/bin/paxiom-receipt.mjs issue \
-  --key ./keys/seller-key-01.private.pem \
+  --key ./seller-key-01.private.pem \
   --key-id seller-key-01 \
   --issuer-name "example-seller" \
   --service-name "Demo Paid Endpoint" \

@@ -404,7 +404,7 @@ a:hover { color: var(--red); }
 curl -s https://api.paxiom.org/version
 curl -s https://api.paxiom.org/v1/receipt/demo</pre>
     <p>Issue signed receipts from your own x402 seller or run the stdio MCP tool server locally:</p>
-<pre class="cmd">node standards/receipts/v0/bin/paxiom-receipt.mjs keygen --out-dir ./keys --key-id seller-key-01
+<pre class="cmd">node standards/receipts/v0/bin/paxiom-receipt.mjs keygen --out ./seller-key-01.private.pem --key-id seller-key-01
 node standards/receipts/v0/mcp/server.mjs   <span class="c"># stdio MCP: verify_receipt, explain_receipt, issue_receipt</span></pre>
     <div class="note">
       <div class="note-label">Runtime status</div>
