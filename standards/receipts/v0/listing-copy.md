@@ -2,11 +2,13 @@
 
 Ready-to-paste copy for x402 Bazaar / awesome-x402 / MCP-registry style listings.
 
-> **Readiness boundary (read first).** These are *listing-ready artifacts*, not a live
-> listing. Real Bazaar eligibility requires a **public runtime** for the HTTP verifier
-> and at least one **successful x402 settlement** through the facilitator. Until then,
-> do not submit these anywhere that implies the endpoint is live and settling. GitHub
-> Pages serves the spec/docs/OpenAPI; it does **not** run the Node HTTP verifier.
+> **Readiness boundary (read first).** The public HTTP verifier is live at
+> `https://api.paxiom.org` (free offline verification at `POST /v1/receipt/verify`), and
+> the stdio MCP server ships at `standards/receipts/v0/mcp/server.mjs`. Directory
+> submissions for free API / MCP / open-spec registries can use `https://api.paxiom.org`
+> today. For **x402 Bazaar** specifically, enable `LIVE_VERIFY_ENABLED=true` +
+> `X402_ENABLED=true` on `POST /v1/receipt/verify-live` and complete at least one
+> settled facilitator transaction before claiming Bazaar indexing.
 
 ## Listing name
 ```
@@ -70,9 +72,12 @@ Response (verified):
 ```
 
 ## Links to include in a listing
-- Spec: `https://paxiom.org/standards/receipts/v0/README.md`
+- Live API: `https://api.paxiom.org` (`GET /version`, `GET /v1/receipt/demo`, `POST /v1/receipt/verify`)
+- API docs: `https://paxiom.org/api.html`
+- Spec & SDK: `https://paxiom.org/standards/receipts/v0/README.md`
 - OpenAPI: `https://paxiom.org/standards/receipts/v0/openapi.json`
 - Trust states: `https://paxiom.org/standards/receipts/v0/trust-states.md`
+- MCP server (stdio): `standards/receipts/v0/mcp/server.mjs` (`verify_receipt`, `explain_receipt`, `issue_receipt`)
 - Repo: `https://github.com/k-luecke/paxiom-static`
 - Status: developer preview / alpha — **not** production standard
 
