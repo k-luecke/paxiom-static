@@ -52,8 +52,8 @@ body {
 .status .k { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--amber); }
 .status p { font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.5; color: var(--ink); max-width: 66ch; margin: 0; }
 .status.live { border-color: var(--blue); }
-.status.live .dot, .status.live .k { background: var(--blue); color: var(--blue); }
 .status.live .dot { background: var(--blue); }
+.status.live .k { color: var(--blue); }
 
 .section { margin-bottom: 36px; }
 .section .section-mark { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
@@ -69,6 +69,7 @@ body {
   display: inline-block; margin-bottom: 6px;
 }
 .baseurl .pending { color: var(--amber); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-left: 8px; }
+.baseurl .live { color: #8FB8E0; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-left: 8px; }
 
 /* Endpoint table */
 .endpoints { width: 100%; border-collapse: collapse; margin: 4px 0 14px; font-size: 14px; }
@@ -163,42 +164,45 @@ a:hover { color: var(--red); }
     <p class="lede">A small HTTP service that verifies a <a href="/receipts.html">proof-bound receipt</a>: schema, Ed25519 signature, output binding, and honest settlement/proof status. Free, and offline in what it checks &mdash; no accounts, no payment, no chain calls.</p>
   </section>
 
-  <!-- STATUS: flip to .live and update copy once the runtime is deployed -->
-  <div class="status" role="note">
+  <!-- STATUS: live developer preview on api.paxiom.org -->
+  <div class="status live" role="note">
     <span class="dot" aria-hidden="true"></span>
-    <span class="k">Runtime status &middot; Pending public deployment</span>
-    <p>The public endpoint at <code>api.paxiom.org</code> is not live yet. The reference verifier can be run locally today (see below); this page documents the API it exposes. When the runtime is deployed, this banner turns to &ldquo;live developer preview.&rdquo;</p>
+    <span class="k">Runtime status &middot; Live developer preview</span>
+    <p>The public endpoint at <code>https://api.paxiom.org</code> is live. Free offline-semantics verification (<code>POST /v1/receipt/verify</code>) requires no account or payment. Check <code>GET /version</code> for active host capabilities (developer-preview instances may take a few seconds to wake on cold start).</p>
   </div>
 
   <section class="section">
     <div class="section-mark">Base URL</div>
-    <h2>Where it will <em>answer.</em></h2>
-    <div class="baseurl">https://api.paxiom.org <span class="pending">pending deploy</span></div>
-    <p>Until the public runtime is live, run the same service locally at <code>http://localhost:8787</code>.</p>
+    <h2>Where it <em>answers.</em></h2>
+    <div class="baseurl">https://api.paxiom.org <span class="live">live preview</span></div>
+    <p>You can also run the identical zero-dependency server offline at <code>http://localhost:8787</code>.</p>
   </section>
 
   <section class="section">
     <div class="section-mark">Endpoints</div>
-    <h2>Four routes.</h2>
+    <h2>Core &amp; live-settlement routes.</h2>
     <div class="endpoints-wrap">
     <table class="endpoints">
       <thead><tr><th>Method</th><th>Path</th><th>Purpose</th></tr></thead>
       <tbody>
         <tr><td><span class="m get">GET</span></td><td class="path">/health</td><td class="purpose">Liveness. Returns <code>{ ok: true, &hellip; }</code>.</td></tr>
-        <tr><td><span class="m get">GET</span></td><td class="path">/version</td><td class="purpose">Service identity plus explicit <code>checks</code> / <code>notChecked</code> claim boundaries.</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="path">/version</td><td class="purpose">Service identity, active <code>capabilities</code>, and explicit <code>checks</code> / <code>notChecked</code> claim boundaries.</td></tr>
         <tr><td><span class="m get">GET</span></td><td class="path">/v1/receipt/demo</td><td class="purpose">A canonical demo receipt and its delivered output.</td></tr>
-        <tr><td><span class="m post">POST</span></td><td class="path">/v1/receipt/verify</td><td class="purpose">Body <code>{ receipt, output? }</code> &rarr; verifier result JSON (trust state + per-check breakdown).</td></tr>
+        <tr><td><span class="m post">POST</span></td><td class="path">/v1/receipt/verify</td><td class="purpose">Free offline-semantics verification. Body <code>{ receipt, output? }</code> &rarr; deterministic trust state + per-check breakdown.</td></tr>
+        <tr><td><span class="m post">POST</span></td><td class="path">/v1/receipt/verify-live</td><td class="purpose">Opt-in Base / Base&nbsp;Sepolia USDC <code>Transfer</code> log settlement verification + optional Paxiom Ed25519 counter-attestation (<code>402</code> x402 or <code>X-API-Key</code> when enabled; <code>503</code> when disabled).</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="path">/.well-known/paxiom-keys.json</td><td class="purpose">Published Paxiom counter-attestation Ed25519 public keys.</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="path">/.well-known/x402.json</td><td class="purpose">Machine-readable x402 payment &amp; Bazaar discovery manifest (served when <code>X402_ENABLED=true</code>; <code>404</code> otherwise).</td></tr>
       </tbody>
     </table>
     </div>
-    <p>Status codes: <code>200</code> for any verification result (including non-verified), <code>400</code> malformed request, <code>413</code> body over 256&nbsp;KiB, <code>404</code> unknown route.</p>
+    <p>Status codes: <code>200</code> for any verification result (including non-verified), <code>400</code> malformed request, <code>402</code> payment required (when x402 gating is enabled on <code>/v1/receipt/verify-live</code>), <code>413</code> body over 256&nbsp;KiB, <code>404</code> unknown route, <code>503</code> capability not enabled on host.</p>
   </section>
 
   <section class="section">
     <div class="section-mark">Example</div>
     <h2>Verify the demo receipt.</h2>
     <p>Fetch the demo pair and POST it back to the verifier:</p>
-<pre class="cmd">API=http://localhost:8787   <span class="c"># or https://api.paxiom.org once live</span>
+<pre class="cmd">API=https://api.paxiom.org   <span class="c"># or http://localhost:8787 locally</span>
 
 curl -s "$API/v1/receipt/demo" &gt; demo.json
 node -e 'const d=JSON.parse(require("fs").readFileSync("demo.json"));\
@@ -233,14 +237,14 @@ curl http://localhost:8787/v1/receipt/demo</pre>
     <div class="note">
       <div class="note-label">Developer-preview claim boundaries</div>
       <ul>
-        <li>No x402 payment gating &mdash; verification is free.</li>
-        <li>No independent onchain settlement verification.</li>
-        <li>No x402 facilitator checks.</li>
-        <li>No proof-source / evidence-archive verification.</li>
+        <li><code>POST /v1/receipt/verify</code> is always free and offline-only: it never makes chain or facilitator calls, and reports unverified onchain claims as <code>settlement_claimed_not_checked</code>.</li>
+        <li><code>POST /v1/receipt/verify-live</code> verifies Base / Base&nbsp;Sepolia USDC <code>Transfer</code> logs against JSON-RPC only when <code>capabilities.liveSettlementVerification</code> is <code>true</code> on <code>GET /version</code> (returns <code>503</code> otherwise).</li>
+        <li>Counter-attested receipts (<code>checkedByPaxiom: true</code>) require passing <code>trustedPaxiomPublicKeys</code> from <code>/.well-known/paxiom-keys.json</code> during offline re-verification.</li>
+        <li>No proof-source / evidence-archive retrieval in v0.</li>
         <li>Schema-valid is not receipt-verified; <code>settlement_claimed_not_checked</code> is not <code>verified_settled</code>.</li>
       </ul>
     </div>
-    <p>These are honest limits of v0, not permanent ones &mdash; onchain settlement and proof-source checks are planned as later adapters and a later paid route.</p>
+    <p>Always inspect <code>GET /version</code> on any verifier host to see which capabilities are active in that environment.</p>
   </section>
 
   <section class="section">

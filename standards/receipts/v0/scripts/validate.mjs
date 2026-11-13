@@ -1,8 +1,9 @@
 // Validation pass for paxiom.receipt.v0 spec — no external deps.
 import crypto from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
-const DIR = 'standards/receipts/v0';
+const DIR = fileURLToPath(new URL('..', import.meta.url)).replace(/\/+$/, '');
 const EX = `${DIR}/examples`;
 let fails = 0;
 const ok = (c, m) => { console.log(`${c ? 'PASS' : 'FAIL'}  ${m}`); if (!c) fails++; };

@@ -10,9 +10,12 @@ optional evidence* into a single signed, machine-verifiable object. It is
 **provider-neutral**: any x402-paid API can emit one, and any agent can verify one
 with only a public key.
 
-This directory is the public **spec** — the shared artifact the verifier (CLI /
-HTTP, shipping next) and the product pages build on. It contains no verifier
-implementation yet.
+This directory contains the public **`paxiom.receipt.v0` spec** and the
+zero-dependency **`@paxiom/receipts` reference package**:
+- **Issuer & middleware SDK** (`src/issue.mjs`, `src/middleware.mjs`, `src/index.mjs`)
+- **Offline verifier & explainer** (`src/verify.mjs`, `src/explain.mjs`)
+- **CLI** (`bin/paxiom-receipt.mjs` — `keygen`, `issue`, `verify`)
+- **MCP tool server** (`mcp/server.mjs` — `verify_receipt`, `explain_receipt`, `issue_receipt`)
 
 ## Why this exists
 
@@ -159,6 +162,65 @@ settlement, facilitator responses, evidence retrieval, or foreign receipt format
 
 Source: `src/{canonicalize,hash,verify,explain}.mjs`, CLI `bin/paxiom-receipt.mjs`.
 Tests: `node --test standards/receipts/v0/test/` (one case per trust state).
+
+
+## Issuer SDK & seller middleware (`@paxiom/receipts`)
+
+Any x402-paid Node/Fetch service can emit signed `paxiom.receipt.v0` receipts with zero external dependencies:
+
+```js
+import {
+  generateReceiptKeyPair,
+  issueReceipt,
+  verifyReceipt,
+  withPaxiomReceipt
+} from './src/index.mjs';
+
+const keys = generateReceiptKeyPair('seller-key-01');
+
+// Wrap any Fetch-style handler `(Request) => Promise<Response>` to attach `X-Paxiom-Receipt`:
+const handler = withPaxiomReceipt(
+  async () => Response.json({ forecast: 'sunny', tempC: 23 }),
+  {
+    issuer: { name: 'weather-seller', uri: 'https://seller.example', keyId: keys.keyId },
+    serviceName: 'Weather Forecast API',
+    privateKeyPem: keys.privateKeyPem,
+    publicKeyBase64: keys.publicKeyBase64
+  }
+);
+```
+
+Express / Node `http.Server` middleware is also exported via `createReceiptMiddleware(options)`.
+
+### CLI (`keygen` · `issue` · `verify`)
+
+```bash
+# 1. Generate an Ed25519 signing keypair (writes 0600 private key PEM + metadata JSON)
+node standards/receipts/v0/bin/paxiom-receipt.mjs keygen --out-dir ./keys --key-id seller-key-01
+
+# 2. Sign a receipt binding output bytes + request + x402 payment metadata
+node standards/receipts/v0/bin/paxiom-receipt.mjs issue \
+  --key ./keys/seller-key-01.private.pem \
+  --key-id seller-key-01 \
+  --issuer-name "example-seller" \
+  --service-name "Demo Paid Endpoint" \
+  --resource "https://seller.example/v1/query" \
+  --output standards/receipts/v0/examples/valid.output.json \
+  --out ./issued.receipt.json
+```
+
+### MCP server (stdio JSON-RPC 2.0)
+
+Agents (Claude Desktop, Cursor, Antigravity, MCP clients) can verify, explain, and issue receipts directly over stdio:
+
+```bash
+node standards/receipts/v0/mcp/server.mjs
+```
+
+Tools exposed:
+- `verify_receipt` — deterministic `trustState` + per-check breakdown (supports `trustedPaxiomPublicKeys`)
+- `explain_receipt` — human-readable verification report alongside structured result
+- `issue_receipt` — sign a `paxiom.receipt.v0` receipt given `privateKeyPem` and delivery/payment metadata
 
 ## Versioning
 

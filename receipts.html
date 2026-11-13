@@ -399,14 +399,16 @@ a:hover { color: var(--red); }
   standards/receipts/v0/examples/valid.receipt.json \
   --output standards/receipts/v0/examples/valid.output.json
 <span class="c"># -&gt; ✓ VERIFIED   (exit 0)</span></pre>
-    <p>Or run the local HTTP wrapper and call it:</p>
-<pre class="cmd">node standards/receipts/v0/server/server.mjs
-
-curl http://localhost:8787/health
-curl http://localhost:8787/v1/receipt/demo</pre>
+    <p>Call the live public developer-preview HTTP verifier (or run <code>node runtime/receipt-verifier/server.mjs</code> locally on port <code>8787</code>):</p>
+<pre class="cmd">curl -s https://api.paxiom.org/health
+curl -s https://api.paxiom.org/version
+curl -s https://api.paxiom.org/v1/receipt/demo</pre>
+    <p>Issue signed receipts from your own x402 seller or run the stdio MCP tool server locally:</p>
+<pre class="cmd">node standards/receipts/v0/bin/paxiom-receipt.mjs keygen --out-dir ./keys --key-id seller-key-01
+node standards/receipts/v0/mcp/server.mjs   <span class="c"># stdio MCP: verify_receipt, explain_receipt, issue_receipt</span></pre>
     <div class="note">
       <div class="note-label">Runtime status</div>
-      <p>This is a reference / developer verifier that you run yourself. There is no public hosted endpoint yet: GitHub Pages serves this spec and these docs, but it does not run the Node verifier. A public runtime and x402 gating come later.</p>
+      <p>The public developer-preview verifier is live at <a href="/api.html"><code>https://api.paxiom.org</code></a>. Free <code>POST /v1/receipt/verify</code> checks schema, Ed25519 signature, and output binding without chain calls; inspect <code>GET /version</code> on the host for active live-settlement capabilities.</p>
     </div>
   </section>
 
