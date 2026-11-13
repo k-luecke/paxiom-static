@@ -1,0 +1,51 @@
+{
+  "name": "@paxiom/receipts",
+  "version": "0.1.0",
+  "description": "Zero-dependency issuer, verifier, HTTP middleware, and MCP server for paxiom.receipt.v0 — proof-bound cryptographic receipts for x402 and agentic APIs.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./verify": "./src/verify.mjs",
+    "./issue": "./src/issue.mjs",
+    "./middleware": "./src/middleware.mjs",
+    "./canonicalize": "./src/canonicalize.mjs",
+    "./explain": "./src/explain.mjs",
+    "./mcp": "./mcp/server.mjs",
+    "./schema.json": "./paxiom.receipt.v0.schema.json"
+  },
+  "bin": {
+    "paxiom-receipt": "./bin/paxiom-receipt.mjs",
+    "paxiom-receipt-mcp": "./mcp/server.mjs"
+  },
+  "files": [
+    "README.md",
+    "canonicalization.md",
+    "trust-states.md",
+    "paxiom.receipt.v0.schema.json",
+    "openapi.json",
+    "src/",
+    "bin/",
+    "mcp/",
+    "server/server.mjs",
+    "examples/"
+  ],
+  "scripts": {
+    "validate": "node ./scripts/validate.mjs",
+    "test": "node --test ./test/ ./server/ ./mcp/"
+  },
+  "keywords": [
+    "x402",
+    "receipts",
+    "ed25519",
+    "agent-payments",
+    "mcp",
+    "proof-of-delivery",
+    "verification",
+    "paxiom"
+  ]
+}

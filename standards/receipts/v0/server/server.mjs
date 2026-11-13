@@ -3,6 +3,7 @@
 // or facilitator calls. It is a thin transport over verifyReceipt().
 import http from 'node:http';
 import { readFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { verifyReceipt, RECEIPT_VERSION } from '../src/verify.mjs';
 
 const MAX_BODY_BYTES = 256 * 1024; // 256 KiB — receipts are small; hash big outputs locally.
@@ -115,7 +116,7 @@ export function createServer() {
 }
 
 // Run directly: node standards/receipts/v0/server/server.mjs
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
   const port = Number(process.env.PORT) || 8787;
   createServer().listen(port, () => {
     process.stdout.write(`paxiom-receipt-verifier (v0, offline) listening on http://localhost:${port}\n`);

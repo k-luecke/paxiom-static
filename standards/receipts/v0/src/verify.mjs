@@ -9,6 +9,13 @@ const schema = JSON.parse(
   readFileSync(new URL('../paxiom.receipt.v0.schema.json', import.meta.url), 'utf8')
 );
 
+const ISO_DATETIME_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/;
+
+function isValidIsoDateTime(value) {
+  if (!ISO_DATETIME_RE.test(value)) return false;
+  return !Number.isNaN(Date.parse(value));
+}
+
 // --- minimal draft-07 validator (covers exactly the constructs this schema uses) ---
 function validateSchema(node, sch, path, root) {
   const errs = [];
@@ -33,6 +40,7 @@ function validateSchema(node, sch, path, root) {
       if (sch.const && node !== sch.const) errs.push(`${path}: expected ${sch.const}`);
       if (sch.enum && !sch.enum.includes(node)) errs.push(`${path}: not in enum`);
       if (sch.pattern && !new RegExp(sch.pattern).test(node)) errs.push(`${path}: pattern mismatch`);
+      if (sch.format === 'date-time' && !isValidIsoDateTime(node)) errs.push(`${path}: invalid date-time`);
       break;
     case 'boolean':
       if (typeof node !== 'boolean') errs.push(`${path}: expected boolean`);
@@ -55,6 +63,9 @@ function validateSchema(node, sch, path, root) {
 function ed25519PublicKey(publicKeyB64) {
   // v0 encoding: base64 of the raw 32-byte Ed25519 public key.
   const raw = Buffer.from(publicKeyB64, 'base64');
+  if (raw.length !== 32) {
+    throw new Error('Ed25519 publicKey must decode to 32 raw bytes');
+  }
   return crypto.createPublicKey({
     format: 'jwk',
     key: { kty: 'OKP', crv: 'Ed25519', x: raw.toString('base64url') }
@@ -112,7 +123,12 @@ export function verifyReceipt(receipt, opts = {}) {
   const input = signingInput(receipt);
   receiptHash = sha256Hex(input);
 
-  // (4) signature
+  // (4) signature + keyId consistency
+  if (receipt.payload.issuer.keyId !== receipt.signature.keyId) {
+    checks.signature = CHECK.FAIL;
+    return done('invalid_signature',
+      `payload.issuer.keyId (${receipt.payload.issuer.keyId}) does not match signature.keyId (${receipt.signature.keyId}).`);
+  }
   let sigOk = false;
   try {
     sigOk = crypto.verify(null, input, ed25519PublicKey(receipt.signature.publicKey),
@@ -177,8 +193,15 @@ export function verifyReceipt(receipt, opts = {}) {
   if (anyInvalid) return done('proof_invalid', 'A provided evidence record failed verification.');
   if (anyUnavailable) return done('proof_unavailable', 'A referenced evidence record could not be retrieved.');
 
-  // (11) unconfirmed onchain settlement claim -> never full verified offline
-  if (st === 'claimed_not_checked' || st === 'verified_settled') {
+  // (11) unconfirmed onchain settlement or untrusted checkedByPaxiom claim
+  const trustedPaxiomSet = opts.trustedPaxiomPublicKeys ? new Set(opts.trustedPaxiomPublicKeys) : null;
+  const isTrustedPaxiomSigner = Boolean(trustedPaxiomSet && trustedPaxiomSet.has(receipt.signature.publicKey));
+  if (p.payment.settlement.checkedByPaxiom && !isTrustedPaxiomSigner) {
+    return done('settlement_claimed_not_checked',
+      'Receipt asserts checkedByPaxiom=true, but signer is not in trustedPaxiomPublicKeys.');
+  }
+  const paxiomCounterVerified = st === 'verified_settled' && p.payment.settlement.checkedByPaxiom && isTrustedPaxiomSigner;
+  if (st === 'claimed_not_checked' || (st === 'verified_settled' && !paxiomCounterVerified)) {
     return done('settlement_claimed_not_checked',
       hasOutput
         ? 'Signature and output hash verified. Receipt claims an onchain settlement that this offline verifier did not check.'
@@ -200,9 +223,9 @@ export function verifyReceipt(receipt, opts = {}) {
 }
 
 /** Convenience: verify from file paths. */
-export function verifyFromFiles(receiptPath, outputPath) {
+export function verifyFromFiles(receiptPath, outputPath, extraOpts = {}) {
   const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
-  const opts = {};
+  const opts = { ...extraOpts };
   if (outputPath) opts.output = JSON.parse(readFileSync(outputPath, 'utf8'));
   return verifyReceipt(receipt, opts);
 }
