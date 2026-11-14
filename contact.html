@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
-<title>Paxiom · Contact</title>
-<meta name="description" content="How to reach Paxiom — for substantive technical questions, partnership inquiries, or feedback on the public drawing set.">
+<title>Paxiom &middot; Contact</title>
+<meta name="description" content="Reach Paxiom directly — for x402 receipt integration sprints, hosted verifier API keys, or technical questions on paxiom.receipt.v0.">
 <meta property="og:title" content="Paxiom · Contact">
-<meta property="og:description" content="How to reach Paxiom — for substantive technical questions, partnership inquiries, or feedback on the public drawing set.">
+<meta property="og:description" content="Reach Paxiom directly — pilot integration sprints, hosted verifier API keys, and technical questions.">
 <meta property="og:url" content="https://paxiom.org/contact.html">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
@@ -17,7 +17,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
@@ -42,7 +41,7 @@ body {
 }
 .title-block .project-subtitle {
   font-family: 'Times New Roman', Times, serif; font-style: italic;
-  font-size: 14px; color: var(--ink-mid); margin-top: 4px; max-width: 36ch;
+  font-size: 14px; color: var(--ink-mid); margin-top: 4px; max-width: 40ch;
 }
 .title-block .meta {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
@@ -50,19 +49,6 @@ body {
   margin-top: 12px; line-height: 1.7;
 }
 .title-block .meta .sep { margin: 0 6px; color: var(--rule-faint); }
-
-nav.primary {
-  border-bottom: 1px solid var(--rule-faint); margin-bottom: 28px;
-  overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;
-}
-nav.primary ul {
-  list-style: none; display: flex; gap: 22px; padding: 12px 0;
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
-}
-nav.primary a { color: var(--ink-mid); text-decoration: none; padding-bottom: 4px; }
-nav.primary a.active { color: var(--ink); border-bottom: 2px solid var(--ink); }
-nav.primary a:hover { color: var(--blue); }
 
 .page-header { margin-bottom: 32px; padding: 8px 0 16px; }
 .page-header .mark {
@@ -83,10 +69,9 @@ nav.primary a:hover { color: var(--blue); }
   font-size: 17px; color: var(--ink-mid); max-width: 56ch; line-height: 1.5;
 }
 
-/* Channel grid */
 .channels { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 32px; }
 .channel {
-  border: 1.5px solid var(--ink); background: var(--paper);
+  border: 1.5px solid var(--ink); background: var(--paper); border-radius: 8px;
   padding: 18px 20px;
 }
 .channel .label {
@@ -96,7 +81,7 @@ nav.primary a:hover { color: var(--blue); }
 }
 .channel .value {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-  font-size: 18px; color: var(--ink); margin-bottom: 8px; word-break: break-all;
+  font-size: 17px; color: var(--ink); margin-bottom: 8px; word-break: break-all;
 }
 .channel .value a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .channel .value a:hover { color: var(--blue); }
@@ -105,7 +90,6 @@ nav.primary a:hover { color: var(--blue); }
   font-size: 14px; color: var(--ink-mid); line-height: 1.5;
 }
 
-/* Subsection */
 .subsection { margin-bottom: 32px; }
 .subsection-mark {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
@@ -119,7 +103,6 @@ nav.primary a:hover { color: var(--blue); }
   font-weight: 500; font-size: 22px; letter-spacing: -0.01em;
   margin-bottom: 12px; color: var(--ink);
 }
-.subsection h2 em { font-style: italic; color: var(--ink-mid); }
 .subsection p {
   font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6;
   color: var(--ink); max-width: 64ch; margin-bottom: 12px;
@@ -131,8 +114,8 @@ nav.primary a:hover { color: var(--blue); }
 .subsection li { margin-bottom: 6px; }
 
 .note-block {
-  border-left: 3px solid var(--amber); padding: 12px 18px;
-  background: var(--paper-dark); margin-bottom: 28px;
+  border-left: 3px solid var(--amber); border-radius: 8px; padding: 14px 18px;
+  background: var(--paper-dark); margin-bottom: 24px;
 }
 .note-block .note-label {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
@@ -141,10 +124,19 @@ nav.primary a:hover { color: var(--blue); }
 }
 .note-block p {
   font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55;
-  color: var(--ink); max-width: 64ch;
+  color: var(--ink); max-width: 64ch; margin-bottom: 8px;
+}
+.note-block p:last-child { margin-bottom: 0; }
+.note-block ul {
+  font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55;
+  color: var(--ink); max-width: 64ch; margin: 6px 0 0 20px;
+}
+.note-block li { margin-bottom: 4px; }
+.note-block code {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 12.5px; background: var(--paper); padding: 1px 5px; border-radius: 2px; color: var(--blue);
 }
 
-/* Footer */
 .sheet-footer {
   border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px;
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
@@ -170,8 +162,7 @@ a:hover { color: var(--red); }
   .paxiom-mark { width: 54px; height: 54px; }
   .title-block .project-title { font-size: 36px; }
   .title-block .meta { text-align: right; margin-top: 0; }
-  .channels { grid-template-columns: 1fr 1fr; gap: 16px; }
-  .channel .value { font-size: 20px; }
+  .channels { grid-template-columns: repeat(3, 1fr); gap: 16px; }
 }
 
 @media print { body { background: white; background-image: none; } }
@@ -179,13 +170,11 @@ a:hover { color: var(--red); }
 .paxiom-bar {
   position: sticky; top: 0; z-index: 100;
   background: rgba(245, 241, 232, 0.88);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--rule-faint);
 }
 .paxiom-bar-inner {
-  max-width: 1200px; margin: 0 auto;
-  padding: 10px 18px;
+  max-width: 1200px; margin: 0 auto; padding: 10px 18px;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
 .paxiom-bar-mark {
@@ -208,33 +197,8 @@ a:hover { color: var(--red); }
 @media (max-width: 600px) {
   .paxiom-bar-inner { padding: 8px 14px; }
   .paxiom-bar-mark span { display: none; }
-  .paxiom-bar-nav { gap: 14px; font-size: 9.5px; letter-spacing: 0.12em; }
+  .paxiom-bar-nav { gap: 14px; font-size: 9.5px; letter-spacing: 0.11em; }
 }
-
-/* Softened corners — binder pages only */
-.btn,
-.doc-card, .doc-card-header,
-.build-state, .build-state-header, .build-cell,
-.status-banner,
-.service-card, .service-card-header,
-.status-key, .status-key-header, .status-key-cell,
-.list-block,
-.build-log, .build-log-header, .log-entry,
-.channel,
-.note-block {
-  border-radius: 8px;
-}
-.doc-card, .build-state, .service-card, .status-key, .build-log {
-  overflow: hidden;
-}
-.doc-card-header,
-.build-state-header,
-.service-card-header,
-.status-key-header,
-.build-log-header {
-  border-radius: 8px 8px 0 0;
-}
-.paxiom-bar { border-radius: 0; }
 </style>
 </head>
 <body>
@@ -247,10 +211,8 @@ a:hover { color: var(--red); }
     </a>
     <nav class="paxiom-bar-nav" aria-label="Primary">
       <a href="/receipts.html">Receipts</a>
-      <a href="/api.html">API</a>
-      <a href="/docs.html">Docs</a>
-      <a href="/services.html">Services</a>
-      <a href="/status.html">Status</a>
+      <a href="/api.html">API &amp; SDK</a>
+      <a href="/journal.html">Build Journal</a>
       <a href="/contact.html" class="active">Contact</a>
     </nav>
   </div>
@@ -260,21 +222,20 @@ a:hover { color: var(--red); }
   <header class="title-block">
     <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg></div>
     <div>
-      <div class="project-mark">Paxiom · Contact</div>
+      <div class="project-mark">Paxiom &middot; Contact</div>
       <div class="project-title">Contact</div>
-      <div class="project-subtitle">For substantive questions. The project is small, the founder responds directly.</div>
+      <div class="project-subtitle">Direct to the builder. Pilot integrations, API keys, and spec feedback.</div>
     </div>
     <div class="meta">
-      <span>Project No. PXM-001</span><span class="sep">·</span>
-      <span>Sheet PXM-C-100</span><span class="sep">·</span>
-      <span>Updated 2026.05.05</span>
+      <span>Sheet PXM-C-100</span><span class="sep">&middot;</span>
+      <span>Updated 2026.11</span>
     </div>
   </header>
 
   <section class="page-header">
     <div class="mark">Sheet PXM-C-100</div>
-    <h1>How to reach <em>the project.</em></h1>
-    <p class="strap">No contact form. No sales funnel. The project is small enough that messages reach the founder directly. That's the right shape for now and the channels below reflect it.</p>
+    <h1>How to reach <em>Paxiom.</em></h1>
+    <p class="strap">No contact form and no sales queue. Messages go straight to the founder.</p>
   </section>
 
   <section class="channels" aria-label="Contact channels">
@@ -282,62 +243,59 @@ a:hover { color: var(--red); }
     <div class="channel">
       <div class="label">Email</div>
       <div class="value"><a href="mailto:kyle@paxiom.org">kyle@paxiom.org</a></div>
-      <div class="note">For technical questions, partnership inquiries, or feedback on the drawing set. Concrete subject lines get faster responses than generic ones.</div>
+      <div class="note">For pilot sprints, hosted verifier API keys, partnership inquiries, or technical questions. Concrete subject lines get fast replies.</div>
     </div>
 
     <div class="channel">
       <div class="label">GitHub</div>
-      <div class="value"><a href="https://github.com/k-luecke/paxiom" target="_blank" rel="noopener noreferrer">github.com/k-luecke/paxiom</a></div>
-      <div class="note">Repository, issues, build history. File a GitHub issue for documentation feedback or to flag specific concerns about a sheet in the drawing set.</div>
+      <div class="value"><a href="https://github.com/k-luecke/paxiom-static" target="_blank" rel="noopener noreferrer">github.com/k-luecke/paxiom-static</a></div>
+      <div class="note">Open spec, verifier runtime, and public site source. Open an issue for schema proposals, edge cases, or bug reports.</div>
+    </div>
+
+    <div class="channel">
+      <div class="label">npm</div>
+      <div class="value"><a href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer">@paxiom/receipts</a></div>
+      <div class="note">Zero-dependency SDK, Fetch/Express middleware, CLI, and stdio MCP server.</div>
     </div>
 
   </section>
 
   <div class="note-block">
-    <div class="note-label">Note · Receipt pilot inquiries</div>
-    <p>Reaching out about making an x402-paid endpoint <a href="/receipts.html">Paxiom-compatible</a>? A message that includes these gets a faster, more useful reply:</p>
+    <div class="note-label">Pilot sprints &amp; hosted X-API-Key access</div>
+    <p>Integrating <a href="/receipts.html">Paxiom Receipts</a> into an x402 endpoint, agent wallet, or gateway? Including these details helps us start immediately:</p>
     <ul>
-      <li>your endpoint or repo;</li>
-      <li>whether it already uses x402;</li>
-      <li>what the buyer receives (the delivered output);</li>
-      <li>whether you need receipt <em>issuance</em>, <em>verification</em>, or both;</li>
-      <li>whether settlement / proof checks are required now or later.</li>
+      <li>your endpoint URL, framework, or repository;</li>
+      <li>whether you need seller <em>issuance</em> (<code>@paxiom/receipts</code>), buyer <em>verification</em>, or both;</li>
+      <li>expected monthly volume if requesting a flat-rate <code>X-API-Key</code> for <code>POST /v1/receipt/verify-live</code>;</li>
+      <li>any settlement chains beyond Base Mainnet your roadmap requires.</li>
     </ul>
   </div>
 
-  <div class="note-block">
-    <div class="note-label">Note · What gets a response</div>
-    <p>Substantive technical engagement, partnership conversations with concrete proposals, and considered feedback on the drawing set get direct replies. Casual sales outreach, generic introductory pitches, and recruiter cold mail typically don't. The project is heads-down on shipping; bandwidth is rationed accordingly.</p>
-  </div>
-
   <section class="subsection">
-    <div class="subsection-mark">C-200 · Things worth reaching out about</div>
+    <div class="subsection-mark">C-200 &middot; Good reasons to write</div>
     <h2>Where the conversation matters.</h2>
     <ul>
-      <li>Technical questions about the architecture that aren't answered in the drawing set.</li>
-      <li>Specific use cases where Paxiom's services would directly apply, with concrete volume and integration context.</li>
-      <li>Partnership conversations with adjacent projects in verified compute, agent infrastructure, or cross-chain settlement.</li>
-      <li>Standards-engagement conversations (KYA, ERC-8004, ERC-8183, x402 Foundation working groups).</li>
-      <li>Operator-side feedback from teams using x402 in production who have hit the gaps Paxiom is built to close.</li>
-      <li>Substantive criticism of the architecture, the bet, or the documents themselves. Disagreement is information.</li>
+      <li>Wiring proof-bound receipts into production x402 APIs, MCP servers, or agentic payment routers.</li>
+      <li>Provisioning flat monthly <code>X-API-Key</code> credentials alongside per-call x402 settlement on <code>api.paxiom.org</code>.</li>
+      <li>Standards alignment across x402 facilitators, Bazaar indexers, and agent wallet receipt logs.</li>
+      <li>Technical review or critique of <code>paxiom.receipt.v0</code> or the prints in the <a href="/journal.html">Build Journal</a>.</li>
     </ul>
   </section>
 
   <section class="subsection">
-    <div class="subsection-mark">C-300 · Things that don't get a response</div>
-    <h2>And what the founder skips.</h2>
+    <div class="subsection-mark">C-300 &middot; Signal over noise</div>
+    <h2>What gets skipped.</h2>
     <ul>
-      <li>Cold sales pitches for SaaS, recruiting, marketing services, or generic "synergy" conversations.</li>
-      <li>Token launch invitations, IDO requests, exchange listings, market-maker pitches.</li>
-      <li>"Quick call" requests with no specified topic.</li>
-      <li>Anything addressed to a fictional CEO, COO, or BD lead. The org chart has one slot.</li>
+      <li>Token launch pitches, market-maker outreach, or exchange listing solicitations.</li>
+      <li>Generic SaaS, recruiting, or agency cold mail.</li>
+      <li>Unspecific &ldquo;quick call&rdquo; requests without context.</li>
     </ul>
   </section>
 
   <footer class="sheet-footer">
-    <div>Paxiom · paxiom.org</div>
-    <div>Public · Rev. A · 2026.05.05</div>
-    <div class="sheet-id">PXM-C-100 · Contact</div>
+    <div>Paxiom &middot; paxiom.org</div>
+    <div>Public &middot; Updated 2026.11</div>
+    <div class="sheet-id">PXM-C-100 &middot; Contact</div>
   </footer>
 
 </div>

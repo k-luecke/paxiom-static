@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
-<title>Paxiom Â· Services</title>
+<title>Paxiom &middot; Phase 1 Service Schedule (R&amp;D Archive)</title>
 <meta name="description" content="Paxiom Phase 1 Service Schedule — testnet/reference proof services, signed envelopes, draft pricing, and current trust boundaries.">
 <meta property="og:title" content="Paxiom · Services">
 <meta property="og:description" content="Paxiom Phase 1 Service Schedule — testnet/reference proof services, signed envelopes, draft pricing, and current trust boundaries.">
@@ -234,7 +234,7 @@ a:hover { color: var(--red); }
   .paxiom-bar-nav { gap: 14px; font-size: 9.5px; letter-spacing: 0.12em; }
 }
 
-/* Softened corners â€” binder pages only */
+/* Softened corners &mdash; binder pages only */
 .btn,
 .doc-card, .doc-card-header,
 .build-state, .build-state-header, .build-cell,
@@ -264,14 +264,14 @@ a:hover { color: var(--red); }
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
 <div class="paxiom-bar">
   <div class="paxiom-bar-inner">
-    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom â€” home">
+    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom &mdash; home">
       <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
       <span>Paxiom</span>
     </a>
     <nav class="paxiom-bar-nav" aria-label="Primary">
-      <a href="/docs.html">Docs</a>
-      <a href="/services.html" class="active">Services</a>
-      <a href="/status.html">Status</a>
+      <a href="/receipts.html">Receipts</a>
+      <a href="/api.html">API &amp; SDK</a>
+      <a href="/journal.html" class="active">Build Journal</a>
       <a href="/contact.html">Contact</a>
     </nav>
   </div>
@@ -281,13 +281,13 @@ a:hover { color: var(--red); }
   <header class="title-block">
     <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg></div>
     <div>
-      <div class="project-mark">Paxiom Â· Services</div>
+      <div class="project-mark">Paxiom &middot; Services</div>
       <div class="project-title">Phase 1 Service Schedule</div>
       <div class="project-subtitle">Five services. Draft pricing. Testnet/reference hardening.</div>
     </div>
     <div class="meta">
-      <span>Project No. PXM-001</span><span class="sep">Â·</span>
-      <span>Sheet PXM-V-100</span><span class="sep">Â·</span>
+      <span>Project No. PXM-001</span><span class="sep">&middot;</span>
+      <span>Sheet PXM-V-100</span><span class="sep">&middot;</span>
       <span>Updated 2026.05.10</span>
     </div>
   </header>
@@ -299,15 +299,15 @@ a:hover { color: var(--red); }
   </section>
 
   <div class="status-banner" role="note">
-    <span class="label">Status Â· Phase 1 testnet/reference hardening</span>
-    <span class="text">A-202 now rejects slot-mismatched device responses before signing an envelope. A-201 and A-205 are being wired to a local Erigon proof source while the Google Drive cold warehouse syncs. Strict deployments refuse mock paths and unsigned response envelopes. Disabled or stubbed payment paths are labeled as such and do not claim settlement. Prices below remain pilot assumptions.</span>
+    <span class="label">Build Journal Archive &middot; R&amp;D Substrate Schedule (2026.05)</span>
+    <span class="text">These five Ethereum &amp; cross-chain proof services represent upstream R&amp;D substrates now indexed under the <a href="/journal.html">Build Journal</a>. For the live production product on Base Mainnet, see <a href="/">Paxiom Receipts</a> and <a href="/api.html">API &amp; SDK</a>.</span>
   </div>
 
   <section class="schedule" aria-label="Phase 1 service schedule">
 
     <article class="service-card">
       <div class="service-card-header">
-        <span class="id">Service 01 Â· A-201</span>
+        <span class="id">Service 01 &middot; A-201</span>
         <span class="pending">Pending Phase 1 Launch</span>
       </div>
       <div class="service-card-body">
@@ -324,7 +324,7 @@ a:hover { color: var(--red); }
 
     <article class="service-card">
       <div class="service-card-header">
-        <span class="id">Service 02 Â· A-202</span>
+        <span class="id">Service 02 &middot; A-202</span>
         <span class="pending">Base Sepolia rehearsal next</span>
       </div>
       <div class="service-card-body">
@@ -342,12 +342,12 @@ a:hover { color: var(--red); }
 
     <article class="service-card">
       <div class="service-card-header">
-        <span class="id">Service 03 Â· A-203</span>
+        <span class="id">Service 03 &middot; A-203</span>
         <span class="pending">Pending Phase 1 Launch</span>
       </div>
       <div class="service-card-body">
         <div class="title">Cross-Chain Message Verification</div>
-        <p class="desc">Bridge-grade verification of messages originating on chain A, with proofs verifiable on chain B. The Kelp DAO incident is the reference case â€” what would have prevented that attack is what this service provides.</p>
+        <p class="desc">Bridge-grade verification of messages originating on chain A, with proofs verifiable on chain B. The Kelp DAO incident is the reference case &mdash; what would have prevented that attack is what this service provides.</p>
         <div class="service-card-meta">
           <div class="cell"><span class="label">Price (draft)</span><span class="value price">$3.00 / attestation</span></div>
           <div class="cell"><span class="label">Target Volume</span><span class="value">~200 / mo</span></div>
@@ -359,7 +359,7 @@ a:hover { color: var(--red); }
 
     <article class="service-card">
       <div class="service-card-header">
-        <span class="id">Service 04 Â· A-204</span>
+        <span class="id">Service 04 &middot; A-204</span>
         <span class="pending">Pending Phase 1 Launch</span>
       </div>
       <div class="service-card-body">
@@ -376,7 +376,7 @@ a:hover { color: var(--red); }
 
     <article class="service-card">
       <div class="service-card-header">
-        <span class="id">Service 05 Â· A-205</span>
+        <span class="id">Service 05 &middot; A-205</span>
         <span class="pending">Pending Phase 1 Launch</span>
       </div>
       <div class="service-card-body">
@@ -394,7 +394,7 @@ a:hover { color: var(--red); }
   </section>
 
   <section class="subsection">
-    <div class="subsection-mark">V-200 Â· What's included</div>
+    <div class="subsection-mark">V-200 &middot; What's included</div>
     <h2>What you get with every service.</h2>
     <ul>
       <li>A signed response from the platform's published key, allowing independent verification that the response originated from Paxiom.</li>
@@ -406,7 +406,7 @@ a:hover { color: var(--red); }
   </section>
 
   <section class="subsection">
-    <div class="subsection-mark">V-300 Â· What's not included</div>
+    <div class="subsection-mark">V-300 &middot; What's not included</div>
     <h2>What the platform <em>doesn't</em> do.</h2>
     <ul>
       <li>No custody of customer assets. The platform holds no wallets, balances, or tokens belonging to customers.</li>
@@ -419,17 +419,17 @@ a:hover { color: var(--red); }
   </section>
 
   <section class="subsection">
-    <div class="subsection-mark">V-400 Â· Beyond Phase 1</div>
+    <div class="subsection-mark">V-400 &middot; Beyond Phase 1</div>
     <h2>What's coming, but not yet.</h2>
-    <p>Phase 2 expands into ZK proofs of computation on private data â€” HIPAA-compliant medical workflows, financial-data verification with regulatory transparency. The proof archive becomes part of the moat: Arweave supplies durable storage, AO supplies subsidized parallel compute, and Paxiom keeps the index, keys, verification pipeline, and paid customer interface.</p>
+    <p>Phase 2 expands into ZK proofs of computation on private data &mdash; HIPAA-compliant medical workflows, financial-data verification with regulatory transparency. The proof archive becomes part of the moat: Arweave supplies durable storage, AO supplies subsidized parallel compute, and Paxiom keeps the index, keys, verification pipeline, and paid customer interface.</p>
     <p>Phase 3 adds verified AI inference. Phase 4 extends into IoT telemetry. Phase 5 completes the migration to post-quantum proving systems.</p>
     <p>None of these are part of the schedule above. Each comes online in its own phase, with its own pricing model, on its own timeline. The <a href="/paxiom-project-narrative.html">Project Narrative</a> covers the longer arc; this page covers what ships first.</p>
   </section>
 
   <footer class="sheet-footer">
-    <div>Paxiom Â· paxiom.org</div>
+    <div>Paxiom &middot; paxiom.org</div>
     <div>Public · Rev. A · 2026.05.10</div>
-    <div class="sheet-id">PXM-V-100 Â· Service Schedule</div>
+    <div class="sheet-id">PXM-V-100 &middot; Service Schedule</div>
   </footer>
 
 </div>

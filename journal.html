@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<title>Paxiom &middot; Build Journal &amp; Drawing Set</title>
+<meta name="description" content="The Paxiom engineering record — dated build log, ten-sheet architectural drawing set, R&amp;D substrate archive, and explicit claim boundaries.">
+<meta property="og:title" content="Paxiom · Build Journal &amp; Drawing Set">
+<meta property="og:description" content="Dated build log, ten-sheet architectural drawing set, and R&amp;D substrate notes behind Paxiom.">
+<meta property="og:url" content="https://paxiom.org/journal.html">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.frame { max-width: 1080px; margin: 0 auto; padding: 20px 18px 32px; }
+
+.title-block { border-bottom: 2px solid var(--ink); padding-bottom: 16px; margin-bottom: 14px; }
+.title-mark { display: block; margin-bottom: 12px; }
+.paxiom-mark { width: 42px; height: 42px; color: var(--ink); display: block; }
+.title-block .project-mark {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: 4px;
+}
+.title-block .project-title {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 28px; font-weight: 500; line-height: 1.1;
+  letter-spacing: -0.01em; color: var(--ink);
+}
+.title-block .project-subtitle {
+  font-family: 'Times New Roman', Times, serif; font-style: italic;
+  font-size: 14px; color: var(--ink-mid); margin-top: 4px; max-width: 44ch;
+}
+.title-block .meta {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.04em; color: var(--ink-faint);
+  margin-top: 12px; line-height: 1.7;
+}
+.title-block .meta .sep { margin: 0 6px; color: var(--rule-faint); }
+
+.page-header { margin-bottom: 24px; padding: 8px 0 12px; }
+.page-header .mark {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.page-header .mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.page-header h1 {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 500; font-size: clamp(32px, 6vw, 44px); line-height: 1.05;
+  letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px;
+}
+.page-header h1 em { font-style: italic; color: var(--ink-mid); font-weight: 400; }
+.page-header .strap {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 17px; color: var(--ink); max-width: 62ch; line-height: 1.55; margin-bottom: 18px;
+}
+
+.jump-bar {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  padding: 12px 0 4px;
+}
+.jump-pill {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  text-decoration: none; color: var(--ink);
+  border: 1.5px solid var(--ink); border-radius: 8px;
+  padding: 7px 12px; background: var(--paper);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.jump-pill:hover { background: var(--ink); color: var(--paper); }
+
+/* Status key matrix */
+.status-key { border: 1.5px solid var(--ink); margin-bottom: 36px; background: var(--paper); border-radius: 8px; overflow: hidden; }
+.status-key-header {
+  background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 8px 8px 0 0;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+}
+.status-key-grid { display: grid; grid-template-columns: 1fr; }
+.status-key-cell { padding: 16px 18px; border-bottom: 1px solid var(--rule-faint); }
+.status-key-cell:last-child { border-bottom: none; }
+.status-key-cell .label {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 6px;
+}
+.status-key-cell .value {
+  font-family: 'Times New Roman', Times, serif; font-size: 15.5px; line-height: 1.5; color: var(--ink);
+}
+.status-key-cell .value code {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 12px; background: var(--paper-dark); padding: 1px 5px; border-radius: 2px; color: var(--blue);
+}
+
+/* Sub-section */
+.subsection { margin-bottom: 42px; scroll-margin-top: 64px; }
+.subsection-mark {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.subsection-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.subsection h2 {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 500; font-size: 24px; letter-spacing: -0.01em;
+  margin-bottom: 14px; color: var(--ink);
+}
+.subsection h2 em { font-style: italic; color: var(--ink-mid); }
+.subsection p {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 16px; line-height: 1.6; color: var(--ink);
+  max-width: 64ch; margin-bottom: 14px;
+}
+
+/* Build log */
+.build-log { border: 1.5px solid var(--ink); background: var(--paper); border-radius: 8px; overflow: hidden; }
+.build-log-header {
+  background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 8px 8px 0 0;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.log-entry { padding: 16px 18px; border-bottom: 1px solid var(--rule-faint); }
+.log-entry:last-child { border-bottom: none; }
+.log-entry .log-date {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 11px; letter-spacing: 0.12em; color: var(--blue);
+  font-weight: 600; margin-bottom: 6px;
+}
+.log-entry ul { list-style: none; font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55; }
+.log-entry li { padding: 3px 0 3px 14px; position: relative; color: var(--ink); }
+.log-entry li::before { content: '\00B7'; position: absolute; left: 0; color: var(--rule-faint); font-weight: bold; }
+.log-entry li code {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 12.5px; background: var(--paper-dark); padding: 1px 5px; border-radius: 2px; color: var(--blue);
+}
+.log-note {
+  padding: 12px 18px;
+  font-family: 'Times New Roman', Times, serif; font-style: italic;
+  font-size: 13px; color: var(--ink-faint); border-top: 1px solid var(--rule-faint);
+}
+
+/* Doc cards */
+.doc-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
+.doc-card {
+  border: 1.5px solid var(--ink); background: var(--paper); border-radius: 8px; overflow: hidden;
+  text-decoration: none; color: var(--ink);
+  display: block; transition: background 0.15s ease;
+}
+.doc-card:hover { background: var(--paper-dark); }
+.doc-card-header {
+  display: grid; grid-template-columns: auto 1fr;
+  gap: 16px; padding: 12px 16px; border-radius: 8px 8px 0 0;
+  background: var(--ink); color: var(--paper);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  align-items: center;
+}
+.doc-card-header .series { font-weight: 600; }
+.doc-card-header .status { text-align: right; opacity: 0.72; font-size: 9px; }
+.doc-card-body { padding: 18px 18px 20px; }
+.doc-card-body .title {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 22px; font-weight: 500; letter-spacing: -0.005em;
+  margin-bottom: 8px; color: var(--ink); line-height: 1.2;
+}
+.doc-card-body .title em { font-style: italic; color: var(--ink-mid); }
+.doc-card-body .purpose {
+  font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55;
+  color: var(--ink-mid); margin-bottom: 12px; max-width: 56ch;
+}
+.doc-card-body .open {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--blue);
+}
+
+/* List blocks */
+.list-block {
+  border: 1px solid var(--rule-faint); border-radius: 8px; padding: 16px 18px;
+  background: var(--paper); margin-bottom: 16px;
+}
+.list-block .list-label {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.list-block .list-label::before {
+  content: ''; width: 8px; height: 8px; background: var(--blue); border-radius: 50%;
+}
+.list-block.amber .list-label { color: var(--amber); }
+.list-block.amber .list-label::before { background: var(--amber); }
+.list-block.constraints .list-label { color: var(--red); }
+.list-block.constraints .list-label::before { background: var(--red); }
+.list-block ul { list-style: none; font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55; }
+.list-block li { padding: 4px 0 4px 14px; position: relative; color: var(--ink); }
+.list-block li::before { content: '\00B7'; position: absolute; left: 0; color: var(--rule-faint); font-weight: bold; }
+.list-block li code {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 12.5px; background: var(--paper-dark); padding: 1px 5px; border-radius: 2px; color: var(--blue);
+}
+
+.note-block {
+  border-left: 3px solid var(--amber); border-radius: 8px; padding: 12px 18px;
+  background: var(--paper-dark); margin-bottom: 20px;
+}
+.note-block .note-label {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--amber); margin-bottom: 6px;
+}
+.note-block p {
+  font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55;
+  color: var(--ink); max-width: 66ch; margin: 0;
+}
+
+.archive-links { list-style: none; margin: 8px 0 4px; border: 1px solid var(--rule-faint); border-radius: 8px; padding: 4px 16px; background: var(--paper); }
+.archive-links li { padding: 10px 0; border-bottom: 1px solid var(--rule-faint); display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; }
+.archive-links li:last-child { border-bottom: none; }
+.archive-links a { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--blue); }
+.archive-links .desc { font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--ink-mid); font-size: 14.5px; }
+
+.sheet-footer {
+  border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-faint);
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;
+}
+.sheet-footer .sheet-id { color: var(--ink); font-weight: 600; }
+
+a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--red); }
+
+@media (min-width: 768px) {
+  .frame { padding: 40px 32px 48px; }
+  body {
+    background-image:
+      linear-gradient(rgba(26, 35, 50, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26, 35, 50, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .title-block { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 24px; padding-bottom: 20px; }
+  .title-mark { margin-bottom: 0; }
+  .paxiom-mark { width: 54px; height: 54px; }
+  .title-block .project-title { font-size: 36px; }
+  .title-block .meta { text-align: right; margin-top: 0; }
+  .status-key-grid { grid-template-columns: repeat(3, 1fr); }
+  .status-key-cell { border-bottom: none; border-right: 1px solid var(--rule-faint); }
+  .status-key-cell:last-child { border-right: none; }
+  .doc-grid { grid-template-columns: 1fr 1fr; gap: 18px; }
+  .doc-card-body .title { font-size: 24px; }
+  .subsection h2 { font-size: 28px; }
+}
+
+@media print { body { background: white; background-image: none; } }
+
+.paxiom-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(245, 241, 232, 0.88);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule-faint);
+}
+.paxiom-bar-inner {
+  max-width: 1200px; margin: 0 auto; padding: 10px 18px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.paxiom-bar-mark {
+  display: inline-flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--ink);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  transition: color 0.15s ease;
+}
+.paxiom-bar-mark svg { width: 22px; height: 22px; display: block; }
+.paxiom-bar-mark:hover { color: var(--blue); }
+.paxiom-bar-nav {
+  display: flex; gap: 18px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; transition: color 0.15s ease; padding-bottom: 2px; }
+.paxiom-bar-nav a:hover { color: var(--ink); }
+.paxiom-bar-nav a.active { color: var(--ink); border-bottom: 1.5px solid var(--ink); }
+@media (max-width: 600px) {
+  .paxiom-bar-inner { padding: 8px 14px; }
+  .paxiom-bar-mark span { display: none; }
+  .paxiom-bar-nav { gap: 14px; font-size: 9.5px; letter-spacing: 0.11em; }
+}
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
+<div class="paxiom-bar">
+  <div class="paxiom-bar-inner">
+    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
+      <span>Paxiom</span>
+    </a>
+    <nav class="paxiom-bar-nav" aria-label="Primary">
+      <a href="/receipts.html">Receipts</a>
+      <a href="/api.html">API &amp; SDK</a>
+      <a href="/journal.html" class="active">Build Journal</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </div>
+</div>
+<div class="frame">
+
+  <header class="title-block">
+    <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg></div>
+    <div>
+      <div class="project-mark">Paxiom &middot; Engineering Binder &amp; Build Log</div>
+      <div class="project-title">Build Journal</div>
+      <div class="project-subtitle">Chronological build log, architectural drawing set, and R&amp;D substrate archive.</div>
+    </div>
+    <div class="meta">
+      <span>Sheet PXM-J-100</span><span class="sep">&middot;</span>
+      <span>10 Public Prints</span><span class="sep">&middot;</span>
+      <span>Updated 2026.11</span>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="mark">Sheet PXM-J-100</div>
+    <h1>How the build got here. <em>Dated, inspectable, unvarnished.</em></h1>
+    <p class="strap">The main site presents the live shipped product &mdash; <a href="/receipts.html">Paxiom Receipts</a>, the <a href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer"><code>@paxiom/receipts</code></a> SDK &amp; MCP server, and the Base Mainnet verifier at <a href="/api.html"><code>api.paxiom.org</code></a>. This journal keeps the complete engineering trail in one place: dated release notes, the ten-sheet architectural drawing set, earlier Ethereum/AO substrate explorations, and explicit non-claims.</p>
+    <div class="jump-bar" aria-label="Journal sections">
+      <a class="jump-pill" href="#log">Build Log</a>
+      <a class="jump-pill" href="#prints">Drawing Set (10 Sheets)</a>
+      <a class="jump-pill" href="#rd-substrate">R&amp;D Substrate Archive</a>
+      <a class="jump-pill" href="#constraints">Boundaries &amp; Non-Claims</a>
+    </div>
+  </section>
+
+  <section class="status-key" aria-labelledby="key-status">
+    <div class="status-key-header">
+      <span id="key-status">Current Engineering State</span>
+      <span>2026.11</span>
+    </div>
+    <div class="status-key-grid">
+      <div class="status-key-cell">
+        <div class="label">Shipped Product</div>
+        <div class="value"><strong>Paxiom Receipts (<code>paxiom.receipt.v0</code>)</strong> &mdash; <code>@paxiom/receipts@0.1.1</code> on npm, stdio MCP server, and live Base Mainnet x402 settlement verifier + Ed25519 counter-attestation.</div>
+      </div>
+      <div class="status-key-cell">
+        <div class="label">R&amp;D Substrate Track</div>
+        <div class="value">Ethereum sync-committee verification (<code>A-202</code>), local Erigon MPT witness pipeline (<code>A-201</code>/<code>A-205</code>), and AO/Arweave audit trails &mdash; preserved below as upstream R&amp;D.</div>
+      </div>
+      <div class="status-key-cell">
+        <div class="label">Operating Posture</div>
+        <div class="value">Self-funded, single-operator discipline. Every public capability is backed by deterministic tests and machine-readable runtime flags on <code>GET /version</code>.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="subsection" id="log">
+    <div class="subsection-mark">J-100 &middot; Build log</div>
+    <h2>Receipts from <em>the build.</em></h2>
+    <p>Sparse by design. Entries appear when something material ships or when the product focus narrows.</p>
+
+    <div class="build-log" aria-labelledby="log-heading">
+      <div class="build-log-header">
+        <span id="log-heading">Build Log</span>
+        <span>Most recent first</span>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">2026.11</div>
+        <ul>
+          <li>Narrowed the public product surface onto a single wedge: <strong>Paxiom Receipts (<code>paxiom.receipt.v0</code>)</strong> &mdash; proof-bound Ed25519 receipts binding HTTP requests, delivered outputs, and x402 payments</li>
+          <li>Published zero-dependency <code>@paxiom/receipts@0.1.1</code> to npm (issuer, offline verifier, Fetch/Express middleware, CLI <code>paxiom-receipt</code>, and stdio MCP server <code>paxiom-receipt-mcp</code>)</li>
+          <li>Deployed live verifier at <code>https://api.paxiom.org</code> with all four capabilities active: free offline verification (<code>POST /v1/receipt/verify</code>), multi-RPC Base &amp; Base Sepolia USDC <code>Transfer</code>-log settlement verification (<code>POST /v1/receipt/verify-live</code>), x402 <code>$0.002</code> USDC gating + <code>X-API-Key</code> access, and Paxiom Ed25519 counter-attestation (<code>/.well-known/paxiom-keys.json</code>)</li>
+          <li>Verified live Base Mainnet x402 settlement into a separated self-custody revenue treasury and registered <code>POST /v1/receipt/verify-live</code> for x402 Bazaar discovery</li>
+          <li>Rebuilt <code>paxiom.org</code> around the shipped Receipts product and consolidated the ten-sheet drawing set, Phase 1 substrate schedules, and historical gate notes into this Build Journal</li>
+        </ul>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">2026.05.10</div>
+        <ul>
+          <li>A-202 hardened against downstream-consumer confusion by rejecting slot-mismatched device responses before platform signing</li>
+          <li>Service envelope posture tightened: payment, settlement, notary, and mock/reference states remain explicit</li>
+          <li>Public direction updated from waiting on Load/Ultraviolet to building a Paxiom-owned historical proof archive over encrypted Arweave evidence and AO-assisted compute</li>
+          <li>Erigon started against a Google Drive-backed cold warehouse; initial archive sync is in progress, not yet a production archive claim</li>
+          <li>A local Erigon proof-source adapter now maps <code>eth_getBlockByNumber</code> and <code>eth_getProof</code> into Paxiom's existing MPT verification pipeline for A-201/A-205 rehearsal</li>
+          <li>Internal operator-capital tooling reached a Base path-validation milestone with live funds; this remains private infrastructure, not a public product surface</li>
+          <li>RPC providers remain transport, not authority; Ethereum roots and locally verified proofs are the trust anchor</li>
+        </ul>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">2026.05.06</div>
+        <ul>
+          <li>Audit resolution closed across all four repos &mdash; every Critical, High, Medium, Low, and Info finding addressed (181 total). Tracker reconciled with code state.</li>
+          <li>Resolution methodology used parallel implementation review plus a red-team reviewer and moderator for architectural items, with cluster PRs for mechanical hygiene.</li>
+          <li>Open follow-ups remain (env-floor + UI-mutates cluster, font self-host, six paxiom UI surfaces) &mdash; explicitly scoped, not audit-blocking.</li>
+        </ul>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">2026.05.05</div>
+        <ul>
+          <li>Public site v1 structure &mdash; Home, Docs, Services, Status, Contact</li>
+          <li>Drawing-set visual language extended to public surfaces</li>
+          <li>Build log added under Status; receipts cadence established</li>
+          <li>Mobile layout rules committed for the binder pages</li>
+        </ul>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">2026.04.29</div>
+        <ul>
+          <li>Project Narrative (B-series) issued to the drawing set, 26 sheets</li>
+          <li>Construction-document register applied to founder-context material</li>
+          <li>Phase 1 &rarr; Phase 5 trajectory documented with moats per phase</li>
+        </ul>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">2026.04.28</div>
+        <ul>
+          <li>Operations Runbook (O-series) issued &mdash; incident and routine procedures</li>
+          <li>Key Custody &amp; Identity Blueprint (E-series) issued &mdash; three-tier architecture</li>
+          <li>Audit Relay Blueprint (M-series) issued &mdash; operator-controlled review loop</li>
+        </ul>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">2026.04.27</div>
+        <ul>
+          <li>Phase 1 Blueprint (A-series) issued &mdash; five services, reference architecture</li>
+          <li>mk19 archive recovered from prior development environment</li>
+          <li>Sync committee verifier rebuild plan downgraded from open risk to partially mitigated</li>
+        </ul>
+      </div>
+
+      <div class="log-note">
+        Entries prior to 2026.04.27 live in version control commit history across the Paxiom repositories.
+      </div>
+    </div>
+  </section>
+
+  <section class="subsection" id="prints">
+    <div class="subsection-mark">J-200 &middot; Architectural drawing set</div>
+    <h2>The technical prints <em>(ten public sheets).</em></h2>
+    <p>Before narrowing onto Paxiom Receipts as the immediate product wedge, we documented the broader verifiable-claims thesis in a construction-style drawing set: narrative, service blueprints, AO proof-routing topology, compliance records, key custody, and incident runbooks. None of these prints are required to adopt <code>@paxiom/receipts</code>, but every sheet remains online for architectural diligence.</p>
+
+    <div class="doc-grid">
+
+      <a class="doc-card" href="/paxiom-project-narrative.html">
+        <div class="doc-card-header">
+          <span class="series">B-Series &middot; 26 sheets</span>
+          <span class="status">Public &middot; Rev. A</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="title">Project Narrative <em>&middot; the territory and the bet</em></div>
+          <p class="purpose">A founder's account of the agent economy, x402, the threat surface, and the long-horizon verification thesis behind Paxiom.</p>
+          <span class="open">Open Document &rarr;</span>
+        </div>
+      </a>
+
+      <a class="doc-card" href="/paxiom-phase-1-blueprint.html">
+        <div class="doc-card-header">
+          <span class="series">A-Series &middot; 12 sheets</span>
+          <span class="status">R&amp;D &middot; Rev. A</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="title">Phase 1 Blueprint <em>&middot; five services, build sequence</em></div>
+          <p class="purpose">Original specifications for the five Ethereum &amp; cross-chain proof services, build sequence, and risk register.</p>
+          <span class="open">Open Document &rarr;</span>
+        </div>
+      </a>
+
+      <a class="doc-card" href="/ao-zk-proving-architecture.html">
+        <div class="doc-card-header">
+          <span class="series">T-Series &middot; 8 sheets</span>
+          <span class="status">R&amp;D &middot; Rev. A</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="title">Technical Architecture <em>&middot; AO dispatcher for proof work</em></div>
+          <p class="purpose">How AO routes verifiable Ethereum proof work across a distributed dispatcher topology, message schemas, and composability boundaries.</p>
+          <span class="open">Open Document &rarr;</span>
+        </div>
+      </a>
+
+      <a class="doc-card" href="/paxiom-compliance-architecture.html">
+        <div class="doc-card-header">
+          <span class="series">CA-Series &middot; 8 sheets</span>
+          <span class="status">Testnet &middot; Rev. A</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="title">Compliance Architecture <em>&middot; verifiable records, by construction</em></div>
+          <p class="purpose">Independent audit-trail verification anchored to on-chain events and replayable AO process state on Arweave.</p>
+          <span class="open">Open Document &rarr;</span>
+        </div>
+      </a>
+
+      <a class="doc-card" href="/paxiom-audit-relay-blueprint.html">
+        <div class="doc-card-header">
+          <span class="series">M-Series &middot; 11 sheets</span>
+          <span class="status">Public &middot; Rev. A</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="title">Audit Relay Blueprint <em>&middot; the operator's review loop</em></div>
+          <p class="purpose">Mechanical structure for recording, forwarding, and verifying audit events while preserving operator decision-making.</p>
+          <span class="open">Open Document &rarr;</span>
+        </div>
+      </a>
+
+      <a class="doc-card" href="/paxiom-key-identity-blueprint.html">
+        <div class="doc-card-header">
+          <span class="series">E-Series &middot; 12 sheets</span>
+          <span class="status">Public &middot; Rev. A</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="title">Key Custody &amp; Identity <em>&middot; trust boundaries</em></div>
+          <p class="purpose">The three-tier key architecture (hot, warm, cold) governing signing, treasury separation, rotation, and compromise response.</p>
+          <span class="open">Open Document &rarr;</span>
+        </div>
+      </a>
+
+      <a class="doc-card" href="/paxiom-operations-runbook.html">
+        <div class="doc-card-header">
+          <span class="series">O-Series &middot; 17 sheets</span>
+          <span class="status">Public &middot; Rev. A</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="title">Operations Runbook <em>&middot; incident &amp; routine discipline</em></div>
+          <p class="purpose">Severity framework, first-response discipline, and post-incident learning loop for platform operations.</p>
+          <span class="open">Open Document &rarr;</span>
+        </div>
+      </a>
+
+      <a class="doc-card" href="/paxiom-phase-2-vision.html">
+        <div class="doc-card-header">
+          <span class="series">F-Series &middot; 16 sheets</span>
+          <span class="status">Vision &middot; Rev. A</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="title">Phase 2 Vision Brief <em>&middot; private data compute</em></div>
+          <p class="purpose">Longer-term planning brief for ZK proofs over private inputs in healthcare and financial workflows.</p>
+          <span class="open">Open Document &rarr;</span>
+        </div>
+      </a>
+
+      <a class="doc-card" href="/paxiom-build-map.html">
+        <div class="doc-card-header">
+          <span class="series">R-Series &middot; 1 sheet</span>
+          <span class="status">Public &middot; Rev. B</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="title">Build Map <em>&middot; Phase 0 through Phase 5</em></div>
+          <p class="purpose">The multi-phase strategic map showing how proof-bound receipts and Ethereum state attestations fit into the wider arc.</p>
+          <span class="open">Open Document &rarr;</span>
+        </div>
+      </a>
+
+      <a class="doc-card" href="/paxiom-phase-0-status.html">
+        <div class="doc-card-header">
+          <span class="series">G-Series &middot; 1 sheet</span>
+          <span class="status">Archive &middot; Rev. A</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="title">Phase 0 Status <em>&middot; substrate gate audit trail</em></div>
+          <p class="purpose">Acceptance criteria and evidence locations for the HyperBEAM, BLS sync-committee, and Ethereum L1 reconstruction gates.</p>
+          <span class="open">Open Document &rarr;</span>
+        </div>
+      </a>
+
+    </div>
+
+    <div class="note-block">
+      <div class="note-label">Note &middot; Operational privacy</div>
+      <p>Cold-tier custody procedures, escalation contacts, and operator-only key rotation details are intentionally omitted from the public sheets. Architecture is public; operational attack-surface specifics stay private.</p>
+    </div>
+  </section>
+
+  <section class="subsection" id="rd-substrate">
+    <div class="subsection-mark">J-300 &middot; R&amp;D substrate archive</div>
+    <h2>Upstream proof substrates <em>(parked behind Receipts).</em></h2>
+    <p>During April&ndash;May 2026, Paxiom prototyped five Ethereum and cross-chain attestation services (<code>A-201</code> storage-slot proofs, <code>A-202</code> sync-committee header verification, <code>A-203</code> cross-chain message verification, <code>A-204</code> transaction simulation, and <code>A-205</code> historical MPT state). Building those envelopes revealed a simpler, universal gap across every x402 API: buyers lacked a standard signed receipt proving what any paid HTTP call actually delivered. That envelope became <strong>Paxiom Receipts</strong>.</p>
+    <p>The earlier binder pages remain available verbatim at their original URLs:</p>
+    <ul class="archive-links">
+      <li><a href="/services.html">/services.html</a> <span class="desc">Phase 1 Service Schedule (A-201 through A-205 draft pricing &amp; substrate notes)</span></li>
+      <li><a href="/sync-committee-api.html">/sync-committee-api.html</a> <span class="desc">Service 02 (A-202) Beacon Sync-Committee API specification sheet</span></li>
+      <li><a href="/status.html">/status.html</a> <span class="desc">May 2026 Phase 0 &rarr; Phase 1 gate snapshot</span></li>
+      <li><a href="/docs.html">/docs.html</a> <span class="desc">Standalone Drawing Set index sheet (PXM-D-100)</span></li>
+      <li><a href="/paxiom-brief.html">/paxiom-brief.html</a> <span class="desc">Compact printable thesis brief (2026.05.10)</span></li>
+    </ul>
+  </section>
+
+  <section class="subsection" id="constraints">
+    <div class="subsection-mark">J-400 &middot; Boundaries &amp; non-claims</div>
+    <h2>What is open &mdash; <em>and what isn't claimed.</em></h2>
+
+    <div class="list-block amber">
+      <div class="list-label">Next Engineering Extensions</div>
+      <ul>
+        <li>Additional EVM and Solana USDC settlement adapters beyond Base Mainnet &amp; Base Sepolia in <code>POST /v1/receipt/verify-live</code></li>
+        <li>Optional facilitator receipt cross-checking alongside direct on-chain <code>Transfer</code> log verification</li>
+        <li>Evidence-hash adapters binding upstream cryptographic witnesses (<code>A-201</code>/<code>A-202</code>) into <code>payload.evidence</code></li>
+        <li>Hosted usage dashboard for monthly B2B <code>X-API-Key</code> accounts</li>
+      </ul>
+    </div>
+
+    <div class="list-block constraints">
+      <div class="list-label">Explicit Non-Claims</div>
+      <ul>
+        <li><code>POST /v1/receipt/verify</code> is strictly offline: it never claims on-chain finality and always surfaces unverified tx hashes as <code>settlement_claimed_not_checked</code></li>
+        <li><code>POST /v1/receipt/verify-live</code> verifies Base / Base Sepolia USDC <code>Transfer</code> events and counter-signs with Paxiom's published Ed25519 key; it does not retrieve off-chain Arweave archives in v0</li>
+        <li>No custody of customer funds &mdash; Paxiom never holds buyer wallets or escrowed balances</li>
+        <li>No third-party security audit certification or regulated legal attestation is claimed in v0</li>
+        <li>Upstream R&amp;D services (<code>A-201</code>&ndash;<code>A-205</code>) remain experimental substrates, not active commercial SLA endpoints</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="sheet-footer">
+    <div>Paxiom &middot; paxiom.org</div>
+    <div>Public &middot; Updated 2026.11</div>
+    <div class="sheet-id">PXM-J-100 &middot; Build Journal</div>
+  </footer>
+
+</div>
+</body>
+</html>
