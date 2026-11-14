@@ -117,7 +117,8 @@ function buildRootServiceIndex(env = process.env) {
     docsUrl: 'https://paxiom.org/api.html',
     sdk: {
       npm: '@paxiom/receipts',
-      python: 'paxiom-receipts (standards/receipts/v0/python)'
+      python: 'paxiom-receipts',
+      pypiUrl: 'https://pypi.org/project/paxiom-receipts/'
     },
     discovery: {
       openApi: '/openapi.json',

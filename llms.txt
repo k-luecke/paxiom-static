@@ -13,7 +13,8 @@ Paxiom provides the open **paxiom.receipt.v0** specification, the zero-dependenc
    - CLI: `npx --yes --package=@paxiom/receipts paxiom-receipt` (`keygen`, `issue`, `verify`)
    - Stdio MCP server: `npx --yes --package=@paxiom/receipts paxiom-receipt-mcp` (`verify_receipt`, `explain_receipt`, `issue_receipt`, `preflight_x402_seller`, `verify_receipt_live`)
    - Remote Streamable-HTTP MCP server: `https://api.paxiom.org/mcp` (`io.github.k-luecke/paxiom-receipts` on the Official MCP Registry; discovery card at `https://api.paxiom.org/.well-known/mcp.json`)
-2. **Issue & verify locally in Python (`standards/receipts/v0/python` — `paxiom-receipts` `0.1.3`):**
+2. **Issue & verify locally in Python (`paxiom-receipts==0.1.3` on PyPI):**
+   - `pip install paxiom-receipts` (Python >= 3.10, PEP 561 `py.typed`, MIT)
    - Zero required dependencies (pure-stdlib RFC 8032 Ed25519 + optional OpenSSL `cryptography` fast path; 100% byte-compatible with Node.js PKCS#8 PEM keys and JCS canonicalization).
    - FastAPI / Starlette ASGI middleware: `PaxiomReceiptMiddleware`
    - Buyer & core helpers: `verify_receipt`, `issue_receipt`, `verify_response_receipt`, `preflight_x402`, `verify_receipt_live`
@@ -45,6 +46,7 @@ Every verification returns one deterministic trust state (`verified`, `valid_sig
 - Live MCP discovery card: https://api.paxiom.org/.well-known/mcp.json
 - Live aggregate funnel stats: https://api.paxiom.org/stats
 - npm package: https://www.npmjs.com/package/@paxiom/receipts
+- PyPI package: https://pypi.org/project/paxiom-receipts/
 - Spec & Node/Python SDK source on GitHub: https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0
 - JSON Schema: https://paxiom.org/standards/receipts/v0/paxiom.receipt.v0.schema.json
 - Canonicalization + signing: https://paxiom.org/standards/receipts/v0/canonicalization.md

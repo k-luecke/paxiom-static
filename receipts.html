@@ -390,7 +390,10 @@ npm install @paxiom/receipts
 npx --yes --package=@paxiom/receipts paxiom-receipt keygen --out ./seller-key-01.pem --key-id seller-key-01
 
 <span class="c"># Run the stdio MCP server (verify_receipt, explain_receipt, issue_receipt):</span>
-npx --yes --package=@paxiom/receipts paxiom-receipt-mcp</pre>
+npx --yes --package=@paxiom/receipts paxiom-receipt-mcp
+
+<span class="c"># Or install the zero-dependency Python 3.10+ / FastAPI SDK from PyPI:</span>
+pip install paxiom-receipts</pre>
 
     <p>Query the live production verifier at <code>https://api.paxiom.org</code>:</p>
 <pre class="cmd">curl -s https://api.paxiom.org/version
@@ -406,7 +409,8 @@ curl -s https://api.paxiom.org/.well-known/x402.json</pre>
     <div class="section-mark">Read the spec</div>
     <h2>Everything is public and <em>inspectable.</em></h2>
     <ul class="linklist">
-      <li><a href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer">@paxiom/receipts on npm</a> <span class="desc">zero-dependency issuer, verifier, middleware, CLI &amp; MCP</span></li>
+      <li><a href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer">@paxiom/receipts on npm</a> <span class="desc">zero-dependency Node/TS/Edge issuer, verifier, middleware, CLI &amp; MCP</span></li>
+      <li><a href="https://pypi.org/project/paxiom-receipts/" target="_blank" rel="noopener noreferrer">paxiom-receipts on PyPI</a> <span class="desc">zero-dependency Python 3.10+ issuer, verifier, buyer client &amp; FastAPI ASGI middleware</span></li>
       <li><a href="/api.html">Verifier API &amp; SDK Guide</a> <span class="desc">HTTP endpoints, SDK examples, and MCP setup</span></li>
       <li><a href="https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0" target="_blank" rel="noopener noreferrer">Receipt v0 &mdash; Spec &amp; Source</a> <span class="desc">format, middleware docs, and test vectors on GitHub</span></li>
       <li><a href="/standards/receipts/v0/paxiom.receipt.v0.schema.json">JSON Schema</a> <span class="desc">structural validation schema</span></li>
