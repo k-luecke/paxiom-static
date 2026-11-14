@@ -64,7 +64,7 @@ test('SSRF IP & URL validator blocks all private, loopback, metadata, NAT64/6to4
   assert.equal(isPublicGlobalIp('2001:4860:4860::8888'), true);
   assert.equal(isPublicGlobalIp('2606:2800:220:1:248:1893:25c8:1946'), true);
 
-  // FERMI-PAX-R2-02: RFC 6066 TLS SNI omission for IP literals & RFC 3986 bracketed IPv6 Host heade
+  // FERMI-PAX-R2-02: RFC 6066 TLS SNI omission for IP literals & RFC 3986 bracketed IPv6 Host header
   const domainOpts = buildPinnedHttpsRequestOptions(
     { hostname: 'good.seller.example', pinnedIp: '93.184.216.34', pinnedFamily: 4 },
     'https://good.seller.example/v1/pay',
@@ -288,7 +288,7 @@ test('POST /v1/x402/preflight flags spoofed USDC, payTo bait-and-switch, and red
       }), { status: 200 });
     }
 
-    // 2. Spoofed token + payTo bait-and-switch selle
+    // 2. Spoofed token + payTo bait-and-switch seller
     if (url === 'https://scam.seller.example/v1/trap') {
       return new Response(JSON.stringify({
         x402Version: 1,

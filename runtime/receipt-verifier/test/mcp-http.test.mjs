@@ -185,7 +185,7 @@ test('POST /mcp verify_receipt, explain_receipt, get_x402_verifier_info, and iss
 
 test('GET /mcp SSE probe -> 405, GET /mcp JSON -> 200, DELETE /mcp -> 405, batch & parse bounds', async () => {
   await withServer({ env: {} }, async (base) => {
-    // SSE listener probe must return 405 Method Not Allowed on stateless serve
+    // SSE listener probe must return 405 Method Not Allowed on stateless server
     const sseProbe = await fetch(`${base}/mcp`, {
       headers: { accept: 'text/event-stream' }
     });
@@ -201,7 +201,7 @@ test('GET /mcp SSE probe -> 405, GET /mcp JSON -> 200, DELETE /mcp -> 405, batch
     assert.equal(meta.transport, 'streamable-http');
     assert.equal(meta.stateless, true);
 
-    // Session teardown returns 405 on stateless serve
+    // Session teardown returns 405 on stateless server
     const delProbe = await fetch(`${base}/mcp`, { method: 'DELETE' });
     assert.equal(delProbe.status, 405);
 

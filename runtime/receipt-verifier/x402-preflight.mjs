@@ -5,7 +5,7 @@
 //      IPv4 & IPv6, pins resolved IP for TLS SNI connection, never follows redirects).
 //   2. Probes the target's unpaid 402 challenge + `/.well-known/x402.json` + `/.well-known/paxiom-keys.json`.
 //   3. Verifies canonical Base / Base Sepolia Circle USDC asset address, EIP-712 domain parameters,
-//      `payTo` validity & manifest consistency (bait-and-switch detection), budget cap, and whethe
+//      `payTo` validity & manifest consistency (bait-and-switch detection), budget cap, and whether
 //      the seller supports proof-bound `paxiom.receipt.v0` (`X-Paxiom-Receipt`).
 import https from 'node:https';
 import dns from 'node:dns/promises';
@@ -389,7 +389,7 @@ export function buildPinnedHttpsRequestOptions(target, fullUrl, { method, header
     path: `${parsed.pathname}${parsed.search}`,
     method,
     headers: {
-      // RFC 3986 Section 3.2.2 requires bracketed IPv6 literals in HTTP Host heade
+      // RFC 3986 Section 3.2.2 requires bracketed IPv6 literals in HTTP Host header
       host: hostHeader,
       ...headers,
       ...(body !== undefined ? { 'content-length': String(Buffer.byteLength(body, 'utf8')) } : {})

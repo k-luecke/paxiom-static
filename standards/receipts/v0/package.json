@@ -1,8 +1,8 @@
 {
   "name": "@paxiom/receipts",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "mcpName": "io.github.k-luecke/paxiom-receipts",
-  "description": "Zero-dependency issuer, verifier, HTTP middleware, and MCP server for paxiom.receipt.v0 — proof-bound cryptographic receipts for x402 and agentic APIs.",
+  "description": "Zero-dependency issuer, verifier, buyer preflight/live client, HTTP middleware, and MCP server for paxiom.receipt.v0 — proof-bound cryptographic receipts for x402 and agentic APIs.",
   "type": "module",
   "license": "MIT",
   "homepage": "https://paxiom.org/receipts.html",
@@ -21,13 +21,36 @@
     "node": ">=18"
   },
   "main": "./src/index.mjs",
+  "types": "./src/index.d.ts",
   "exports": {
-    ".": "./src/index.mjs",
-    "./verify": "./src/verify.mjs",
-    "./issue": "./src/issue.mjs",
-    "./middleware": "./src/middleware.mjs",
-    "./canonicalize": "./src/canonicalize.mjs",
-    "./explain": "./src/explain.mjs",
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./client": {
+      "types": "./src/index.d.ts",
+      "default": "./src/client.mjs"
+    },
+    "./verify": {
+      "types": "./src/index.d.ts",
+      "default": "./src/verify.mjs"
+    },
+    "./issue": {
+      "types": "./src/index.d.ts",
+      "default": "./src/issue.mjs"
+    },
+    "./middleware": {
+      "types": "./src/index.d.ts",
+      "default": "./src/middleware.mjs"
+    },
+    "./canonicalize": {
+      "types": "./src/index.d.ts",
+      "default": "./src/canonicalize.mjs"
+    },
+    "./explain": {
+      "types": "./src/index.d.ts",
+      "default": "./src/explain.mjs"
+    },
     "./mcp": "./mcp/server.mjs",
     "./schema.json": "./paxiom.receipt.v0.schema.json"
   },

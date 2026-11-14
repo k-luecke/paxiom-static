@@ -6,7 +6,7 @@
 // Security invariant:
 //   - Strictly stateless and zero external dependencies.
 //   - Intentionally exposes ONLY read/verify/discovery tools (`verify_receipt`,
-//     `explain_receipt`, `get_x402_verifier_info`) over remote HTTP so selle
+//     `explain_receipt`, `get_x402_verifier_info`) over remote HTTP so seller
 //     Ed25519 private keys never traverse the network (`issue_receipt` remains
 //     exclusively in the local stdio MCP server `@paxiom/receipts`).
 
@@ -25,7 +25,7 @@ export const MAX_MCP_BATCH_SIZE = 32;
 export const REMOTE_MCP_SERVER_INFO = Object.freeze({
   name: 'io.github.k-luecke/paxiom-receipts',
   title: 'Paxiom Receipts MCP',
-  version: '0.1.2'
+  version: '0.1.3'
 });
 
 export const REMOTE_MCP_TOOLS = Object.freeze([

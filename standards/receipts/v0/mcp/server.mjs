@@ -10,13 +10,22 @@ import { pathToFileURL } from 'node:url';
 import { verifyReceipt, RECEIPT_VERSION } from '../src/verify.mjs';
 import { issueReceipt, generateReceiptKeyPair } from '../src/issue.mjs';
 import { explain } from '../src/explain.mjs';
+import {
+  DEFAULT_PAXIOM_API_URL,
+  preflightX402,
+  verifyReceiptLive
+} from '../src/client.mjs';
 
 export const MCP_PROTOCOL_VERSION = '2024-11-05';
 export const SERVER_INFO = {
   name: 'paxiom-receipt-mcp',
-  version: '0.1.2'
+  version: '0.1.3'
 };
 const MAX_JSONRPC_LINE_BYTES = 1024 * 1024; // 1 MiB stdio line safety bound
+
+function isValidJsonRpcId(id) {
+  return id === null || typeof id === 'string' || (typeof id === 'number' && Number.isFinite(id));
+}
 
 export const TOOLS = [
   {
@@ -79,6 +88,62 @@ export const TOOLS = [
         }
       }
     }
+  },
+  {
+    name: 'preflight_x402_seller',
+    description: 'Scan an untrusted https:// x402 seller endpoint before signing an EIP-3009 payment ($0.01 USDC via x402 or PAXIOM_API_KEY). Checks canonical Circle Base USDC asset address, EIP-712 domain, payTo manifest bait-and-switch, budget cap, and X-Paxiom-Receipt readiness.',
+    inputSchema: {
+      type: 'object',
+      required: ['url'],
+      properties: {
+        url: {
+          type: 'string',
+          description: 'Target https:// x402 seller URL to inspect before paying.'
+        },
+        method: {
+          type: 'string',
+          enum: ['POST', 'GET', 'HEAD'],
+          description: 'HTTP method to probe (default POST).'
+        },
+        maxBudgetAtomic: {
+          type: 'string',
+          description: 'Optional caller budget cap in USDC atomic units (6 decimals).'
+        },
+        expectedNetwork: {
+          type: 'string',
+          description: 'Optional expected network (base or base-sepolia).'
+        },
+        paymentHeader: {
+          type: 'string',
+          description: 'Optional base64 PAYMENT-SIGNATURE header when not using PAXIOM_API_KEY.'
+        }
+      }
+    }
+  },
+  {
+    name: 'verify_receipt_live',
+    description: 'Confirm a paxiom.receipt.v0 receipt claimed Base / Base Sepolia USDC Transfer log on-chain via https://api.paxiom.org/v1/receipt/verify-live ($0.002 USDC via x402 or PAXIOM_API_KEY) and return Paxiom Ed25519 counter-attestation.',
+    inputSchema: {
+      type: 'object',
+      required: ['receipt'],
+      properties: {
+        receipt: {
+          type: 'object',
+          description: 'Parsed paxiom.receipt.v0 JSON object.'
+        },
+        output: {
+          description: 'Optional delivered API response JSON.'
+        },
+        expectedPayTo: {
+          type: 'string',
+          description: 'Expected 0x seller USDC recipient address (required to mint portable Paxiom root counter-attestation).'
+        },
+        paymentHeader: {
+          type: 'string',
+          description: 'Optional base64 PAYMENT-SIGNATURE header when not using PAXIOM_API_KEY.'
+        }
+      }
+    }
   }
 ];
 
@@ -93,12 +158,21 @@ function jsonRpcError(id, code, message) {
 /**
  * Pure JSON-RPC 2.0 handler. Returns a response object, or `null` for notifications.
  */
-export function handleJsonRpcMessage(msg, env = process.env) {
-  if (!msg || typeof msg !== 'object' || msg.jsonrpc !== '2.0' || typeof msg.method !== 'string') {
-    return jsonRpcError(msg && msg.id !== undefined ? msg.id : null, -32600, 'Invalid JSON-RPC 2.0 request');
+export function handleJsonRpcMessage(msg, env = process.env, runtimeOpts = {}) {
+  if (!msg || typeof msg !== 'object' || Array.isArray(msg) || msg.jsonrpc !== '2.0') {
+    const rawId = msg && typeof msg === 'object' && !Array.isArray(msg) && Object.hasOwn(msg, 'id') ? msg.id : null;
+    return jsonRpcError(isValidJsonRpcId(rawId) ? rawId : null, -32600, 'Invalid JSON-RPC 2.0 request');
   }
 
-  const isNotification = !Object.prototype.hasOwnProperty.call(msg, 'id');
+  if (Object.hasOwn(msg, 'id') && !isValidJsonRpcId(msg.id)) {
+    return jsonRpcError(null, -32600, 'Invalid JSON-RPC 2.0 id: must be string, finite number, or null');
+  }
+
+  if (typeof msg.method !== 'string') {
+    return jsonRpcError(Object.hasOwn(msg, 'id') ? msg.id : null, -32600, 'Invalid JSON-RPC 2.0 request');
+  }
+
+  const isNotification = !Object.hasOwn(msg, 'id');
   if (isNotification) return null;
 
   const { id, method, params = {} } = msg;
@@ -211,6 +285,61 @@ export function handleJsonRpcMessage(msg, env = process.env) {
         });
       }
 
+      if (toolName === 'preflight_x402_seller') {
+        if (typeof args.url !== 'string' || !args.url.trim()) {
+          return jsonRpcResult(id, {
+            isError: true,
+            content: [{ type: 'text', text: 'Missing required string argument: url' }]
+          });
+        }
+        return preflightX402(args.url, {
+          method: args.method,
+          maxBudgetAtomic: args.maxBudgetAtomic,
+          expectedNetwork: args.expectedNetwork,
+          apiKey: env.PAXIOM_API_KEY,
+          paymentHeader: args.paymentHeader,
+          baseUrl: env.PAXIOM_API_URL || DEFAULT_PAXIOM_API_URL,
+          fetchImpl: runtimeOpts.fetchImpl
+        }).then(
+          (out) => jsonRpcResult(id, {
+            isError: !out.ok && !out.paymentRequired,
+            content: [{ type: 'text', text: JSON.stringify(out, null, 2) }],
+            structuredContent: out
+          }),
+          (err) => jsonRpcResult(id, {
+            isError: true,
+            content: [{ type: 'text', text: `Tool error: ${(err && err.message) || err}` }]
+          })
+        );
+      }
+
+      if (toolName === 'verify_receipt_live') {
+        if (!args.receipt || typeof args.receipt !== 'object' || Array.isArray(args.receipt)) {
+          return jsonRpcResult(id, {
+            isError: true,
+            content: [{ type: 'text', text: 'Missing required object argument: receipt' }]
+          });
+        }
+        return verifyReceiptLive(args.receipt, {
+          ...(Object.hasOwn(args, 'output') ? { output: args.output } : {}),
+          expectedPayTo: args.expectedPayTo,
+          apiKey: env.PAXIOM_API_KEY,
+          paymentHeader: args.paymentHeader,
+          baseUrl: env.PAXIOM_API_URL || DEFAULT_PAXIOM_API_URL,
+          fetchImpl: runtimeOpts.fetchImpl
+        }).then(
+          (out) => jsonRpcResult(id, {
+            isError: !out.ok && !out.paymentRequired,
+            content: [{ type: 'text', text: JSON.stringify(out, null, 2) }],
+            structuredContent: out
+          }),
+          (err) => jsonRpcResult(id, {
+            isError: true,
+            content: [{ type: 'text', text: `Tool error: ${(err && err.message) || err}` }]
+          })
+        );
+      }
+
       return jsonRpcError(id, -32601, `Unknown tool: ${toolName}`);
     } catch (err) {
       return jsonRpcResult(id, {
@@ -223,7 +352,12 @@ export function handleJsonRpcMessage(msg, env = process.env) {
   return jsonRpcError(id, -32601, `Method not found: ${method}`);
 }
 
-export function startStdioServer({ input = process.stdin, output = process.stdout, env = process.env } = {}) {
+export function startStdioServer({
+  input = process.stdin,
+  output = process.stdout,
+  env = process.env,
+  fetchImpl
+} = {}) {
   const rl = readline.createInterface({ input, crlfDelay: Infinity });
   rl.on('line', (line) => {
     if (Buffer.byteLength(line, 'utf8') > MAX_JSONRPC_LINE_BYTES) {
@@ -239,10 +373,11 @@ export function startStdioServer({ input = process.stdin, output = process.stdou
       output.write(JSON.stringify(jsonRpcError(null, -32700, 'Parse error')) + '\n');
       return;
     }
-    const resp = handleJsonRpcMessage(parsed, env);
-    if (resp) {
-      output.write(JSON.stringify(resp) + '\n');
-    }
+    Promise.resolve(handleJsonRpcMessage(parsed, env, { fetchImpl })).then((resp) => {
+      if (resp) {
+        output.write(JSON.stringify(resp) + '\n');
+      }
+    });
   });
   return rl;
 }
