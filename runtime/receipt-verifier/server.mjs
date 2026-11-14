@@ -19,8 +19,8 @@ const demoOutput = JSON.parse(readFileSync(new URL('valid.output.json', EX), 'ut
 
 const RENDER_PRODUCTION_DEFAULTS = Object.freeze({
   LIVE_VERIFY_ENABLED: 'true',
-  BASE_RPC_URL: 'https://mainnet.base.org',
-  BASE_SEPOLIA_RPC_URL: 'https://sepolia.base.org',
+  BASE_RPC_URL: 'https://base-rpc.publicnode.com,https://mainnet.base.org,https://1rpc.io/base',
+  BASE_SEPOLIA_RPC_URL: 'https://base-sepolia-rpc.publicnode.com,https://sepolia.base.org',
   X402_ENABLED: 'true',
   X402_NETWORK: 'base',
   X402_PRICE_ATOMIC: '2000',
