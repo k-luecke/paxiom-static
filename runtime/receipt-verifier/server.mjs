@@ -23,6 +23,7 @@ import {
   validatePublicHttpsTarget,
   runX402Preflight
 } from './x402-preflight.mjs';
+import { handleMcpHttpRequest } from './mcp-http.mjs';
 
 const MAX_BODY_BYTES = 256 * 1024; // 256 KiB
 const MAX_DRAIN_AFTER_413 = 64 * 1024; // bounded post-413 drain window before destroying socket
@@ -86,6 +87,7 @@ function buildVersionPayload(env = process.env) {
     },
     endpoints: {
       freeOfflineVerify: 'POST /v1/receipt/verify',
+      remoteMcp: 'POST /mcp',
       ...(liveEnabled ? {
         liveOnchainVerify: 'POST /v1/receipt/verify-live',
         x402SellerPreflight: 'POST /v1/x402/preflight'
@@ -104,8 +106,8 @@ function isFlagEnabled(val) {
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'content-type, authorization, x-api-key, payment-signature, x-payment'
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'content-type, accept, authorization, x-api-key, payment-signature, x-payment, mcp-session-id, mcp-protocol-version'
 };
 
 function send(res, status, body, extraHeaders = {}) {
@@ -677,6 +679,9 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
     if ((method === 'POST' || method === 'GET') && path === '/v1/x402/preflight') {
       return handleX402Preflight(req, res, { env, fetchImpl, lookupImpl });
     }
+    if (path === '/mcp') {
+      return handleMcpHttpRequest(req, res, { env, readBody, corsHeaders: CORS });
+    }
     return send(res, 404, errBody('not_found', `No route for ${method} ${path}`));
   };
 }
@@ -699,6 +704,6 @@ if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) 
   const port = Number(process.env.PORT) || 8787;
   createServer().listen(port, () => {
     process.stdout.write(`paxiom-receipt-verifier (v0) on http://localhost:${port}\n`);
-    process.stdout.write(`  GET  /health\n  GET  /version\n  GET  /v1/receipt/demo\n  POST /v1/receipt/verify\n  POST /v1/receipt/verify-live\n  POST /v1/x402/preflight\n`);
+    process.stdout.write(`  GET  /health\n  GET  /version\n  GET  /v1/receipt/demo\n  POST /v1/receipt/verify\n  POST /v1/receipt/verify-live\n  POST /v1/x402/preflight\n  POST /mcp\n`);
   });
 }

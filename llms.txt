@@ -11,6 +11,7 @@ Paxiom provides the open **paxiom.receipt.v0** specification, the zero-dependenc
    - Core functions: `issueReceipt`, `verifyReceipt`, `canonicalizeSigningInput`
    - CLI: `npx --yes --package=@paxiom/receipts paxiom-receipt` (`keygen`, `issue`, `verify`)
    - Stdio MCP server: `npx --yes --package=@paxiom/receipts paxiom-receipt-mcp` (`verify_receipt`, `explain_receipt`, `issue_receipt`)
+   - Remote Streamable-HTTP MCP server: `https://api.paxiom.org/mcp` (`io.github.k-luecke/paxiom-receipts` on the Official MCP Registry; exposes `verify_receipt`, `explain_receipt`, and `get_x402_verifier_info`)
 2. **Verify offline for free (`POST /v1/receipt/verify` or `verifyReceipt()`):**
    - Checks JSON Schema, RFC 3339 timestamps, `issuer.keyId === signature.keyId`, Ed25519 signature over `canonicalize({ receiptVersion, payload })`, `SHA-256` output-hash binding, and `trustedPaxiomPublicKeys` enforcement whenever `checkedByPaxiom: true`.
 3. **Verify on-chain settlement + counter-attestation (`POST /v1/receipt/verify-live`):**
