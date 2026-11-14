@@ -174,7 +174,6 @@ export interface IssueReceiptOptions {
 
 export interface IssuedReceiptBundle {
   receipt: PaxiomReceiptV0;
-  receiptHash: string;
   receiptHeader: string;
 }
 

@@ -2,22 +2,27 @@
 
 > Proof-bound receipts for x402-paid and agentic APIs. x402 proves a payment; Paxiom proves what the payment bought — binding the HTTP request, delivered output, payment transaction, and settlement verdict into one Ed25519-signed receipt.
 
-Paxiom provides the open **paxiom.receipt.v0** specification, the zero-dependency `@paxiom/receipts` npm SDK (`0.1.2`) + CLI + stdio MCP server, and a live HTTP verifier, preflight scanner & counter-attestation service on Base Mainnet at `https://api.paxiom.org`.
+Paxiom provides the open **paxiom.receipt.v0** specification, the zero-dependency `@paxiom/receipts` npm SDK (`0.1.3`, with built-in TypeScript declarations) + CLI + stdio MCP server, a zero-dependency Python 3.10+ reference SDK (`paxiom_receipts` + FastAPI/ASGI middleware), and a live HTTP verifier, preflight scanner & counter-attestation service on Base Mainnet at `https://api.paxiom.org`.
 
 ## Shipped product surface
-1. **Issue locally for free (`@paxiom/receipts` on npm):**
-   - `npm install @paxiom/receipts` (Node >= 18, zero external dependencies, MIT)
+1. **Issue & verify locally in Node.js / TypeScript (`@paxiom/receipts@0.1.3` on npm):**
+   - `npm install @paxiom/receipts` (Node >= 18, zero external dependencies, strict `.d.ts` types with zero `@types/node` dependency, MIT)
    - Seller middleware: `withPaxiomReceipt` (Fetch / Workers / Next.js) and `createReceiptMiddleware` (Express / Node `http`)
-   - Core functions: `issueReceipt`, `verifyReceipt`, `canonicalizeSigningInput`
+   - Buyer helpers: `verifyResponseReceipt` (1-line offline `X-Paxiom-Receipt` check), `preflightX402` (`POST /v1/x402/preflight`), and `verifyReceiptLive` (`POST /v1/receipt/verify-live`)
+   - Core functions: `issueReceipt`, `verifyReceipt`, `generateReceiptKeyPair`, `canonicalize`
    - CLI: `npx --yes --package=@paxiom/receipts paxiom-receipt` (`keygen`, `issue`, `verify`)
-   - Stdio MCP server: `npx --yes --package=@paxiom/receipts paxiom-receipt-mcp` (`verify_receipt`, `explain_receipt`, `issue_receipt`)
-   - Remote Streamable-HTTP MCP server: `https://api.paxiom.org/mcp` (`io.github.k-luecke/paxiom-receipts` on the Official MCP Registry; exposes `verify_receipt`, `explain_receipt`, and `get_x402_verifier_info`)
-2. **Verify offline for free (`POST /v1/receipt/verify` or `verifyReceipt()`):**
+   - Stdio MCP server: `npx --yes --package=@paxiom/receipts paxiom-receipt-mcp` (`verify_receipt`, `explain_receipt`, `issue_receipt`, `preflight_x402_seller`, `verify_receipt_live`)
+   - Remote Streamable-HTTP MCP server: `https://api.paxiom.org/mcp` (`io.github.k-luecke/paxiom-receipts` on the Official MCP Registry; discovery card at `https://api.paxiom.org/.well-known/mcp.json`)
+2. **Issue & verify locally in Python (`standards/receipts/v0/python` — `paxiom-receipts` `0.1.3`):**
+   - Zero required dependencies (pure-stdlib RFC 8032 Ed25519 + optional OpenSSL `cryptography` fast path; 100% byte-compatible with Node.js PKCS#8 PEM keys and JCS canonicalization).
+   - FastAPI / Starlette ASGI middleware: `PaxiomReceiptMiddleware`
+   - Buyer & core helpers: `verify_receipt`, `issue_receipt`, `verify_response_receipt`, `preflight_x402`, `verify_receipt_live`
+3. **Verify offline for free (`POST /v1/receipt/verify` or `verifyReceipt()`):**
    - Checks JSON Schema, RFC 3339 timestamps, `issuer.keyId === signature.keyId`, Ed25519 signature over `canonicalize({ receiptVersion, payload })`, `SHA-256` output-hash binding, and `trustedPaxiomPublicKeys` enforcement whenever `checkedByPaxiom: true`.
-3. **Verify on-chain settlement + counter-attestation (`POST /v1/receipt/verify-live`):**
+4. **Verify on-chain settlement + counter-attestation (`POST /v1/receipt/verify-live`):**
    - Live on `https://api.paxiom.org` (`$0.002` Base Mainnet USDC via x402 or flat-rate `X-API-Key`).
    - Confirms canonical Base Mainnet (`eip155:8453`) and Base Sepolia (`eip155:84532`) USDC `Transfer` logs via multi-RPC failover (`payer`, `payTo`, `amount`), upgrades verdict to `verified` (`verified_settled`), and returns a Paxiom Ed25519 counter-signed `X-Paxiom-Receipt` header verifiable against `https://api.paxiom.org/.well-known/paxiom-keys.json`.
-4. **Pre-payment x402 seller readiness & scam scan (`POST /v1/x402/preflight`):**
+5. **Pre-payment x402 seller readiness & scam scan (`POST /v1/x402/preflight`):**
    - Live on `https://api.paxiom.org` (`$0.01` Base Mainnet USDC via x402 or flat-rate `X-API-Key`).
    - SSRF-hardened preflight probe (`{ url, method?, maxBudgetAtomic?, expectedNetwork? }`) that inspects an untrusted x402 endpoint before an agent signs a payment: verifies canonical Circle USDC asset address, EIP-712 domain parameters, `payTo` manifest consistency (bait-and-switch detection), and `X-Paxiom-Receipt` readiness, returning a signed `X-Paxiom-Receipt` over the verdict (`proceed` | `caution` | `block`).
    - Machine-readable x402 & Bazaar discovery manifest for both paid endpoints: `https://api.paxiom.org/.well-known/x402.json`.
@@ -35,12 +40,14 @@ Every verification returns one deterministic trust state (`verified`, `valid_sig
 - Product home: https://paxiom.org/
 - Receipt v0 overview: https://paxiom.org/receipts.html
 - API & SDK docs: https://paxiom.org/api.html
-- Live verifier base URL: https://api.paxiom.org
+- Live verifier service index: https://api.paxiom.org/
+- Live OpenAPI spec: https://api.paxiom.org/openapi.json
+- Live MCP discovery card: https://api.paxiom.org/.well-known/mcp.json
+- Live aggregate funnel stats: https://api.paxiom.org/stats
 - npm package: https://www.npmjs.com/package/@paxiom/receipts
-- Spec & source on GitHub: https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0
+- Spec & Node/Python SDK source on GitHub: https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0
 - JSON Schema: https://paxiom.org/standards/receipts/v0/paxiom.receipt.v0.schema.json
 - Canonicalization + signing: https://paxiom.org/standards/receipts/v0/canonicalization.md
 - Trust states: https://paxiom.org/standards/receipts/v0/trust-states.md
-- OpenAPI 3.1: https://paxiom.org/standards/receipts/v0/openapi.json
 - Build Journal & architectural drawing set: https://paxiom.org/journal.html
 - Contact: https://paxiom.org/contact.html

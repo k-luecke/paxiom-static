@@ -146,7 +146,7 @@ a:hover { color: var(--red); }
     </div>
     <div class="meta">
       <span>Sheet PXM-API-100</span><span class="sep">&middot;</span>
-      <span>@paxiom/receipts@0.1.2</span><span class="sep">&middot;</span>
+      <span>@paxiom/receipts@0.1.3</span><span class="sep">&middot;</span>
       <span>api.paxiom.org Live</span>
     </div>
   </header>
@@ -177,20 +177,28 @@ export default withPaxiomReceipt(paidHandler, {
   serviceName: 'Orderbook Snapshot API'
 });</pre>
 
-    <p><strong>Buyer verification &amp; stdio MCP server:</strong></p>
-<pre class="cmd">import { verifyReceipt } from '@paxiom/receipts';
+    <p><strong>Buyer client helpers, TypeScript &amp; MCP server</strong> (built-in <code>.d.ts</code> declarations, zero dependencies):</p>
+<pre class="cmd">import { preflightX402, verifyResponseReceipt, verifyReceiptLive } from '@paxiom/receipts';
 
-const verdict = verifyReceipt(receipt, {
-  output: responseJson,
-  trustedPaxiomPublicKeys: ['hsRfDKd2AWxv0KwTs3gsDLMY7nPtVGky1Tc6NWgSxIY=']
-});
-<span class="c">// -&gt; { valid: true, trustState: 'verified', checks: { ... } }</span>
+<span class="c">// 1. Pre-payment seller safety scan ($0.01 USDC via x402 or PAXIOM_API_KEY):</span>
+const scan = await preflightX402('https://seller.example/v1/infer', { maxBudgetAtomic: '50000' });
 
-<span class="c"># Or launch the stdio MCP server for Claude / Cursor / agent frameworks:</span>
+<span class="c">// 2. Free 1-line offline check on any Fetch Response (never throws):</span>
+const check = verifyResponseReceipt(paidResponse, { output: responseJson });
+
+<span class="c">// 3. Live Base USDC settlement + Paxiom counter-attestation ($0.002 USDC):</span>
+const live = await verifyReceiptLive(check.receipt, { output: responseJson, expectedPayTo: '0xSeller...' });
+
+<span class="c"># Launch local stdio MCP (includes preflight_x402_seller &amp; verify_receipt_live) or remote HTTP MCP:</span>
 npx --yes --package=@paxiom/receipts paxiom-receipt-mcp
-
-<span class="c"># Or connect directly to the zero-install remote Streamable-HTTP MCP server:</span>
 claude mcp add --transport http paxiom https://api.paxiom.org/mcp</pre>
+
+    <p><strong>Python 3.10+ reference SDK &amp; FastAPI middleware</strong> (<code>standards/receipts/v0/python</code>, zero required dependencies):</p>
+<pre class="cmd">from fastapi import FastAPI
+from paxiom_receipts import PaxiomReceiptMiddleware, preflight_x402, verify_response_receipt
+
+app = FastAPI()
+app.add_middleware(PaxiomReceiptMiddleware, private_key=PEM, issuer={'name': 'py-api', 'keyId': 'k1'})</pre>
   </section>
 
   <section class="section" id="http">
@@ -203,6 +211,10 @@ claude mcp add --transport http paxiom https://api.paxiom.org/mcp</pre>
     <table class="endpoints">
       <thead><tr><th>Method</th><th>Path</th><th>Access</th><th>Purpose</th></tr></thead>
       <tbody>
+        <tr><td><span class="m get">GET</span></td><td class="path">/</td><td class="purpose">Free</td><td class="purpose">Machine-readable service discovery index (SDKs, manifests, OpenAPI, MCP, active routes).</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="path">/openapi.json</td><td class="purpose">Free</td><td class="purpose">OpenAPI 3.0 specification served directly from <code>api.paxiom.org</code> for agent toolkits.</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="path">/.well-known/mcp.json</td><td class="purpose">Free</td><td class="purpose">MCP Server Card advertising <code>POST /mcp</code> and tool metadata.</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="path">/stats</td><td class="purpose">Free</td><td class="purpose">Zero-PII aggregate discovery, offline verification, and x402 funnel counters.</td></tr>
         <tr><td><span class="m get">GET</span></td><td class="path">/health</td><td class="purpose">Free</td><td class="purpose">Liveness check (<code>{ ok: true }</code>).</td></tr>
         <tr><td><span class="m get">GET</span></td><td class="path">/version</td><td class="purpose">Free</td><td class="purpose">Service identity, active <code>capabilities</code>, and explicit <code>checks</code> / <code>notChecked</code> boundaries.</td></tr>
         <tr><td><span class="m get">GET</span></td><td class="path">/v1/receipt/demo</td><td class="purpose">Free</td><td class="purpose">Returns a signed demo receipt and its delivered output payload.</td></tr>
@@ -264,7 +276,7 @@ curl -s "$API/.well-known/paxiom-keys.json"</pre>
 
   <footer class="sheet-footer">
     <div>Paxiom &middot; paxiom.org</div>
-    <div>@paxiom/receipts@0.1.2 &middot; api.paxiom.org Live</div>
+    <div>@paxiom/receipts@0.1.3 &middot; api.paxiom.org Live</div>
     <div class="sheet-id">PXM-API-100 &middot; API &amp; SDK</div>
   </footer>
 

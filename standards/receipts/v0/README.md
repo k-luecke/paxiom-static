@@ -16,6 +16,7 @@ zero-dependency **`@paxiom/receipts` reference package**:
 - **Offline verifier, explainer & buyer client** (`src/verify.mjs`, `src/explain.mjs`, `src/client.mjs`)
 - **CLI** (`bin/paxiom-receipt.mjs` — `keygen`, `issue`, `verify`)
 - **MCP tool server** (`mcp/server.mjs` — `verify_receipt`, `explain_receipt`, `issue_receipt`, `preflight_x402_seller`, `verify_receipt_live`)
+- **Python 3.10+ zero-dependency SDK** (`python/paxiom_receipts` — `verify_receipt`, `issue_receipt`, `verify_response_receipt`, `preflight_x402`, `verify_receipt_live`, and FastAPI/ASGI `PaxiomReceiptMiddleware`)
 
 ## Install & Quick Start
 
