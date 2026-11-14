@@ -1,43 +1,44 @@
-# Paxiom Static Site
+# Paxiom — Proof-of-Delivery Receipts & Verifier (`paxiom.receipt.v0`)
 
-Public static website for `paxiom.org`.
+[![npm](https://img.shields.io/npm/v/@paxiom/receipts)](https://www.npmjs.com/package/@paxiom/receipts)
+[![PyPI](https://img.shields.io/pypi/v/paxiom-receipts)](https://pypi.org/project/paxiom-receipts/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-This repository is intentionally separate from the private Paxiom core repo. It contains only public website and documentation assets suitable for GitHub Pages.
+> **x402 proves a payment. Paxiom proves what the payment bought.**
 
-## Deploy
+Public specification, zero-dependency TypeScript/Node & Python SDKs, MCP servers, live Base Mainnet x402 verification runtime (`https://api.paxiom.org`), and static site (`https://paxiom.org`) developed by **Driftbound Labs** (`https://driftboundlabs.com`).
 
-Pages is published via the GitHub Actions workflow at
-`.github/workflows/pages.yml` (`actions/deploy-pages@v4`). To deploy:
+## Shipped Packages & Live Endpoints (`v0.1.3`)
 
-1. Push to `main`.
-2. The workflow uploads the repo via `actions/upload-pages-artifact@v3`
-   and deploys to `paxiom.org` (custom domain configured in `CNAME`).
+| Surface | Location | Install / Endpoint |
+|---|---|---|
+| **TypeScript / Node SDK & CLI** | [`standards/receipts/v0/`](standards/receipts/v0/) | `npm install @paxiom/receipts` |
+| **Python SDK & CLI** | [`standards/receipts/v0/python/`](standards/receipts/v0/python/) | `pip install paxiom-receipts` |
+| **MCP Server (Official Registry)** | `io.github.k-luecke/paxiom-receipts` | `npx -y --package=@paxiom/receipts paxiom-receipt-mcp` or `https://api.paxiom.org/mcp` |
+| **Free Offline Verifier** | `https://api.paxiom.org/v1/receipt/verify` | `$0` · deterministic schema, Ed25519 signature, & JCS `SHA-256(output)` binding |
+| **Live Base Settlement Verifier** | `https://api.paxiom.org/v1/receipt/verify-live` | `$0.002` USDC via x402 · verifies Base/Base-Sepolia USDC `Transfer` logs + Paxiom counter-attestation |
+| **x402 Seller Preflight Scanner** | `https://api.paxiom.org/v1/x402/preflight` | `$0.01` USDC via x402 · SSRF-hardened pre-payment quote, asset, & receipt-readiness check |
+| **Documentation & Spec Site** | [`https://paxiom.org`](https://paxiom.org) | [`receipts.html`](https://paxiom.org/receipts.html) · [`api.html`](https://paxiom.org/api.html) · [`llms.txt`](https://paxiom.org/llms.txt) |
 
-To wire a fresh fork: open `Settings -> Pages` and set the source to
-`GitHub Actions`. Do **not** use "Deploy from a branch" — that would
-bypass the workflow.
+## Quick Verification
 
-## Pages
+```bash
+# Node SDK & Cross-Language Test Vectors
+cd standards/receipts/v0 && npm test
 
-Top-level pages:
+# Python SDK
+cd standards/receipts/v0/python && pytest
 
-- `index.html` — homepage.
-- `docs.html` — drawing-set index.
-- `services.html` — service catalog overview.
-- `status.html` — phase-0 / phase-1 status snapshot.
-- `contact.html` — contact and channels.
-- `404.html` — fallback.
+# Live Receipt Verifier & x402 Runtime Suite
+cd runtime/receipt-verifier && npm test
+```
 
-Drawing set:
+## Explicit Boundaries (What `v0` Does Not Claim)
 
-- `paxiom-build-map.html` (R-Series) — phased roadmap, Phase 0 → Phase 5.
-- `paxiom-phase-0-status.html` (G-Series) — substrate gate audit trail.
-- `paxiom-phase-1-blueprint.html` (A-Series) — service-by-service Phase 1 specs.
-- `paxiom-phase-2-vision.html` (F-Series) — Phase 2 planning brief.
-- `paxiom-operations-runbook.html` (O-Series) — operator runbook
-  (O-700 / O-701 / O-702 cross-link to `k-luecke/bls-verifier`).
-- `paxiom-project-narrative.html` (B-Series) — narrative + thesis.
-- `paxiom-key-identity-blueprint.html` (CA-Series),
-  `paxiom-audit-relay-blueprint.html`,
-  `paxiom-compliance-architecture.html`,
-  `ao-zk-proving-architecture.html` — supporting blueprints.
+- **Offline verification (`verifyReceipt` / `POST /v1/receipt/verify`)** verifies schema conformance, deterministic RFC 8785 canonical JSON hashing, and Ed25519 signatures, and reports unverified settlement assertions honestly as `claimed_not_checked` without touching RPC.
+- **Live verification (`POST /v1/receipt/verify-live`)** verifies canonical Base and Base Sepolia USDC `Transfer` logs on-chain via multi-RPC consensus and issues a Paxiom Ed25519 counter-attestation, but does not inspect off-chain facilitator databases or non-Paxiom receipt dialects.
+- Earlier Ethereum sync-committee (`k-luecke/bls-verifier`) and Merkle-Patricia (`k-luecke/paxiom`) substrate prototypes remain documented in [`journal.html`](https://paxiom.org/journal.html).
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).

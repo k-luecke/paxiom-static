@@ -2,7 +2,7 @@
 
 Ready-to-paste copy for x402 Bazaar, `awesome-x402`, and MCP server registries.
 
-> **Live production status.** All routes are live at `https://api.paxiom.org` (`@paxiom/receipts@0.1.2` on npm):
+> **Live production status.** All routes are live at `https://api.paxiom.org` (`@paxiom/receipts@0.1.3` on npm · `paxiom-receipts==0.1.3` on PyPI · `io.github.k-luecke/paxiom-receipts` on Official MCP Registry):
 > - **Free offline verification:** `POST https://api.paxiom.org/v1/receipt/verify` (`$0`, zero network calls)
 > - **Live x402 on-chain settlement verification + Paxiom counter-attestation:** `POST https://api.paxiom.org/v1/receipt/verify-live` (`$0.002` USDC on Base Mainnet via x402 or `X-API-Key`, discoverable at `https://api.paxiom.org/.well-known/x402.json` and public keys at `https://api.paxiom.org/.well-known/paxiom-keys.json`)
 > - **Pre-payment x402 seller readiness & scam scan:** `POST https://api.paxiom.org/v1/x402/preflight` (`$0.01` USDC on Base Mainnet via x402 or `X-API-Key` — checks canonical Circle USDC asset, EIP-712 domain, `payTo` manifest consistency, and `X-Paxiom-Receipt` support before an agent pays)
@@ -76,7 +76,9 @@ Live on-chain verification (`POST https://api.paxiom.org/v1/receipt/verify-live`
 - x402 Discovery: `https://api.paxiom.org/.well-known/x402.json`
 - Verifier Public Keys: `https://api.paxiom.org/.well-known/paxiom-keys.json`
 - API Docs: `https://paxiom.org/api.html`
-- Spec & SDK (`@paxiom/receipts`): `https://paxiom.org/standards/receipts/v0/README.md`
+- Spec & SDK (`@paxiom/receipts` / `paxiom-receipts`): `https://paxiom.org/standards/receipts/v0/README.md`
+- npm Package: `https://www.npmjs.com/package/@paxiom/receipts`
+- PyPI Package: `https://pypi.org/project/paxiom-receipts/`
 - OpenAPI: `https://paxiom.org/standards/receipts/v0/openapi.json`
 - Trust States: `https://paxiom.org/standards/receipts/v0/trust-states.md`
 - MCP Server (stdio): `standards/receipts/v0/mcp/server.mjs` (`verify_receipt`, `explain_receipt`, `issue_receipt`)

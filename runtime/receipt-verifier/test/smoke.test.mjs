@@ -19,10 +19,15 @@ after(() => server.close());
 
 const post = (path, body) => fetch(base + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body });
 
-test('GET /health', async () => {
+test('GET and HEAD /health', async () => {
   const res = await fetch(base + '/health');
   assert.equal(res.status, 200);
-  assert.equal((await res.json()).ok, true);
+  const j = await res.json();
+  assert.equal(j.ok, true);
+  assert.equal(j.version, '0.1.3');
+  const headRes = await fetch(base + '/health', { method: 'HEAD' });
+  assert.equal(headRes.status, 200);
+  assert.equal(await headRes.text(), '');
 });
 
 test('GET /version states v0 claim boundaries', async () => {

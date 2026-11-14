@@ -341,7 +341,7 @@ a:hover { color: var(--red); }
   <section class="page-header">
     <div class="mark">Sheet PXM-J-100</div>
     <h1>How the build got here. <em>Dated, inspectable, unvarnished.</em></h1>
-    <p class="strap">The main site presents the live shipped product &mdash; <a href="/receipts.html">Paxiom Receipts</a>, the <a href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer"><code>@paxiom/receipts</code></a> SDK &amp; MCP server, and the Base Mainnet verifier at <a href="/api.html"><code>api.paxiom.org</code></a>. This journal keeps the complete engineering trail in one place: dated release notes, the ten-sheet architectural drawing set, earlier Ethereum/AO substrate explorations, and explicit non-claims.</p>
+    <p class="strap">The main site presents the live shipped product &mdash; <a href="/receipts.html">Paxiom Receipts</a>, the <a href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer"><code>@paxiom/receipts</code></a> &amp; <a href="https://pypi.org/project/paxiom-receipts/" target="_blank" rel="noopener noreferrer"><code>paxiom-receipts</code></a> SDKs + MCP server, and the Base Mainnet verifier at <a href="/api.html"><code>api.paxiom.org</code></a>. This journal keeps the complete engineering trail in one place: dated release notes, the ten-sheet architectural drawing set, earlier Ethereum/AO substrate explorations, and explicit non-claims.</p>
     <div class="jump-bar" aria-label="Journal sections">
       <a class="jump-pill" href="#log">Build Log</a>
       <a class="jump-pill" href="#prints">Drawing Set (10 Sheets)</a>
@@ -358,7 +358,7 @@ a:hover { color: var(--red); }
     <div class="status-key-grid">
       <div class="status-key-cell">
         <div class="label">Shipped Product</div>
-        <div class="value"><strong>Paxiom Receipts (<code>paxiom.receipt.v0</code>)</strong> &mdash; <code>@paxiom/receipts@0.1.2</code> on npm, stdio MCP server, and live Base Mainnet x402 preflight + settlement verifier + Ed25519 counter-attestation.</div>
+        <div class="value"><strong>Paxiom Receipts (<code>paxiom.receipt.v0</code>)</strong> &mdash; <code>@paxiom/receipts@0.1.3</code> on npm, <code>paxiom-receipts==0.1.3</code> on PyPI, Official MCP Registry (<code>io.github.k-luecke/paxiom-receipts</code>), and live Base Mainnet x402 preflight + settlement verifier + Ed25519 counter-attestation.</div>
       </div>
       <div class="status-key-cell">
         <div class="label">R&amp;D Substrate Track</div>
@@ -386,7 +386,7 @@ a:hover { color: var(--red); }
         <div class="log-date">2026.11</div>
         <ul>
           <li>Narrowed the public product surface onto a single wedge: <strong>Paxiom Receipts (<code>paxiom.receipt.v0</code>)</strong> &mdash; proof-bound Ed25519 receipts binding HTTP requests, delivered outputs, and x402 payments</li>
-          <li>Published zero-dependency <code>@paxiom/receipts@0.1.2</code> to npm (issuer, offline verifier, Fetch/Express middleware, CLI <code>paxiom-receipt</code>, stdio MCP server <code>paxiom-receipt-mcp</code>, and Fermi security hardening across provenance binding, strict base64 decoding, and prototype-safe key lookups)</li>
+          <li>Published <code>@paxiom/receipts@0.1.3</code> to npm, <code>paxiom-receipts==0.1.3</code> to PyPI (verified byte-for-byte via cross-language RFC 8785 &amp; Ed25519 test vectors), and <code>io.github.k-luecke/paxiom-receipts</code> <code>0.1.3</code> to the Official MCP Registry (issuer, offline verifier, Fetch/Express/ASGI/WSGI middleware, CLI <code>paxiom-receipt</code>, stdio &amp; Streamable HTTP MCP servers, and Fermi security hardening)</li>
           <li>Deployed live verifier at <code>https://api.paxiom.org</code> with free offline verification (<code>POST /v1/receipt/verify</code>), multi-RPC Base &amp; Base Sepolia USDC <code>Transfer</code>-log settlement verification (<code>POST /v1/receipt/verify-live</code>, <code>$0.002</code> USDC), SSRF-hardened pre-payment seller readiness scanning (<code>POST /v1/x402/preflight</code>, <code>$0.01</code> USDC), and Paxiom Ed25519 counter-attestation (<code>/.well-known/paxiom-keys.json</code>)</li>
           <li>Verified live Base Mainnet x402 settlement into a separated self-custody revenue treasury and exposed both paid routes on <code>/.well-known/x402.json</code> for x402 Bazaar discovery</li>
           <li>Rebuilt <code>paxiom.org</code> around the shipped Receipts product and consolidated the ten-sheet drawing set, Phase 1 substrate schedules, and historical gate notes into this Build Journal</li>
