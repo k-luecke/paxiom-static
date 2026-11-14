@@ -44,7 +44,7 @@ function normalizeAddressFromTopic(topicHex) {
   return '0x' + topicHex.slice(26).toLowerCase();
 }
 
-async function rpcCall(rpcUrl, method, params, fetchImpl, timeoutMs = 8000) {
+async function rpcCallSingle(rpcUrl, method, params, fetchImpl, timeoutMs = 8000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -65,6 +65,22 @@ async function rpcCall(rpcUrl, method, params, fetchImpl, timeoutMs = 8000) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function rpcCall(rpcUrlConfig, method, params, fetchImpl, timeoutMs = 8000) {
+  const urls = String(rpcUrlConfig || '')
+    .split(',')
+    .map((u) => u.trim())
+    .filter(Boolean);
+  let lastErr = new Error('No RPC URL configured');
+  for (const url of urls) {
+    try {
+      return await rpcCallSingle(url, method, params, fetchImpl, timeoutMs);
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr;
 }
 
 /**

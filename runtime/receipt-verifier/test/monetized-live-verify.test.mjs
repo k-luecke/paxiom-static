@@ -259,3 +259,82 @@ test('RENDER=true auto-enables live x402 discovery, capabilities, and unpaid 402
   assert.equal(probe.status, 402);
   assert.ok(probe.headers.get('payment-required'));
 });
+
+test('comma-separated BASE_RPC_URL automatically fails over when primary RPC rate-limits (-32011)', async () => {
+  const sellerKey = generateReceiptKeyPair({ keyId: 'seller-failover-01' });
+  const txHash = '0x' + 'cc'.repeat(32);
+  const output = { failover: true };
+  const { receipt: claimedReceipt } = issueReceipt({
+    privateKey: sellerKey.privateKeyPem,
+    issuer: { name: 'Seller', keyId: sellerKey.keyId },
+    service: { name: 'Seller', resource: 'https://s.example/api', method: 'POST' },
+    payment: {
+      network: 'base',
+      asset: 'USDC',
+      amountAtomic: '2000',
+      amountDisplay: '0.002',
+      settlement: { status: 'claimed_not_checked', transactionHash: txHash, checkedByPaxiom: false }
+    },
+    output
+  });
+
+  const env = {
+    LIVE_VERIFY_ENABLED: 'true',
+    PAXIOM_API_KEYS: 'pax_key_failover',
+    BASE_RPC_URL: 'https://rate-limited.base.mock, https://healthy.base.mock'
+  };
+
+  let rateLimitedHits = 0;
+  let healthyHits = 0;
+  const mockFetch = async (url, init) => {
+    if (url === 'https://rate-limited.base.mock') {
+      rateLimitedHits++;
+      return new Response(JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        error: { code: -32011, message: 'request limit reached' }
+      }), { status: 200 });
+    }
+    if (url === 'https://healthy.base.mock') {
+      healthyHits++;
+      const req = JSON.parse(init.body);
+      if (req.method === 'eth_blockNumber') {
+        return new Response(JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x105' }), { status: 200 });
+      }
+      return new Response(JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        result: {
+          status: '0x1',
+          blockNumber: '0x100',
+          logs: [
+            {
+              address: NETWORK_CONFIGS.base.usdcAddress,
+              topics: [
+                ERC20_TRANSFER_TOPIC0,
+                padAddressTopic('0x1111111111111111111111111111111111111111'),
+                padAddressTopic('0x2222222222222222222222222222222222222222')
+              ],
+              data: padUint256Hex(2000)
+            }
+          ]
+        }
+      }), { status: 200 });
+    }
+    throw new Error(`Unexpected URL ${url}`);
+  };
+
+  await withServer({ env, fetchImpl: mockFetch }, async (base) => {
+    const res = await fetch(`${base}/v1/receipt/verify-live`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-api-key': 'pax_key_failover' },
+      body: JSON.stringify({ receipt: claimedReceipt, output })
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.valid, true);
+    assert.equal(body.trustState, 'verified');
+    assert.ok(rateLimitedHits >= 2);
+    assert.equal(healthyHits, 2);
+  });
+});
