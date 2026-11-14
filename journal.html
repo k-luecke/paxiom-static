@@ -358,7 +358,7 @@ a:hover { color: var(--red); }
     <div class="status-key-grid">
       <div class="status-key-cell">
         <div class="label">Shipped Product</div>
-        <div class="value"><strong>Paxiom Receipts (<code>paxiom.receipt.v0</code>)</strong> &mdash; <code>@paxiom/receipts@0.1.1</code> on npm, stdio MCP server, and live Base Mainnet x402 settlement verifier + Ed25519 counter-attestation.</div>
+        <div class="value"><strong>Paxiom Receipts (<code>paxiom.receipt.v0</code>)</strong> &mdash; <code>@paxiom/receipts@0.1.2</code> on npm, stdio MCP server, and live Base Mainnet x402 preflight + settlement verifier + Ed25519 counter-attestation.</div>
       </div>
       <div class="status-key-cell">
         <div class="label">R&amp;D Substrate Track</div>
@@ -386,9 +386,9 @@ a:hover { color: var(--red); }
         <div class="log-date">2026.11</div>
         <ul>
           <li>Narrowed the public product surface onto a single wedge: <strong>Paxiom Receipts (<code>paxiom.receipt.v0</code>)</strong> &mdash; proof-bound Ed25519 receipts binding HTTP requests, delivered outputs, and x402 payments</li>
-          <li>Published zero-dependency <code>@paxiom/receipts@0.1.1</code> to npm (issuer, offline verifier, Fetch/Express middleware, CLI <code>paxiom-receipt</code>, and stdio MCP server <code>paxiom-receipt-mcp</code>)</li>
-          <li>Deployed live verifier at <code>https://api.paxiom.org</code> with all four capabilities active: free offline verification (<code>POST /v1/receipt/verify</code>), multi-RPC Base &amp; Base Sepolia USDC <code>Transfer</code>-log settlement verification (<code>POST /v1/receipt/verify-live</code>), x402 <code>$0.002</code> USDC gating + <code>X-API-Key</code> access, and Paxiom Ed25519 counter-attestation (<code>/.well-known/paxiom-keys.json</code>)</li>
-          <li>Verified live Base Mainnet x402 settlement into a separated self-custody revenue treasury and registered <code>POST /v1/receipt/verify-live</code> for x402 Bazaar discovery</li>
+          <li>Published zero-dependency <code>@paxiom/receipts@0.1.2</code> to npm (issuer, offline verifier, Fetch/Express middleware, CLI <code>paxiom-receipt</code>, stdio MCP server <code>paxiom-receipt-mcp</code>, and Fermi security hardening across provenance binding, strict base64 decoding, and prototype-safe key lookups)</li>
+          <li>Deployed live verifier at <code>https://api.paxiom.org</code> with free offline verification (<code>POST /v1/receipt/verify</code>), multi-RPC Base &amp; Base Sepolia USDC <code>Transfer</code>-log settlement verification (<code>POST /v1/receipt/verify-live</code>, <code>$0.002</code> USDC), SSRF-hardened pre-payment seller readiness scanning (<code>POST /v1/x402/preflight</code>, <code>$0.01</code> USDC), and Paxiom Ed25519 counter-attestation (<code>/.well-known/paxiom-keys.json</code>)</li>
+          <li>Verified live Base Mainnet x402 settlement into a separated self-custody revenue treasury and exposed both paid routes on <code>/.well-known/x402.json</code> for x402 Bazaar discovery</li>
           <li>Rebuilt <code>paxiom.org</code> around the shipped Receipts product and consolidated the ten-sheet drawing set, Phase 1 substrate schedules, and historical gate notes into this Build Journal</li>
         </ul>
       </div>

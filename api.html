@@ -146,20 +146,20 @@ a:hover { color: var(--red); }
     </div>
     <div class="meta">
       <span>Sheet PXM-API-100</span><span class="sep">&middot;</span>
-      <span>@paxiom/receipts@0.1.1</span><span class="sep">&middot;</span>
+      <span>@paxiom/receipts@0.1.2</span><span class="sep">&middot;</span>
       <span>api.paxiom.org Live</span>
     </div>
   </header>
 
   <section class="hero">
     <h1>Verifier HTTP API &amp; <em>@paxiom/receipts SDK.</em></h1>
-    <p class="lede">Everything needed to attach <a href="/receipts.html"><code>paxiom.receipt.v0</code></a> headers to x402 endpoints, verify receipts inside agent workflows or MCP clients, and counter-attest Base USDC settlement.</p>
+    <p class="lede">Everything needed to attach <a href="/receipts.html"><code>paxiom.receipt.v0</code></a> headers to x402 endpoints, scan untrusted seller URLs before paying, verify receipts inside agent workflows or MCP clients, and counter-attest Base USDC settlement.</p>
   </section>
 
   <div class="status" role="note">
     <span class="dot" aria-hidden="true"></span>
-    <span class="k">Runtime status &middot; 4/4 capabilities live</span>
-    <p><code>https://api.paxiom.org</code> is live on Base Mainnet with <code>offlineVerification</code>, <code>liveSettlementVerification</code>, <code>x402PaymentGating</code> (<code>$0.002</code> USDC), and <code>counterAttestation</code> enabled. Free offline checks require no account or payment; inspect <code>GET /version</code> at any time.</p>
+    <span class="k">Runtime status &middot; 5/5 capabilities live</span>
+    <p><code>https://api.paxiom.org</code> is live on Base Mainnet with <code>offlineVerification</code>, <code>liveSettlementVerification</code> (<code>$0.002</code> USDC), <code>x402Preflight</code> (<code>$0.01</code> USDC), <code>x402PaymentGating</code>, and <code>counterAttestation</code> enabled. Free offline checks require no account or payment; inspect <code>GET /version</code> at any time.</p>
   </div>
 
   <section class="section" id="sdk">
@@ -205,12 +205,13 @@ npx --yes --package=@paxiom/receipts paxiom-receipt-mcp</pre>
         <tr><td><span class="m get">GET</span></td><td class="path">/v1/receipt/demo</td><td class="purpose">Free</td><td class="purpose">Returns a signed demo receipt and its delivered output payload.</td></tr>
         <tr><td><span class="m post">POST</span></td><td class="path">/v1/receipt/verify</td><td class="purpose">Free</td><td class="purpose">Offline verification. Body <code>{ receipt, output? }</code> &rarr; deterministic trust state + per-check breakdown.</td></tr>
         <tr><td><span class="m post">POST</span></td><td class="path">/v1/receipt/verify-live</td><td class="purpose">$0.002 x402 / Key</td><td class="purpose">Confirms Base / Base Sepolia USDC <code>Transfer</code> logs via multi-RPC failover, upgrades verdict to <code>verified</code>, and returns a Paxiom counter-signed <code>X-Paxiom-Receipt</code>.</td></tr>
+        <tr><td><span class="m post">POST</span></td><td class="path">/v1/x402/preflight</td><td class="purpose">$0.01 x402 / Key</td><td class="purpose">SSRF-hardened pre-payment seller scan. Body <code>{ url, method?, maxBudgetAtomic?, expectedNetwork? }</code> &rarr; checks canonical Base USDC asset, EIP-712 domain, <code>payTo</code> manifest match, and <code>X-Paxiom-Receipt</code> support, signed in <code>X-Paxiom-Receipt</code>.</td></tr>
         <tr><td><span class="m get">GET</span></td><td class="path">/.well-known/paxiom-keys.json</td><td class="purpose">Free</td><td class="purpose">Published Ed25519 public keys for offline verification of Paxiom counter-attestations.</td></tr>
-        <tr><td><span class="m get">GET</span></td><td class="path">/.well-known/x402.json</td><td class="purpose">Free</td><td class="purpose">x402 v2 payment terms and Bazaar discovery schema for <code>POST /v1/receipt/verify-live</code>.</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="path">/.well-known/x402.json</td><td class="purpose">Free</td><td class="purpose">x402 payment terms and Bazaar discovery schemas for <code>POST /v1/receipt/verify-live</code> and <code>POST /v1/x402/preflight</code>.</td></tr>
       </tbody>
     </table>
     </div>
-    <p>HTTP status codes: <code>200</code> for any completed verification verdict, <code>400</code> malformed JSON, <code>402</code> x402 payment required on <code>/v1/receipt/verify-live</code>, <code>413</code> payload over 256&nbsp;KiB, <code>404</code> unknown route.</p>
+    <p>HTTP status codes: <code>200</code> for any completed verification or preflight verdict, <code>400</code> malformed JSON or disallowed SSRF target (never billed), <code>402</code> x402 payment required on paid routes, <code>413</code> payload over 256&nbsp;KiB, <code>404</code> unknown route.</p>
   </section>
 
   <section class="section">
@@ -259,7 +260,7 @@ curl -s "$API/.well-known/paxiom-keys.json"</pre>
 
   <footer class="sheet-footer">
     <div>Paxiom &middot; paxiom.org</div>
-    <div>@paxiom/receipts@0.1.1 &middot; api.paxiom.org Live</div>
+    <div>@paxiom/receipts@0.1.2 &middot; api.paxiom.org Live</div>
     <div class="sheet-id">PXM-API-100 &middot; API &amp; SDK</div>
   </footer>
 

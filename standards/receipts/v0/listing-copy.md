@@ -2,10 +2,11 @@
 
 Ready-to-paste copy for x402 Bazaar, `awesome-x402`, and MCP server registries.
 
-> **Live production status.** Both routes are live at `https://api.paxiom.org`:
+> **Live production status.** All routes are live at `https://api.paxiom.org` (`@paxiom/receipts@0.1.2` on npm):
 > - **Free offline verification:** `POST https://api.paxiom.org/v1/receipt/verify` (`$0`, zero network calls)
 > - **Live x402 on-chain settlement verification + Paxiom counter-attestation:** `POST https://api.paxiom.org/v1/receipt/verify-live` (`$0.002` USDC on Base Mainnet via x402 or `X-API-Key`, discoverable at `https://api.paxiom.org/.well-known/x402.json` and public keys at `https://api.paxiom.org/.well-known/paxiom-keys.json`)
-> - **Local stdio MCP server:** `@paxiom/receipts` (`standards/receipts/v0/mcp/server.mjs`)
+> - **Pre-payment x402 seller readiness & scam scan:** `POST https://api.paxiom.org/v1/x402/preflight` (`$0.01` USDC on Base Mainnet via x402 or `X-API-Key` — checks canonical Circle USDC asset, EIP-712 domain, `payTo` manifest consistency, and `X-Paxiom-Receipt` support before an agent pays)
+> - **Local stdio MCP server:** `npx --yes --package=@paxiom/receipts paxiom-receipt-mcp` (`standards/receipts/v0/mcp/server.mjs`)
 
 ## Listing name
 ```

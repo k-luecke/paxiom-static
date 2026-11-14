@@ -49,7 +49,7 @@ export function checkApiKey(req, env = process.env) {
   return { configured: true, authorized: false };
 }
 
-export function buildX402PaymentRequirements(env = process.env) {
+function buildVerifyLiveAccept(env = process.env) {
   const network = env.X402_NETWORK || 'base';
   const netCfg = getSupportedNetworkConfig(String(network)) || NETWORK_CONFIGS.base;
   const priceAtomic = String(env.X402_PRICE_ATOMIC || '2000'); // default $0.002 USDC (6 decimals)
@@ -57,42 +57,94 @@ export function buildX402PaymentRequirements(env = process.env) {
   const resource = env.X402_RESOURCE_URL || 'https://api.paxiom.org/v1/receipt/verify-live';
 
   return {
+    scheme: 'exact',
+    network,
+    maxAmountRequired: priceAtomic,
+    resource,
+    description: 'Live on-chain USDC settlement verification + Paxiom Ed25519 counter-attestation for paxiom.receipt.v0',
+    mimeType: 'application/json',
+    payTo,
+    maxTimeoutSeconds: 60,
+    asset: netCfg.usdcAddress,
+    outputSchema: {
+      input: {
+        discoverable: true,
+        type: 'http',
+        method: 'POST',
+        bodyType: 'json',
+        bodyFields: {
+          receipt: { type: 'object', required: true, description: 'paxiom.receipt.v0 JSON object' },
+          output: { type: 'object', required: false, description: 'Delivered API response JSON' },
+          expectedPayTo: { type: 'string', required: false, description: 'Optional expected USDC recipient address' }
+        }
+      },
+      output: {
+        valid: { type: 'boolean' },
+        trustState: { type: 'string' },
+        checks: { type: 'object' },
+        onchainSettlement: { type: 'object' },
+        counterAttestedReceipt: { type: 'object' }
+      }
+    },
+    extra: { name: netCfg.eip712Name || 'USD Coin', version: '2' }
+  };
+}
+
+function buildPreflightAccept(env = process.env) {
+  const network = env.X402_NETWORK || 'base';
+  const netCfg = getSupportedNetworkConfig(String(network)) || NETWORK_CONFIGS.base;
+  const priceAtomic = String(env.X402_PREFLIGHT_PRICE_ATOMIC || '10000'); // default $0.01 USDC (6 decimals)
+  const payTo = env.X402_PAY_TO || '';
+  const resource = env.X402_PREFLIGHT_RESOURCE_URL || 'https://api.paxiom.org/v1/x402/preflight';
+
+  return {
+    scheme: 'exact',
+    network,
+    maxAmountRequired: priceAtomic,
+    resource,
+    description: 'SSRF-hardened pre-payment x402 seller readiness, canonical Base USDC asset check, and Paxiom receipt capability scan',
+    mimeType: 'application/json',
+    payTo,
+    maxTimeoutSeconds: 60,
+    asset: netCfg.usdcAddress,
+    outputSchema: {
+      input: {
+        discoverable: true,
+        type: 'http',
+        method: 'POST',
+        bodyType: 'json',
+        bodyFields: {
+          url: { type: 'string', required: true, description: 'Target https:// x402 endpoint URL to inspect before paying' },
+          method: { type: 'string', required: false, description: 'HTTP method to probe (POST, GET, or HEAD; default POST)' },
+          maxBudgetAtomic: { type: 'string', required: false, description: 'Optional caller budget cap in USDC atomic units' },
+          expectedNetwork: { type: 'string', required: false, description: 'Optional expected network (base or base-sepolia)' }
+        }
+      },
+      output: {
+        ok: { type: 'boolean' },
+        verdict: { type: 'string' },
+        riskLevel: { type: 'string' },
+        selectedQuote: { type: 'object' },
+        checks: { type: 'object' },
+        receiptSupport: { type: 'object' },
+        findings: { type: 'array' }
+      }
+    },
+    extra: { name: netCfg.eip712Name || 'USD Coin', version: '2' }
+  };
+}
+
+export function buildX402PaymentRequirements(env = process.env, { route = 'verify-live' } = {}) {
+  const accepts = route === 'discovery'
+    ? [buildVerifyLiveAccept(env), buildPreflightAccept(env)]
+    : route === 'preflight'
+      ? [buildPreflightAccept(env)]
+      : [buildVerifyLiveAccept(env)];
+
+  return {
     x402Version: 1,
     error: 'Payment Required: supply an x402 payment header (PAYMENT-SIGNATURE or X-PAYMENT) or a valid Paxiom API key (X-API-Key).',
-    accepts: [
-      {
-        scheme: 'exact',
-        network,
-        maxAmountRequired: priceAtomic,
-        resource,
-        description: 'Live on-chain USDC settlement verification + Paxiom Ed25519 counter-attestation for paxiom.receipt.v0',
-        mimeType: 'application/json',
-        payTo,
-        maxTimeoutSeconds: 60,
-        asset: netCfg.usdcAddress,
-        outputSchema: {
-          input: {
-            discoverable: true,
-            type: 'http',
-            method: 'POST',
-            bodyType: 'json',
-            bodyFields: {
-              receipt: { type: 'object', required: true, description: 'paxiom.receipt.v0 JSON object' },
-              output: { type: 'object', required: false, description: 'Delivered API response JSON' },
-              expectedPayTo: { type: 'string', required: false, description: 'Optional expected USDC recipient address' }
-            }
-          },
-          output: {
-            valid: { type: 'boolean' },
-            trustState: { type: 'string' },
-            checks: { type: 'object' },
-            onchainSettlement: { type: 'object' },
-            counterAttestedReceipt: { type: 'object' }
-          }
-        },
-        extra: { name: netCfg.eip712Name || 'USD Coin', version: '2' }
-      }
-    ]
+    accepts
   };
 }
 
@@ -101,7 +153,8 @@ export function buildX402PaymentRequirements(env = process.env) {
  */
 export async function authorizeMonetizedRequest(req, {
   env = process.env,
-  fetchImpl = globalThis.fetch
+  fetchImpl = globalThis.fetch,
+  route = 'verify-live'
 } = {}) {
   // 1. Check B2B SaaS API key first (zero per-call settlement latency)
   const apiKeyCheck = checkApiKey(req, env);
@@ -139,7 +192,7 @@ export async function authorizeMonetizedRequest(req, {
     };
   }
 
-  const requirementsPayload = buildX402PaymentRequirements(env);
+  const requirementsPayload = buildX402PaymentRequirements(env, { route });
   const paymentRequirements = requirementsPayload.accepts[0];
   const paymentHeader = String(
     (req.headers && (req.headers['payment-signature'] || req.headers['x-payment'])) || ''
@@ -263,6 +316,8 @@ export async function authorizeMonetizedRequest(req, {
     authorized: true,
     mode: 'x402',
     settlement: settleJson,
+    paymentRequirements,
+    paymentPayload: decodedPaymentPayload,
     responseHeaders: {
       'PAYMENT-RESPONSE': encodedPaymentResponse,
       'Access-Control-Expose-Headers': 'PAYMENT-REQUIRED, PAYMENT-RESPONSE, X-Paxiom-Receipt'
