@@ -13,13 +13,84 @@ const EX = new URL('../examples/', import.meta.url);
 const validReceipt = JSON.parse(readFileSync(new URL('valid.receipt.json', EX), 'utf8'));
 const validOutput = JSON.parse(readFileSync(new URL('valid.output.json', EX), 'utf8'));
 
-test('MCP initialize + tools/list exposes verify_receipt, explain_receipt, and issue_receipt', () => {
+test('MCP initialize + tools/list exposes offline and live x402 buyer tools', () => {
   const init = handleJsonRpcMessage({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} });
   assert.equal(init.result.serverInfo.name, 'paxiom-receipt-mcp');
 
   const list = handleJsonRpcMessage({ jsonrpc: '2.0', id: 2, method: 'tools/list' });
   const names = list.result.tools.map((t) => t.name);
-  assert.deepEqual(names, ['verify_receipt', 'explain_receipt', 'issue_receipt']);
+  assert.deepEqual(names, [
+    'verify_receipt',
+    'explain_receipt',
+    'issue_receipt',
+    'preflight_x402_seller',
+    'verify_receipt_live'
+  ]);
+
+  // Non-conforming JSON-RPC id (object / array / boolean) returns -32600 with id: null
+  const badId = handleJsonRpcMessage({ jsonrpc: '2.0', id: { nested: [1] }, method: 'ping' });
+  assert.equal(badId.id, null);
+  assert.equal(badId.error.code, -32600);
+});
+
+test('MCP preflight_x402_seller and verify_receipt_live work with injectable fetchImpl', async () => {
+  const mockFetch = async (url, init) => {
+    assert.equal(init.headers['x-api-key'], 'pax_mcp_test_key');
+    if (url.endsWith('/v1/x402/preflight')) {
+      return new Response(JSON.stringify({
+        ok: true,
+        verdict: 'proceed',
+        riskLevel: 'low',
+        checks: { canonicalUsdcAsset: 'pass' }
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    }
+    if (url.endsWith('/v1/receipt/verify-live')) {
+      return new Response(JSON.stringify({
+        valid: true,
+        trustState: 'verified',
+        onchainSettlement: { settled: true }
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    }
+    throw new Error(`Unexpected URL ${url}`);
+  };
+
+  const preflightMsg = await handleJsonRpcMessage(
+    {
+      jsonrpc: '2.0',
+      id: 21,
+      method: 'tools/call',
+      params: {
+        name: 'preflight_x402_seller',
+        arguments: { url: 'https://seller.example/v1/query', maxBudgetAtomic: '5000' }
+      }
+    },
+    { PAXIOM_API_KEY: 'pax_mcp_test_key' },
+    { fetchImpl: mockFetch }
+  );
+  assert.equal(preflightMsg.result.isError, false);
+  assert.equal(preflightMsg.result.structuredContent.ok, true);
+  assert.equal(preflightMsg.result.structuredContent.verdict, 'proceed');
+
+  const liveMsg = await handleJsonRpcMessage(
+    {
+      jsonrpc: '2.0',
+      id: 22,
+      method: 'tools/call',
+      params: {
+        name: 'verify_receipt_live',
+        arguments: {
+          receipt: validReceipt,
+          output: validOutput,
+          expectedPayTo: '0x1111111111111111111111111111111111111111'
+        }
+      }
+    },
+    { PAXIOM_API_KEY: 'pax_mcp_test_key' },
+    { fetchImpl: mockFetch }
+  );
+  assert.equal(liveMsg.result.isError, false);
+  assert.equal(liveMsg.result.structuredContent.ok, true);
+  assert.equal(liveMsg.result.structuredContent.trustState, 'verified');
 });
 
 test('MCP verify_receipt and issue_receipt round-trip', () => {

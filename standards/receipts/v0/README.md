@@ -12,10 +12,10 @@ with only a public key.
 
 This directory contains the public **`paxiom.receipt.v0` spec** and the
 zero-dependency **`@paxiom/receipts` reference package**:
-- **Issuer & middleware SDK** (`src/issue.mjs`, `src/middleware.mjs`, `src/index.mjs`)
-- **Offline verifier & explainer** (`src/verify.mjs`, `src/explain.mjs`)
+- **Issuer & middleware SDK** (`src/issue.mjs`, `src/middleware.mjs`, `src/index.mjs`, `src/index.d.ts`)
+- **Offline verifier, explainer & buyer client** (`src/verify.mjs`, `src/explain.mjs`, `src/client.mjs`)
 - **CLI** (`bin/paxiom-receipt.mjs` — `keygen`, `issue`, `verify`)
-- **MCP tool server** (`mcp/server.mjs` — `verify_receipt`, `explain_receipt`, `issue_receipt`)
+- **MCP tool server** (`mcp/server.mjs` — `verify_receipt`, `explain_receipt`, `issue_receipt`, `preflight_x402_seller`, `verify_receipt_live`)
 
 ## Install & Quick Start
 
@@ -28,15 +28,19 @@ import {
   generateReceiptKeyPair,
   issueReceipt,
   verifyReceipt,
+  verifyResponseReceipt,
+  preflightX402,
+  verifyReceiptLive,
   withPaxiomReceipt
 } from '@paxiom/receipts';
 ```
 
 - **CLI (zero install):** `npx @paxiom/receipts --help` (or `npx -p @paxiom/receipts paxiom-receipt verify <receipt.json> --output <output.json>`)
 - **MCP stdio server:** `npx -y --package=@paxiom/receipts paxiom-receipt-mcp`
-- **Live HTTP Verifier (`https://api.paxiom.org`):**
+- **Live HTTP Verifier & Preflight (`https://api.paxiom.org`):**
   - `POST https://api.paxiom.org/v1/receipt/verify` — free offline verification
-  - `POST https://api.paxiom.org/v1/receipt/verify-live` — live Base / Base Sepolia USDC settlement verification + Paxiom Ed25519 counter-attestation via x402 (`/.well-known/x402.json`) or `X-API-Key`
+  - `POST https://api.paxiom.org/v1/x402/preflight` — pre-payment x402 seller readiness, Circle USDC asset check, and `payTo` bait-and-switch scan (`$0.01` USDC via x402 or `X-API-Key`)
+  - `POST https://api.paxiom.org/v1/receipt/verify-live` — live Base / Base Sepolia USDC settlement verification + Paxiom Ed25519 counter-attestation (`$0.002` USDC via x402 or `X-API-Key`)
 
 ## Why this exists
 
@@ -210,7 +214,35 @@ const handler = withPaxiomReceipt(
 );
 ```
 
-Express / Node `http.Server` middleware is also exported via `createReceiptMiddleware(options)`.
+Express / Node `http.Server` middleware is also exported via `createReceiptMiddleware(options)`. Built-in TypeScript declarations (`src/index.d.ts`) are included with zero extra `@types/*` packages.
+
+### Buyer wallet & router helpers (`verifyResponseReceipt` · `preflightX402` · `verifyReceiptLive`)
+
+```js
+import {
+  verifyResponseReceipt,
+  preflightX402,
+  verifyReceiptLive
+} from '@paxiom/receipts';
+
+// 1. Pre-payment seller safety scan ($0.01 USDC via x402 fetch wrapper or X-API-Key):
+const scan = await preflightX402('https://seller.example/v1/query', {
+  fetch: x402WrappedFetch,
+  maxBudgetAtomic: '10000',
+  expectedNetwork: 'base'
+});
+if (scan.verdict === 'block') throw new Error('Unsafe x402 quote');
+
+// 2. Verify delivered X-Paxiom-Receipt header offline in 1 line:
+const delivery = verifyResponseReceipt(paidResponse, { output: parsedBody });
+
+// 3. Confirm Base USDC Transfer log on-chain + obtain Paxiom counter-attestation ($0.002 USDC):
+const live = await verifyReceiptLive(delivery.receipt, {
+  output: parsedBody,
+  expectedPayTo: scan.report.selectedQuote.payTo,
+  fetch: x402WrappedFetch
+});
+```
 
 ### CLI (`keygen` · `issue` · `verify`)
 
