@@ -301,7 +301,7 @@ a:hover { color: var(--red); }
     </div>
     <div class="meta">
       <span>Spec: paxiom.receipt.v0</span><span class="sep">&middot;</span>
-      <span>SDK: @paxiom/receipts@0.1.1</span><span class="sep">&middot;</span>
+      <span>SDK: @paxiom/receipts@0.1.2</span><span class="sep">&middot;</span>
       <span>Runtime: Base Mainnet Live</span>
     </div>
   </header>
@@ -346,12 +346,12 @@ a:hover { color: var(--red); }
         </ul>
       </div>
       <div class="build-cell paid">
-        <div class="label">03 &middot; Verify On-Chain ($0.002)</div>
-        <h3>Live Settlement &amp; Attestation</h3>
+        <div class="label">03 &middot; Live Base x402 APIs ($0.002 &ndash; $0.01)</div>
+        <h3>Preflight &amp; Settlement Attestation</h3>
         <ul>
-          <li><code>POST /v1/receipt/verify-live</code> on <code>api.paxiom.org</code></li>
-          <li>Confirms Base / Base Sepolia USDC <code>Transfer</code> logs</li>
-          <li>Upgrades status to <code>verified_settled</code></li>
+          <li><code>POST /v1/x402/preflight</code> (<code>$0.01</code>): scan unknown x402 URLs before paying</li>
+          <li><code>POST /v1/receipt/verify-live</code> (<code>$0.002</code>): confirm Base USDC <code>Transfer</code> logs</li>
+          <li>Upgrades receipt status to <code>verified_settled</code></li>
           <li>Returns Paxiom counter-signed <code>X-Paxiom-Receipt</code></li>
           <li>Pay per call via x402 or flat B2B <code>X-API-Key</code></li>
         </ul>

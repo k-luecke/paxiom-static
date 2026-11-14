@@ -19,6 +19,10 @@ import {
   buildX402PaymentRequirements,
   checkApiKey
 } from './x402-gate.mjs';
+import {
+  validatePublicHttpsTarget,
+  runX402Preflight
+} from './x402-preflight.mjs';
 
 const MAX_BODY_BYTES = 256 * 1024; // 256 KiB
 const MAX_DRAIN_AFTER_413 = 64 * 1024; // bounded post-413 drain window before destroying socket
@@ -33,9 +37,11 @@ const RENDER_PRODUCTION_DEFAULTS = Object.freeze({
   X402_ENABLED: 'true',
   X402_NETWORK: 'base',
   X402_PRICE_ATOMIC: '2000',
+  X402_PREFLIGHT_PRICE_ATOMIC: '10000',
   X402_PAY_TO: '0x9786F5532ab7d7556CDa53E3f6c2d937c9b87Bc4',
   X402_FACILITATOR_URL: 'https://facilitator.payai.network',
-  X402_RESOURCE_URL: 'https://api.paxiom.org/v1/receipt/verify-live'
+  X402_RESOURCE_URL: 'https://api.paxiom.org/v1/receipt/verify-live',
+  X402_PREFLIGHT_RESOURCE_URL: 'https://api.paxiom.org/v1/x402/preflight'
 });
 
 export function resolveRuntimeEnv(rawEnv = process.env) {
@@ -74,16 +80,20 @@ function buildVersionPayload(env = process.env) {
     capabilities: {
       offlineVerification: true,
       liveSettlementVerification: liveEnabled,
+      x402Preflight: liveEnabled,
       x402PaymentGating: x402Enabled,
       counterAttestation: Boolean(getConfiguredPaxiomKey(env))
     },
     endpoints: {
       freeOfflineVerify: 'POST /v1/receipt/verify',
-      ...(liveEnabled ? { liveOnchainVerify: 'POST /v1/receipt/verify-live' } : {})
+      ...(liveEnabled ? {
+        liveOnchainVerify: 'POST /v1/receipt/verify-live',
+        x402SellerPreflight: 'POST /v1/x402/preflight'
+      } : {})
     },
     x402Enabled,
     note: liveEnabled
-      ? 'POST /v1/receipt/verify remains free and offline. POST /v1/receipt/verify-live verifies claimed Base/Base-Sepolia USDC settlements via JSON-RPC.'
+      ? 'POST /v1/receipt/verify remains free and offline. POST /v1/receipt/verify-live ($0.002 USDC) verifies claimed Base/Base-Sepolia USDC settlements via JSON-RPC. POST /v1/x402/preflight ($0.01 USDC) scans x402 seller endpoints before payment.'
       : 'Developer-preview reference verifier for paxiom.receipt.v0. Verifies receipt schema, Ed25519 signature, and output binding. Reports settlement and proof-evidence states but does NOT independently verify onchain settlement, facilitator records, or proof-source evidence in v0. Free — no x402 gating.'
   };
 }
@@ -449,7 +459,177 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
   }, extraHeaders);
 }
 
-export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThis.fetch } = {}) {
+const ALLOWED_PREFLIGHT_METHODS = new Set(['POST', 'GET', 'HEAD']);
+const DEC_UINT_STRING_RE = /^[0-9]+$/;
+
+async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl }) {
+  const liveEnabled = isFlagEnabled(env.LIVE_VERIFY_ENABLED) || isFlagEnabled(env.X402_ENABLED);
+  if (!liveEnabled) {
+    return send(res, 503, errBody(
+      'preflight_disabled',
+      'Live x402 preflight scanning is not enabled on this instance.'
+    ));
+  }
+
+  const hasPaymentOrAuthHeader = Boolean(
+    req.headers && (
+      req.headers['payment-signature'] ||
+      req.headers['x-payment'] ||
+      req.headers['x-api-key'] ||
+      req.headers.authorization
+    )
+  );
+
+  if (req.method === 'GET' && !hasPaymentOrAuthHeader && isFlagEnabled(env.X402_ENABLED) && env.X402_PAY_TO) {
+    const auth = await authorizeMonetizedRequest(req, { env, fetchImpl, route: 'preflight' });
+    return send(res, auth.status, auth.body, auth.headers);
+  }
+
+  let rawBodyText = '';
+  try {
+    rawBodyText = await readBody(req);
+  } catch (err) {
+    if (err.code === 'body_too_large') {
+      return send(res, 413, errBody('body_too_large', `Request body exceeds ${MAX_BODY_BYTES / 1024} KiB`), { connection: 'close' });
+    }
+    return send(res, 400, errBody('read_error', 'Failed to read request body'));
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(rawBodyText || '{}');
+  } catch {
+    return send(res, 400, errBody('invalid_json', 'Request body is not valid JSON'));
+  }
+
+  if ((!parsed || typeof parsed !== 'object' || !parsed.url) &&
+      !hasPaymentOrAuthHeader &&
+      isFlagEnabled(env.X402_ENABLED) &&
+      env.X402_PAY_TO) {
+    const auth = await authorizeMonetizedRequest(req, { env, fetchImpl, route: 'preflight' });
+    return send(res, auth.status, auth.body, auth.headers);
+  }
+
+  if (!parsed || typeof parsed !== 'object' || typeof parsed.url !== 'string' || !parsed.url.trim()) {
+    return send(res, 400, errBody('missing_target_url', 'Request must be a JSON object with a non-empty https:// "url" field.'));
+  }
+
+  const probeMethod = parsed.method !== undefined ? String(parsed.method).toUpperCase() : 'POST';
+  if (!ALLOWED_PREFLIGHT_METHODS.has(probeMethod)) {
+    return send(res, 400, errBody('invalid_probe_method', 'Field "method" must be one of POST, GET, or HEAD.'));
+  }
+
+  let maxBudgetAtomic = null;
+  if (parsed.maxBudgetAtomic !== undefined && parsed.maxBudgetAtomic !== null && parsed.maxBudgetAtomic !== '') {
+    const budgetStr = String(parsed.maxBudgetAtomic);
+    if (!DEC_UINT_STRING_RE.test(budgetStr)) {
+      return send(res, 400, errBody('invalid_max_budget', 'Field "maxBudgetAtomic" must be a base-10 non-negative integer string.'));
+    }
+    maxBudgetAtomic = budgetStr;
+  }
+
+  let expectedNetwork = null;
+  if (parsed.expectedNetwork !== undefined && parsed.expectedNetwork !== null && parsed.expectedNetwork !== '') {
+    const netStr = String(parsed.expectedNetwork);
+    if (!getSupportedNetworkConfig(netStr)) {
+      return send(res, 400, errBody('unsupported_expected_network', 'Field "expectedNetwork" must be base, eip155:8453, base-sepolia, or eip155:84532.'));
+    }
+    expectedNetwork = netStr;
+  }
+
+  // Unpaid/unauthenticated callers receive 402/401 immediately before DNS resolution
+  if (!hasPaymentOrAuthHeader || (!isFlagEnabled(env.X402_ENABLED) && !checkApiKey(req, env).authorized)) {
+    let authEarly;
+    try {
+      authEarly = await authorizeMonetizedRequest(req, { env, fetchImpl, route: 'preflight' });
+    } catch {
+      return send(res, 502, errBody('payment_gate_error', 'Failed to contact x402 payment facilitator.'));
+    }
+    if (!authEarly.authorized) {
+      return send(res, authEarly.status, authEarly.body, authEarly.headers);
+    }
+  }
+
+  // Deterministic SSRF & DNS public-IP validation BEFORE settling caller's x402 payment
+  const targetValidation = await validatePublicHttpsTarget(
+    parsed.url,
+    lookupImpl ? { lookupImpl } : {}
+  );
+  if (!targetValidation.ok) {
+    return send(res, 400, errBody(targetValidation.code, targetValidation.message));
+  }
+
+  let auth;
+  try {
+    auth = await authorizeMonetizedRequest(req, { env, fetchImpl, route: 'preflight' });
+  } catch {
+    return send(res, 502, errBody('payment_gate_error', 'Failed to contact x402 payment facilitator.'));
+  }
+  if (!auth.authorized) {
+    return send(res, auth.status, auth.body, auth.headers);
+  }
+
+  const probeFetchImpl = fetchImpl === globalThis.fetch ? null : fetchImpl;
+  const report = await runX402Preflight(targetValidation, {
+    method: probeMethod,
+    maxBudgetAtomic,
+    expectedNetwork
+  }, { fetchImpl: probeFetchImpl });
+
+  const extraHeaders = { ...auth.responseHeaders };
+  const paxiomKey = getConfiguredPaxiomKey(env);
+  if (paxiomKey) {
+    const resourceUrl = env.X402_PREFLIGHT_RESOURCE_URL || 'https://api.paxiom.org/v1/x402/preflight';
+    const priceAtomic = String(env.X402_PREFLIGHT_PRICE_ATOMIC || '10000');
+    const rawTx = auth.mode === 'x402' && auth.settlement && typeof auth.settlement.transaction === 'string'
+      ? auth.settlement.transaction.toLowerCase()
+      : null;
+    const validTx = rawTx && /^0x[0-9a-f]{64}$/.test(rawTx) ? rawTx : null;
+    const isX402Paid = auth.mode === 'x402';
+
+    const issued = issueReceipt({
+      privateKey: paxiomKey.privateKeyPem,
+      issuer: {
+        name: env.PAXIOM_ISSUER_NAME || 'Paxiom Receipt Verifier',
+        uri: env.PAXIOM_ISSUER_URI || 'https://paxiom.org',
+        keyId: paxiomKey.keyId
+      },
+      service: {
+        name: 'Paxiom x402 Seller Preflight',
+        resource: resourceUrl,
+        method: 'POST'
+      },
+      request: {
+        method: 'POST',
+        resource: resourceUrl,
+        body: rawBodyText
+      },
+      payment: {
+        scheme: isX402Paid ? 'x402' : 'api-key',
+        network: env.X402_NETWORK || 'base',
+        asset: 'USDC',
+        amountAtomic: isX402Paid ? priceAtomic : '0',
+        amountDisplay: isX402Paid ? (Number(priceAtomic) / 1e6).toString() : '0',
+        paymentRequirements: auth.paymentRequirements,
+        paymentPayload: auth.paymentPayload,
+        settlement: {
+          status: validTx ? 'claimed_not_checked' : 'not_required',
+          transactionHash: validTx,
+          checkedByPaxiom: false
+        }
+      },
+      output: report
+    });
+    extraHeaders['X-Paxiom-Receipt'] = issued.receiptHeader;
+    if (!extraHeaders['Access-Control-Expose-Headers']) {
+      extraHeaders['Access-Control-Expose-Headers'] = 'PAYMENT-REQUIRED, PAYMENT-RESPONSE, X-Paxiom-Receipt';
+    }
+  }
+
+  return send(res, 200, report, extraHeaders);
+}
+
+export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThis.fetch, lookupImpl } = {}) {
   const env = resolveRuntimeEnv(rawEnv);
   return async function handleRequest(req, res) {
     const { method } = req;
@@ -486,13 +666,16 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
       if (!isFlagEnabled(env.X402_ENABLED) || !env.X402_PAY_TO) {
         return send(res, 404, errBody('x402_disabled', 'x402 payment discovery is not enabled on this instance.'));
       }
-      return send(res, 200, buildX402PaymentRequirements(env));
+      return send(res, 200, buildX402PaymentRequirements(env, { route: 'discovery' }));
     }
     if (method === 'POST' && path === '/v1/receipt/verify') {
       return handleOfflineVerify(req, res, env);
     }
     if ((method === 'POST' || method === 'GET') && path === '/v1/receipt/verify-live') {
       return handleLiveVerify(req, res, { env, fetchImpl });
+    }
+    if ((method === 'POST' || method === 'GET') && path === '/v1/x402/preflight') {
+      return handleX402Preflight(req, res, { env, fetchImpl, lookupImpl });
     }
     return send(res, 404, errBody('not_found', `No route for ${method} ${path}`));
   };
@@ -516,6 +699,6 @@ if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) 
   const port = Number(process.env.PORT) || 8787;
   createServer().listen(port, () => {
     process.stdout.write(`paxiom-receipt-verifier (v0) on http://localhost:${port}\n`);
-    process.stdout.write(`  GET  /health\n  GET  /version\n  GET  /v1/receipt/demo\n  POST /v1/receipt/verify\n  POST /v1/receipt/verify-live\n`);
+    process.stdout.write(`  GET  /health\n  GET  /version\n  GET  /v1/receipt/demo\n  POST /v1/receipt/verify\n  POST /v1/receipt/verify-live\n  POST /v1/x402/preflight\n`);
   });
 }

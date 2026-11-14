@@ -2,7 +2,7 @@
 
 > Proof-bound receipts for x402-paid and agentic APIs. x402 proves a payment; Paxiom proves what the payment bought — binding the HTTP request, delivered output, payment transaction, and settlement verdict into one Ed25519-signed receipt.
 
-Paxiom provides the open **paxiom.receipt.v0** specification, the zero-dependency `@paxiom/receipts` npm SDK (`0.1.1`) + CLI + stdio MCP server, and a live HTTP verifier & counter-attestation service on Base Mainnet at `https://api.paxiom.org`.
+Paxiom provides the open **paxiom.receipt.v0** specification, the zero-dependency `@paxiom/receipts` npm SDK (`0.1.2`) + CLI + stdio MCP server, and a live HTTP verifier, preflight scanner & counter-attestation service on Base Mainnet at `https://api.paxiom.org`.
 
 ## Shipped product surface
 1. **Issue locally for free (`@paxiom/receipts` on npm):**
@@ -16,7 +16,10 @@ Paxiom provides the open **paxiom.receipt.v0** specification, the zero-dependenc
 3. **Verify on-chain settlement + counter-attestation (`POST /v1/receipt/verify-live`):**
    - Live on `https://api.paxiom.org` (`$0.002` Base Mainnet USDC via x402 or flat-rate `X-API-Key`).
    - Confirms canonical Base Mainnet (`eip155:8453`) and Base Sepolia (`eip155:84532`) USDC `Transfer` logs via multi-RPC failover (`payer`, `payTo`, `amount`), upgrades verdict to `verified` (`verified_settled`), and returns a Paxiom Ed25519 counter-signed `X-Paxiom-Receipt` header verifiable against `https://api.paxiom.org/.well-known/paxiom-keys.json`.
-   - Machine-readable x402 v2 & Bazaar discovery manifest: `https://api.paxiom.org/.well-known/x402.json`.
+4. **Pre-payment x402 seller readiness & scam scan (`POST /v1/x402/preflight`):**
+   - Live on `https://api.paxiom.org` (`$0.01` Base Mainnet USDC via x402 or flat-rate `X-API-Key`).
+   - SSRF-hardened preflight probe (`{ url, method?, maxBudgetAtomic?, expectedNetwork? }`) that inspects an untrusted x402 endpoint before an agent signs a payment: verifies canonical Circle USDC asset address, EIP-712 domain parameters, `payTo` manifest consistency (bait-and-switch detection), and `X-Paxiom-Receipt` readiness, returning a signed `X-Paxiom-Receipt` over the verdict (`proceed` | `caution` | `block`).
+   - Machine-readable x402 & Bazaar discovery manifest for both paid endpoints: `https://api.paxiom.org/.well-known/x402.json`.
 
 ## Claim boundaries (important for agents)
 - `POST /v1/receipt/verify` is strictly offline: it NEVER calls a blockchain RPC or facilitator.

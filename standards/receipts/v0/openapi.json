@@ -2,9 +2,9 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Paxiom Receipt Verifier",
-    "version": "0.0.0-preview",
-    "x-status": "developer preview",
-    "description": "Offline verifier for paxiom.receipt.v0 — proof-bound receipts for x402-paid APIs. x402 proves a payment; a Paxiom receipt binds payment + request + output + settlement metadata + optional evidence into one Ed25519-signed object, and this service reports what was actually checked via a trust state.\n\n**Developer preview. v0 scope:** verifies receipt structure, Ed25519 signature over the canonical signing input, output-hash binding, request/payment binding presence, and honest settlement/evidence status. **It does NOT perform onchain settlement verification, facilitator checks, or proof-source verification.** A receipt that merely claims an onchain settlement is reported as `settlement_claimed_not_checked`, never `verified`. Schema-valid is not receipt-verified.\n\nThis is a free verifier: no x402 payment gating in v0.",
+    "version": "0.1.2",
+    "x-status": "live",
+    "description": "Verifier, counter-attestation, and x402 pre-payment readiness service for paxiom.receipt.v0 — proof-bound Ed25519 receipts for x402-paid and agentic APIs.\n\n- **Free offline verification (`POST /v1/receipt/verify`):** verifies receipt structure, Ed25519 signature over canonical JSON, SHA-256 output-hash binding, and honest settlement/evidence status with zero RPC calls (`settlement_claimed_not_checked` is never reported as `verified`).\n- **Live on-chain settlement verification (`POST /v1/receipt/verify-live`, $0.002 USDC via x402 or `X-API-Key`):** verifies canonical Base Mainnet (`eip155:8453`) and Base Sepolia (`eip155:84532`) USDC `Transfer` logs via multi-RPC failover and emits a Paxiom counter-attested receipt (`X-Paxiom-Receipt`).\n- **Pre-payment seller readiness scan (`POST /v1/x402/preflight`, $0.01 USDC via x402 or `X-API-Key`):** SSRF-hardened preflight scanner that probes an untrusted x402 endpoint before payment, verifying canonical Circle USDC asset address, EIP-712 domain parameters, `payTo` manifest consistency, and Paxiom receipt readiness.",
     "contact": {
       "name": "Paxiom",
       "url": "https://paxiom.org"
@@ -320,6 +320,71 @@
           },
           "503": {
             "description": "Live settlement verification is not enabled on this host."
+          }
+        }
+      }
+    },
+    "/v1/x402/preflight": {
+      "post": {
+        "summary": "SSRF-hardened pre-payment x402 seller readiness & canonical USDC check ($0.01 USDC / X-API-Key)",
+        "description": "Probes an untrusted https:// x402 endpoint before an agent signs an EIP-3009 payment. Validates public DNS/IP ranges, inspects the 402 PaymentRequirements challenge and /.well-known/x402.json, verifies canonical Base / Base Sepolia USDC token address and EIP-712 domain, detects payTo bait-and-switch, checks Paxiom receipt support, and signs the report in X-Paxiom-Receipt.",
+        "operationId": "x402Preflight",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Target https:// x402 endpoint URL to inspect before paying."
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": [
+                      "POST",
+                      "GET",
+                      "HEAD"
+                    ],
+                    "default": "POST"
+                  },
+                  "maxBudgetAtomic": {
+                    "type": "string",
+                    "pattern": "^[0-9]+$",
+                    "description": "Optional caller budget cap in USDC atomic units (6 decimals)."
+                  },
+                  "expectedNetwork": {
+                    "type": "string",
+                    "description": "Optional expected network (base, eip155:8453, base-sepolia, or eip155:84532)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Preflight scan completed (verdict: proceed | caution | block).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or SSRF-blocked target URL (never charges x402 facilitator)."
+          },
+          "402": {
+            "description": "Payment required ($0.01 USDC on Base via x402 or X-API-Key)."
+          },
+          "503": {
+            "description": "Live x402 preflight scanning is not enabled on this host."
           }
         }
       }

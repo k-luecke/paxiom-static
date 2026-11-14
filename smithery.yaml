@@ -1,0 +1,10 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties: {}
+  commandFunction: |-
+    (config) => ({
+      command: 'npx',
+      args: ['--yes', '--package=@paxiom/receipts@0.1.2', 'paxiom-receipt-mcp']
+    })

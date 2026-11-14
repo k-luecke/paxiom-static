@@ -1,0 +1,31 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.k-luecke/paxiom-receipts",
+  "title": "Paxiom Receipts MCP",
+  "description": "Verify, explain, and issue Ed25519 proof-bound receipts (paxiom.receipt.v0) for x402 APIs.",
+  "websiteUrl": "https://paxiom.org/receipts.html",
+  "repository": {
+    "url": "https://github.com/k-luecke/paxiom-static",
+    "source": "github",
+    "subfolder": "standards/receipts/v0"
+  },
+  "version": "0.1.2",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@paxiom/receipts",
+      "version": "0.1.2",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "paxiom-receipt-mcp"
+        }
+      ]
+    }
+  ]
+}
