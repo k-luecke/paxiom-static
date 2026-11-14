@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
-<title>Paxiom &middot; Receipts</title>
-<meta name="description" content="Paxiom Receipts: proof-bound receipts for x402-paid APIs. x402 proves a payment. Paxiom proves what the payment bought. A free, offline reference verifier and an open receipt spec (developer preview).">
-<meta property="og:title" content="Paxiom Receipts">
-<meta property="og:description" content="Proof-bound receipts for x402-paid APIs. x402 proves a payment. Paxiom proves what the payment bought.">
+<title>Paxiom Receipts &middot; Proof-of-Delivery Spec &amp; Verifier</title>
+<meta name="description" content="Paxiom Receipts (paxiom.receipt.v0): proof-bound Ed25519 receipts for x402-paid APIs, zero-dependency @paxiom/receipts SDK &amp; MCP server, free offline verification, and live Base USDC settlement verification.">
+<meta property="og:title" content="Paxiom Receipts · Proof-of-Delivery Spec &amp; Verifier">
+<meta property="og:description" content="Proof-bound receipts for x402-paid APIs. Open spec, @paxiom/receipts SDK &amp; MCP, free offline verifier, and live Base Mainnet settlement attestation.">
 <meta property="og:url" content="https://paxiom.org/receipts.html">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
@@ -17,7 +17,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
@@ -47,7 +46,7 @@ body {
 .title-block .project-subtitle {
   font-family: 'Times New Roman', Times, serif;
   font-style: italic; font-size: 14px; color: var(--ink-mid);
-  margin-top: 4px; max-width: 42ch;
+  margin-top: 4px; max-width: 44ch;
 }
 .title-block .meta {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
@@ -74,7 +73,7 @@ body {
 }
 .hero .tagline {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-  font-size: 12px; letter-spacing: 0.02em; line-height: 1.7; color: var(--ink-mid);
+  font-size: 11.5px; letter-spacing: 0.03em; line-height: 1.7; color: var(--blue);
   margin-bottom: 20px;
 }
 .hero .actions { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -82,7 +81,7 @@ body {
   display: inline-block; padding: 10px 18px;
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
-  text-decoration: none;
+  text-decoration: none; border-radius: 8px;
   border: 1.5px solid var(--ink); color: var(--ink);
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
@@ -128,7 +127,6 @@ body {
   color: var(--blue); text-decoration: underline; text-underline-offset: 3px;
 }
 
-/* Command / code blocks */
 pre.cmd {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 12.5px; line-height: 1.6;
@@ -139,7 +137,7 @@ pre.cmd {
 }
 pre.cmd .c { color: var(--rule-faint); }
 
-/* Capability grid (reuses build-state look) */
+/* Capability grid */
 .cap { border: 1.5px solid var(--ink); margin-bottom: 20px; background: var(--paper); border-radius: 8px; overflow: hidden; }
 .cap-header {
   background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 8px 8px 0 0;
@@ -156,14 +154,14 @@ pre.cmd .c { color: var(--rule-faint); }
   color: var(--blue); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
 }
 .cap-cell .label::before { content: ''; width: 8px; height: 8px; background: var(--blue); border-radius: 50%; }
-.cap-cell.later .label { color: var(--amber); }
-.cap-cell.later .label::before { background: var(--amber); }
+.cap-cell.live .label { color: var(--amber); }
+.cap-cell.live .label::before { background: var(--amber); }
 .cap-cell.never .label { color: var(--ink-faint); }
 .cap-cell.never .label::before { background: transparent; border: 1.5px solid var(--ink-faint); width: 6px; height: 6px; }
 .cap-cell ul { list-style: none; font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.5; }
 .cap-cell li { padding: 4px 0 4px 14px; position: relative; color: var(--ink); }
 .cap-cell li::before { content: '\00B7'; position: absolute; left: 0; color: var(--rule-faint); font-weight: bold; }
-.cap-cell.later li, .cap-cell.never li { color: var(--ink-faint); font-style: italic; }
+.cap-cell.never li { color: var(--ink-faint); font-style: italic; }
 
 /* Trust-state chips */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; }
@@ -177,7 +175,6 @@ pre.cmd .c { color: var(--rule-faint); }
 .chip.warn { border-color: var(--amber); color: var(--amber); }
 .chip.bad { border-color: var(--red); color: var(--red); }
 
-/* Note / callout */
 .note {
   border: 1.5px solid var(--amber); border-radius: 8px; padding: 14px 16px; margin: 6px 0 22px;
   background: var(--paper);
@@ -190,7 +187,6 @@ pre.cmd .c { color: var(--rule-faint); }
   font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55; color: var(--ink); max-width: 68ch; margin: 0;
 }
 
-/* Link list */
 .linklist { list-style: none; margin: 4px 0 14px; }
 .linklist li { padding: 6px 0; border-bottom: 1px solid var(--rule-faint); }
 .linklist li:last-child { border-bottom: none; }
@@ -200,7 +196,6 @@ pre.cmd .c { color: var(--rule-faint); }
 }
 .linklist .desc { font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--ink-mid); font-size: 14px; }
 
-/* Pilot block */
 .pilot { border: 1.5px solid var(--ink); border-radius: 8px; padding: 22px; margin-bottom: 20px; }
 
 .sheet-footer {
@@ -258,7 +253,7 @@ a:hover { color: var(--red); }
 @media (max-width: 600px) {
   .paxiom-bar-inner { padding: 8px 14px; }
   .paxiom-bar-mark span { display: none; }
-  .paxiom-bar-nav { gap: 13px; font-size: 9.5px; letter-spacing: 0.1em; }
+  .paxiom-bar-nav { gap: 14px; font-size: 9.5px; letter-spacing: 0.11em; }
 }
 </style>
 </head>
@@ -272,10 +267,8 @@ a:hover { color: var(--red); }
     </a>
     <nav class="paxiom-bar-nav" aria-label="Primary">
       <a href="/receipts.html" class="active">Receipts</a>
-      <a href="/api.html">API</a>
-      <a href="/docs.html">Docs</a>
-      <a href="/services.html">Services</a>
-      <a href="/status.html">Status</a>
+      <a href="/api.html">API &amp; SDK</a>
+      <a href="/journal.html">Build Journal</a>
       <a href="/contact.html">Contact</a>
     </nav>
   </div>
@@ -285,179 +278,173 @@ a:hover { color: var(--red); }
   <header class="title-block">
     <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg></div>
     <div>
-      <div class="project-mark">Paxiom &middot; Receipts</div>
+      <div class="project-mark">Paxiom &middot; Receipt Specification &amp; Verifier</div>
       <div class="project-title">Paxiom Receipts</div>
       <div class="project-subtitle">Proof-bound receipts for x402-paid APIs.</div>
     </div>
     <div class="meta">
-      <span>Project No. PXM-001</span><span class="sep">&middot;</span>
       <span>Sheet PXM-RC-100</span><span class="sep">&middot;</span>
-      <span>Status: Developer Preview</span><span class="sep">&middot;</span>
-      <span>Receipt v0</span>
+      <span>Spec: paxiom.receipt.v0</span><span class="sep">&middot;</span>
+      <span>SDK: @paxiom/receipts@0.1.1</span><span class="sep">&middot;</span>
+      <span>Base Mainnet Live</span>
     </div>
   </header>
 
-  <!-- 1. HERO -->
   <section class="hero">
     <h1>x402 proves a payment. <em>Paxiom proves what the payment bought.</em></h1>
-    <p class="lede">Paxiom binds payment, request, output, settlement metadata, and evidence into a single signed receipt that agents and developers can verify later &mdash; with only a public key.</p>
-    <p class="tagline">RECEIPT&nbsp;v0 &middot; FREE&nbsp;OFFLINE&nbsp;VERIFIER &middot; OPEN&nbsp;SPEC &middot; DEVELOPER&nbsp;PREVIEW</p>
+    <p class="lede">Paxiom binds payment, request, output, settlement metadata, and evidence into a single Ed25519-signed receipt that agents and developers can verify offline &mdash; or counter-attest against live Base USDC settlement.</p>
+    <p class="tagline">PAXIOM.RECEIPT.V0 &middot; @PAXIOM/RECEIPTS ON NPM &middot; FREE OFFLINE &amp; LIVE BASE MAINNET VERIFIER</p>
     <div class="actions">
-      <a class="btn primary" href="#run">Run the Verifier</a>
-      <a class="btn" href="/standards/receipts/v0/README.md">Read the Spec</a>
-      <a class="btn" href="#pilot">Book a Pilot Sprint</a>
+      <a class="btn primary" href="#run">Quickstart &amp; CLI</a>
+      <a class="btn" href="/api.html">Verifier API &amp; SDK</a>
+      <a class="btn" href="https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0" target="_blank" rel="noopener noreferrer">Spec on GitHub</a>
     </div>
   </section>
 
-  <!-- 2. THE PROBLEM -->
   <section class="section">
     <div class="section-mark">Why this exists</div>
     <h2>A payment response is not <em>proof of delivery.</em></h2>
-    <p>x402 makes paid HTTP resources easy: an agent pays, the server answers. But the payment succeeding is not the same thing as evidence of what was delivered. A buyer or another machine may still need to know, after the fact:</p>
+    <p>x402 makes paid HTTP resources effortless: an agent pays, the server answers. But a payment succeeding is not evidence of what was delivered. A buyer wallet, audit log, or downstream machine still needs to verify:</p>
     <ul class="prose-list">
-      <li>what resource was paid for, and what request was bound to that payment;</li>
-      <li>what output was actually delivered;</li>
-      <li>whether settlement was independently verified or only claimed;</li>
-      <li>whether proof evidence was present;</li>
-      <li>whether a third party can re-verify the receipt later, offline.</li>
+      <li>what resource was paid for, and what exact request was bound to that payment;</li>
+      <li>whether the bytes delivered match the signed <code>SHA-256</code> output commitment;</li>
+      <li>whether on-chain settlement was independently verified or merely claimed by the seller;</li>
+      <li>whether a third party can re-verify the receipt months later with only a public key.</li>
     </ul>
-    <p>Today, dozens of x402 services already sign <em>their own</em> output in <em>their own</em> ad-hoc format &mdash; Ed25519 here, HMAC there, EIP-712 elsewhere. There is no neutral receipt that any seller can emit and any agent can verify uniformly. Paxiom Receipts is a first, deliberately small draft of that shared object.</p>
+    <p>Instead of every x402 seller inventing an incompatible HMAC or signature header, <code>paxiom.receipt.v0</code> defines one compact, canonical receipt object with zero-dependency tooling.</p>
   </section>
 
-  <!-- 3 + 4. WHAT V0 VERIFIES / DOES NOT -->
   <section class="section">
-    <div class="section-mark">What the verifier does</div>
+    <div class="section-mark">Capability matrix</div>
     <h2>Honest about what was checked &mdash; <em>and what was only claimed.</em></h2>
     <div class="cap">
-      <div class="cap-header"><span>Receipt v0 &middot; Verifier Capability</span><span>Offline</span></div>
+      <div class="cap-header"><span>Receipt v0 &middot; Verification Modes</span><span>Offline + Base Mainnet Live</span></div>
       <div class="cap-grid">
         <div class="cap-cell">
-          <div class="label">Verifies today</div>
+          <div class="label">Free Offline Verifier</div>
           <ul>
-            <li>Receipt shape (schema)</li>
-            <li>Ed25519 signature</li>
-            <li>Canonical signing input</li>
-            <li>Output-hash binding</li>
-            <li>Request / payment binding fields</li>
-            <li>Settlement status vocabulary</li>
-            <li>Proof / evidence status vocabulary</li>
-            <li>Deterministic trust-state resolution</li>
+            <li>JSON Schema &amp; RFC 3339 timestamps</li>
+            <li>Ed25519 signature &amp; keyId match</li>
+            <li>Deterministic canonical JSON bytes</li>
+            <li><code>SHA-256</code> output-hash binding</li>
+            <li>Request &amp; payment binding fields</li>
+            <li><code>trustedPaxiomPublicKeys</code> guard</li>
+            <li>15-state deterministic verdict</li>
           </ul>
         </div>
-        <div class="cap-cell later">
-          <div class="label">Not verified in v0</div>
+        <div class="cap-cell live">
+          <div class="label">Live Settlement ($0.002)</div>
           <ul>
-            <li>Onchain settlement</li>
-            <li>x402 facilitator records</li>
-            <li>Proof-source evidence (Load / Helios)</li>
-            <li>Arweave archive availability</li>
-            <li>Third-party receipt dialects</li>
+            <li><code>POST /v1/receipt/verify-live</code></li>
+            <li>Base &amp; Base Sepolia RPC failover</li>
+            <li>Canonical USDC <code>Transfer</code> log match</li>
+            <li>Verifies payer, recipient &amp; amount</li>
+            <li>Upgrades to <code>verified_settled</code></li>
+            <li>Paxiom Ed25519 counter-attestation</li>
+            <li>x402 per-call or <code>X-API-Key</code></li>
           </ul>
         </div>
         <div class="cap-cell never">
-          <div class="label">Planned adapters</div>
+          <div class="label">Out of Scope in v0</div>
           <ul>
-            <li>Onchain settlement check</li>
-            <li>Facilitator-backed settlement</li>
-            <li>Proof-source verification</li>
-            <li>Receipt-format adapters</li>
+            <li>Non-Base chains (planned next)</li>
+            <li>Off-chain Arweave archive retrieval</li>
+            <li>Internal facilitator DB queries</li>
+            <li>Non-Paxiom receipt dialects</li>
+            <li>Legal or regulated audit opinions</li>
           </ul>
         </div>
       </div>
     </div>
     <div class="note">
       <div class="note-label">Claim boundary</div>
-      <p>Schema-valid is not receipt-verified. A receipt that merely <em>claims</em> an onchain settlement is reported as <code>settlement_claimed_not_checked</code> &mdash; never as fully <code>verified</code>, and never as <code>verified_settled</code>. Those items on the right are planned verifier adapters, not current v0 claims.</p>
+      <p>Schema-valid is never called receipt-verified. In offline mode, a receipt carrying an unverified <code>transactionHash</code> resolves to <code>settlement_claimed_not_checked</code> &mdash; never <code>verified</code>. Only independent on-chain log verification via <code>POST /v1/receipt/verify-live</code> (counter-signed by Paxiom's published key) upgrades settlement to <code>verified_settled</code>.</p>
     </div>
   </section>
 
-  <!-- 5. TRUST STATES -->
   <section class="section">
     <div class="section-mark">The verdict</div>
     <h2>One deterministic <em>trust state.</em></h2>
-    <p>Every verification returns exactly one trust state plus a per-check breakdown. The most common:</p>
+    <p>Every verification call returns one unambiguous trust state alongside per-check diagnostics:</p>
     <div class="chips">
       <span class="chip ok">verified</span>
       <span class="chip">valid_signature_only</span>
       <span class="chip warn">settlement_claimed_not_checked</span>
       <span class="chip bad">output_hash_mismatch</span>
+      <span class="chip bad">settlement_failed</span>
       <span class="chip bad">invalid_signature</span>
       <span class="chip bad">unsupported_format</span>
-      <span class="chip">proof_not_provided</span>
-      <span class="chip bad">error</span>
+      <span class="chip bad">expired</span>
     </div>
-    <p>The full set of fifteen states and the exact resolution order are documented in the spec. <a class="read-more" href="/standards/receipts/v0/trust-states.md">Read the trust states &rarr;</a></p>
+    <p>All fifteen trust states and their strict precedence order are documented in the specification. <a class="read-more" href="/standards/receipts/v0/trust-states.md">Read the trust states &rarr;</a></p>
   </section>
 
-  <!-- 6. RUN LOCALLY -->
   <section class="section" id="run">
-    <div class="section-mark">Try it</div>
-    <h2>Run the reference verifier <em>locally.</em></h2>
-    <p>The verifier is a dependency-free reference implementation. Clone <a href="https://github.com/k-luecke/paxiom-static">the repo</a> and run it with Node &mdash; no keys, no accounts, no network calls.</p>
-    <p>Verify the signed example receipt against its delivered output:</p>
-<pre class="cmd">node standards/receipts/v0/bin/paxiom-receipt.mjs verify \
-  standards/receipts/v0/examples/valid.receipt.json \
-  --output standards/receipts/v0/examples/valid.output.json
-<span class="c"># -&gt; ✓ VERIFIED   (exit 0)</span></pre>
-    <p>Call the live public developer-preview HTTP verifier (or run <code>node runtime/receipt-verifier/server.mjs</code> locally on port <code>8787</code>):</p>
-<pre class="cmd">curl -s https://api.paxiom.org/health
-curl -s https://api.paxiom.org/version
-curl -s https://api.paxiom.org/v1/receipt/demo</pre>
-    <p>Issue signed receipts from your own x402 seller or run the stdio MCP tool server locally:</p>
-<pre class="cmd">node standards/receipts/v0/bin/paxiom-receipt.mjs keygen --out ./seller-key-01.private.pem --key-id seller-key-01
-node standards/receipts/v0/mcp/server.mjs   <span class="c"># stdio MCP: verify_receipt, explain_receipt, issue_receipt</span></pre>
+    <div class="section-mark">Try it now</div>
+    <h2>Install from npm or <em>verify over HTTP.</em></h2>
+    <p>The reference SDK, CLI, and MCP server ship in a single zero-dependency package on npm (<code>@paxiom/receipts</code>, Node &ge;18):</p>
+<pre class="cmd"><span class="c"># Install in an x402 seller or buyer project:</span>
+npm install @paxiom/receipts
+
+<span class="c"># Generate an Ed25519 seller keypair via CLI:</span>
+npx --yes --package=@paxiom/receipts paxiom-receipt keygen --out ./seller-key-01.pem --key-id seller-key-01
+
+<span class="c"># Run the stdio MCP server (verify_receipt, explain_receipt, issue_receipt):</span>
+npx --yes --package=@paxiom/receipts paxiom-receipt-mcp</pre>
+
+    <p>Query the live production verifier at <code>https://api.paxiom.org</code>:</p>
+<pre class="cmd">curl -s https://api.paxiom.org/version
+curl -s https://api.paxiom.org/v1/receipt/demo
+curl -s https://api.paxiom.org/.well-known/x402.json</pre>
     <div class="note">
-      <div class="note-label">Runtime status</div>
-      <p>The public developer-preview verifier is live at <a href="/api.html"><code>https://api.paxiom.org</code></a>. Free <code>POST /v1/receipt/verify</code> checks schema, Ed25519 signature, and output binding without chain calls; inspect <code>GET /version</code> on the host for active live-settlement capabilities.</p>
+      <div class="note-label">Live runtime</div>
+      <p><a href="/api.html"><code>https://api.paxiom.org</code></a> serves both free offline verification (<code>POST /v1/receipt/verify</code>) and live Base Mainnet settlement verification + counter-attestation (<code>POST /v1/receipt/verify-live</code>). Published Paxiom counter-signing keys live at <a href="https://api.paxiom.org/.well-known/paxiom-keys.json"><code>/.well-known/paxiom-keys.json</code></a>.</p>
     </div>
   </section>
 
-  <!-- 7. API / SPEC -->
   <section class="section">
     <div class="section-mark">Read the spec</div>
     <h2>Everything is public and <em>inspectable.</em></h2>
     <ul class="linklist">
-      <li><a href="/api.html">Verifier API</a> <span class="desc">endpoints, examples, and runtime status</span></li>
-      <li><a href="/standards/receipts/v0/README.md">Receipt v0 &mdash; README</a> <span class="desc">the format, shape, and claim boundaries</span></li>
-      <li><a href="/standards/receipts/v0/paxiom.receipt.v0.schema.json">JSON Schema</a> <span class="desc">structure validation (structure only)</span></li>
-      <li><a href="/standards/receipts/v0/canonicalization.md">Canonicalization</a> <span class="desc">the exact bytes the signature covers</span></li>
-      <li><a href="/standards/receipts/v0/trust-states.md">Trust states</a> <span class="desc">the fifteen verdicts and resolution order</span></li>
-      <li><a href="/standards/receipts/v0/openapi.json">OpenAPI</a> <span class="desc">the verifier HTTP API</span></li>
-      <li><a href="/standards/receipts/v0/examples/valid.receipt.json">Example receipt</a> <span class="desc">a cryptographically real Ed25519 fixture</span></li>
-      <li><a href="/llms.txt">llms.txt</a> <span class="desc">agent-facing summary and boundaries</span></li>
+      <li><a href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer">@paxiom/receipts on npm</a> <span class="desc">zero-dependency issuer, verifier, middleware, CLI &amp; MCP</span></li>
+      <li><a href="/api.html">Verifier API &amp; SDK Guide</a> <span class="desc">HTTP endpoints, SDK examples, and MCP setup</span></li>
+      <li><a href="https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0" target="_blank" rel="noopener noreferrer">Receipt v0 &mdash; Spec &amp; Source</a> <span class="desc">format, middleware docs, and test vectors on GitHub</span></li>
+      <li><a href="/standards/receipts/v0/paxiom.receipt.v0.schema.json">JSON Schema</a> <span class="desc">structural validation schema</span></li>
+      <li><a href="/standards/receipts/v0/canonicalization.md">Canonicalization</a> <span class="desc">the exact UTF-8 bytes covered by Ed25519</span></li>
+      <li><a href="/standards/receipts/v0/trust-states.md">Trust states</a> <span class="desc">all fifteen verdicts and precedence order</span></li>
+      <li><a href="/standards/receipts/v0/openapi.json">OpenAPI 3.1</a> <span class="desc">machine-readable verifier HTTP specification</span></li>
+      <li><a href="/standards/receipts/v0/examples/valid.receipt.json">Example receipt</a> <span class="desc">signed Ed25519 fixture</span></li>
+      <li><a href="/llms.txt">llms.txt</a> <span class="desc">agent-facing summary and claim boundaries</span></li>
     </ul>
   </section>
 
-  <!-- 8. PILOT -->
   <section class="section" id="pilot">
     <div class="section-mark">Work with Paxiom</div>
-    <h2>Make one x402-paid endpoint <em>Paxiom-compatible.</em></h2>
+    <h2>Make your x402 endpoints <em>Paxiom-compatible.</em></h2>
     <div class="pilot">
-      <p class="lede" style="max-width:64ch;margin-bottom:14px;">A focused 3&ndash;5 day pilot sprint for a single paid endpoint.</p>
+      <p class="lede" style="max-width:64ch;margin-bottom:14px;">Focused 3&ndash;5 day integration sprints and hosted B2B verifier API keys.</p>
       <ul class="prose-list">
-        <li>map your current payment flow;</li>
-        <li>add request / output / payment binding;</li>
-        <li>emit a Paxiom-compatible receipt, or verify one;</li>
-        <li>add verifier tests;</li>
-        <li>document trust-state boundaries and the settlement/proof handoff.</li>
+        <li>wrap seller endpoints with <code>withPaxiomReceipt</code> or <code>createReceiptMiddleware</code>;</li>
+        <li>bind request parameters, output hashes, and x402 transaction hashes cleanly;</li>
+        <li>configure buyer-side offline verification and live Base settlement counter-attestation;</li>
+        <li>provision flat-rate monthly <code>X-API-Key</code> credentials for high-volume verification.</li>
       </ul>
       <div class="actions" style="margin-top:8px;">
-        <a class="btn primary" href="/contact.html">Contact me about a pilot</a>
+        <a class="btn primary" href="/contact.html">Contact Paxiom</a>
       </div>
     </div>
   </section>
 
-  <!-- 9. PRINTS -->
   <section class="section">
-    <div class="section-mark">Diligence</div>
-    <h2>The technical prints.</h2>
-    <p>The technical prints are the engineering binder behind Paxiom: service specs, status notes, proof-source research, and audit posture. They are not required reading to understand Paxiom Receipts, but they are available for builders and reviewers who want to diligence the architecture.</p>
-    <a class="btn" href="/docs.html">Open Technical Prints</a>
+    <div class="section-mark">Engineering context</div>
+    <h2>Build Journal &amp; technical prints.</h2>
+    <p>Looking for the dated build log, the ten-sheet architectural drawing set, or our upstream Ethereum state-proof research? Those engineering records live in the Build Journal.</p>
+    <a class="btn" href="/journal.html">Open Build Journal</a>
   </section>
 
   <footer class="sheet-footer">
     <div>Paxiom &middot; paxiom.org</div>
-    <div>Public &middot; Receipt v0 &middot; Developer Preview</div>
+    <div>Receipt v0 &middot; @paxiom/receipts@0.1.1 &middot; Base Mainnet Live</div>
     <div class="sheet-id">PXM-RC-100 &middot; Receipts</div>
   </footer>
 

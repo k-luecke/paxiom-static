@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paxiom · Status</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<title>Paxiom · May 2026 Status Snapshot (Archive)</title>
 <meta name="description" content="Current state, build log, known constraints, and open questions for the Paxiom build.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/fonts.css">
@@ -285,9 +286,9 @@ a:hover { color: var(--red); }
       <span>Paxiom</span>
     </a>
     <nav class="paxiom-bar-nav" aria-label="Primary">
-      <a href="/docs.html">Docs</a>
-      <a href="/services.html">Services</a>
-      <a href="/status.html" class="active">Status</a>
+      <a href="/receipts.html">Receipts</a>
+      <a href="/api.html">API &amp; SDK</a>
+      <a href="/journal.html" class="active">Build Journal</a>
       <a href="/contact.html">Contact</a>
     </nav>
   </div>
@@ -297,16 +298,23 @@ a:hover { color: var(--red); }
   <header class="title-block">
     <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square" aria-hidden="true"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></svg></div>
     <div>
-      <div class="project-mark">Paxiom · Status</div>
-      <div class="project-title">Status</div>
-      <div class="project-subtitle">Where the build is. What's open. What isn't claimed.</div>
+      <div class="project-mark">Paxiom · Build Journal Archive</div>
+      <div class="project-title">Status (2026.05 Snapshot)</div>
+      <div class="project-subtitle">Historical Phase 0 &rarr; Phase 1 gate snapshot. Superseded by the <a href="/journal.html">Build Journal</a>.</div>
     </div>
     <div class="meta">
       <span>Project No. PXM-001</span><span class="sep">·</span>
       <span>Sheet PXM-S-100</span><span class="sep">·</span>
-      <span>Last Updated 2026.05.10</span>
+      <span>Snapshot 2026.05.10</span>
     </div>
   </header>
+
+  <div class="list-block in-progress" role="note" style="margin-bottom:24px;">
+    <div class="list-label">Archive Note · Updated 2026.11</div>
+    <ul>
+      <li>This sheet preserves the May 2026 substrate status snapshot. For the live shipped product, see <a href="/">Paxiom Receipts</a> and <a href="/api.html">API &amp; SDK</a>; for the active build log, open the <a href="/journal.html">Build Journal</a>.</li>
+    </ul>
+  </div>
 
   <section class="page-header">
     <div class="mark">Sheet PXM-S-100</div>
