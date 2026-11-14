@@ -2,7 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from '../server.mjs';
 import { NETWORK_CONFIGS } from '../onchain-settlement.mjs';
-import { isPublicGlobalIp, validatePublicHttpsTarget } from '../x402-preflight.mjs';
+import {
+  isPublicGlobalIp,
+  validatePublicHttpsTarget,
+  buildPinnedHttpsRequestOptions
+} from '../x402-preflight.mjs';
 import { generateReceiptKeyPair, decodeReceiptHeader } from '../../../standards/receipts/v0/src/issue.mjs';
 import { verifyReceipt } from '../../../standards/receipts/v0/src/verify.mjs';
 
@@ -34,19 +38,56 @@ test('SSRF IP & URL validator blocks all private, loopback, metadata, NAT64/6to4
     '::ffff:127.0.0.1',
     '::ffff:169.254.169.254',
     '64:ff9b::169.254.169.254',
+    '64:ff9b:1::1',
+    '64:ff9b:1::93.184.216.34',
+    '64:ff9b:0:1::93.184.216.34',
     '2002:7f00:0001::1',
     'fc00::1',
     'fd12:3456::1',
     'fe80::1',
     'ff02::1',
-    '2001:db8::1'
+    '2001::1',
+    '2001:2::1',
+    '2001:10::1',
+    '2001:20::1',
+    '2001:db8::1',
+    '3fff::1',
+    '3fff:100:8fe::1',
+    '2620:4f:8000::1'
   ];
   for (const ip of blockedIps) {
     assert.equal(isPublicGlobalIp(ip), false, `expected ${ip} to be blocked`);
   }
 
   assert.equal(isPublicGlobalIp('93.184.216.34'), true);
+  assert.equal(isPublicGlobalIp('64:ff9b::93.184.216.34'), true);
+  assert.equal(isPublicGlobalIp('2001:4860:4860::8888'), true);
   assert.equal(isPublicGlobalIp('2606:2800:220:1:248:1893:25c8:1946'), true);
+
+  // FERMI-PAX-R2-02: RFC 6066 TLS SNI omission for IP literals & RFC 3986 bracketed IPv6 Host heade
+  const domainOpts = buildPinnedHttpsRequestOptions(
+    { hostname: 'good.seller.example', pinnedIp: '93.184.216.34', pinnedFamily: 4 },
+    'https://good.seller.example/v1/pay',
+    { method: 'POST', headers: { accept: 'application/json' }, body: '{}' }
+  );
+  assert.equal(domainOpts.servername, 'good.seller.example');
+  assert.equal(domainOpts.headers.host, 'good.seller.example');
+
+  const v4Opts = buildPinnedHttpsRequestOptions(
+    { hostname: '93.184.216.34', pinnedIp: '93.184.216.34', pinnedFamily: 4 },
+    'https://93.184.216.34/v1/pay',
+    { method: 'GET', headers: {} }
+  );
+  assert.equal(Object.hasOwn(v4Opts, 'servername'), false);
+  assert.equal(v4Opts.headers.host, '93.184.216.34');
+
+  const v6Opts = buildPinnedHttpsRequestOptions(
+    { hostname: '2606:2800:220:1:248:1893:25c8:1946', pinnedIp: '2606:2800:220:1:248:1893:25c8:1946', pinnedFamily: 6 },
+    'https://[2606:2800:220:1:248:1893:25c8:1946]/v1/pay',
+    { method: 'GET', headers: {} }
+  );
+  assert.equal(Object.hasOwn(v6Opts, 'servername'), false);
+  assert.equal(v6Opts.headers.host, '[2606:2800:220:1:248:1893:25c8:1946]');
 
   // Plaintext HTTP, credentials, non-443 ports, hex IPv4 loopback, and rebinding domains
   assert.equal((await validatePublicHttpsTarget('http://seller.example/v1/pay')).ok, false);
@@ -68,20 +109,28 @@ test('SSRF IP & URL validator blocks all private, loopback, metadata, NAT64/6to4
   assert.equal(mixedRes.code, 'ssrf_blocked');
 });
 
-test('x402 discovery exposes $0.002 verify-live + $0.01 preflight, and SSRF targets never debit facilitator', async () => {
-  let facilitatorHits = 0;
+test('x402 discovery exposes $0.002 verify-live + $0.01 preflight, closes pre-verify DNS oracle, and never debits facilitator on SSRF targets', async () => {
+  let verifyHits = 0;
+  let settleHits = 0;
+  let dnsHits = 0;
+  let facilitatorVerifyValid = true;
   const env = {
     RENDER: 'true',
     CDP_FACILITATOR_URL: 'https://facilitator.mock'
   };
   const publicDns = async (host) => {
+    dnsHits++;
     if (host === 'internal-rebind.example') return [{ address: '169.254.169.254', family: 4 }];
     return [{ address: '93.184.216.34', family: 4 }];
   };
   const mockFetch = async (url) => {
-    if (url.startsWith('https://facilitator.mock')) {
-      facilitatorHits++;
-      return new Response(JSON.stringify({ isValid: true, success: true }), { status: 200 });
+    if (url === 'https://facilitator.mock/verify') {
+      verifyHits++;
+      return new Response(JSON.stringify({ isValid: facilitatorVerifyValid, invalidReason: facilitatorVerifyValid ? undefined : 'bad_sig' }), { status: 200 });
+    }
+    if (url === 'https://facilitator.mock/settle') {
+      settleHits++;
+      return new Response(JSON.stringify({ success: true }), { status: 200 });
     }
     throw new Error(`Unexpected outbound fetch to ${url}`);
   };
@@ -93,32 +142,92 @@ test('x402 discovery exposes $0.002 verify-live + $0.01 preflight, and SSRF targ
     assert.equal(disc.accepts[1].maxAmountRequired, '10000');
     assert.match(disc.accepts[1].resource, /\/v1\/x402\/preflight$/);
 
-    // Unpaid probe returns 402 quoting 10000 atomic ($0.01 USDC)
+    // Unpaid probe returns 402 quoting 10000 atomic ($0.01 USDC) with 0 DNS lookups
     const unpaid = await fetch(`${base}/v1/x402/preflight`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: '{}'
     });
     assert.equal(unpaid.status, 402);
+    assert.equal(dnsHits, 0);
     const unpaidJson = await unpaid.json();
     assert.equal(unpaidJson.accepts[0].maxAmountRequired, '10000');
 
-    // Paid call with SSRF / private DNS target returns 400 BEFORE calling facilitator /verify or /settle
+    // FERMI-PAX-R2-01: Dummy X-PAYMENT header is rejected 400 BEFORE dns.lookup or facilitator /verify
+    const dummyHdrRes = await fetch(`${base}/v1/x402/preflight`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-payment': 'dummy' },
+      body: JSON.stringify({ url: 'https://internal-rebind.example/v1/data' })
+    });
+    assert.equal(dummyHdrRes.status, 400);
+    assert.equal((await dummyHdrRes.json()).error.code, 'invalid_payment_header');
+    assert.equal(dnsHits, 0, 'dummy X-PAYMENT must not trigger dns.lookup');
+    assert.equal(verifyHits, 0);
+    assert.equal(settleHits, 0);
+
     const paymentHeader = Buffer.from(JSON.stringify({ x402Version: 1, scheme: 'exact', payload: {} }), 'utf8').toString('base64');
-    for (const badUrl of [
+
+    // FERMI-PAX-R2-01: Forged payment header failing facilitator /verify returns 402 BEFORE dns.lookup
+    facilitatorVerifyValid = false;
+    const invalidSigRes = await fetch(`${base}/v1/x402/preflight`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'payment-signature': paymentHeader },
+      body: JSON.stringify({ url: 'https://internal-rebind.example/v1/data' })
+    });
+    assert.equal(invalidSigRes.status, 402);
+    assert.equal(verifyHits, 1);
+    assert.equal(dnsHits, 0, 'unverified payment must not trigger dns.lookup');
+    assert.equal(settleHits, 0);
+
+    // Lexical SSRF targets return 400 offline BEFORE touching facilitator /verify, /settle, or DNS
+    facilitatorVerifyValid = true;
+    verifyHits = 0;
+    for (const lexicalBadUrl of [
       'http://seller.example/v1/data',
       'https://127.0.0.1/v1/data',
       'https://169.254.169.254/latest/meta-data/',
-      'https://internal-rebind.example/v1/data'
+      'https://[3fff:100:8fe::1]/v1/data'
     ]) {
       const r = await fetch(`${base}/v1/x402/preflight`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'payment-signature': paymentHeader },
-        body: JSON.stringify({ url: badUrl })
+        body: JSON.stringify({ url: lexicalBadUrl })
       });
-      assert.equal(r.status, 400, `expected 400 for ${badUrl}`);
-      assert.equal(facilitatorHits, 0, `must not touch facilitator for ${badUrl}`);
+      assert.equal(r.status, 400, `expected 400 for ${lexicalBadUrl}`);
+      assert.equal(verifyHits, 0, `must not call /verify for lexical SSRF ${lexicalBadUrl}`);
+      assert.equal(settleHits, 0, `must not debit /settle for ${lexicalBadUrl}`);
+      assert.equal(dnsHits, 0, `must not call DNS for ${lexicalBadUrl}`);
     }
+
+    // Verified payment with private-DNS rebinding target runs /verify -> DNS -> 400 WITHOUT calling /settle!
+    const rebindRes = await fetch(`${base}/v1/x402/preflight`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'payment-signature': paymentHeader },
+      body: JSON.stringify({ url: 'https://internal-rebind.example/v1/data' })
+    });
+    assert.equal(rebindRes.status, 400);
+    assert.equal(verifyHits, 1);
+    assert.equal(dnsHits, 1);
+    assert.equal(settleHits, 0, 'must NEVER call /settle when DNS resolves to private/metadata IP');
+  });
+
+  // FERMI-PAX-R2-03: Self-hosted localhost free_unmetered blocks cross-origin browser Origin headers (403)
+  let freeDnsHits = 0;
+  await withServer({
+    env: { LIVE_VERIFY_ENABLED: 'true' },
+    lookupImpl: async () => {
+      freeDnsHits++;
+      return [{ address: '93.184.216.34', family: 4 }];
+    }
+  }, async (base) => {
+    const csrfPreflight = await fetch(`${base}/v1/x402/preflight`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: 'https://evil.example' },
+      body: JSON.stringify({ url: 'https://good.seller.example/v1/alpha' })
+    });
+    assert.equal(csrfPreflight.status, 403);
+    assert.equal((await csrfPreflight.json()).error.code, 'cross_origin_unmetered_blocked');
+    assert.equal(freeDnsHits, 0);
   });
 });
 
@@ -179,7 +288,7 @@ test('POST /v1/x402/preflight flags spoofed USDC, payTo bait-and-switch, and red
       }), { status: 200 });
     }
 
-    // 2. Spoofed token + payTo bait-and-switch seller
+    // 2. Spoofed token + payTo bait-and-switch selle
     if (url === 'https://scam.seller.example/v1/trap') {
       return new Response(JSON.stringify({
         x402Version: 1,

@@ -16,10 +16,13 @@ import {
 } from './onchain-settlement.mjs';
 import {
   authorizeMonetizedRequest,
+  verifyMonetizedRequest,
+  settleMonetizedRequest,
   buildX402PaymentRequirements,
   checkApiKey
 } from './x402-gate.mjs';
 import {
+  validateTargetUrlLexical,
   validatePublicHttpsTarget,
   runX402Preflight
 } from './x402-preflight.mjs';
@@ -50,6 +53,9 @@ export function resolveRuntimeEnv(rawEnv = process.env) {
     const merged = { ...RENDER_PRODUCTION_DEFAULTS };
     for (const [k, v] of Object.entries(rawEnv)) {
       if (v !== undefined && v !== '') merged[k] = v;
+    }
+    if (rawEnv.CDP_FACILITATOR_URL && !rawEnv.X402_FACILITATOR_URL) {
+      merged.X402_FACILITATOR_URL = rawEnv.CDP_FACILITATOR_URL;
     }
     return merged;
   }
@@ -539,20 +545,26 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl }) {
     expectedNetwork = netStr;
   }
 
-  // Unpaid/unauthenticated callers receive 402/401 immediately before DNS resolution
-  if (!hasPaymentOrAuthHeader || (!isFlagEnabled(env.X402_ENABLED) && !checkApiKey(req, env).authorized)) {
-    let authEarly;
-    try {
-      authEarly = await authorizeMonetizedRequest(req, { env, fetchImpl, route: 'preflight' });
-    } catch {
-      return send(res, 502, errBody('payment_gate_error', 'Failed to contact x402 payment facilitator.'));
-    }
-    if (!authEarly.authorized) {
-      return send(res, authEarly.status, authEarly.body, authEarly.headers);
-    }
+  // Pure offline lexical & IP-literal SSRF validation (zero DNS / facilitator I/O)
+  const lexicalTarget = validateTargetUrlLexical(parsed.url);
+  if (!lexicalTarget.ok) {
+    return send(res, 400, errBody(lexicalTarget.code, lexicalTarget.message));
   }
 
-  // Deterministic SSRF & DNS public-IP validation BEFORE settling caller's x402 payment
+  // Phase 1 gate (`FERMI-PAX-R2-01` & `FERMI-PAX-R2-03`):
+  // Verify API key, block cross-origin browser unmetered calls, OR validate x402 payment
+  // via facilitator `/verify` BEFORE executing live `dns.lookup` (closing unauthenticated DNS oracle).
+  let verifiedAuth;
+  try {
+    verifiedAuth = await verifyMonetizedRequest(req, { env, fetchImpl, route: 'preflight' });
+  } catch {
+    return send(res, 502, errBody('payment_gate_error', 'Failed to contact x402 payment facilitator.'));
+  }
+  if (!verifiedAuth.verified) {
+    return send(res, verifiedAuth.status, verifiedAuth.body, verifiedAuth.headers);
+  }
+
+  // Deterministic SSRF & DNS public-IP validation BEFORE settling caller's x402 payment (`/settle`)
   const targetValidation = await validatePublicHttpsTarget(
     parsed.url,
     lookupImpl ? { lookupImpl } : {}
@@ -561,9 +573,10 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl }) {
     return send(res, 400, errBody(targetValidation.code, targetValidation.message));
   }
 
+  // Phase 2 gate: Settle payment on-chain ONLY after target DNS resolves to a public global IP
   let auth;
   try {
-    auth = await authorizeMonetizedRequest(req, { env, fetchImpl, route: 'preflight' });
+    auth = await settleMonetizedRequest(verifiedAuth, { fetchImpl });
   } catch {
     return send(res, 502, errBody('payment_gate_error', 'Failed to contact x402 payment facilitator.'));
   }
