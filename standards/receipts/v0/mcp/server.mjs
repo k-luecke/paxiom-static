@@ -5,6 +5,7 @@
 // AI agents (Claude Desktop, Cursor, MCP gateways) without pulling any external
 // npm packages.
 import readline from 'node:readline';
+import { realpathSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { verifyReceipt, RECEIPT_VERSION } from '../src/verify.mjs';
 import { issueReceipt, generateReceiptKeyPair } from '../src/issue.mjs';
@@ -13,7 +14,7 @@ import { explain } from '../src/explain.mjs';
 export const MCP_PROTOCOL_VERSION = '2024-11-05';
 export const SERVER_INFO = {
   name: 'paxiom-receipt-mcp',
-  version: '0.1.0'
+  version: '0.1.1'
 };
 
 export const TOOLS = [
@@ -232,6 +233,15 @@ export function startStdioServer({ input = process.stdin, output = process.stdou
   return rl;
 }
 
-if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
+function isDirectCliInvocation(argv1) {
+  if (!argv1) return false;
+  try {
+    return pathToFileURL(realpathSync(argv1)).href === import.meta.url;
+  } catch {
+    return pathToFileURL(argv1).href === import.meta.url;
+  }
+}
+
+if (isDirectCliInvocation(process.argv[1])) {
   startStdioServer();
 }

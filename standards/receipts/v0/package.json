@@ -1,6 +1,6 @@
 {
   "name": "@paxiom/receipts",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Zero-dependency issuer, verifier, HTTP middleware, and MCP server for paxiom.receipt.v0 — proof-bound cryptographic receipts for x402 and agentic APIs.",
   "type": "module",
   "license": "MIT",
