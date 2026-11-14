@@ -17,6 +17,27 @@ zero-dependency **`@paxiom/receipts` reference package**:
 - **CLI** (`bin/paxiom-receipt.mjs` — `keygen`, `issue`, `verify`)
 - **MCP tool server** (`mcp/server.mjs` — `verify_receipt`, `explain_receipt`, `issue_receipt`)
 
+## Install & Quick Start
+
+```bash
+npm install @paxiom/receipts
+```
+
+```js
+import {
+  generateReceiptKeyPair,
+  issueReceipt,
+  verifyReceipt,
+  withPaxiomReceipt
+} from '@paxiom/receipts';
+```
+
+- **CLI (zero install):** `npx @paxiom/receipts --help` (or `npx -p @paxiom/receipts paxiom-receipt verify <receipt.json> --output <output.json>`)
+- **MCP stdio server:** `npx -y --package=@paxiom/receipts paxiom-receipt-mcp`
+- **Live HTTP Verifier (`https://api.paxiom.org`):**
+  - `POST https://api.paxiom.org/v1/receipt/verify` — free offline verification
+  - `POST https://api.paxiom.org/v1/receipt/verify-live` — live Base / Base Sepolia USDC settlement verification + Paxiom Ed25519 counter-attestation via x402 (`/.well-known/x402.json`) or `X-API-Key`
+
 ## Why this exists
 
 x402 (and most receipt-issuing services today) prove that a *payment happened*.
@@ -174,7 +195,7 @@ import {
   issueReceipt,
   verifyReceipt,
   withPaxiomReceipt
-} from './src/index.mjs';
+} from '@paxiom/receipts';
 
 const keys = generateReceiptKeyPair({ keyId: 'seller-key-01' });
 

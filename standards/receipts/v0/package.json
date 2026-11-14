@@ -4,6 +4,18 @@
   "description": "Zero-dependency issuer, verifier, HTTP middleware, and MCP server for paxiom.receipt.v0 — proof-bound cryptographic receipts for x402 and agentic APIs.",
   "type": "module",
   "license": "MIT",
+  "homepage": "https://paxiom.org/receipts.html",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/k-luecke/paxiom-static.git",
+    "directory": "standards/receipts/v0"
+  },
+  "bugs": {
+    "url": "https://github.com/k-luecke/paxiom-static/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=18"
   },
@@ -30,7 +42,7 @@
     "openapi.json",
     "src/",
     "bin/",
-    "mcp/",
+    "mcp/server.mjs",
     "server/server.mjs",
     "examples/"
   ],
