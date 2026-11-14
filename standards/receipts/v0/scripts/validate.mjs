@@ -35,9 +35,9 @@ function validate(node, sch, path = '') {
   const typeof2 = (v) => Array.isArray(v) ? 'array' : v === null ? 'null' : typeof v;
   if (t === 'object') {
     if (typeof2(node) !== 'object') return [`${path}: expected object`];
-    if (sch.required) for (const r of sch.required) if (!(r in node)) errs.push(`${path}.${r}: required`);
-    if (sch.additionalProperties === false) for (const k of Object.keys(node)) if (!(sch.properties && k in sch.properties)) errs.push(`${path}.${k}: additional property not allowed`);
-    if (sch.properties) for (const [k, s] of Object.entries(sch.properties)) if (k in node) errs.push(...validate(node[k], s, `${path}.${k}`));
+    if (sch.required) for (const r of sch.required) if (!Object.hasOwn(node, r)) errs.push(`${path}.${r}: required`);
+    if (sch.additionalProperties === false) for (const k of Object.keys(node)) if (!(sch.properties && Object.hasOwn(sch.properties, k))) errs.push(`${path}.${k}: additional property not allowed`);
+    if (sch.properties) for (const [k, s] of Object.entries(sch.properties)) if (Object.hasOwn(node, k)) errs.push(...validate(node[k], s, `${path}.${k}`));
   } else if (t === 'array') {
     if (typeof2(node) !== 'array') return [`${path}: expected array`];
     if (sch.items) node.forEach((it, i) => errs.push(...validate(it, sch.items, `${path}[${i}]`)));

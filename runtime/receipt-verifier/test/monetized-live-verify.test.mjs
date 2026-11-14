@@ -338,3 +338,222 @@ test('comma-separated BASE_RPC_URL automatically fails over when primary RPC rat
     assert.equal(healthyHits, 2);
   });
 });
+
+test('FERMI-PAX-01 & FERMI-PAX-02: never settles x402 payment for prototype network keys or ineligible receipts, and requires expectedPayTo + provenance URI for counter-attestation', async () => {
+  const sellerKey = generateReceiptKeyPair({ keyId: 'seller-fermi-01' });
+  const paxiomKey = generateReceiptKeyPair({ keyId: 'paxiom-fermi-root-01' });
+  const sellerPayTo = '0x1111111111111111111111111111111111111111';
+  const buyerAddr = '0x2222222222222222222222222222222222222222';
+  const txHash = '0x' + 'dd'.repeat(32);
+  const output = { ok: true };
+
+  // Receipt with payment.network = "constructor" (Object.prototype key)
+  const { receipt: protoNetReceipt } = issueReceipt({
+    privateKey: sellerKey.privateKeyPem,
+    issuer: { name: 'Seller', keyId: sellerKey.keyId },
+    service: { name: 'API', resource: 'https://s.example/api', method: 'POST' },
+    payment: {
+      network: 'constructor',
+      asset: 'USDC',
+      amountAtomic: '2000',
+      amountDisplay: '0.002',
+      settlement: { status: 'claimed_not_checked', transactionHash: txHash, checkedByPaxiom: false }
+    },
+    output
+  });
+
+  const { receipt: validClaimedReceipt } = issueReceipt({
+    privateKey: sellerKey.privateKeyPem,
+    issuer: { name: 'Seller', uri: 'https://s.example', keyId: sellerKey.keyId },
+    service: { name: 'API', resource: 'https://s.example/api', method: 'POST' },
+    payment: {
+      network: 'base',
+      asset: 'USDC',
+      amountAtomic: '2000',
+      amountDisplay: '0.002',
+      settlement: { status: 'claimed_not_checked', transactionHash: txHash, checkedByPaxiom: false }
+    },
+    output
+  });
+
+  let facilitatorHits = 0;
+  const env = {
+    LIVE_VERIFY_ENABLED: 'true',
+    X402_ENABLED: 'true',
+    X402_PAY_TO: '0x9999999999999999999999999999999999999999',
+    CDP_FACILITATOR_URL: 'https://facilitator.mock',
+    BASE_RPC_URL: 'https://rpc.base.mock',
+    PAXIOM_SIGNING_PRIVATE_KEY_PEM: paxiomKey.privateKeyPem,
+    PAXIOM_SIGNING_KEY_ID: paxiomKey.keyId
+  };
+
+  const mockFetch = async (url, init) => {
+    if (url === 'https://facilitator.mock/verify') {
+      facilitatorHits++;
+      return new Response(JSON.stringify({ isValid: true }), { status: 200 });
+    }
+    if (url === 'https://facilitator.mock/settle') {
+      facilitatorHits++;
+      return new Response(JSON.stringify({ success: true, transaction: '0x' + 'ee'.repeat(32), network: 'base' }), { status: 200 });
+    }
+    if (url === 'https://rpc.base.mock') {
+      const req = JSON.parse(init.body);
+      if (req.method === 'eth_blockNumber') {
+        return new Response(JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x200' }), { status: 200 });
+      }
+      return new Response(JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        result: {
+          status: '0x1',
+          blockNumber: '0x1ff',
+          logs: [
+            {
+              address: NETWORK_CONFIGS.base.usdcAddress,
+              topics: [ERC20_TRANSFER_TOPIC0, padAddressTopic(buyerAddr), padAddressTopic(sellerPayTo)],
+              data: padUint256Hex(2000)
+            }
+          ]
+        }
+      }), { status: 200 });
+    }
+    throw new Error(`Unexpected URL ${url}`);
+  };
+
+  const paymentHeader = Buffer.from(JSON.stringify({ x402Version: 1, scheme: 'exact', payload: {} }), 'utf8').toString('base64');
+
+  await withServer({ env, fetchImpl: mockFetch }, async (base) => {
+    // 1. Prototype network "constructor" returns clean unsupported_network BEFORE charging x402 facilitator!
+    const rProto = await fetch(`${base}/v1/receipt/verify-live`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'payment-signature': paymentHeader },
+      body: JSON.stringify({ receipt: protoNetReceipt, output, expectedPayTo: sellerPayTo })
+    });
+    assert.equal(rProto.status, 200);
+    assert.equal(facilitatorHits, 0, 'must not settle caller x402 payment for unsupported network');
+    const bProto = await rProto.json();
+    assert.equal(bProto.onchainSettlement.reason, 'unsupported_network');
+
+    // 2. Invalid expectedPayTo format is rejected 400 BEFORE charging x402 facilitator!
+    const rBadAddr = await fetch(`${base}/v1/receipt/verify-live`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'payment-signature': paymentHeader },
+      body: JSON.stringify({ receipt: validClaimedReceipt, output, expectedPayTo: 'not-an-evm-address' })
+    });
+    assert.equal(rBadAddr.status, 400);
+    assert.equal(facilitatorHits, 0);
+
+    // 3. Omitting expectedPayTo verifies RPC JSON but refuses to mint portable root counterAttestedReceipt
+    const rNoPayTo = await fetch(`${base}/v1/receipt/verify-live`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'payment-signature': paymentHeader },
+      body: JSON.stringify({ receipt: validClaimedReceipt, output })
+    });
+    assert.equal(rNoPayTo.status, 200);
+    assert.equal(facilitatorHits, 2);
+    const bNoPayTo = await rNoPayTo.json();
+    assert.equal(bNoPayTo.onchainSettlement.recipientChecked, false);
+    assert.equal(bNoPayTo.counterAttestedReceipt, undefined);
+    assert.equal(bNoPayTo.counterAttestationSkippedReason, 'expectedPayTo_required_for_counter_attestation');
+
+    // 4. Supplying matching expectedPayTo mints counterAttestedReceipt binding from, to, and original seller publicKey!
+    const rWithPayTo = await fetch(`${base}/v1/receipt/verify-live`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'payment-signature': paymentHeader },
+      body: JSON.stringify({ receipt: validClaimedReceipt, output, expectedPayTo: sellerPayTo })
+    });
+    assert.equal(rWithPayTo.status, 200);
+    const bWithPayTo = await rWithPayTo.json();
+    assert.ok(bWithPayTo.counterAttestedReceipt);
+    const evUri = bWithPayTo.counterAttestedReceipt.payload.evidence[0].uri;
+    assert.match(evUri, /^urn:paxiom:settlement-attestation:v0:eip155:8453:/);
+    assert.ok(evUri.includes(`to=${sellerPayTo.toLowerCase()}`));
+    assert.ok(evUri.includes(`origPubKey=${encodeURIComponent(sellerKey.publicKey)}`));
+
+    // 5. Re-submitting an already counter-attested receipt does not re-wrap or charge facilitator
+    facilitatorHits = 0;
+    const rRewrap = await fetch(`${base}/v1/receipt/verify-live`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'payment-signature': paymentHeader },
+      body: JSON.stringify({ receipt: bWithPayTo.counterAttestedReceipt, output, expectedPayTo: sellerPayTo })
+    });
+    assert.equal(rRewrap.status, 200);
+    assert.equal(facilitatorHits, 0);
+    const bRewrap = await rRewrap.json();
+    assert.equal(bRewrap.counterAttestedReceipt, undefined);
+  });
+});
+
+test('FERMI-PAX-06: pending RPC receipt (blockNumber: null) returns structured tx_pending (no 502 BigInt crash) and facilitator timeout aborts cleanly', async () => {
+  const sellerKey = generateReceiptKeyPair({ keyId: 'seller-pending-01' });
+  const txHash = '0x' + '99'.repeat(32);
+  const output = { ok: true };
+  const { receipt: claimedReceipt } = issueReceipt({
+    privateKey: sellerKey.privateKeyPem,
+    issuer: { name: 'Seller', keyId: sellerKey.keyId },
+    service: { name: 'API', resource: 'https://s.example/api', method: 'POST' },
+    payment: {
+      network: 'base',
+      asset: 'USDC',
+      amountAtomic: '2000',
+      amountDisplay: '0.002',
+      settlement: { status: 'claimed_not_checked', transactionHash: txHash, checkedByPaxiom: false }
+    },
+    output
+  });
+
+  const envPending = {
+    LIVE_VERIFY_ENABLED: 'true',
+    PAXIOM_API_KEYS: 'pax_pending_key',
+    BASE_RPC_URL: 'https://rpc.pending.mock'
+  };
+
+  const mockPendingRpc = async (_url, init) => {
+    const req = JSON.parse(init.body);
+    if (req.method === 'eth_blockNumber') {
+      return new Response(JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x100' }), { status: 200 });
+    }
+    return new Response(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      result: { status: null, blockNumber: null, logs: [] }
+    }), { status: 200 });
+  };
+
+  await withServer({ env: envPending, fetchImpl: mockPendingRpc }, async (base) => {
+    const res = await fetch(`${base}/v1/receipt/verify-live`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-api-key': 'pax_pending_key' },
+      body: JSON.stringify({ receipt: claimedReceipt, output })
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.valid, false);
+    assert.equal(body.trustState, 'settlement_failed');
+    assert.equal(body.onchainSettlement.reason, 'tx_pending');
+  });
+
+  // Stalled facilitator aborts cleanly via FACILITATOR_VERIFY_TIMEOUT_MS -> 502 payment_gate_error
+  const envTimeout = {
+    X402_ENABLED: 'true',
+    X402_PAY_TO: '0x9999999999999999999999999999999999999999',
+    CDP_FACILITATOR_URL: 'https://stalled.facilitator.mock',
+    FACILITATOR_VERIFY_TIMEOUT_MS: '40',
+    BASE_RPC_URL: 'https://rpc.pending.mock'
+  };
+  const stalledFetch = (_url, init) => new Promise((_resolve, reject) => {
+    init.signal.addEventListener('abort', () => reject(new Error('Aborted')));
+  });
+  const paymentHeader = Buffer.from(JSON.stringify({ x402Version: 1 }), 'utf8').toString('base64');
+
+  await withServer({ env: envTimeout, fetchImpl: stalledFetch }, async (base) => {
+    const res = await fetch(`${base}/v1/receipt/verify-live`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'payment-signature': paymentHeader },
+      body: JSON.stringify({ receipt: claimedReceipt, output })
+    });
+    assert.equal(res.status, 502);
+    const body = await res.json();
+    assert.equal(body.error.code, 'payment_gate_error');
+  });
+});
