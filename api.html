@@ -187,7 +187,10 @@ const verdict = verifyReceipt(receipt, {
 <span class="c">// -&gt; { valid: true, trustState: 'verified', checks: { ... } }</span>
 
 <span class="c"># Or launch the stdio MCP server for Claude / Cursor / agent frameworks:</span>
-npx --yes --package=@paxiom/receipts paxiom-receipt-mcp</pre>
+npx --yes --package=@paxiom/receipts paxiom-receipt-mcp
+
+<span class="c"># Or connect directly to the zero-install remote Streamable-HTTP MCP server:</span>
+claude mcp add --transport http paxiom https://api.paxiom.org/mcp</pre>
   </section>
 
   <section class="section" id="http">
@@ -206,6 +209,7 @@ npx --yes --package=@paxiom/receipts paxiom-receipt-mcp</pre>
         <tr><td><span class="m post">POST</span></td><td class="path">/v1/receipt/verify</td><td class="purpose">Free</td><td class="purpose">Offline verification. Body <code>{ receipt, output? }</code> &rarr; deterministic trust state + per-check breakdown.</td></tr>
         <tr><td><span class="m post">POST</span></td><td class="path">/v1/receipt/verify-live</td><td class="purpose">$0.002 x402 / Key</td><td class="purpose">Confirms Base / Base Sepolia USDC <code>Transfer</code> logs via multi-RPC failover, upgrades verdict to <code>verified</code>, and returns a Paxiom counter-signed <code>X-Paxiom-Receipt</code>.</td></tr>
         <tr><td><span class="m post">POST</span></td><td class="path">/v1/x402/preflight</td><td class="purpose">$0.01 x402 / Key</td><td class="purpose">SSRF-hardened pre-payment seller scan. Body <code>{ url, method?, maxBudgetAtomic?, expectedNetwork? }</code> &rarr; checks canonical Base USDC asset, EIP-712 domain, <code>payTo</code> manifest match, and <code>X-Paxiom-Receipt</code> support, signed in <code>X-Paxiom-Receipt</code>.</td></tr>
+        <tr><td><span class="m post">POST</span></td><td class="path">/mcp</td><td class="purpose">Free</td><td class="purpose">Stateless MCP Streamable-HTTP server (<code>io.github.k-luecke/paxiom-receipts</code>) exposing <code>verify_receipt</code>, <code>explain_receipt</code>, and <code>get_x402_verifier_info</code>.</td></tr>
         <tr><td><span class="m get">GET</span></td><td class="path">/.well-known/paxiom-keys.json</td><td class="purpose">Free</td><td class="purpose">Published Ed25519 public keys for offline verification of Paxiom counter-attestations.</td></tr>
         <tr><td><span class="m get">GET</span></td><td class="path">/.well-known/x402.json</td><td class="purpose">Free</td><td class="purpose">x402 payment terms and Bazaar discovery schemas for <code>POST /v1/receipt/verify-live</code> and <code>POST /v1/x402/preflight</code>.</td></tr>
       </tbody>
