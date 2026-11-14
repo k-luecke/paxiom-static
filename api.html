@@ -193,8 +193,10 @@ const live = await verifyReceiptLive(check.receipt, { output: responseJson, expe
 npx --yes --package=@paxiom/receipts paxiom-receipt-mcp
 claude mcp add --transport http paxiom https://api.paxiom.org/mcp</pre>
 
-    <p><strong>Python 3.10+ reference SDK &amp; FastAPI middleware</strong> (<code>standards/receipts/v0/python</code>, zero required dependencies):</p>
-<pre class="cmd">from fastapi import FastAPI
+    <p><strong>Python 3.10+ reference SDK &amp; FastAPI middleware</strong> (<a href="https://pypi.org/project/paxiom-receipts/" target="_blank" rel="noopener noreferrer"><code>paxiom-receipts</code> on PyPI</a>, zero required dependencies):</p>
+<pre class="cmd">pip install paxiom-receipts
+
+from fastapi import FastAPI
 from paxiom_receipts import PaxiomReceiptMiddleware, preflight_x402, verify_response_receipt
 
 app = FastAPI()

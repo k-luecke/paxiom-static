@@ -21,7 +21,11 @@ zero-dependency **`@paxiom/receipts` reference package**:
 ## Install & Quick Start
 
 ```bash
+# Node.js / TypeScript / Edge (npm):
 npm install @paxiom/receipts
+
+# Python 3.10+ / FastAPI (PyPI, zero dependencies):
+pip install paxiom-receipts
 ```
 
 ```js
