@@ -201,7 +201,33 @@ export function buildVerifierDiscoveryPayload(env = {}) {
  * Pure JSON-RPC 2.0 handler for a single message object.
  * Returns a JSON-RPC response object, or `null` for notifications / client responses.
  */
-export function handleRemoteMcpMessage(msg, env = {}) {
+export function buildMcpServerCard(env = {}) {
+  const verifyLiveResource = env.X402_RESOURCE_URL || 'https://api.paxiom.org/v1/receipt/verify-live';
+  let baseUrl = 'https://api.paxiom.org';
+  try {
+    baseUrl = new URL(verifyLiveResource).origin;
+  } catch {
+    baseUrl = 'https://api.paxiom.org';
+  }
+  return {
+    name: REMOTE_MCP_SERVER_INFO.name,
+    title: REMOTE_MCP_SERVER_INFO.title,
+    version: REMOTE_MCP_SERVER_INFO.version,
+    description:
+      'Verify and explain Ed25519 proof-bound receipts (paxiom.receipt.v0) for x402 APIs, and discover live Base USDC settlement & preflight endpoints.',
+    websiteUrl: 'https://paxiom.org/receipts.html',
+    transport: {
+      type: 'streamable-http',
+      url: `${baseUrl}/mcp`
+    },
+    protocolVersion: DEFAULT_MCP_HTTP_PROTOCOL_VERSION,
+    supportedProtocolVersions: Array.from(SUPPORTED_MCP_HTTP_VERSIONS),
+    stateless: true,
+    tools: REMOTE_MCP_TOOLS.map((t) => ({ name: t.name, description: t.description }))
+  };
+}
+
+export function handleRemoteMcpMessage(msg, env = {}, onMcpEvent = null) {
   if (!msg || typeof msg !== 'object' || Array.isArray(msg) || msg.jsonrpc !== '2.0') {
     const rawId = msg && typeof msg === 'object' && !Array.isArray(msg) && Object.hasOwn(msg, 'id') ? msg.id : null;
     return jsonRpcError(isValidJsonRpcId(rawId) ? rawId : null, -32600, 'Invalid JSON-RPC 2.0 request');
@@ -228,6 +254,7 @@ export function handleRemoteMcpMessage(msg, env = {}) {
     return null;
   }
 
+  if (typeof onMcpEvent === 'function') onMcpEvent({ kind: 'jsonrpc' });
   const { id, method } = msg;
   const params = msg.params && typeof msg.params === 'object' ? msg.params : {};
 
@@ -267,6 +294,9 @@ export function handleRemoteMcpMessage(msg, env = {}) {
     const toolName = params.name;
     const args = params.arguments && typeof params.arguments === 'object' ? params.arguments : {};
 
+    if (typeof onMcpEvent === 'function' && (toolName === 'verify_receipt' || toolName === 'explain_receipt' || toolName === 'get_x402_verifier_info')) {
+      onMcpEvent({ kind: 'tool', tool: toolName });
+    }
     try {
       if (toolName === 'verify_receipt' || toolName === 'explain_receipt') {
         if (!args.receipt || typeof args.receipt !== 'object' || Array.isArray(args.receipt)) {
@@ -335,7 +365,7 @@ export function handleRemoteMcpMessage(msg, env = {}) {
 /**
  * HTTP route handler for `/mcp` (`POST`, `GET`, `DELETE`).
  */
-export async function handleMcpHttpRequest(req, res, { env = {}, readBody, corsHeaders = {} }) {
+export async function handleMcpHttpRequest(req, res, { env = {}, readBody, corsHeaders = {}, onMcpEvent = null }) {
   const sendJson = (status, payload, extraHeaders = {}) => {
     res.writeHead(status, {
       'content-type': 'application/json',
@@ -365,6 +395,7 @@ export async function handleMcpHttpRequest(req, res, { env = {}, readBody, corsH
         { allow: 'POST, OPTIONS' }
       );
     }
+    if (typeof onMcpEvent === 'function') onMcpEvent({ kind: 'get_metadata' });
     return sendJson(200, {
       service: REMOTE_MCP_SERVER_INFO.name,
       title: REMOTE_MCP_SERVER_INFO.title,
@@ -414,7 +445,7 @@ export async function handleMcpHttpRequest(req, res, { env = {}, readBody, corsH
     }
     const responses = [];
     for (const item of parsed) {
-      const out = handleRemoteMcpMessage(item, env);
+      const out = handleRemoteMcpMessage(item, env, onMcpEvent);
       if (out !== null) responses.push(out);
     }
     if (responses.length === 0) {
@@ -424,7 +455,7 @@ export async function handleMcpHttpRequest(req, res, { env = {}, readBody, corsH
     return sendJson(200, responses);
   }
 
-  const singleResponse = handleRemoteMcpMessage(parsed, env);
+  const singleResponse = handleRemoteMcpMessage(parsed, env, onMcpEvent);
   if (singleResponse === null) {
     res.writeHead(202, { 'x-content-type-options': 'nosniff', ...corsHeaders });
     return res.end();

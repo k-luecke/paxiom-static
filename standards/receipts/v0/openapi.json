@@ -2,9 +2,9 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Paxiom Receipt Verifier",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "x-status": "live",
-    "description": "Verifier, counter-attestation, and x402 pre-payment readiness service for paxiom.receipt.v0 — proof-bound Ed25519 receipts for x402-paid and agentic APIs.\n\n- **Free offline verification (`POST /v1/receipt/verify`):** verifies receipt structure, Ed25519 signature over canonical JSON, SHA-256 output-hash binding, and honest settlement/evidence status with zero RPC calls (`settlement_claimed_not_checked` is never reported as `verified`).\n- **Live on-chain settlement verification (`POST /v1/receipt/verify-live`, $0.002 USDC via x402 or `X-API-Key`):** verifies canonical Base Mainnet (`eip155:8453`) and Base Sepolia (`eip155:84532`) USDC `Transfer` logs via multi-RPC failover and emits a Paxiom counter-attested receipt (`X-Paxiom-Receipt`).\n- **Pre-payment seller readiness scan (`POST /v1/x402/preflight`, $0.01 USDC via x402 or `X-API-Key`):** SSRF-hardened preflight scanner that probes an untrusted x402 endpoint before payment, verifying canonical Circle USDC asset address, EIP-712 domain parameters, `payTo` manifest consistency, and Paxiom receipt readiness.",
+    "description": "Verifier, counter-attestation, and x402 pre-payment readiness service for paxiom.receipt.v0 \u2014 proof-bound Ed25519 receipts for x402-paid and agentic APIs.\n\n- **Free offline verification (`POST /v1/receipt/verify`):** verifies receipt structure, Ed25519 signature over canonical JSON, SHA-256 output-hash binding, and honest settlement/evidence status with zero RPC calls (`settlement_claimed_not_checked` is never reported as `verified`).\n- **Live on-chain settlement verification (`POST /v1/receipt/verify-live`, $0.002 USDC via x402 or `X-API-Key`):** verifies canonical Base Mainnet (`eip155:8453`) and Base Sepolia (`eip155:84532`) USDC `Transfer` logs via multi-RPC failover and emits a Paxiom counter-attested receipt (`X-Paxiom-Receipt`).\n- **Pre-payment seller readiness scan (`POST /v1/x402/preflight`, $0.01 USDC via x402 or `X-API-Key`):** SSRF-hardened preflight scanner that probes an untrusted x402 endpoint before payment, verifying canonical Circle USDC asset address, EIP-712 domain parameters, `payTo` manifest consistency, and Paxiom receipt readiness.",
     "contact": {
       "name": "Paxiom",
       "url": "https://paxiom.org"
@@ -21,6 +21,96 @@
     }
   ],
   "paths": {
+    "/": {
+      "get": {
+        "summary": "Machine-readable service discovery index",
+        "operationId": "getRootServiceIndex",
+        "responses": {
+          "200": {
+            "description": "Service identity, SDK links, discovery manifests, and active endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "summary": "OpenAPI 3.0 specification for Paxiom Receipt Verifier",
+        "operationId": "getOpenApiSpec",
+        "responses": {
+          "200": {
+            "description": "OpenAPI specification JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/llms.txt": {
+      "get": {
+        "summary": "LLM & autonomous agent capability and claim-boundary summary",
+        "operationId": "getLlmsTxt",
+        "responses": {
+          "200": {
+            "description": "Plain-text llms.txt document.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/mcp.json": {
+      "get": {
+        "summary": "Model Context Protocol (MCP) Streamable-HTTP discovery card",
+        "operationId": "getMcpServerCard",
+        "responses": {
+          "200": {
+            "description": "MCP Server Card advertising POST /mcp and available tools.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stats": {
+      "get": {
+        "summary": "Zero-PII aggregate funnel telemetry counters",
+        "operationId": "getFunnelStats",
+        "responses": {
+          "200": {
+            "description": "Aggregate request and settlement counters since process boot (zero PII).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Liveness check",
@@ -87,7 +177,7 @@
         },
         "responses": {
           "200": {
-            "description": "Verification ran. Body is the result — including non-verified outcomes (a receipt that failed a check is still a successful verification at the transport layer).",
+            "description": "Verification ran. Body is the result \u2014 including non-verified outcomes (a receipt that failed a check is still a successful verification at the transport layer).",
             "content": {
               "application/json": {
                 "schema": {
@@ -127,7 +217,7 @@
                         "proof": "not_checked"
                       },
                       "receiptHash": "0xc6ceba580eda748250339f20d482c347d31c0b3260b3c813a3750814298f912e",
-                      "summary": "Supplied output hash 0x793f… != receipt delivery.outputHash 0x36b3…."
+                      "summary": "Supplied output hash 0x793f\u2026 != receipt delivery.outputHash 0x36b3\u2026."
                     }
                   },
                   "settlement_claimed_not_checked": {
@@ -144,7 +234,7 @@
                         "settlement": "claimed_not_checked",
                         "proof": "not_provided"
                       },
-                      "receiptHash": "0x…",
+                      "receiptHash": "0x\u2026",
                       "summary": "Signature and output hash verified. Receipt claims an onchain settlement that this offline verifier did not check."
                     }
                   },
@@ -162,7 +252,7 @@
                         "settlement": "not_checked",
                         "proof": "not_checked"
                       },
-                      "receiptHash": "0x…",
+                      "receiptHash": "0x\u2026",
                       "summary": "Ed25519 signature does not verify over the canonical signing input."
                     }
                   }

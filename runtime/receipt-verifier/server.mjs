@@ -26,13 +26,122 @@ import {
   validatePublicHttpsTarget,
   runX402Preflight
 } from './x402-preflight.mjs';
-import { handleMcpHttpRequest } from './mcp-http.mjs';
+import { handleMcpHttpRequest, buildMcpServerCard } from './mcp-http.mjs';
 
 const MAX_BODY_BYTES = 256 * 1024; // 256 KiB
 const MAX_DRAIN_AFTER_413 = 64 * 1024; // bounded post-413 drain window before destroying socket
 const EX = new URL('../../standards/receipts/v0/examples/', import.meta.url);
 const demoReceipt = JSON.parse(readFileSync(new URL('valid.receipt.json', EX), 'utf8'));
 const demoOutput = JSON.parse(readFileSync(new URL('valid.output.json', EX), 'utf8'));
+const openApiSpec = JSON.parse(
+  readFileSync(new URL('../../standards/receipts/v0/openapi.json', import.meta.url), 'utf8')
+);
+let llmsTxtContent = '# Paxiom\nhttps://paxiom.org/llms.txt\n';
+try {
+  llmsTxtContent = readFileSync(new URL('../../llms.txt', import.meta.url), 'utf8');
+} catch {
+  // Fallback when runtime directory is deployed standalone without static site root
+}
+
+function createFunnelStats() {
+  const startedMs = Date.now();
+  return {
+    startedMs,
+    startedAt: new Date(startedMs).toISOString(),
+    discovery: {
+      rootIndexReads: 0,
+      openApiReads: 0,
+      llmsTxtReads: 0,
+      x402ManifestReads: 0,
+      paxiomKeysReads: 0,
+      mcpCardReads: 0,
+      mcpGetReads: 0,
+      mcpJsonRpcCalls: 0,
+      mcpToolCalls: {
+        verify_receipt: 0,
+        explain_receipt: 0,
+        get_x402_verifier_info: 0
+      }
+    },
+    offlineVerify: {
+      demoReads: 0,
+      calls: 0,
+      validVerdicts: 0,
+      invalidVerdicts: 0
+    },
+    verifyLive: {
+      unpaid402Quotes: 0,
+      precheckRejected: 0,
+      paidX402Settled: 0,
+      paidApiKeyServed: 0,
+      verifiedSettledUpgrades: 0
+    },
+    x402Preflight: {
+      unpaid402Quotes: 0,
+      ssrfOrLexicalBlocked: 0,
+      paidX402Settled: 0,
+      paidApiKeyServed: 0,
+      verdictProceed: 0,
+      verdictCaution: 0,
+      verdictBlock: 0
+    }
+  };
+}
+
+function snapshotFunnelStats(stats) {
+  return {
+    ok: true,
+    service: 'paxiom-receipt-verifier',
+    version: '0.1.3',
+    privacy: 'aggregate_counters_only_zero_pii',
+    startedAt: stats.startedAt,
+    uptimeSeconds: Math.max(0, Math.floor((Date.now() - stats.startedMs) / 1000)),
+    discovery: {
+      ...stats.discovery,
+      mcpToolCalls: { ...stats.discovery.mcpToolCalls }
+    },
+    offlineVerify: { ...stats.offlineVerify },
+    verifyLive: { ...stats.verifyLive },
+    x402Preflight: { ...stats.x402Preflight }
+  };
+}
+
+function buildRootServiceIndex(env = process.env) {
+  const liveEnabled = isFlagEnabled(env.LIVE_VERIFY_ENABLED) || isFlagEnabled(env.X402_ENABLED);
+  const x402Enabled = isFlagEnabled(env.X402_ENABLED);
+  return {
+    ok: true,
+    service: 'paxiom-receipt-verifier',
+    version: '0.1.3',
+    receiptVersion: RECEIPT_VERSION,
+    docsUrl: 'https://paxiom.org/api.html',
+    sdk: {
+      npm: '@paxiom/receipts',
+      python: 'paxiom-receipts (standards/receipts/v0/python)'
+    },
+    discovery: {
+      openApi: '/openapi.json',
+      llmsTxt: '/llms.txt',
+      mcpEndpoint: '/mcp',
+      mcpCard: '/.well-known/mcp.json',
+      paxiomKeys: '/.well-known/paxiom-keys.json',
+      ...(x402Enabled ? { x402Manifest: '/.well-known/x402.json' } : {}),
+      version: '/version',
+      stats: '/stats'
+    },
+    endpoints: {
+      freeOfflineVerify: 'POST /v1/receipt/verify',
+      demoFixtures: 'GET /v1/receipt/demo',
+      remoteMcp: 'POST /mcp',
+      ...(liveEnabled
+        ? {
+            liveOnchainVerify: 'POST /v1/receipt/verify-live',
+            x402SellerPreflight: 'POST /v1/x402/preflight'
+          }
+        : {})
+    }
+  };
+}
 
 const RENDER_PRODUCTION_DEFAULTS = Object.freeze({
   LIVE_VERIFY_ENABLED: 'true',
@@ -92,6 +201,11 @@ function buildVersionPayload(env = process.env) {
       counterAttestation: Boolean(getConfiguredPaxiomKey(env))
     },
     endpoints: {
+      serviceIndex: 'GET /',
+      openApi: 'GET /openapi.json',
+      llmsTxt: 'GET /llms.txt',
+      mcpCard: 'GET /.well-known/mcp.json',
+      stats: 'GET /stats',
       freeOfflineVerify: 'POST /v1/receipt/verify',
       remoteMcp: 'POST /mcp',
       ...(liveEnabled ? {
@@ -220,7 +334,7 @@ function precheckLiveSettlementEligibility(receipt) {
   return { eligible: true, netCfg };
 }
 
-async function handleOfflineVerify(req, res, env) {
+async function handleOfflineVerify(req, res, env, stats) {
   const parsed = await parseVerifyPayload(req, res);
   if (!parsed) return;
   try {
@@ -229,13 +343,19 @@ async function handleOfflineVerify(req, res, env) {
     if (paxiomKey) {
       opts.trustedPaxiomPublicKeys = [paxiomKey.publicKey];
     }
-    return send(res, 200, verifyReceipt(parsed.receipt, opts));
+    const verdict = verifyReceipt(parsed.receipt, opts);
+    if (stats) {
+      stats.offlineVerify.calls += 1;
+      if (verdict.valid) stats.offlineVerify.validVerdicts += 1;
+      else stats.offlineVerify.invalidVerdicts += 1;
+    }
+    return send(res, 200, verdict);
   } catch (err) {
     return send(res, 500, errBody('verifier_error', String((err && err.message) || err)));
   }
 }
 
-async function handleLiveVerify(req, res, { env, fetchImpl }) {
+async function handleLiveVerify(req, res, { env, fetchImpl, stats }) {
   const liveEnabled = isFlagEnabled(env.LIVE_VERIFY_ENABLED) || isFlagEnabled(env.X402_ENABLED);
   if (!liveEnabled) {
     return send(res, 503, errBody(
@@ -258,6 +378,7 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
   let rawBodyText = '';
   if (req.method === 'GET' && !hasPaymentOrAuthHeader && isFlagEnabled(env.X402_ENABLED) && env.X402_PAY_TO) {
     const auth = await authorizeMonetizedRequest(req, { env, fetchImpl });
+    if (stats && auth.status === 402) stats.verifyLive.unpaid402Quotes += 1;
     return send(res, auth.status, auth.body, auth.headers);
   }
   try {
@@ -282,6 +403,7 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
       isFlagEnabled(env.X402_ENABLED) &&
       env.X402_PAY_TO) {
     const auth = await authorizeMonetizedRequest(req, { env, fetchImpl });
+    if (stats && auth.status === 402) stats.verifyLive.unpaid402Quotes += 1;
     return send(res, auth.status, auth.body, auth.headers);
   }
 
@@ -298,6 +420,7 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
       return send(res, 502, errBody('payment_gate_error', 'Failed to contact x402 payment facilitator.'));
     }
     if (!authEarly.authorized) {
+      if (stats && authEarly.status === 402) stats.verifyLive.unpaid402Quotes += 1;
       return send(res, authEarly.status, authEarly.body, authEarly.headers);
     }
   }
@@ -326,6 +449,7 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
   }
 
   if (baseResult.trustState !== 'settlement_claimed_not_checked') {
+    if (stats) stats.verifyLive.precheckRejected += 1;
     return send(res, 200, {
       ...baseResult,
       onchainSettlement: { checked: false, settled: false, reason: 'offline_verification_not_eligible' }
@@ -334,6 +458,7 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
 
   const precheck = precheckLiveSettlementEligibility(parsed.receipt);
   if (!precheck.eligible) {
+    if (stats) stats.verifyLive.precheckRejected += 1;
     return send(res, 200, {
       ...baseResult,
       valid: false,
@@ -355,7 +480,12 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
     return send(res, 502, errBody('payment_gate_error', 'Failed to contact x402 payment facilitator.'));
   }
   if (!auth.authorized) {
+    if (stats && auth.status === 402) stats.verifyLive.unpaid402Quotes += 1;
     return send(res, auth.status, auth.body, auth.headers);
+  }
+  if (stats) {
+    if (auth.mode === 'x402') stats.verifyLive.paidX402Settled += 1;
+    else if (auth.mode === 'api_key') stats.verifyLive.paidApiKeyServed += 1;
   }
 
   let onchain;
@@ -388,6 +518,7 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
     }, auth.responseHeaders);
   }
 
+  if (stats) stats.verifyLive.verifiedSettledUpgrades += 1;
   const finalTrustState = hasOutput ? 'verified' : 'valid_signature_only';
   const extraHeaders = { ...auth.responseHeaders };
   let counterAttestedReceipt = null;
@@ -470,7 +601,7 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
 const ALLOWED_PREFLIGHT_METHODS = new Set(['POST', 'GET', 'HEAD']);
 const DEC_UINT_STRING_RE = /^[0-9]+$/;
 
-async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl }) {
+async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats }) {
   const liveEnabled = isFlagEnabled(env.LIVE_VERIFY_ENABLED) || isFlagEnabled(env.X402_ENABLED);
   if (!liveEnabled) {
     return send(res, 503, errBody(
@@ -490,6 +621,7 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl }) {
 
   if (req.method === 'GET' && !hasPaymentOrAuthHeader && isFlagEnabled(env.X402_ENABLED) && env.X402_PAY_TO) {
     const auth = await authorizeMonetizedRequest(req, { env, fetchImpl, route: 'preflight' });
+    if (stats && auth.status === 402) stats.x402Preflight.unpaid402Quotes += 1;
     return send(res, auth.status, auth.body, auth.headers);
   }
 
@@ -515,6 +647,7 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl }) {
       isFlagEnabled(env.X402_ENABLED) &&
       env.X402_PAY_TO) {
     const auth = await authorizeMonetizedRequest(req, { env, fetchImpl, route: 'preflight' });
+    if (stats && auth.status === 402) stats.x402Preflight.unpaid402Quotes += 1;
     return send(res, auth.status, auth.body, auth.headers);
   }
 
@@ -548,6 +681,7 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl }) {
   // Pure offline lexical & IP-literal SSRF validation (zero DNS / facilitator I/O)
   const lexicalTarget = validateTargetUrlLexical(parsed.url);
   if (!lexicalTarget.ok) {
+    if (stats) stats.x402Preflight.ssrfOrLexicalBlocked += 1;
     return send(res, 400, errBody(lexicalTarget.code, lexicalTarget.message));
   }
 
@@ -561,6 +695,7 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl }) {
     return send(res, 502, errBody('payment_gate_error', 'Failed to contact x402 payment facilitator.'));
   }
   if (!verifiedAuth.verified) {
+    if (stats && verifiedAuth.status === 402) stats.x402Preflight.unpaid402Quotes += 1;
     return send(res, verifiedAuth.status, verifiedAuth.body, verifiedAuth.headers);
   }
 
@@ -570,6 +705,7 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl }) {
     lookupImpl ? { lookupImpl } : {}
   );
   if (!targetValidation.ok) {
+    if (stats) stats.x402Preflight.ssrfOrLexicalBlocked += 1;
     return send(res, 400, errBody(targetValidation.code, targetValidation.message));
   }
 
@@ -581,7 +717,12 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl }) {
     return send(res, 502, errBody('payment_gate_error', 'Failed to contact x402 payment facilitator.'));
   }
   if (!auth.authorized) {
+    if (stats && auth.status === 402) stats.x402Preflight.unpaid402Quotes += 1;
     return send(res, auth.status, auth.body, auth.headers);
+  }
+  if (stats) {
+    if (auth.mode === 'x402') stats.x402Preflight.paidX402Settled += 1;
+    else if (auth.mode === 'api_key') stats.x402Preflight.paidApiKeyServed += 1;
   }
 
   const probeFetchImpl = fetchImpl === globalThis.fetch ? null : fetchImpl;
@@ -591,6 +732,11 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl }) {
     expectedNetwork
   }, { fetchImpl: probeFetchImpl });
 
+  if (stats) {
+    if (report.verdict === 'proceed') stats.x402Preflight.verdictProceed += 1;
+    else if (report.verdict === 'caution') stats.x402Preflight.verdictCaution += 1;
+    else if (report.verdict === 'block') stats.x402Preflight.verdictBlock += 1;
+  }
   const extraHeaders = { ...auth.responseHeaders };
   const paxiomKey = getConfiguredPaxiomKey(env);
   if (paxiomKey) {
@@ -646,6 +792,18 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl }) {
 
 export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThis.fetch, lookupImpl } = {}) {
   const env = resolveRuntimeEnv(rawEnv);
+  const stats = createFunnelStats();
+  const onMcpEvent = (ev) => {
+    if (!ev) return;
+    if (ev.kind === 'get_metadata') stats.discovery.mcpGetReads += 1;
+    else if (ev.kind === 'jsonrpc') stats.discovery.mcpJsonRpcCalls += 1;
+    else if (ev.kind === 'tool') {
+      if (ev.tool === 'verify_receipt') stats.discovery.mcpToolCalls.verify_receipt += 1;
+      else if (ev.tool === 'explain_receipt') stats.discovery.mcpToolCalls.explain_receipt += 1;
+      else if (ev.tool === 'get_x402_verifier_info') stats.discovery.mcpToolCalls.get_x402_verifier_info += 1;
+    }
+  };
+
   return async function handleRequest(req, res) {
     const { method } = req;
     const path = (req.url || '').split('?')[0];
@@ -654,6 +812,30 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
       res.writeHead(204, CORS);
       return res.end();
     }
+    if (method === 'GET' && path === '/') {
+      stats.discovery.rootIndexReads += 1;
+      return send(res, 200, buildRootServiceIndex(env));
+    }
+    if (method === 'GET' && path === '/openapi.json') {
+      stats.discovery.openApiReads += 1;
+      return send(res, 200, openApiSpec);
+    }
+    if (method === 'GET' && path === '/llms.txt') {
+      stats.discovery.llmsTxtReads += 1;
+      res.writeHead(200, {
+        'content-type': 'text/plain; charset=utf-8',
+        'x-content-type-options': 'nosniff',
+        ...CORS
+      });
+      return res.end(llmsTxtContent);
+    }
+    if (method === 'GET' && path === '/.well-known/mcp.json') {
+      stats.discovery.mcpCardReads += 1;
+      return send(res, 200, buildMcpServerCard(env));
+    }
+    if (method === 'GET' && path === '/stats') {
+      return send(res, 200, snapshotFunnelStats(stats));
+    }
     if (method === 'GET' && path === '/health') {
       return send(res, 200, { ok: true, service: 'paxiom-receipt-verifier', version: 'v0' });
     }
@@ -661,6 +843,7 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
       return send(res, 200, buildVersionPayload(env));
     }
     if (method === 'GET' && path === '/v1/receipt/demo') {
+      stats.offlineVerify.demoReads += 1;
       return send(res, 200, {
         receiptVersion: RECEIPT_VERSION,
         output: demoOutput,
@@ -669,6 +852,7 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
       });
     }
     if (method === 'GET' && path === '/.well-known/paxiom-keys.json') {
+      stats.discovery.paxiomKeysReads += 1;
       const paxiomKey = getConfiguredPaxiomKey(env);
       return send(res, 200, {
         issuer: env.PAXIOM_ISSUER_NAME || 'Paxiom Receipt Verifier',
@@ -681,19 +865,20 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
       if (!isFlagEnabled(env.X402_ENABLED) || !env.X402_PAY_TO) {
         return send(res, 404, errBody('x402_disabled', 'x402 payment discovery is not enabled on this instance.'));
       }
+      stats.discovery.x402ManifestReads += 1;
       return send(res, 200, buildX402PaymentRequirements(env, { route: 'discovery' }));
     }
     if (method === 'POST' && path === '/v1/receipt/verify') {
-      return handleOfflineVerify(req, res, env);
+      return handleOfflineVerify(req, res, env, stats);
     }
     if ((method === 'POST' || method === 'GET') && path === '/v1/receipt/verify-live') {
-      return handleLiveVerify(req, res, { env, fetchImpl });
+      return handleLiveVerify(req, res, { env, fetchImpl, stats });
     }
     if ((method === 'POST' || method === 'GET') && path === '/v1/x402/preflight') {
-      return handleX402Preflight(req, res, { env, fetchImpl, lookupImpl });
+      return handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats });
     }
     if (path === '/mcp') {
-      return handleMcpHttpRequest(req, res, { env, readBody, corsHeaders: CORS });
+      return handleMcpHttpRequest(req, res, { env, readBody, corsHeaders: CORS, onMcpEvent });
     }
     return send(res, 404, errBody('not_found', `No route for ${method} ${path}`));
   };

@@ -290,3 +290,81 @@ test('GET /mcp SSE probe -> 405, GET /mcp JSON -> 200, DELETE /mcp -> 405, batch
     assert.equal(body.result.structuredContent.baseUrl, 'https://api.paxiom.org');
   });
 });
+
+test('GET /, /openapi.json, /llms.txt, /.well-known/mcp.json, and zero-PII GET /stats counters', async () => {
+  await withServer(
+    {
+      env: {
+        LIVE_VERIFY_ENABLED: 'true',
+        X402_ENABLED: 'true',
+        X402_PAY_TO: '0x9786F5532ab7d7556CDa53E3f6c2d937c9b87Bc4'
+      }
+    },
+    async (base) => {
+      const rootRes = await fetch(`${base}/`);
+      assert.equal(rootRes.status, 200);
+      const rootJson = await rootRes.json();
+      assert.equal(rootJson.ok, true);
+      assert.equal(rootJson.version, '0.1.3');
+      assert.equal(rootJson.discovery.openApi, '/openapi.json');
+      assert.equal(rootJson.discovery.x402Manifest, '/.well-known/x402.json');
+
+      const oaRes = await fetch(`${base}/openapi.json`);
+      assert.equal(oaRes.status, 200);
+      const oaJson = await oaRes.json();
+      assert.equal(oaJson.info.version, '0.1.3');
+      assert.ok(oaJson.paths['/v1/x402/preflight']);
+
+      const llmsRes = await fetch(`${base}/llms.txt`);
+      assert.equal(llmsRes.status, 200);
+      assert.match(llmsRes.headers.get('content-type') || '', /text\/plain/);
+      const llmsText = await llmsRes.text();
+      assert.match(llmsText, /paxiom\.receipt\.v0/);
+
+      const cardRes = await fetch(`${base}/.well-known/mcp.json`);
+      assert.equal(cardRes.status, 200);
+      const cardJson = await cardRes.json();
+      assert.equal(cardJson.name, 'io.github.k-luecke/paxiom-receipts');
+      assert.equal(cardJson.version, '0.1.3');
+
+      // Trigger one unpaid 402 quote on preflight + one MCP tool call + one demo read
+      const demo = await (await fetch(`${base}/v1/receipt/demo`)).json();
+      const vRes = await fetch(`${base}/v1/receipt/verify`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ receipt: demo.receipt, output: demo.output })
+      });
+      assert.equal((await vRes.json()).valid, true);
+
+      const q402 = await fetch(`${base}/v1/x402/preflight`);
+      assert.equal(q402.status, 402);
+
+      await fetch(`${base}/mcp`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'tools/call',
+          params: { name: 'get_x402_verifier_info', arguments: {} }
+        })
+      });
+
+      const statsRes = await fetch(`${base}/stats`);
+      assert.equal(statsRes.status, 200);
+      const stats = await statsRes.json();
+      assert.equal(stats.ok, true);
+      assert.equal(stats.privacy, 'aggregate_counters_only_zero_pii');
+      assert.equal(stats.discovery.rootIndexReads, 1);
+      assert.equal(stats.discovery.openApiReads, 1);
+      assert.equal(stats.discovery.llmsTxtReads, 1);
+      assert.equal(stats.discovery.mcpCardReads, 1);
+      assert.equal(stats.discovery.mcpJsonRpcCalls, 1);
+      assert.equal(stats.discovery.mcpToolCalls.get_x402_verifier_info, 1);
+      assert.equal(stats.offlineVerify.demoReads, 1);
+      assert.equal(stats.offlineVerify.calls, 1);
+      assert.equal(stats.offlineVerify.validVerdicts, 1);
+      assert.equal(stats.x402Preflight.unpaid402Quotes, 1);
+    }
+  );
+});
