@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,28 +7,43 @@ name = "paxiom-receipts"
 version = "0.1.3"
 description = "Zero-dependency Python issuer, verifier, x402 buyer preflight/live client, and FastAPI/ASGI middleware for paxiom.receipt.v0."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
+authors = [
+  { name = "Paxiom" }
+]
 dependencies = []
 keywords = ["x402", "receipts", "ed25519", "agent-payments", "mcp", "fastapi", "paxiom"]
 classifiers = [
   "Development Status :: 4 - Beta",
+  "Framework :: AsyncIO",
+  "Framework :: FastAPI",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Security :: Cryptography",
-  "Topic :: Software Development :: Libraries :: Python Modules"
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed"
 ]
 
-[project.Optional-Dependencies]
+[project.optional-dependencies]
 fast = ["cryptography>=41.0.0"]
 
 [project.urls]
 Homepage = "https://paxiom.org/receipts.html"
 Documentation = "https://paxiom.org/api.html"
-Repository = "https://github.com/k-luecke/paxiom-static"
+Repository = "https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0/python"
+Issues = "https://github.com/k-luecke/paxiom-static/issues"
+Releases = "https://github.com/k-luecke/paxiom-static/releases"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["paxiom_receipts*"]
+
+[tool.setuptools.package-data]
+paxiom_receipts = ["py.typed"]
