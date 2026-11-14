@@ -1,0 +1,154 @@
+{
+  "x402Version": 1,
+  "service": "Paxiom Receipt Verifier",
+  "baseUrl": "https://api.paxiom.org",
+  "resources": [
+    {
+      "url": "https://api.paxiom.org/v1/receipt/verify-live",
+      "resource": "https://api.paxiom.org/v1/receipt/verify-live",
+      "method": "POST",
+      "description": "Live on-chain USDC settlement verification + Paxiom Ed25519 counter-attestation for paxiom.receipt.v0",
+      "network": "base",
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "payTo": "0x9786F5532ab7d7556CDa53E3f6c2d937c9b87Bc4",
+      "maxAmountRequired": "2000"
+    },
+    {
+      "url": "https://api.paxiom.org/v1/x402/preflight",
+      "resource": "https://api.paxiom.org/v1/x402/preflight",
+      "method": "POST",
+      "description": "SSRF-hardened pre-payment x402 seller readiness, canonical Base USDC asset check, and Paxiom receipt capability scan",
+      "network": "base",
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "payTo": "0x9786F5532ab7d7556CDa53E3f6c2d937c9b87Bc4",
+      "maxAmountRequired": "10000"
+    }
+  ],
+  "accepts": [
+    {
+      "scheme": "exact",
+      "network": "base",
+      "maxAmountRequired": "2000",
+      "resource": "https://api.paxiom.org/v1/receipt/verify-live",
+      "description": "Live on-chain USDC settlement verification + Paxiom Ed25519 counter-attestation for paxiom.receipt.v0",
+      "mimeType": "application/json",
+      "payTo": "0x9786F5532ab7d7556CDa53E3f6c2d937c9b87Bc4",
+      "maxTimeoutSeconds": 60,
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "outputSchema": {
+        "input": {
+          "discoverable": true,
+          "type": "http",
+          "method": "POST",
+          "bodyType": "json",
+          "bodyFields": {
+            "receipt": {
+              "type": "object",
+              "required": true,
+              "description": "paxiom.receipt.v0 JSON object"
+            },
+            "output": {
+              "type": "object",
+              "required": false,
+              "description": "Delivered API response JSON"
+            },
+            "expectedPayTo": {
+              "type": "string",
+              "required": false,
+              "description": "Optional expected USDC recipient address"
+            }
+          }
+        },
+        "output": {
+          "valid": {
+            "type": "boolean"
+          },
+          "trustState": {
+            "type": "string"
+          },
+          "checks": {
+            "type": "object"
+          },
+          "onchainSettlement": {
+            "type": "object"
+          },
+          "counterAttestedReceipt": {
+            "type": "object"
+          }
+        }
+      },
+      "extra": {
+        "name": "USD Coin",
+        "version": "2"
+      }
+    },
+    {
+      "scheme": "exact",
+      "network": "base",
+      "maxAmountRequired": "10000",
+      "resource": "https://api.paxiom.org/v1/x402/preflight",
+      "description": "SSRF-hardened pre-payment x402 seller readiness, canonical Base USDC asset check, and Paxiom receipt capability scan",
+      "mimeType": "application/json",
+      "payTo": "0x9786F5532ab7d7556CDa53E3f6c2d937c9b87Bc4",
+      "maxTimeoutSeconds": 60,
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "outputSchema": {
+        "input": {
+          "discoverable": true,
+          "type": "http",
+          "method": "POST",
+          "bodyType": "json",
+          "bodyFields": {
+            "url": {
+              "type": "string",
+              "required": true,
+              "description": "Target https:// x402 endpoint URL to inspect before paying"
+            },
+            "method": {
+              "type": "string",
+              "required": false,
+              "description": "HTTP method to probe (POST, GET, or HEAD; default POST)"
+            },
+            "maxBudgetAtomic": {
+              "type": "string",
+              "required": false,
+              "description": "Optional caller budget cap in USDC atomic units"
+            },
+            "expectedNetwork": {
+              "type": "string",
+              "required": false,
+              "description": "Optional expected network (base or base-sepolia)"
+            }
+          }
+        },
+        "output": {
+          "ok": {
+            "type": "boolean"
+          },
+          "verdict": {
+            "type": "string"
+          },
+          "riskLevel": {
+            "type": "string"
+          },
+          "selectedQuote": {
+            "type": "object"
+          },
+          "checks": {
+            "type": "object"
+          },
+          "receiptSupport": {
+            "type": "object"
+          },
+          "findings": {
+            "type": "array"
+          }
+        }
+      },
+      "extra": {
+        "name": "USD Coin",
+        "version": "2"
+      }
+    }
+  ]
+}

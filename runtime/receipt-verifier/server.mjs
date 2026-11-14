@@ -227,7 +227,7 @@ function isFlagEnabled(val) {
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, HEAD, POST, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'content-type, accept, authorization, x-api-key, payment-signature, x-payment, mcp-session-id, mcp-protocol-version'
 };
 
@@ -809,42 +809,43 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
     const { method } = req;
     const path = (req.url || '').split('?')[0];
 
+    const isRead = method === 'GET' || method === 'HEAD';
     if (method === 'OPTIONS') {
       res.writeHead(204, CORS);
       return res.end();
     }
-    if (method === 'GET' && path === '/') {
-      stats.discovery.rootIndexReads += 1;
+    if (isRead && path === '/') {
+      if (method === 'GET') stats.discovery.rootIndexReads += 1;
       return send(res, 200, buildRootServiceIndex(env));
     }
-    if (method === 'GET' && path === '/openapi.json') {
-      stats.discovery.openApiReads += 1;
+    if (isRead && path === '/openapi.json') {
+      if (method === 'GET') stats.discovery.openApiReads += 1;
       return send(res, 200, openApiSpec);
     }
-    if (method === 'GET' && path === '/llms.txt') {
-      stats.discovery.llmsTxtReads += 1;
+    if (isRead && path === '/llms.txt') {
+      if (method === 'GET') stats.discovery.llmsTxtReads += 1;
       res.writeHead(200, {
         'content-type': 'text/plain; charset=utf-8',
         'x-content-type-options': 'nosniff',
         ...CORS
       });
-      return res.end(llmsTxtContent);
+      return res.end(method === 'HEAD' ? undefined : llmsTxtContent);
     }
-    if (method === 'GET' && path === '/.well-known/mcp.json') {
-      stats.discovery.mcpCardReads += 1;
+    if (isRead && path === '/.well-known/mcp.json') {
+      if (method === 'GET') stats.discovery.mcpCardReads += 1;
       return send(res, 200, buildMcpServerCard(env));
     }
-    if (method === 'GET' && path === '/stats') {
+    if (isRead && path === '/stats') {
       return send(res, 200, snapshotFunnelStats(stats));
     }
-    if (method === 'GET' && path === '/health') {
-      return send(res, 200, { ok: true, service: 'paxiom-receipt-verifier', version: 'v0' });
+    if (isRead && path === '/health') {
+      return send(res, 200, { ok: true, service: 'paxiom-receipt-verifier', version: '0.1.3', receiptVersion: RECEIPT_VERSION });
     }
-    if (method === 'GET' && path === '/version') {
+    if (isRead && path === '/version') {
       return send(res, 200, buildVersionPayload(env));
     }
-    if (method === 'GET' && path === '/v1/receipt/demo') {
-      stats.offlineVerify.demoReads += 1;
+    if (isRead && path === '/v1/receipt/demo') {
+      if (method === 'GET') stats.offlineVerify.demoReads += 1;
       return send(res, 200, {
         receiptVersion: RECEIPT_VERSION,
         output: demoOutput,
@@ -852,8 +853,8 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
         verify: { method: 'POST', path: '/v1/receipt/verify', body: { receipt: '<receipt>', output: '<output?>' } }
       });
     }
-    if (method === 'GET' && path === '/.well-known/paxiom-keys.json') {
-      stats.discovery.paxiomKeysReads += 1;
+    if (isRead && path === '/.well-known/paxiom-keys.json') {
+      if (method === 'GET') stats.discovery.paxiomKeysReads += 1;
       const paxiomKey = getConfiguredPaxiomKey(env);
       return send(res, 200, {
         issuer: env.PAXIOM_ISSUER_NAME || 'Paxiom Receipt Verifier',
@@ -862,11 +863,11 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
           : []
       });
     }
-    if (method === 'GET' && (path === '/.well-known/x402.json' || path === '/.well-known/x402')) {
+    if (isRead && (path === '/.well-known/x402.json' || path === '/.well-known/x402')) {
       if (!isFlagEnabled(env.X402_ENABLED) || !env.X402_PAY_TO) {
         return send(res, 404, errBody('x402_disabled', 'x402 payment discovery is not enabled on this instance.'));
       }
-      stats.discovery.x402ManifestReads += 1;
+      if (method === 'GET') stats.discovery.x402ManifestReads += 1;
       return send(res, 200, buildX402PaymentRequirements(env, { route: 'discovery' }));
     }
     if (method === 'POST' && path === '/v1/receipt/verify') {

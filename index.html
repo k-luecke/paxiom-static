@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <title>Paxiom &middot; Proof-Bound Receipts for x402 &amp; Agentic APIs</title>
-<meta name="description" content="x402 proves a payment. Paxiom proves what the payment bought — Ed25519 receipts, zero-dependency SDK &amp; MCP (@paxiom/receipts), free offline verification, and live Base USDC settlement verification.">
+<meta name="description" content="x402 proves a payment. Paxiom proves what the payment bought — Ed25519 receipts, zero-dependency TypeScript (@paxiom/receipts) &amp; Python (paxiom-receipts) SDKs, MCP server, free offline verification, and live Base USDC settlement verification.">
 <meta property="og:title" content="Paxiom · Proof-Bound Receipts for x402 APIs">
 <meta property="og:description" content="x402 proves a payment. Paxiom proves what the payment bought — open spec, @paxiom/receipts SDK &amp; MCP, and live Base USDC settlement verification.">
 <meta property="og:url" content="https://paxiom.org/">
@@ -301,7 +301,7 @@ a:hover { color: var(--red); }
     </div>
     <div class="meta">
       <span>Spec: paxiom.receipt.v0</span><span class="sep">&middot;</span>
-      <span>SDK: @paxiom/receipts@0.1.2</span><span class="sep">&middot;</span>
+      <span>SDKs: @paxiom/receipts &amp; paxiom-receipts@0.1.3</span><span class="sep">&middot;</span>
       <span>Runtime: Base Mainnet Live</span>
     </div>
   </header>
@@ -309,11 +309,12 @@ a:hover { color: var(--red); }
   <section class="hero">
     <h1>x402 proves a payment. <em>Paxiom proves what the payment bought.</em></h1>
     <p class="lede">When an agent pays an HTTP endpoint over x402, a <code>200 OK</code> is not evidence of what was delivered. Paxiom binds the request, delivered output, payment transaction, and settlement verdict into one Ed25519-signed receipt that any buyer, audit log, or downstream agent can verify.</p>
-    <p class="tagline">OPEN SPEC &middot; ZERO-DEPENDENCY NPM SDK &amp; MCP &middot; LIVE BASE MAINNET x402 VERIFIER ($0.002 USDC)</p>
+    <p class="tagline">OPEN SPEC &middot; ZERO-DEPENDENCY NPM &amp; PYPI SDKS &middot; MCP SERVER &middot; LIVE BASE MAINNET x402 VERIFIER ($0.002 USDC)</p>
     <div class="actions">
       <a class="btn primary" href="/api.html">API &amp; SDK Quickstart</a>
       <a class="btn" href="/receipts.html">Explore Receipt v0</a>
       <a class="btn" href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer">npm: @paxiom/receipts</a>
+      <a class="btn" href="https://pypi.org/project/paxiom-receipts/" target="_blank" rel="noopener noreferrer">PyPI: paxiom-receipts</a>
     </div>
   </section>
 
@@ -327,8 +328,8 @@ a:hover { color: var(--red); }
         <div class="label">01 &middot; Issue (Free &middot; MIT)</div>
         <h3>Seller Middleware &amp; SDK</h3>
         <ul>
-          <li><code>npm install @paxiom/receipts</code></li>
-          <li>Zero external dependencies (Node &ge;18)</li>
+          <li><code>npm install @paxiom/receipts</code> &middot; <code>pip install paxiom-receipts</code></li>
+          <li>Zero-dep Node &ge;18 &amp; Python &ge;3.10 SDKs</li>
           <li>Wrap any Fetch or Express x402 route in 3 lines</li>
           <li>Attaches signed <code>X-Paxiom-Receipt</code> headers</li>
           <li>Binds request, <code>SHA-256(output)</code>, and <code>txHash</code></li>

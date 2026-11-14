@@ -1,0 +1,32 @@
+{
+  "name": "io.github.k-luecke/paxiom-receipts",
+  "title": "Paxiom Receipts MCP",
+  "version": "0.1.3",
+  "description": "Verify and explain Ed25519 proof-bound receipts (paxiom.receipt.v0) for x402 APIs, and discover live Base USDC settlement & preflight endpoints.",
+  "websiteUrl": "https://paxiom.org/receipts.html",
+  "transport": {
+    "type": "streamable-http",
+    "url": "https://api.paxiom.org/mcp"
+  },
+  "protocolVersion": "2025-03-26",
+  "supportedProtocolVersions": [
+    "2025-06-18",
+    "2025-03-26",
+    "2024-11-05"
+  ],
+  "stateless": true,
+  "tools": [
+    {
+      "name": "verify_receipt",
+      "description": "Verify a paxiom.receipt.v0 cryptographic receipt (schema, Ed25519 signature, output SHA-256 JCS binding, expiry, and honest settlement/proof trust state). Deterministic and free; automatically trusts the host Paxiom counter-attestation public key when trustedPaxiomPublicKeys is omitted."
+    },
+    {
+      "name": "explain_receipt",
+      "description": "Verify a paxiom.receipt.v0 receipt and return a concise human/agent-readable trust-state breakdown and next-action guidance."
+    },
+    {
+      "name": "get_x402_verifier_info",
+      "description": "Return Paxiom Receipt Verifier service metadata, published Ed25519 counter-attestation public keys, and x402 Base USDC payment terms for live on-chain settlement verification ($0.002 USDC) and pre-payment seller preflight ($0.01 USDC)."
+    }
+  ]
+}
