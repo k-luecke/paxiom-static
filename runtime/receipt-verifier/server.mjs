@@ -664,7 +664,7 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
           : []
       });
     }
-    if (method === 'GET' && path === '/.well-known/x402.json') {
+    if (method === 'GET' && (path === '/.well-known/x402.json' || path === '/.well-known/x402')) {
       if (!isFlagEnabled(env.X402_ENABLED) || !env.X402_PAY_TO) {
         return send(res, 404, errBody('x402_disabled', 'x402 payment discovery is not enabled on this instance.'));
       }

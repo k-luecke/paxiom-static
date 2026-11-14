@@ -141,6 +141,31 @@ export function buildX402PaymentRequirements(env = process.env, { route = 'verif
       ? [buildPreflightAccept(env)]
       : [buildVerifyLiveAccept(env)];
 
+  if (route === 'discovery') {
+    let baseUrl = 'https://api.paxiom.org';
+    try {
+      baseUrl = new URL(accepts[0].resource).origin;
+    } catch {
+      // keep default origin
+    }
+    return {
+      x402Version: 1,
+      service: 'Paxiom Receipt Verifier',
+      baseUrl,
+      resources: accepts.map((a) => ({
+        url: a.resource,
+        resource: a.resource,
+        method: 'POST',
+        description: a.description,
+        network: a.network,
+        asset: a.asset,
+        payTo: a.payTo,
+        maxAmountRequired: a.maxAmountRequired
+      })),
+      accepts
+    };
+  }
+
   return {
     x402Version: 1,
     error: 'Payment Required: supply an x402 payment header (PAYMENT-SIGNATURE or X-PAYMENT) or a valid Paxiom API key (X-API-Key).',
