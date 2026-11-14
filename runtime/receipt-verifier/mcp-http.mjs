@@ -6,7 +6,7 @@
 // Security invariant:
 //   - Strictly stateless and zero external dependencies.
 //   - Intentionally exposes ONLY read/verify/discovery tools (`verify_receipt`,
-//     `explain_receipt`, `get_x402_verifier_info`) over remote HTTP so seller
+//     `explain_receipt`, `get_x402_verifier_info`) over remote HTTP so selle
 //     Ed25519 private keys never traverse the network (`issue_receipt` remains
 //     exclusively in the local stdio MCP server `@paxiom/receipts`).
 
@@ -115,6 +115,10 @@ function jsonRpcError(id, code, message) {
   return { jsonrpc: '2.0', id, error: { code, message } };
 }
 
+function isValidJsonRpcId(id) {
+  return id === null || typeof id === 'string' || (typeof id === 'number' && Number.isFinite(id));
+}
+
 function isFlagEnabled(val) {
   return val === 'true' || val === '1';
 }
@@ -138,7 +142,12 @@ export function buildVerifierDiscoveryPayload(env = {}) {
   const hostKey = resolveHostPaxiomPublicKey(env);
   const verifyLiveResource = env.X402_RESOURCE_URL || 'https://api.paxiom.org/v1/receipt/verify-live';
   const preflightResource = env.X402_PREFLIGHT_RESOURCE_URL || 'https://api.paxiom.org/v1/x402/preflight';
-  const baseUrl = new URL(verifyLiveResource).origin;
+  let baseUrl = 'https://api.paxiom.org';
+  try {
+    baseUrl = new URL(verifyLiveResource).origin;
+  } catch {
+    // keep default origin if X402_RESOURCE_URL is not a valid absolute URL
+  }
 
   return {
     service: 'paxiom-receipt-verifier',
@@ -194,8 +203,12 @@ export function buildVerifierDiscoveryPayload(env = {}) {
  */
 export function handleRemoteMcpMessage(msg, env = {}) {
   if (!msg || typeof msg !== 'object' || Array.isArray(msg) || msg.jsonrpc !== '2.0') {
-    const id = msg && typeof msg === 'object' && !Array.isArray(msg) && Object.hasOwn(msg, 'id') ? msg.id : null;
-    return jsonRpcError(id, -32600, 'Invalid JSON-RPC 2.0 request');
+    const rawId = msg && typeof msg === 'object' && !Array.isArray(msg) && Object.hasOwn(msg, 'id') ? msg.id : null;
+    return jsonRpcError(isValidJsonRpcId(rawId) ? rawId : null, -32600, 'Invalid JSON-RPC 2.0 request');
+  }
+
+  if (Object.hasOwn(msg, 'id') && !isValidJsonRpcId(msg.id)) {
+    return jsonRpcError(null, -32600, 'Invalid JSON-RPC 2.0 id: must be string, finite number, or null');
   }
 
   // Client JSON-RPC response (has result or error, no method) -> acknowledge with 202 (null)

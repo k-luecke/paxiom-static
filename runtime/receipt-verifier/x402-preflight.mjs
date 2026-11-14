@@ -5,7 +5,7 @@
 //      IPv4 & IPv6, pins resolved IP for TLS SNI connection, never follows redirects).
 //   2. Probes the target's unpaid 402 challenge + `/.well-known/x402.json` + `/.well-known/paxiom-keys.json`.
 //   3. Verifies canonical Base / Base Sepolia Circle USDC asset address, EIP-712 domain parameters,
-//      `payTo` validity & manifest consistency (bait-and-switch detection), budget cap, and whether
+//      `payTo` validity & manifest consistency (bait-and-switch detection), budget cap, and whethe
 //      the seller supports proof-bound `paxiom.receipt.v0` (`X-Paxiom-Receipt`).
 import https from 'node:https';
 import dns from 'node:dns/promises';
@@ -127,17 +127,31 @@ export function isPublicGlobalIp(ip) {
     if (allZeroPrefix6 && g[5] === 0xffff) {
       return isPublicGlobalIpv4Uint32(((g[6] << 16) | g[7]) >>> 0);
     }
-    // NAT64 64:ff9b::/96 and 64:ff9b:1::/48
-    if (g[0] === 0x0064 && g[1] === 0xff9b && (g[2] === 0 || g[2] === 1)) {
+    // ::ffff:0:0:0/96 IPv4-translated IPv6 (RFC 2765 SIIT)
+    if (g[0] === 0 && g[1] === 0 && g[2] === 0 && g[3] === 0 && g[4] === 0xffff && g[5] === 0) {
       return isPublicGlobalIpv4Uint32(((g[6] << 16) | g[7]) >>> 0);
+    }
+    // Well-known NAT64 64:ff9b::/96 (RFC 6052) ONLY when g[2..5] === 0;
+    // reject RFC 8215 local-use NAT64 (64:ff9b:1::/48) and non-/96 64:ff9b::/32 prefixes.
+    if (g[0] === 0x0064 && g[1] === 0xff9b) {
+      if (g[2] === 0 && g[3] === 0 && g[4] === 0 && g[5] === 0) {
+        return isPublicGlobalIpv4Uint32(((g[6] << 16) | g[7]) >>> 0);
+      }
+      return false;
     }
     // 6to4 2002::/16
     if (g[0] === 0x2002) {
       return isPublicGlobalIpv4Uint32(((g[1] << 16) | g[2]) >>> 0);
     }
-    // Discard 100::/64, Teredo 2001:0000::/32, Documentation 2001:db8::/32
+    // Discard-Only 100::/64 (RFC 6666)
     if (g[0] === 0x0100 && g[1] === 0 && g[2] === 0 && g[3] === 0) return false;
-    if (g[0] === 0x2001 && (g[1] === 0x0000 || g[1] === 0x0db8)) return false;
+    // IETF Protocol Assignments 2001::/23 (RFC 2928, Teredo 2001::/32, Benchmarking 2001:2::/48, ORCHID)
+    if (g[0] === 0x2001 && (g[1] & 0xfe00) === 0x0000) return false;
+    // Documentation 2001:db8::/32 (RFC 3849) & 3fff::/20 (RFC 9637)
+    if (g[0] === 0x2001 && g[1] === 0x0db8) return false;
+    if (g[0] === 0x3fff && (g[1] & 0xf000) === 0x0000) return false;
+    // Direct Delegation AS112 2620:4f:8000::/48 (RFC 7535)
+    if (g[0] === 0x2620 && g[1] === 0x004f && g[2] === 0x8000) return false;
     // Unique local fc00::/7, Link-local fe80::/10, Multicast ff00::/8
     if ((g[0] & 0xfe00) === 0xfc00) return false;
     if ((g[0] & 0xffc0) === 0xfe80) return false;
@@ -159,10 +173,11 @@ function withTimeout(promise, ms, errCode, errMsg) {
 }
 
 /**
- * Validate a caller-supplied URL and pre-resolve its DNS records to public global IPs
- * BEFORE charging x402 payment or opening any outbound socket.
+ * Pure lexical & IP-literal URL validation (`FERMI-PAX-R2-01` & `FERMI-PAX-R2-02`).
+ * Executes synchronously with ZERO DNS / socket I/O so malformed or literal-SSRF URLs
+ * can be rejected before touching x402 facilitators or DNS resolvers.
  */
-export async function validatePublicHttpsTarget(rawUrl, { lookupImpl = dns.lookup } = {}) {
+export function validateTargetUrlLexical(rawUrl) {
   if (typeof rawUrl !== 'string' || !rawUrl.trim()) {
     return { ok: false, code: 'missing_target_url', message: 'Field "url" must be a non-empty https:// URL string.' };
   }
@@ -207,6 +222,7 @@ export async function validatePublicHttpsTarget(rawUrl, { lookupImpl = dns.looku
     }
     return {
       ok: true,
+      needsDns: false,
       parsedUrl: parsed,
       normalizedUrl: parsed.toString(),
       origin: parsed.origin,
@@ -220,6 +236,37 @@ export async function validatePublicHttpsTarget(rawUrl, { lookupImpl = dns.looku
     return { ok: false, code: 'ssrf_blocked', message: 'Single-label internal hostnames are not allowed.' };
   }
 
+  return {
+    ok: true,
+    needsDns: true,
+    parsedUrl: parsed,
+    normalizedUrl: parsed.toString(),
+    origin: parsed.origin,
+    hostname: bareHost
+  };
+}
+
+/**
+ * Validate a caller-supplied URL and pre-resolve its DNS records to public global IPs
+ * BEFORE settling x402 payment or opening any outbound socket.
+ */
+export async function validatePublicHttpsTarget(rawUrl, { lookupImpl = dns.lookup } = {}) {
+  const lexical = validateTargetUrlLexical(rawUrl);
+  if (!lexical.ok) return lexical;
+  if (!lexical.needsDns) {
+    return {
+      ok: true,
+      parsedUrl: lexical.parsedUrl,
+      normalizedUrl: lexical.normalizedUrl,
+      origin: lexical.origin,
+      hostname: lexical.hostname,
+      pinnedIp: lexical.pinnedIp,
+      pinnedFamily: lexical.pinnedFamily
+    };
+  }
+
+  const bareHost = lexical.hostname;
+  const parsed = lexical.parsedUrl;
   let records;
   try {
     const rawRecords = await withTimeout(
@@ -321,32 +368,41 @@ async function readBoundedResponseFetch(fetchImpl, url, { method, headers, body,
   }
 }
 
+export function buildPinnedHttpsRequestOptions(target, fullUrl, { method, headers, body }) {
+  const parsed = new URL(fullUrl);
+  const ipKind = net.isIP(target.hostname);
+  const hostHeader = ipKind === 6 ? `[${target.hostname}]` : target.hostname;
+  const pinnedLookup = (_hostname, opts, cb) => {
+    const callback = typeof opts === 'function' ? opts : cb;
+    if (opts && typeof opts === 'object' && opts.all) {
+      return callback(null, [{ address: target.pinnedIp, family: target.pinnedFamily }]);
+    }
+    return callback(null, target.pinnedIp, target.pinnedFamily);
+  };
+
+  return {
+    protocol: 'https:',
+    hostname: target.hostname,
+    port: 443,
+    // RFC 6066 Section 3 forbids IPv4/IPv6 literals in TLS SNI ServerName
+    ...(ipKind === 0 ? { servername: target.hostname } : {}),
+    path: `${parsed.pathname}${parsed.search}`,
+    method,
+    headers: {
+      // RFC 3986 Section 3.2.2 requires bracketed IPv6 literals in HTTP Host heade
+      host: hostHeader,
+      ...headers,
+      ...(body !== undefined ? { 'content-length': String(Buffer.byteLength(body, 'utf8')) } : {})
+    },
+    lookup: pinnedLookup,
+    agent: false
+  };
+}
+
 function readBoundedResponsePinnedHttps(target, fullUrl, { method, headers, body, timeoutMs }) {
   return new Promise((resolve, reject) => {
-    const parsed = new URL(fullUrl);
-    const pinnedLookup = (_hostname, opts, cb) => {
-      const callback = typeof opts === 'function' ? opts : cb;
-      if (opts && typeof opts === 'object' && opts.all) {
-        return callback(null, [{ address: target.pinnedIp, family: target.pinnedFamily }]);
-      }
-      return callback(null, target.pinnedIp, target.pinnedFamily);
-    };
-
-    const req = https.request({
-      protocol: 'https:',
-      hostname: target.hostname,
-      port: 443,
-      servername: target.hostname,
-      path: `${parsed.pathname}${parsed.search}`,
-      method,
-      headers: {
-        host: target.hostname,
-        ...headers,
-        ...(body !== undefined ? { 'content-length': String(Buffer.byteLength(body, 'utf8')) } : {})
-      },
-      lookup: pinnedLookup,
-      agent: false
-    }, (res) => {
+    const reqOpts = buildPinnedHttpsRequestOptions(target, fullUrl, { method, headers, body });
+    const req = https.request(reqOpts, (res) => {
       const outHeaders = Object.create(null);
       for (const [k, v] of Object.entries(res.headers || {})) {
         if (v !== undefined) {

@@ -185,7 +185,7 @@ test('POST /mcp verify_receipt, explain_receipt, get_x402_verifier_info, and iss
 
 test('GET /mcp SSE probe -> 405, GET /mcp JSON -> 200, DELETE /mcp -> 405, batch & parse bounds', async () => {
   await withServer({ env: {} }, async (base) => {
-    // SSE listener probe must return 405 Method Not Allowed on stateless server
+    // SSE listener probe must return 405 Method Not Allowed on stateless serve
     const sseProbe = await fetch(`${base}/mcp`, {
       headers: { accept: 'text/event-stream' }
     });
@@ -201,7 +201,7 @@ test('GET /mcp SSE probe -> 405, GET /mcp JSON -> 200, DELETE /mcp -> 405, batch
     assert.equal(meta.transport, 'streamable-http');
     assert.equal(meta.stateless, true);
 
-    // Session teardown returns 405 on stateless server
+    // Session teardown returns 405 on stateless serve
     const delProbe = await fetch(`${base}/mcp`, { method: 'DELETE' });
     assert.equal(delProbe.status, 405);
 
@@ -247,5 +247,46 @@ test('GET /mcp SSE probe -> 405, GET /mcp JSON -> 200, DELETE /mcp -> 405, batch
     const mixedBody = await mixedRes.json();
     assert.equal(mixedBody.length, 1);
     assert.equal(mixedBody[0].id, 99);
+
+    // FERMI-PAX-R2-03: Non-conforming JSON-RPC id (object, array, boolean) rejected -32600 with id: null
+    for (const badId of [{ nested: [1, 2, 3] }, [1, 2], true]) {
+      const badIdRes = await fetch(`${base}/mcp`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: badId, method: 'ping' })
+      });
+      assert.equal(badIdRes.status, 200);
+      const badIdBody = await badIdRes.json();
+      assert.equal(badIdBody.id, null);
+      assert.equal(badIdBody.error.code, -32600);
+    }
+
+    // Even when jsonrpc !== '2.0', invalid object id is never echoed
+    const badVerObjId = await fetch(`${base}/mcp`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '1.0', id: { leak: true }, method: 'ping' })
+    });
+    const badVerBody = await badVerObjId.json();
+    assert.equal(badVerBody.id, null);
+    assert.equal(badVerBody.error.code, -32600);
+  });
+
+  // FERMI-PAX-R2-03: Malformed X402_RESOURCE_URL falls back cleanly to https://api.paxiom.org
+  await withServer({ env: { LIVE_VERIFY_ENABLED: 'true', X402_RESOURCE_URL: 'not-a-valid-url' } }, async (base) => {
+    const res = await fetch(`${base}/mcp`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'info-fallback',
+        method: 'tools/call',
+        params: { name: 'get_x402_verifier_info', arguments: {} }
+      })
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.result.isError, false);
+    assert.equal(body.result.structuredContent.baseUrl, 'https://api.paxiom.org');
   });
 });

@@ -174,9 +174,11 @@ export function buildX402PaymentRequirements(env = process.env, { route = 'verif
 }
 
 /**
- * Authorize a paid route via SaaS API key OR x402 facilitator verify+settle.
+ * Phase 1 of the monetized gate (`FERMI-PAX-R2-01` & `FERMI-PAX-R2-03`):
+ * Verify SaaS API key OR x402 payment header (`POST /verify` only — no on-chain debit yet)
+ * BEFORE running any outbound DNS lookup or precheck that could act as an unauthenticated oracle.
  */
-export async function authorizeMonetizedRequest(req, {
+export async function verifyMonetizedRequest(req, {
   env = process.env,
   fetchImpl = globalThis.fetch,
   route = 'verify-live'
@@ -184,13 +186,14 @@ export async function authorizeMonetizedRequest(req, {
   // 1. Check B2B SaaS API key first (zero per-call settlement latency)
   const apiKeyCheck = checkApiKey(req, env);
   if (apiKeyCheck.authorized) {
-    return { authorized: true, mode: 'api_key', responseHeaders: {} };
+    return { verified: true, authorized: true, mode: 'api_key', responseHeaders: {} };
   }
 
   const x402Enabled = env.X402_ENABLED === 'true' || env.X402_ENABLED === '1';
   if (!x402Enabled) {
     if (apiKeyCheck.configured) {
       return {
+        verified: false,
         authorized: false,
         status: 401,
         headers: {},
@@ -201,11 +204,30 @@ export async function authorizeMonetizedRequest(req, {
         }
       };
     }
-    return { authorized: true, mode: 'free_unmetered', responseHeaders: {} };
+    const allowBrowserFreeLive = env.ALLOW_BROWSER_FREE_LIVE === 'true' || env.ALLOW_BROWSER_FREE_LIVE === '1';
+    const hasBrowserOrigin = Boolean(req && req.headers && String(req.headers.origin || '').trim());
+    if (hasBrowserOrigin && !allowBrowserFreeLive) {
+      return {
+        verified: false,
+        authorized: false,
+        status: 403,
+        headers: {},
+        body: {
+          valid: false,
+          trustState: 'error',
+          error: {
+            code: 'cross_origin_unmetered_blocked',
+            message: 'Cross-origin browser requests to unmetered live endpoints are blocked; supply X-API-Key, enable X402_ENABLED, or set ALLOW_BROWSER_FREE_LIVE=true.'
+          }
+        }
+      };
+    }
+    return { verified: true, authorized: true, mode: 'free_unmetered', responseHeaders: {} };
   }
 
   if (!env.X402_PAY_TO) {
     return {
+      verified: false,
       authorized: false,
       status: 503,
       headers: {},
@@ -226,6 +248,7 @@ export async function authorizeMonetizedRequest(req, {
   if (!paymentHeader) {
     const encodedReq = Buffer.from(JSON.stringify(requirementsPayload), 'utf8').toString('base64');
     return {
+      verified: false,
       authorized: false,
       status: 402,
       headers: {
@@ -240,14 +263,18 @@ export async function authorizeMonetizedRequest(req, {
   try {
     decodedPaymentPayload = JSON.parse(Buffer.from(paymentHeader, 'base64').toString('utf8'));
   } catch {
+    decodedPaymentPayload = null;
+  }
+  if (!decodedPaymentPayload || typeof decodedPaymentPayload !== 'object' || Array.isArray(decodedPaymentPayload)) {
     return {
+      verified: false,
       authorized: false,
       status: 400,
       headers: {},
       body: {
         valid: false,
         trustState: 'error',
-        error: { code: 'invalid_payment_header', message: 'Payment header is not valid base64 JSON.' }
+        error: { code: 'invalid_payment_header', message: 'Payment header is not a valid base64 JSON object.' }
       }
     };
   }
@@ -261,7 +288,7 @@ export async function authorizeMonetizedRequest(req, {
   const verifyTimeoutMs = Number(env.FACILITATOR_VERIFY_TIMEOUT_MS) || DEFAULT_FACILITATOR_VERIFY_TIMEOUT_MS;
   const settleTimeoutMs = Number(env.FACILITATOR_SETTLE_TIMEOUT_MS) || DEFAULT_FACILITATOR_SETTLE_TIMEOUT_MS;
 
-  // Step 1: Facilitator /verify
+  // Step 1: Facilitator /verify (read-only signature & balance check)
   const verifyRes = await fetchWithTimeout(fetchImpl, `${facilitatorUrl}/verify`, {
     method: 'POST',
     headers: facHeaders,
@@ -273,6 +300,7 @@ export async function authorizeMonetizedRequest(req, {
   }, verifyTimeoutMs);
   if (!verifyRes.ok) {
     return {
+      verified: false,
       authorized: false,
       status: 502,
       headers: {},
@@ -287,6 +315,7 @@ export async function authorizeMonetizedRequest(req, {
   if (!verifyJson || !verifyJson.isValid) {
     const encodedReq = Buffer.from(JSON.stringify(requirementsPayload), 'utf8').toString('base64');
     return {
+      verified: false,
       authorized: false,
       status: 402,
       headers: { 'PAYMENT-REQUIRED': encodedReq },
@@ -297,7 +326,44 @@ export async function authorizeMonetizedRequest(req, {
     };
   }
 
-  // Step 2: Facilitator /settle (must succeed before serving paid verification)
+  return {
+    verified: true,
+    authorized: false,
+    mode: 'x402',
+    facilitatorUrl,
+    facHeaders,
+    settleTimeoutMs,
+    paymentRequirements,
+    paymentPayload: decodedPaymentPayload
+  };
+}
+
+/**
+ * Phase 2 of the monetized gate (`FERMI-PAX-R2-01`):
+ * Settle an already-verified x402 payment (`POST /settle`) ONLY after target/input validation passes.
+ */
+export async function settleMonetizedRequest(verifiedCtx, {
+  fetchImpl = globalThis.fetch
+} = {}) {
+  if (!verifiedCtx || !verifiedCtx.verified) {
+    return verifiedCtx;
+  }
+  if (verifiedCtx.mode !== 'x402') {
+    return {
+      authorized: true,
+      mode: verifiedCtx.mode,
+      responseHeaders: verifiedCtx.responseHeaders || {}
+    };
+  }
+
+  const {
+    facilitatorUrl,
+    facHeaders,
+    settleTimeoutMs,
+    paymentRequirements,
+    paymentPayload: decodedPaymentPayload
+  } = verifiedCtx;
+
   const settleRes = await fetchWithTimeout(fetchImpl, `${facilitatorUrl}/settle`, {
     method: 'POST',
     headers: facHeaders,
@@ -348,4 +414,17 @@ export async function authorizeMonetizedRequest(req, {
       'Access-Control-Expose-Headers': 'PAYMENT-REQUIRED, PAYMENT-RESPONSE, X-Paxiom-Receipt'
     }
   };
+}
+
+/**
+ * Authorize a paid route via SaaS API key OR x402 facilitator verify+settle.
+ */
+export async function authorizeMonetizedRequest(req, {
+  env = process.env,
+  fetchImpl = globalThis.fetch,
+  route = 'verify-live'
+} = {}) {
+  const verified = await verifyMonetizedRequest(req, { env, fetchImpl, route });
+  if (!verified.verified) return verified;
+  return settleMonetizedRequest(verified, { fetchImpl });
 }
