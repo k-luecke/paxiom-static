@@ -1,35 +1,31 @@
 # Listing copy — Paxiom Receipt Verifier
 
-Ready-to-paste copy for x402 Bazaar / awesome-x402 / MCP-registry style listings.
+Ready-to-paste copy for x402 Bazaar, `awesome-x402`, and MCP server registries.
 
-> **Readiness boundary (read first).** The public HTTP verifier is live at
-> `https://api.paxiom.org` (free offline verification at `POST /v1/receipt/verify`), and
-> the stdio MCP server ships at `standards/receipts/v0/mcp/server.mjs`. Directory
-> submissions for free API / MCP / open-spec registries can use `https://api.paxiom.org`
-> today. For **x402 Bazaar** specifically, enable `LIVE_VERIFY_ENABLED=true` +
-> `X402_ENABLED=true` on `POST /v1/receipt/verify-live` and complete at least one
-> settled facilitator transaction before claiming Bazaar indexing.
+> **Live production status.** Both routes are live at `https://api.paxiom.org`:
+> - **Free offline verification:** `POST https://api.paxiom.org/v1/receipt/verify` (`$0`, zero network calls)
+> - **Live x402 on-chain settlement verification + Paxiom counter-attestation:** `POST https://api.paxiom.org/v1/receipt/verify-live` (`$0.002` USDC on Base Mainnet via x402 or `X-API-Key`, discoverable at `https://api.paxiom.org/.well-known/x402.json` and public keys at `https://api.paxiom.org/.well-known/paxiom-keys.json`)
+> - **Local stdio MCP server:** `@paxiom/receipts` (`standards/receipts/v0/mcp/server.mjs`)
 
 ## Listing name
 ```
 Paxiom Receipt Verifier
 ```
 
-## Short description (Bazaar-ready, <500 chars)
+## Short description (Bazaar & directory ready, <500 chars)
 ```
-Verify proof-bound receipts for x402-paid APIs. Paxiom checks receipt schema, Ed25519 signature, request/output binding, and settlement status, and reports optional evidence fields — so agents and developers can understand what was paid for and delivered. Developer preview: offline verification. v0 reports settlement honestly (claimed vs checked) and does not yet perform onchain settlement or proof-source verification.
+Proof-bound Ed25519 receipts and on-chain USDC settlement verification for x402 and agentic APIs. Sellers attach free X-Paxiom-Receipt headers binding request, payment txHash, and SHA-256(output). Buyers verify offline for free (/v1/receipt/verify) or verify live Base/Base-Sepolia USDC settlement + receive a Paxiom Ed25519 counter-attestation via x402 (/v1/receipt/verify-live, $0.002 USDC).
 ```
-(Character count is under 500; trim the last sentence first if a stricter cap applies.)
 
 ## Tags
 ```
 x402
 receipt
 verification
-proof
-agent
+proof-of-delivery
+agent-payments
 settlement
-audit
+base
 MCP
 ```
 
@@ -38,52 +34,49 @@ MCP
 Developer Tools
 Security
 Verification
+Payments Infrastructure
 ```
 
-## What the verifier checks (v0)
-- receipt structure (schema conformance)
-- Ed25519 signature over the canonical signing input
-- output binding — delivered output hash vs `delivery.outputHash`
-- presence of request and payment binding fields
-- explicit, honest settlement status and evidence status → one deterministic trust state
+## What the verifier checks
+- **Free route (`POST /v1/receipt/verify`):**
+  - `paxiom.receipt.v0` schema conformance
+  - Ed25519 signature over deterministic RFC 8785-style canonical JSON
+  - Output binding (`SHA-256(canonical(output)) == delivery.outputHash`)
+  - Request & payment binding fields + honest settlement/evidence trust states
+- **Paid x402 / API-key route (`POST /v1/receipt/verify-live`):**
+  - Everything in offline verification, **plus** live Base / Base Sepolia JSON-RPC verification of the claimed USDC `Transfer` log (`status == 0x1`, confirmations, canonical USDC contract, recipient, and atomic amount)
+  - Emits a counter-signed `X-Paxiom-Receipt` verifiable offline against `https://api.paxiom.org/.well-known/paxiom-keys.json`
 
-## What v0 does NOT verify
-- onchain settlement (reported as `claimed_not_checked` / `verify_only`, never independently confirmed)
-- x402 facilitator responses
-- proof-source / evidence archive availability or validity
-- foreign (non-Paxiom) receipt dialects
-
-Claim boundary, stated plainly:
+## What v0 does NOT claim
 ```
-v0 verifies receipt integrity and output binding.
-v0 reports settlement and evidence status honestly.
-v0 does NOT independently check onchain settlement or proof-source evidence.
-Schema-valid is not receipt-verified.
+Offline verify (/v1/receipt/verify) reports claimed_not_checked honestly without touching RPC.
+Live verify (/v1/receipt/verify-live) verifies canonical Base & Base Sepolia USDC Transfer logs on-chain,
+but does not inspect off-chain proof archives or non-Paxiom receipt dialects.
 ```
 
 ## Example request / response
-Request (`POST /v1/receipt/verify`):
+Free offline request (`POST https://api.paxiom.org/v1/receipt/verify`):
 ```json
-{ "receipt": { "receiptVersion": "paxiom.receipt.v0", "payload": { }, "signature": { } }, "output": { } }
+{ "receipt": { "receiptVersion": "paxiom.receipt.v0", "payload": {}, "signature": {} }, "output": {} }
 ```
-Response (verified):
+Live on-chain verification (`POST https://api.paxiom.org/v1/receipt/verify-live` with x402 `PAYMENT-SIGNATURE` or `X-API-Key`):
 ```json
-{ "valid": true, "trustState": "verified", "checks": { "schema": "pass", "signature": "pass", "outputHash": "pass", "settlement": "verify_only", "proof": "not_provided" }, "receiptHash": "0x…", "summary": "Receipt verified: …" }
+{
+  "valid": true,
+  "trustState": "verified",
+  "checks": { "schema": "pass", "signature": "pass", "outputHash": "pass", "settlement": "verified_settled", "proof": "not_provided" },
+  "onchainSettlement": { "checked": true, "settled": true, "network": "eip155:8453", "transactionHash": "0x..." },
+  "counterAttestedReceipt": { "receiptVersion": "paxiom.receipt.v0", "payload": {}, "signature": {} }
+}
 ```
 
 ## Links to include in a listing
-- Live API: `https://api.paxiom.org` (`GET /version`, `GET /v1/receipt/demo`, `POST /v1/receipt/verify`)
-- API docs: `https://paxiom.org/api.html`
-- Spec & SDK: `https://paxiom.org/standards/receipts/v0/README.md`
+- Live API: `https://api.paxiom.org` (`GET /version`, `GET /v1/receipt/demo`, `POST /v1/receipt/verify`, `POST /v1/receipt/verify-live`)
+- x402 Discovery: `https://api.paxiom.org/.well-known/x402.json`
+- Verifier Public Keys: `https://api.paxiom.org/.well-known/paxiom-keys.json`
+- API Docs: `https://paxiom.org/api.html`
+- Spec & SDK (`@paxiom/receipts`): `https://paxiom.org/standards/receipts/v0/README.md`
 - OpenAPI: `https://paxiom.org/standards/receipts/v0/openapi.json`
-- Trust states: `https://paxiom.org/standards/receipts/v0/trust-states.md`
-- MCP server (stdio): `standards/receipts/v0/mcp/server.mjs` (`verify_receipt`, `explain_receipt`, `issue_receipt`)
+- Trust States: `https://paxiom.org/standards/receipts/v0/trust-states.md`
+- MCP Server (stdio): `standards/receipts/v0/mcp/server.mjs` (`verify_receipt`, `explain_receipt`, `issue_receipt`)
 - Repo: `https://github.com/k-luecke/paxiom-static`
-- Status: developer preview / alpha — **not** production standard
-
-## Future listing language (only after a public x402-settling runtime exists)
-```
-Once the endpoint is x402-gated and successfully settled through the facilitator,
-this route can be listed in the x402 Bazaar as a live x402 resource. Until then it
-is a public, free, offline receipt verifier and an open receipt specification.
-```

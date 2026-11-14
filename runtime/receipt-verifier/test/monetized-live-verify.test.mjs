@@ -248,7 +248,7 @@ test('RENDER=true auto-enables live x402 discovery, capabilities, and unpaid 402
   const discRes = await fetch(`${base}/.well-known/x402.json`);
   assert.equal(discRes.status, 200);
   const disc = await discRes.json();
-  assert.equal(disc.accepts[0].payTo, '0x35A9dd3fAe03ae16DD93A67d185569Ec0aA3E6c3');
+  assert.equal(disc.accepts[0].payTo, '0x9786F5532ab7d7556CDa53E3f6c2d937c9b87Bc4');
   assert.equal(disc.accepts[0].outputSchema.input.discoverable, true);
 
   const probe = await fetch(`${base}/v1/receipt/verify-live`, {

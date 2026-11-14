@@ -24,7 +24,7 @@ const RENDER_PRODUCTION_DEFAULTS = Object.freeze({
   X402_ENABLED: 'true',
   X402_NETWORK: 'base',
   X402_PRICE_ATOMIC: '2000',
-  X402_PAY_TO: '0x35A9dd3fAe03ae16DD93A67d185569Ec0aA3E6c3',
+  X402_PAY_TO: '0x9786F5532ab7d7556CDa53E3f6c2d937c9b87Bc4',
   X402_FACILITATOR_URL: 'https://facilitator.payai.network',
   X402_RESOURCE_URL: 'https://api.paxiom.org/v1/receipt/verify-live'
 });
