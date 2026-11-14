@@ -12,25 +12,29 @@ export const NETWORK_CONFIGS = {
   base: {
     chainIdHex: '0x2105',
     caip2: 'eip155:8453',
-    usdcAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+    usdcAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    eip712Name: 'USD Coin',
     rpcEnvVar: 'BASE_RPC_URL'
   },
   'eip155:8453': {
     chainIdHex: '0x2105',
     caip2: 'eip155:8453',
-    usdcAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+    usdcAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    eip712Name: 'USD Coin',
     rpcEnvVar: 'BASE_RPC_URL'
   },
   'base-sepolia': {
     chainIdHex: '0x14a34',
     caip2: 'eip155:84532',
-    usdcAddress: '0x036cbd53842c5426634e7929541ec2318f3dcf7e',
+    usdcAddress: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+    eip712Name: 'USDC',
     rpcEnvVar: 'BASE_SEPOLIA_RPC_URL'
   },
   'eip155:84532': {
     chainIdHex: '0x14a34',
     caip2: 'eip155:84532',
-    usdcAddress: '0x036cbd53842c5426634e7929541ec2318f3dcf7e',
+    usdcAddress: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+    eip712Name: 'USDC',
     rpcEnvVar: 'BASE_SEPOLIA_RPC_URL'
   }
 };
@@ -94,7 +98,7 @@ export async function verifyOnchainUsdcSettlement(receipt, {
   }
 
   if (String(payment.asset || '').toUpperCase() !== 'USDC' &&
-      String(payment.asset || '').toLowerCase() !== netCfg.usdcAddress) {
+      String(payment.asset || '').toLowerCase() !== netCfg.usdcAddress.toLowerCase()) {
     return {
       checked: false,
       settled: false,
@@ -156,7 +160,7 @@ export async function verifyOnchainUsdcSettlement(receipt, {
 
   const matchingTransfers = [];
   for (const log of logs) {
-    if (!log || String(log.address || '').toLowerCase() !== netCfg.usdcAddress) continue;
+    if (!log || String(log.address || '').toLowerCase() !== netCfg.usdcAddress.toLowerCase()) continue;
     const topics = Array.isArray(log.topics) ? log.topics : [];
     if (String(topics[0] || '').toLowerCase() !== ERC20_TRANSFER_TOPIC0) continue;
     const from = normalizeAddressFromTopic(topics[1]);

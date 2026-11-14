@@ -7,7 +7,7 @@
 import crypto from 'node:crypto';
 import { NETWORK_CONFIGS } from './onchain-settlement.mjs';
 
-const DEFAULT_FACILITATOR_URL = 'https://x402.org/facilitator';
+const DEFAULT_FACILITATOR_URL = 'https://facilitator.payai.network';
 
 function sha256Buf(str) {
   return crypto.createHash('sha256').update(String(str), 'utf8').digest();
@@ -60,6 +60,7 @@ export function buildX402PaymentRequirements(env = process.env) {
         asset: netCfg.usdcAddress,
         outputSchema: {
           input: {
+            discoverable: true,
             type: 'http',
             method: 'POST',
             bodyType: 'json',
@@ -77,7 +78,7 @@ export function buildX402PaymentRequirements(env = process.env) {
             counterAttestedReceipt: { type: 'object' }
           }
         },
-        extra: { name: 'USD Coin', version: '2' }
+        extra: { name: netCfg.eip712Name || 'USD Coin', version: '2' }
       }
     ]
   };
@@ -161,7 +162,7 @@ export async function authorizeMonetizedRequest(req, {
     };
   }
 
-  const facilitatorUrl = String(env.CDP_FACILITATOR_URL || DEFAULT_FACILITATOR_URL).replace(/\/+$/, '');
+  const facilitatorUrl = String(env.X402_FACILITATOR_URL || env.CDP_FACILITATOR_URL || DEFAULT_FACILITATOR_URL).replace(/\/+$/, '');
   const facHeaders = { 'content-type': 'application/json' };
   if (env.FACILITATOR_BEARER_TOKEN) {
     facHeaders.authorization = `Bearer ${env.FACILITATOR_BEARER_TOKEN}`;
