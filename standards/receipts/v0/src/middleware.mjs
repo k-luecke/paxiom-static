@@ -132,6 +132,18 @@ export function withPaxiomReceipt(handler, options = {}) {
   };
 }
 
+const SAFE_HOST_RE = /^(?:[A-Za-z0-9.-]+|\[[0-9a-fA-F:]+\])(?::\d{1,5})?$/;
+
+function resolveSafeOrigin(baseUrl, req) {
+  if (baseUrl) return String(baseUrl).replace(/\/+$/, '');
+  const rawHost = req && req.headers && typeof req.headers.host === 'string' ? req.headers.host.trim() : '';
+  if (rawHost && SAFE_HOST_RE.test(rawHost)) {
+    const scheme = req && req.socket && req.socket.encrypted ? 'https' : 'http';
+    return `${scheme}://${rawHost}`;
+  }
+  return 'http://localhost';
+}
+
 /**
  * Node `http` / Express / Connect middleware `(req, res, next)` that signs 2xx
  * JSON responses (`res.json(...)` or buffered `res.end(jsonString)`) and attaches
@@ -153,24 +165,38 @@ export function createReceiptMiddleware(options = {}) {
   if (!issuer || !issuer.name || !issuer.keyId) {
     throw new TypeError('createReceiptMiddleware requires options.issuer { name, keyId }');
   }
+  if (typeof resolvePayment === 'function' && resolvePayment.constructor && resolvePayment.constructor.name === 'AsyncFunction') {
+    throw new TypeError(
+      'createReceiptMiddleware requires a synchronous resolvePayment callback (use withPaxiomReceipt for async callbacks, or pre-populate req.paxiomPayment / res.locals.paxiomPayment before res.end)'
+    );
+  }
 
   return function paxiomReceiptMiddleware(req, res, next) {
     const reqChunks = [];
+    let capturedBytes = 0;
     let reqCapped = false;
     const MAX_CAPTURE = 256 * 1024;
 
     if (req.body !== undefined && typeof req.body === 'object' && req.body !== null) {
       // Express body-parser already parsed req.body
-      reqChunks.push(Buffer.from(JSON.stringify(req.body), 'utf8'));
+      const serialized = Buffer.from(JSON.stringify(req.body), 'utf8');
+      if (serialized.length > MAX_CAPTURE) {
+        reqCapped = true;
+      } else {
+        reqChunks.push(serialized);
+        capturedBytes = serialized.length;
+      }
     } else if (typeof req.on === 'function') {
       req.on('data', (c) => {
         if (reqCapped) return;
         const buf = Buffer.isBuffer(c) ? c : Buffer.from(c);
-        if (buf.length + reqChunks.reduce((n, b) => n + b.length, 0) > MAX_CAPTURE) {
+        if (capturedBytes + buf.length > MAX_CAPTURE) {
           reqCapped = true;
+          reqChunks.length = 0;
           return;
         }
         reqChunks.push(buf);
+        capturedBytes += buf.length;
       });
     }
 
@@ -188,58 +214,69 @@ export function createReceiptMiddleware(options = {}) {
         resChunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, encoding));
       }
       try {
-        const status = res.statusCode || 200;
-        const ctHeader = String(res.getHeader('content-type') || '').split(';')[0].trim().toLowerCase();
-        if (!res.headersSent && status >= 200 && status < 300 && (!ctHeader || ctHeader === 'application/json')) {
-          const fullBody = Buffer.concat(resChunks).toString('utf8');
-          const parsedOutput = JSON.parse(fullBody);
-          const host = req.headers && req.headers.host ? `http://${req.headers.host}` : 'http://localhost';
-          const resource = `${baseUrl || host}${req.originalUrl || req.url || '/'}`;
-          const paymentSigHeader = extractHeader(req.headers, 'payment-signature')
-            || extractHeader(req.headers, 'x-payment')
-            || '';
-          const paymentResHeader = String(res.getHeader('payment-response') || res.getHeader('x-payment-response') || '');
-          const txHash = tryDecodePaymentResponseTx(paymentResHeader);
-          const dynamicPayment = typeof resolvePayment === 'function'
-            ? resolvePayment({ req, res, txHash })
-            : {};
+        // Never sign a truncated request-body prefix if capture exceeded MAX_CAPTURE
+        if (!reqCapped) {
+          const status = res.statusCode || 200;
+          const ctHeader = String(res.getHeader('content-type') || '').split(';')[0].trim().toLowerCase();
+          if (!res.headersSent && status >= 200 && status < 300 && (!ctHeader || ctHeader === 'application/json')) {
+            const fullBody = Buffer.concat(resChunks).toString('utf8');
+            const parsedOutput = JSON.parse(fullBody);
+            const origin = resolveSafeOrigin(baseUrl, req);
+            const rawPath = String(req.originalUrl || req.url || '/');
+            const safePath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
+            const resource = `${origin}${safePath}`;
+            const paymentSigHeader = extractHeader(req.headers, 'payment-signature')
+              || extractHeader(req.headers, 'x-payment')
+              || '';
+            const paymentResHeader = String(res.getHeader('payment-response') || res.getHeader('x-payment-response') || '');
+            const txHash = tryDecodePaymentResponseTx(paymentResHeader);
+            const preResolved = (req && req.paxiomPayment) || (res && res.locals && res.locals.paxiomPayment) || null;
+            const dynamicPayment = typeof resolvePayment === 'function'
+              ? resolvePayment({ req, res, txHash })
+              : (preResolved || {});
 
-          const { receipt, receiptHeader } = issueReceipt({
-            privateKey,
-            issuer,
-            service: {
-              name: serviceName || issuer.name,
-              resource,
-              method: req.method || 'GET'
-            },
-            request: {
-              method: req.method || 'GET',
-              resource,
-              body: reqChunks.length > 0 ? Buffer.concat(reqChunks) : ''
-            },
-            payment: {
-              scheme: 'x402',
-              network: 'base',
-              asset: 'USDC',
-              amountAtomic: '0',
-              amountDisplay: '0',
-              paymentPayload: paymentSigHeader || 'none',
-              ...paymentDefaults,
-              ...(dynamicPayment || {}),
-              settlement: {
-                status: txHash ? 'claimed_not_checked' : (paymentSigHeader ? 'verify_only' : 'not_required'),
-                transactionHash: txHash,
-                checkedByPaxiom: false,
-                ...(paymentDefaults.settlement || {}),
-                ...(dynamicPayment && dynamicPayment.settlement ? dynamicPayment.settlement : {})
-              }
-            },
-            output: parsedOutput,
-            mimeType: ctHeader || 'application/json'
-          });
-          res.setHeader('X-Paxiom-Receipt', receiptHeader);
-          if (typeof onReceipt === 'function') {
-            Promise.resolve(onReceipt(receipt)).catch(() => {});
+            // Refuse to spread a Promise (which would silently sign amountAtomic: "0")
+            if (dynamicPayment && typeof dynamicPayment.then === 'function') {
+              return origEnd(chunk, encoding, cb);
+            }
+
+            const { receipt, receiptHeader } = issueReceipt({
+              privateKey,
+              issuer,
+              service: {
+                name: serviceName || issuer.name,
+                resource,
+                method: req.method || 'GET'
+              },
+              request: {
+                method: req.method || 'GET',
+                resource,
+                body: reqChunks.length > 0 ? Buffer.concat(reqChunks) : ''
+              },
+              payment: {
+                scheme: 'x402',
+                network: 'base',
+                asset: 'USDC',
+                amountAtomic: '0',
+                amountDisplay: '0',
+                paymentPayload: paymentSigHeader || 'none',
+                ...paymentDefaults,
+                ...(dynamicPayment || {}),
+                settlement: {
+                  status: txHash ? 'claimed_not_checked' : (paymentSigHeader ? 'verify_only' : 'not_required'),
+                  transactionHash: txHash,
+                  checkedByPaxiom: false,
+                  ...(paymentDefaults.settlement || {}),
+                  ...(dynamicPayment && dynamicPayment.settlement ? dynamicPayment.settlement : {})
+                }
+              },
+              output: parsedOutput,
+              mimeType: ctHeader || 'application/json'
+            });
+            res.setHeader('X-Paxiom-Receipt', receiptHeader);
+            if (typeof onReceipt === 'function') {
+              Promise.resolve(onReceipt(receipt)).catch(() => {});
+            }
           }
         }
       } catch {

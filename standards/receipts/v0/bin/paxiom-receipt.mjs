@@ -18,24 +18,42 @@ Exit codes:
   2  usage / IO error
 `;
 
+const VALUE_FLAGS = new Set([
+  '--output', '-o', '--trusted-paxiom-key', '--key', '--key-id',
+  '--issuer-name', '--service-name', '--resource', '--method', '--tx',
+  '--amount-atomic', '--amount-display', '--network', '--out'
+]);
+
+function requireFlagValue(argv, index, flag) {
+  const val = argv[index + 1];
+  if (val === undefined || val === '' || val.startsWith('-')) {
+    process.stderr.write(`Missing value for flag ${flag}\n\n${USAGE}`);
+    process.exit(2);
+  }
+  return val;
+}
+
 function parseArgs(argv) {
-  const args = { _: [], json: false, trustedKeys: [] };
+  const args = { _: [], json: false, trustedKeys: [], hasOutFlag: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '--output' || a === '-o') args.output = argv[++i];
-    else if (a === '--json') args.json = true;
-    else if (a === '--trusted-paxiom-key') args.trustedKeys.push(argv[++i]);
-    else if (a === '--key') args.key = argv[++i];
-    else if (a === '--key-id') args.keyId = argv[++i];
-    else if (a === '--issuer-name') args.issuerName = argv[++i];
-    else if (a === '--service-name') args.serviceName = argv[++i];
-    else if (a === '--resource') args.resource = argv[++i];
-    else if (a === '--method') args.method = argv[++i];
-    else if (a === '--tx') args.tx = argv[++i];
-    else if (a === '--amount-atomic') args.amountAtomic = argv[++i];
-    else if (a === '--amount-display') args.amountDisplay = argv[++i];
-    else if (a === '--network') args.network = argv[++i];
-    else if (a === '--out') args.out = argv[++i];
+    if (VALUE_FLAGS.has(a)) {
+      const val = requireFlagValue(argv, i, a);
+      i++;
+      if (a === '--output' || a === '-o') args.output = val;
+      else if (a === '--trusted-paxiom-key') args.trustedKeys.push(val);
+      else if (a === '--key') args.key = val;
+      else if (a === '--key-id') args.keyId = val;
+      else if (a === '--issuer-name') args.issuerName = val;
+      else if (a === '--service-name') args.serviceName = val;
+      else if (a === '--resource') args.resource = val;
+      else if (a === '--method') args.method = val;
+      else if (a === '--tx') args.tx = val;
+      else if (a === '--amount-atomic') args.amountAtomic = val;
+      else if (a === '--amount-display') args.amountDisplay = val;
+      else if (a === '--network') args.network = val;
+      else if (a === '--out') { args.out = val; args.hasOutFlag = true; }
+    } else if (a === '--json') args.json = true;
     else if (a === '-h' || a === '--help') args.help = true;
     else args._.push(a);
   }

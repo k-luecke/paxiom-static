@@ -7,6 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { verifyReceipt, RECEIPT_VERSION } from '../src/verify.mjs';
 
 const MAX_BODY_BYTES = 256 * 1024; // 256 KiB — receipts are small; hash big outputs locally.
+const MAX_DRAIN_AFTER_413 = 64 * 1024; // bounded post-413 drain window before destroying socket
 const EX = new URL('../examples/', import.meta.url);
 const demoReceipt = JSON.parse(readFileSync(new URL('valid.receipt.json', EX), 'utf8'));
 const demoOutput = JSON.parse(readFileSync(new URL('valid.output.json', EX), 'utf8'));
@@ -17,9 +18,14 @@ const CORS = {
   'Access-Control-Allow-Headers': 'content-type'
 };
 
-function send(res, status, body) {
+function send(res, status, body, extraHeaders = {}) {
   const json = JSON.stringify(body);
-  res.writeHead(status, { 'content-type': 'application/json', ...CORS });
+  res.writeHead(status, {
+    'content-type': 'application/json',
+    'x-content-type-options': 'nosniff',
+    ...CORS,
+    ...extraHeaders
+  });
   res.end(json);
 }
 
@@ -33,10 +39,14 @@ function readBody(req) {
     let tooLarge = false;
     const chunks = [];
     req.on('data', (c) => {
-      if (tooLarge) return; // keep draining but discard, so the socket closes cleanly
       size += c.length;
+      if (tooLarge) {
+        if (size > MAX_BODY_BYTES + MAX_DRAIN_AFTER_413) req.destroy();
+        return;
+      }
       if (size > MAX_BODY_BYTES) {
         tooLarge = true;
+        chunks.length = 0;
         reject(Object.assign(new Error('body too large'), { code: 'body_too_large' }));
         return;
       }
@@ -54,7 +64,7 @@ async function handleVerify(req, res) {
   } catch (err) {
     if (err.code === 'body_too_large') {
       const e = errorResult('body_too_large', `Request body exceeds ${MAX_BODY_BYTES / 1024} KiB`, 413);
-      return send(res, e.status, e.body);
+      return send(res, e.status, e.body, { connection: 'close' });
     }
     const e = errorResult('read_error', 'Failed to read request body', 400);
     return send(res, e.status, e.body);
@@ -84,7 +94,7 @@ async function handleVerify(req, res) {
 }
 
 export function createServer() {
-  return http.createServer(async (req, res) => {
+  const srv = http.createServer(async (req, res) => {
     const { method } = req;
     const path = (req.url || '').split('?')[0];
 
@@ -113,6 +123,10 @@ export function createServer() {
     const e = errorResult('not_found', `No route for ${method} ${path}`, 404);
     return send(res, e.status, e.body);
   });
+  srv.requestTimeout = 15000;
+  srv.headersTimeout = 10000;
+  srv.keepAliveTimeout = 5000;
+  return srv;
 }
 
 // Run directly: node standards/receipts/v0/server/server.mjs

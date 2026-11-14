@@ -15,7 +15,7 @@ export function explain(result) {
   lines.push(`${result.valid ? '✓' : '✗'} ${mark}`);
   lines.push('');
   for (const [key, label] of Object.entries(LABEL)) {
-    if (key in result.checks) lines.push(`  ${label.padEnd(16)} ${result.checks[key]}`);
+    if (result.checks && Object.hasOwn(result.checks, key)) lines.push(`  ${label.padEnd(16)} ${result.checks[key]}`);
   }
   lines.push('');
   if (result.receiptHash) lines.push(`  receiptHash      ${result.receiptHash}`);

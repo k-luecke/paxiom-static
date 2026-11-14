@@ -5,9 +5,21 @@
 // Zero external dependencies. Disabled by default (`X402_ENABLED=false` and empty
 // `PAXIOM_API_KEYS`) so Phase 5D free preview deployments require zero secrets.
 import crypto from 'node:crypto';
-import { NETWORK_CONFIGS } from './onchain-settlement.mjs';
+import { NETWORK_CONFIGS, getSupportedNetworkConfig } from './onchain-settlement.mjs';
 
 const DEFAULT_FACILITATOR_URL = 'https://facilitator.payai.network';
+const DEFAULT_FACILITATOR_VERIFY_TIMEOUT_MS = 10000;
+const DEFAULT_FACILITATOR_SETTLE_TIMEOUT_MS = 15000;
+
+async function fetchWithTimeout(fetchImpl, url, init, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetchImpl(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 function sha256Buf(str) {
   return crypto.createHash('sha256').update(String(str), 'utf8').digest();
@@ -39,7 +51,7 @@ export function checkApiKey(req, env = process.env) {
 
 export function buildX402PaymentRequirements(env = process.env) {
   const network = env.X402_NETWORK || 'base';
-  const netCfg = NETWORK_CONFIGS[String(network).toLowerCase()] || NETWORK_CONFIGS.base;
+  const netCfg = getSupportedNetworkConfig(String(network)) || NETWORK_CONFIGS.base;
   const priceAtomic = String(env.X402_PRICE_ATOMIC || '2000'); // default $0.002 USDC (6 decimals)
   const payTo = env.X402_PAY_TO || '';
   const resource = env.X402_RESOURCE_URL || 'https://api.paxiom.org/v1/receipt/verify-live';
@@ -168,8 +180,11 @@ export async function authorizeMonetizedRequest(req, {
     facHeaders.authorization = `Bearer ${env.FACILITATOR_BEARER_TOKEN}`;
   }
 
+  const verifyTimeoutMs = Number(env.FACILITATOR_VERIFY_TIMEOUT_MS) || DEFAULT_FACILITATOR_VERIFY_TIMEOUT_MS;
+  const settleTimeoutMs = Number(env.FACILITATOR_SETTLE_TIMEOUT_MS) || DEFAULT_FACILITATOR_SETTLE_TIMEOUT_MS;
+
   // Step 1: Facilitator /verify
-  const verifyRes = await fetchImpl(`${facilitatorUrl}/verify`, {
+  const verifyRes = await fetchWithTimeout(fetchImpl, `${facilitatorUrl}/verify`, {
     method: 'POST',
     headers: facHeaders,
     body: JSON.stringify({
@@ -177,7 +192,7 @@ export async function authorizeMonetizedRequest(req, {
       paymentPayload: decodedPaymentPayload,
       paymentRequirements
     })
-  });
+  }, verifyTimeoutMs);
   if (!verifyRes.ok) {
     return {
       authorized: false,
@@ -205,7 +220,7 @@ export async function authorizeMonetizedRequest(req, {
   }
 
   // Step 2: Facilitator /settle (must succeed before serving paid verification)
-  const settleRes = await fetchImpl(`${facilitatorUrl}/settle`, {
+  const settleRes = await fetchWithTimeout(fetchImpl, `${facilitatorUrl}/settle`, {
     method: 'POST',
     headers: facHeaders,
     body: JSON.stringify({
@@ -213,7 +228,7 @@ export async function authorizeMonetizedRequest(req, {
       paymentPayload: decodedPaymentPayload,
       paymentRequirements
     })
-  });
+  }, settleTimeoutMs);
   if (!settleRes.ok) {
     return {
       authorized: false,

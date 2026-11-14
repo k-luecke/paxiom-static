@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { canonicalize, signingInput } from './canonicalize.mjs';
+import { canonicalize, signingInput, MAX_DEPTH } from './canonicalize.mjs';
 import { sha256Hex, hashCanonical } from './hash.mjs';
 
 export const RECEIPT_VERSION = 'paxiom.receipt.v0';
@@ -10,29 +10,47 @@ const schema = JSON.parse(
 );
 
 const ISO_DATETIME_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/;
+const STRICT_BASE64_RE = /^[A-Za-z0-9+/]+={0,2}$/;
 
 function isValidIsoDateTime(value) {
   if (!ISO_DATETIME_RE.test(value)) return false;
   return !Number.isNaN(Date.parse(value));
 }
 
+function strictDecodeBase64(value, expectedByteLength, label) {
+  if (typeof value !== 'string' || value.length === 0 || value.length % 4 !== 0 || !STRICT_BASE64_RE.test(value)) {
+    throw new Error(`${label} must be canonical base64`);
+  }
+  const raw = Buffer.from(value, 'base64');
+  if (raw.length !== expectedByteLength || raw.toString('base64') !== value) {
+    throw new Error(`${label} must decode to ${expectedByteLength} canonical bytes`);
+  }
+  return raw;
+}
+
 // --- minimal draft-07 validator (covers exactly the constructs this schema uses) ---
-function validateSchema(node, sch, path, root) {
+function validateSchema(node, sch, path, root, depth = 0) {
+  if (depth > MAX_DEPTH) return [`${path}: nesting exceeds max depth ${MAX_DEPTH}`];
   const errs = [];
   const kind = (v) => (Array.isArray(v) ? 'array' : v === null ? 'null' : typeof v);
   switch (sch.type) {
     case 'object':
       if (kind(node) !== 'object') return [`${path}: expected object`];
-      for (const r of sch.required || []) if (!(r in node)) errs.push(`${path}.${r}: required`);
-      if (sch.additionalProperties === false)
-        for (const k of Object.keys(node))
-          if (!(sch.properties && k in sch.properties)) errs.push(`${path}.${k}: not allowed`);
-      for (const [k, s] of Object.entries(sch.properties || {}))
-        if (k in node) errs.push(...validateSchema(node[k], s, `${path}.${k}`, root));
+      for (const r of sch.required || []) {
+        if (!Object.hasOwn(node, r)) errs.push(`${path}.${r}: required`);
+      }
+      if (sch.additionalProperties === false) {
+        for (const k of Object.keys(node)) {
+          if (!(sch.properties && Object.hasOwn(sch.properties, k))) errs.push(`${path}.${k}: not allowed`);
+        }
+      }
+      for (const [k, s] of Object.entries(sch.properties || {})) {
+        if (Object.hasOwn(node, k)) errs.push(...validateSchema(node[k], s, `${path}.${k}`, root, depth + 1));
+      }
       break;
     case 'array':
       if (kind(node) !== 'array') return [`${path}: expected array`];
-      if (sch.items) node.forEach((it, i) => errs.push(...validateSchema(it, sch.items, `${path}[${i}]`, root)));
+      if (sch.items) node.forEach((it, i) => errs.push(...validateSchema(it, sch.items, `${path}[${i}]`, root, depth + 1)));
       break;
     case 'string':
       if (typeof node !== 'string') return [`${path}: expected string`];
@@ -50,22 +68,20 @@ function validateSchema(node, sch, path, root) {
       break;
   }
   if (sch.$ref) {
-    const def = sch.$ref.split('/').slice(1).reduce((o, k) => o[k], root);
-    errs.push(...validateSchema(node, def, path, root));
+    const def = sch.$ref.split('/').slice(1).reduce((o, k) => (o && Object.hasOwn(o, k) ? o[k] : undefined), root);
+    if (!def) return [`${path}: unresolved $ref ${sch.$ref}`];
+    errs.push(...validateSchema(node, def, path, root, depth + 1));
   }
   if (sch.oneOf) {
-    const passes = sch.oneOf.filter((s) => validateSchema(node, s, path, root).length === 0).length;
+    const passes = sch.oneOf.filter((s) => validateSchema(node, s, path, root, depth + 1).length === 0).length;
     if (passes !== 1) errs.push(`${path}: oneOf matched ${passes}`);
   }
   return errs;
 }
 
 function ed25519PublicKey(publicKeyB64) {
-  // v0 encoding: base64 of the raw 32-byte Ed25519 public key.
-  const raw = Buffer.from(publicKeyB64, 'base64');
-  if (raw.length !== 32) {
-    throw new Error('Ed25519 publicKey must decode to 32 raw bytes');
-  }
+  // v0 encoding: canonical base64 of the raw 32-byte Ed25519 public key.
+  const raw = strictDecodeBase64(publicKeyB64, 32, 'Ed25519 publicKey');
   return crypto.createPublicKey({
     format: 'jwk',
     key: { kty: 'OKP', crv: 'Ed25519', x: raw.toString('base64url') }
@@ -131,8 +147,9 @@ export function verifyReceipt(receipt, opts = {}) {
   }
   let sigOk = false;
   try {
-    sigOk = crypto.verify(null, input, ed25519PublicKey(receipt.signature.publicKey),
-      Buffer.from(receipt.signature.value, 'base64'));
+    const pubKeyObj = ed25519PublicKey(receipt.signature.publicKey);
+    const sigBuf = strictDecodeBase64(receipt.signature.value, 64, 'Ed25519 signature.value');
+    sigOk = crypto.verify(null, input, pubKeyObj, sigBuf);
   } catch {
     sigOk = false;
   }
@@ -199,6 +216,11 @@ export function verifyReceipt(receipt, opts = {}) {
   if (p.payment.settlement.checkedByPaxiom && !isTrustedPaxiomSigner) {
     return done('settlement_claimed_not_checked',
       'Receipt asserts checkedByPaxiom=true, but signer is not in trustedPaxiomPublicKeys.');
+  }
+  if ((st === 'not_required' || st === 'disabled' || st === 'verify_only') &&
+      p.payment.settlement.transactionHash !== null) {
+    return done('settlement_claimed_not_checked',
+      'Receipt carries a non-null settlement.transactionHash under a non-settled status that this offline verifier did not check.');
   }
   const paxiomCounterVerified = st === 'verified_settled' && p.payment.settlement.checkedByPaxiom && isTrustedPaxiomSigner;
   if (st === 'claimed_not_checked' || (st === 'verified_settled' && !paxiomCounterVerified)) {

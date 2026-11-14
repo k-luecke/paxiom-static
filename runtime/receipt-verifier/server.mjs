@@ -9,10 +9,19 @@ import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { verifyReceipt, RECEIPT_VERSION } from '../../standards/receipts/v0/src/verify.mjs';
 import { issueReceipt, publicKeyFromPrivateKey } from '../../standards/receipts/v0/src/issue.mjs';
-import { verifyOnchainUsdcSettlement } from './onchain-settlement.mjs';
-import { authorizeMonetizedRequest, buildX402PaymentRequirements } from './x402-gate.mjs';
+import {
+  verifyOnchainUsdcSettlement,
+  getSupportedNetworkConfig,
+  EVM_ADDRESS_RE
+} from './onchain-settlement.mjs';
+import {
+  authorizeMonetizedRequest,
+  buildX402PaymentRequirements,
+  checkApiKey
+} from './x402-gate.mjs';
 
 const MAX_BODY_BYTES = 256 * 1024; // 256 KiB
+const MAX_DRAIN_AFTER_413 = 64 * 1024; // bounded post-413 drain window before destroying socket
 const EX = new URL('../../standards/receipts/v0/examples/', import.meta.url);
 const demoReceipt = JSON.parse(readFileSync(new URL('valid.receipt.json', EX), 'utf8'));
 const demoOutput = JSON.parse(readFileSync(new URL('valid.output.json', EX), 'utf8'));
@@ -90,7 +99,12 @@ const CORS = {
 };
 
 function send(res, status, body, extraHeaders = {}) {
-  res.writeHead(status, { 'content-type': 'application/json', ...CORS, ...extraHeaders });
+  res.writeHead(status, {
+    'content-type': 'application/json',
+    'x-content-type-options': 'nosniff',
+    ...CORS,
+    ...extraHeaders
+  });
   res.end(JSON.stringify(body));
 }
 
@@ -102,10 +116,14 @@ function readBody(req) {
     let tooLarge = false;
     const chunks = [];
     req.on('data', (c) => {
-      if (tooLarge) return;
       size += c.length;
+      if (tooLarge) {
+        if (size > MAX_BODY_BYTES + MAX_DRAIN_AFTER_413) req.destroy();
+        return;
+      }
       if (size > MAX_BODY_BYTES) {
         tooLarge = true;
+        chunks.length = 0;
         reject(Object.assign(new Error('body too large'), { code: 'body_too_large' }));
         return;
       }
@@ -124,7 +142,7 @@ async function parseVerifyPayload(req, res) {
     raw = await readBody(req);
   } catch (err) {
     if (err.code === 'body_too_large') {
-      send(res, 413, errBody('body_too_large', `Request body exceeds ${MAX_BODY_BYTES / 1024} KiB`));
+      send(res, 413, errBody('body_too_large', `Request body exceeds ${MAX_BODY_BYTES / 1024} KiB`), { connection: 'close' });
       return null;
     }
     send(res, 400, errBody('read_error', 'Failed to read request body'));
@@ -154,6 +172,34 @@ function getConfiguredPaxiomKey(env) {
   } catch {
     return null;
   }
+}
+
+function precheckLiveSettlementEligibility(receipt) {
+  const payment = receipt && receipt.payload && receipt.payload.payment;
+  if (!payment || !payment.settlement || !payment.settlement.transactionHash) {
+    return {
+      eligible: false,
+      reason: 'missing_transaction_hash',
+      detail: 'Receipt does not contain a settlement.transactionHash to verify on-chain.'
+    };
+  }
+  const netCfg = getSupportedNetworkConfig(String(payment.network || ''));
+  if (!netCfg) {
+    return {
+      eligible: false,
+      reason: 'unsupported_network',
+      detail: `Unsupported payment.network "${payment.network}" for live on-chain verification.`
+    };
+  }
+  if (String(payment.asset || '').toUpperCase() !== 'USDC' &&
+      String(payment.asset || '').toLowerCase() !== netCfg.usdcAddress.toLowerCase()) {
+    return {
+      eligible: false,
+      reason: 'unsupported_asset',
+      detail: `Unsupported payment.asset "${payment.asset}"; v0 live verifier checks canonical USDC.`
+    };
+  }
+  return { eligible: true, netCfg };
 }
 
 async function handleOfflineVerify(req, res, env) {
@@ -200,7 +246,7 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
     rawBodyText = await readBody(req);
   } catch (err) {
     if (err.code === 'body_too_large') {
-      return send(res, 413, errBody('body_too_large', `Request body exceeds ${MAX_BODY_BYTES / 1024} KiB`));
+      return send(res, 413, errBody('body_too_large', `Request body exceeds ${MAX_BODY_BYTES / 1024} KiB`), { connection: 'close' });
     }
     return send(res, 400, errBody('read_error', 'Failed to read request body'));
   }
@@ -225,15 +271,25 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
     return send(res, 400, errBody('missing_receipt', 'Request must be a JSON object with a "receipt" field'));
   }
 
-  let auth;
-  try {
-    auth = await authorizeMonetizedRequest(req, { env, fetchImpl });
-  } catch (err) {
-    return send(res, 502, errBody('payment_gate_error', String((err && err.message) || err)));
+  // Unpaid/unauthenticated callers receive 402/401 immediately before prechecks
+  if (!hasPaymentOrAuthHeader || (!isFlagEnabled(env.X402_ENABLED) && !checkApiKey(req, env).authorized)) {
+    let authEarly;
+    try {
+      authEarly = await authorizeMonetizedRequest(req, { env, fetchImpl });
+    } catch {
+      return send(res, 502, errBody('payment_gate_error', 'Failed to contact x402 payment facilitator.'));
+    }
+    if (!authEarly.authorized) {
+      return send(res, authEarly.status, authEarly.body, authEarly.headers);
+    }
   }
-  if (!auth.authorized) {
-    return send(res, auth.status, auth.body, auth.headers);
+
+  const rawExpectedPayTo = Object.hasOwn(parsed, 'expectedPayTo') ? parsed.expectedPayTo : null;
+  if (rawExpectedPayTo !== null && rawExpectedPayTo !== undefined && rawExpectedPayTo !== '' &&
+      (typeof rawExpectedPayTo !== 'string' || !EVM_ADDRESS_RE.test(rawExpectedPayTo))) {
+    return send(res, 400, errBody('invalid_expected_pay_to', 'expectedPayTo must be a 0x-prefixed 20-byte EVM hex address.'));
   }
+  const normalizedExpectedPayTo = rawExpectedPayTo ? String(rawExpectedPayTo).toLowerCase() : null;
 
   const hasOutput = Object.prototype.hasOwnProperty.call(parsed, 'output') && parsed.output !== undefined;
   const paxiomKey = getConfiguredPaxiomKey(env);
@@ -242,20 +298,46 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
     ...(paxiomKey ? { trustedPaxiomPublicKeys: [paxiomKey.publicKey] } : {})
   };
 
+  // Run deterministic offline verification & chain-support eligibility BEFORE settling x402 payment
+  // so paying callers are never debited on-chain for malformed, expired, or unsupported receipts.
   let baseResult;
   try {
     baseResult = verifyReceipt(parsed.receipt, verifyOpts);
-  } catch (err) {
-    return send(res, 500, errBody('verifier_error', String((err && err.message) || err)), auth.responseHeaders);
+  } catch {
+    return send(res, 500, errBody('verifier_error', 'Offline receipt verification failed unexpectedly.'));
   }
 
-  // If offline check already failed on structure, signature, expiry, or output mismatch,
-  // return immediately without making unnecessary RPC calls.
-  if (baseResult.trustState !== 'settlement_claimed_not_checked' && baseResult.trustState !== 'verified') {
+  if (baseResult.trustState !== 'settlement_claimed_not_checked') {
     return send(res, 200, {
       ...baseResult,
       onchainSettlement: { checked: false, settled: false, reason: 'offline_verification_not_eligible' }
-    }, auth.responseHeaders);
+    });
+  }
+
+  const precheck = precheckLiveSettlementEligibility(parsed.receipt);
+  if (!precheck.eligible) {
+    return send(res, 200, {
+      ...baseResult,
+      valid: false,
+      trustState: 'settlement_claimed_not_checked',
+      onchainSettlement: {
+        checked: false,
+        settled: false,
+        reason: precheck.reason,
+        detail: precheck.detail
+      },
+      summary: precheck.detail
+    });
+  }
+
+  let auth;
+  try {
+    auth = await authorizeMonetizedRequest(req, { env, fetchImpl });
+  } catch {
+    return send(res, 502, errBody('payment_gate_error', 'Failed to contact x402 payment facilitator.'));
+  }
+  if (!auth.authorized) {
+    return send(res, auth.status, auth.body, auth.headers);
   }
 
   let onchain;
@@ -263,13 +345,13 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
     onchain = await verifyOnchainUsdcSettlement(parsed.receipt, {
       env,
       fetchImpl,
-      expectedPayTo: parsed.expectedPayTo || null,
+      expectedPayTo: normalizedExpectedPayTo,
       minConfirmations: Number(env.MIN_CONFIRMATIONS) || 1
     });
-  } catch (err) {
+  } catch {
     return send(res, 502, errBody(
       'onchain_rpc_error',
-      `Failed to query chain RPC for settlement verification: ${(err && err.message) || err}`
+      'Failed to query chain RPC for settlement verification.'
     ), auth.responseHeaders);
   }
 
@@ -291,9 +373,31 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
   const finalTrustState = hasOutput ? 'verified' : 'valid_signature_only';
   const extraHeaders = { ...auth.responseHeaders };
   let counterAttestedReceipt = null;
+  let counterAttestationSkippedReason = null;
 
-  if (paxiomKey) {
+  // Strict counter-attestation guard (FERMI-PAX-01):
+  // Only sign a portable Paxiom root counter-attestation when the caller explicitly pinned
+  // `expectedPayTo` (verified against the on-chain USDC Transfer recipient) and the input
+  // receipt was not already a Paxiom counter-attestation, preserving seller & transfer provenance.
+  const canCounterAttest = Boolean(
+    paxiomKey &&
+    normalizedExpectedPayTo &&
+    onchain.recipientChecked &&
+    !parsed.receipt.payload.payment.settlement.checkedByPaxiom
+  );
+
+  if (canCounterAttest) {
     const orig = parsed.receipt.payload;
+    const origSig = parsed.receipt.signature;
+    const provenanceUri =
+      `urn:paxiom:settlement-attestation:v0:${onchain.network}:${onchain.transactionHash}` +
+      `?from=${onchain.matchedTransfer.from}` +
+      `&to=${onchain.matchedTransfer.to}` +
+      `&amountAtomic=${onchain.matchedTransfer.amountAtomic}` +
+      `&origKeyId=${encodeURIComponent(origSig.keyId)}` +
+      `&origPubKey=${encodeURIComponent(origSig.publicKey)}` +
+      (orig.issuer && orig.issuer.uri ? `&origIssuerUri=${encodeURIComponent(orig.issuer.uri)}` : '');
+
     const issued = issueReceipt({
       privateKey: paxiomKey.privateKeyPem,
       issuer: {
@@ -318,12 +422,14 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
           type: 'attestation',
           status: 'verified',
           hash: baseResult.receiptHash,
-          uri: orig.issuer.uri || null
+          uri: provenanceUri
         }
       ]
     });
     counterAttestedReceipt = issued.receipt;
     extraHeaders['X-Paxiom-Receipt'] = issued.receiptHeader;
+  } else if (paxiomKey && !normalizedExpectedPayTo) {
+    counterAttestationSkippedReason = 'expectedPayTo_required_for_counter_attestation';
   }
 
   return send(res, 200, {
@@ -336,6 +442,7 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
     receiptHash: baseResult.receiptHash,
     onchainSettlement: onchain,
     ...(counterAttestedReceipt ? { counterAttestedReceipt } : {}),
+    ...(counterAttestationSkippedReason ? { counterAttestationSkippedReason } : {}),
     summary: finalTrustState === 'verified'
       ? `Receipt and on-chain USDC settlement (${onchain.transactionHash} on ${onchain.network}) verified.`
       : `Signature and on-chain USDC settlement (${onchain.transactionHash}) verified; supply output to verify outputHash binding.`
@@ -395,7 +502,11 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
 export const handle = createHandler();
 
 export function createServer(options = {}) {
-  return http.createServer(createHandler(options));
+  const srv = http.createServer(createHandler(options));
+  srv.requestTimeout = 20000;
+  srv.headersTimeout = 10000;
+  srv.keepAliveTimeout = 5000;
+  return srv;
 }
 
 export default handle;

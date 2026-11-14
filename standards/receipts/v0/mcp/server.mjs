@@ -14,8 +14,9 @@ import { explain } from '../src/explain.mjs';
 export const MCP_PROTOCOL_VERSION = '2024-11-05';
 export const SERVER_INFO = {
   name: 'paxiom-receipt-mcp',
-  version: '0.1.1'
+  version: '0.1.2'
 };
+const MAX_JSONRPC_LINE_BYTES = 1024 * 1024; // 1 MiB stdio line safety bound
 
 export const TOOLS = [
   {
@@ -48,7 +49,12 @@ export const TOOLS = [
       required: ['receipt'],
       properties: {
         receipt: { type: 'object' },
-        output: {}
+        output: {},
+        trustedPaxiomPublicKeys: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Optional base64 32-byte Ed25519 public keys trusted to assert checkedByPaxiom=true.'
+        }
       }
     }
   },
@@ -145,7 +151,11 @@ export function handleJsonRpcMessage(msg, env = process.env) {
             content: [{ type: 'text', text: 'Missing required object argument: receipt' }]
           });
         }
-        const opts = Object.prototype.hasOwnProperty.call(args, 'output') ? { output: args.output } : {};
+        const opts = {};
+        if (Object.prototype.hasOwnProperty.call(args, 'output')) opts.output = args.output;
+        if (Array.isArray(args.trustedPaxiomPublicKeys)) {
+          opts.trustedPaxiomPublicKeys = args.trustedPaxiomPublicKeys;
+        }
         const result = verifyReceipt(args.receipt, opts);
         return jsonRpcResult(id, {
           isError: false,
@@ -216,6 +226,10 @@ export function handleJsonRpcMessage(msg, env = process.env) {
 export function startStdioServer({ input = process.stdin, output = process.stdout, env = process.env } = {}) {
   const rl = readline.createInterface({ input, crlfDelay: Infinity });
   rl.on('line', (line) => {
+    if (Buffer.byteLength(line, 'utf8') > MAX_JSONRPC_LINE_BYTES) {
+      output.write(JSON.stringify(jsonRpcError(null, -32600, 'JSON-RPC message exceeds 1 MiB line limit')) + '\n');
+      return;
+    }
     const trimmed = line.trim();
     if (!trimmed || trimmed.toLowerCase().startsWith('content-length:')) return;
     let parsed;
