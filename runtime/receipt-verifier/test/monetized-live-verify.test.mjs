@@ -233,3 +233,29 @@ test('x402 facilitator verify -> settle -> serve flow + never charges malformed 
     assert.equal(body.valid, true);
   });
 });
+
+test('RENDER=true auto-enables live x402 discovery, capabilities, and unpaid 402 probe response', async (t) => {
+  const srv = createServer({ env: { RENDER: 'true' } });
+  await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+  t.after(() => srv.close());
+  const { port } = srv.address();
+  const base = `http://127.0.0.1:${port}`;
+
+  const ver = await fetch(`${base}/version`).then((r) => r.json());
+  assert.equal(ver.x402Enabled, true);
+  assert.equal(ver.capabilities.liveSettlementVerification, true);
+
+  const discRes = await fetch(`${base}/.well-known/x402.json`);
+  assert.equal(discRes.status, 200);
+  const disc = await discRes.json();
+  assert.equal(disc.accepts[0].payTo, '0x35A9dd3fAe03ae16DD93A67d185569Ec0aA3E6c3');
+  assert.equal(disc.accepts[0].outputSchema.input.discoverable, true);
+
+  const probe = await fetch(`${base}/v1/receipt/verify-live`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{}'
+  });
+  assert.equal(probe.status, 402);
+  assert.ok(probe.headers.get('payment-required'));
+});

@@ -17,6 +17,29 @@ const EX = new URL('../../standards/receipts/v0/examples/', import.meta.url);
 const demoReceipt = JSON.parse(readFileSync(new URL('valid.receipt.json', EX), 'utf8'));
 const demoOutput = JSON.parse(readFileSync(new URL('valid.output.json', EX), 'utf8'));
 
+const RENDER_PRODUCTION_DEFAULTS = Object.freeze({
+  LIVE_VERIFY_ENABLED: 'true',
+  BASE_RPC_URL: 'https://mainnet.base.org',
+  BASE_SEPOLIA_RPC_URL: 'https://sepolia.base.org',
+  X402_ENABLED: 'true',
+  X402_NETWORK: 'base',
+  X402_PRICE_ATOMIC: '2000',
+  X402_PAY_TO: '0x35A9dd3fAe03ae16DD93A67d185569Ec0aA3E6c3',
+  X402_FACILITATOR_URL: 'https://facilitator.payai.network',
+  X402_RESOURCE_URL: 'https://api.paxiom.org/v1/receipt/verify-live'
+});
+
+export function resolveRuntimeEnv(rawEnv = process.env) {
+  if (rawEnv && (rawEnv.RENDER === 'true' || rawEnv.PAXIOM_PRODUCTION_DEFAULTS === 'true')) {
+    const merged = { ...RENDER_PRODUCTION_DEFAULTS };
+    for (const [k, v] of Object.entries(rawEnv)) {
+      if (v !== undefined && v !== '') merged[k] = v;
+    }
+    return merged;
+  }
+  return rawEnv;
+}
+
 function buildVersionPayload(env = process.env) {
   const liveEnabled = isFlagEnabled(env.LIVE_VERIFY_ENABLED) || isFlagEnabled(env.X402_ENABLED);
   const x402Enabled = isFlagEnabled(env.X402_ENABLED);
@@ -39,6 +62,12 @@ function buildVersionPayload(env = process.env) {
       'proofSourceEvidence',
       'archiveAvailability'
     ],
+    capabilities: {
+      offlineVerification: true,
+      liveSettlementVerification: liveEnabled,
+      x402PaymentGating: x402Enabled,
+      counterAttestation: Boolean(getConfiguredPaxiomKey(env))
+    },
     endpoints: {
       freeOfflineVerify: 'POST /v1/receipt/verify',
       ...(liveEnabled ? { liveOnchainVerify: 'POST /v1/receipt/verify-live' } : {})
@@ -151,10 +180,50 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
     ));
   }
 
-  // Validate request JSON BEFORE authorizing/settling payment so callers are never
-  // billed for malformed requests.
-  const parsed = await parseVerifyPayload(req, res);
-  if (!parsed) return;
+  const hasPaymentOrAuthHeader = Boolean(
+    req.headers && (
+      req.headers['payment-signature'] ||
+      req.headers['x-payment'] ||
+      req.headers['x-api-key'] ||
+      req.headers.authorization
+    )
+  );
+
+  // If x402 gating is enabled and caller sent an unpaid discovery probe (GET or empty/{} POST),
+  // return the 402 PaymentRequirements challenge immediately for x402 clients & Bazaar indexers.
+  let rawBodyText = '';
+  if (req.method === 'GET' && !hasPaymentOrAuthHeader && isFlagEnabled(env.X402_ENABLED) && env.X402_PAY_TO) {
+    const auth = await authorizeMonetizedRequest(req, { env, fetchImpl });
+    return send(res, auth.status, auth.body, auth.headers);
+  }
+  try {
+    rawBodyText = await readBody(req);
+  } catch (err) {
+    if (err.code === 'body_too_large') {
+      return send(res, 413, errBody('body_too_large', `Request body exceeds ${MAX_BODY_BYTES / 1024} KiB`));
+    }
+    return send(res, 400, errBody('read_error', 'Failed to read request body'));
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(rawBodyText || '{}');
+  } catch {
+    // Malformed JSON is ALWAYS rejected 400 before touching facilitator /settle.
+    return send(res, 400, errBody('invalid_json', 'Request body is not valid JSON'));
+  }
+
+  if ((!parsed || typeof parsed !== 'object' || !parsed.receipt) &&
+      !hasPaymentOrAuthHeader &&
+      isFlagEnabled(env.X402_ENABLED) &&
+      env.X402_PAY_TO) {
+    const auth = await authorizeMonetizedRequest(req, { env, fetchImpl });
+    return send(res, auth.status, auth.body, auth.headers);
+  }
+
+  if (typeof parsed !== 'object' || parsed === null || !parsed.receipt) {
+    return send(res, 400, errBody('missing_receipt', 'Request must be a JSON object with a "receipt" field'));
+  }
 
   let auth;
   try {
@@ -273,7 +342,8 @@ async function handleLiveVerify(req, res, { env, fetchImpl }) {
   }, extraHeaders);
 }
 
-export function createHandler({ env = process.env, fetchImpl = globalThis.fetch } = {}) {
+export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThis.fetch } = {}) {
+  const env = resolveRuntimeEnv(rawEnv);
   return async function handleRequest(req, res) {
     const { method } = req;
     const path = (req.url || '').split('?')[0];
@@ -314,7 +384,7 @@ export function createHandler({ env = process.env, fetchImpl = globalThis.fetch 
     if (method === 'POST' && path === '/v1/receipt/verify') {
       return handleOfflineVerify(req, res, env);
     }
-    if (method === 'POST' && path === '/v1/receipt/verify-live') {
+    if ((method === 'POST' || method === 'GET') && path === '/v1/receipt/verify-live') {
       return handleLiveVerify(req, res, { env, fetchImpl });
     }
     return send(res, 404, errBody('not_found', `No route for ${method} ${path}`));
