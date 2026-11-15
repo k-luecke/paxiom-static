@@ -28,13 +28,29 @@ export const REMOTE_MCP_SERVER_INFO = Object.freeze({
   version: '0.1.3'
 });
 
+const TRUST_STATE_ENUM = [
+  'verified',
+  'valid_signature_only',
+  'settlement_claimed_not_checked',
+  'unsupported_format',
+  'schema_invalid',
+  'invalid_signature',
+  'expired',
+  'output_hash_mismatch',
+  'settlement_failed',
+  'proof_invalid',
+  'proof_unavailable',
+  'error'
+];
+
 export const REMOTE_MCP_TOOLS = Object.freeze([
   {
     name: 'verify_receipt',
+    title: 'Verify Paxiom Receipt (Structured JSON)',
     description:
-      'Verify a paxiom.receipt.v0 cryptographic receipt (schema, Ed25519 signature, output SHA-256 JCS binding, expiry, and honest settlement/proof trust state). Deterministic and free; automatically trusts the host Paxiom counter-attestation public key when trustedPaxiomPublicKeys is omitted.',
+      'Validate an Ed25519-signed paxiom.receipt.v0 API delivery receipt (JSON Schema, Ed25519 signature, RFC 8785 JCS SHA-256 output binding, expiry, and settlement trust state) and return structured JSON fields. Use this instead of explain_receipt when automated code branches on valid or trustState; use explain_receipt when presenting human-readable guidance, or get_x402_verifier_info for live on-chain settlement endpoints. Deterministic, offline, and free with no auth or rate limits: invalid or tampered receipts return isError=false with valid=false and the failing trustState, omitting output caps trustState at valid_signature_only, and omitting trustedPaxiomPublicKeys trusts the host Paxiom counter-attestation key by default.',
     annotations: {
-      title: 'Verify Paxiom Receipt (Offline)',
+      title: 'Verify Paxiom Receipt (Structured JSON)',
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -46,25 +62,63 @@ export const REMOTE_MCP_TOOLS = Object.freeze([
       properties: {
         receipt: {
           type: 'object',
-          description: 'Parsed paxiom.receipt.v0 JSON object (or decoded X-Paxiom-Receipt header).'
+          description: 'Parsed paxiom.receipt.v0 JSON envelope (or base64url-decoded X-Paxiom-Receipt HTTP header).'
         },
         output: {
-          description: 'Optional delivered API response JSON to verify payment-to-output SHA-256 hash binding.'
+          description: 'Optional delivered HTTP response JSON body; required to verify SHA-256 JCS outputHash binding and reach trustState="verified".'
         },
         trustedPaxiomPublicKeys: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Optional base64 32-byte Ed25519 public keys trusted to assert checkedByPaxiom=true.'
+          description: 'Optional canonical base64 32-byte Ed25519 public keys trusted to assert settlement.checkedByPaxiom=true (defaults to the host Paxiom key).'
+        }
+      }
+    },
+    outputSchema: {
+      type: 'object',
+      required: ['valid', 'trustState', 'checks', 'receiptHash', 'summary'],
+      properties: {
+        valid: {
+          type: 'boolean',
+          description: 'True only when trustState is "verified" (valid signature, matching outputHash, non-expired, and confirmed or verify_only settlement).'
+        },
+        trustState: {
+          type: 'string',
+          enum: TRUST_STATE_ENUM,
+          description: 'Machine-readable verification outcome classification.'
+        },
+        checks: {
+          type: 'object',
+          required: ['schema', 'signature', 'outputHash', 'requestBinding', 'paymentBinding', 'settlement', 'proof'],
+          properties: {
+            schema: { type: 'string', description: 'Draft-07 schema check status (pass, fail, not_checked).' },
+            signature: { type: 'string', description: 'Ed25519 signature and keyId consistency status (pass, fail, not_checked).' },
+            outputHash: { type: 'string', description: 'RFC 8785 JCS SHA-256 payload hash check (pass, fail, not_provided, not_checked, error).' },
+            requestBinding: { type: 'string', description: 'Request method and resource binding check (pass, not_checked).' },
+            paymentBinding: { type: 'string', description: 'Payment metadata binding check (pass, not_checked).' },
+            settlement: { type: 'string', description: 'Reported settlement state from the receipt payload.' },
+            proof: { type: 'string', description: 'Evidence array status summary (provided, not_provided, invalid, unavailable).' }
+          },
+          description: 'Per-stage cryptographic and structural check statuses.'
+        },
+        receiptHash: {
+          type: ['string', 'null'],
+          description: 'Hex SHA-256 digest of the canonical signing input, or null if schema validation failed.'
+        },
+        summary: {
+          type: 'string',
+          description: 'One-sentence diagnostic summary of the verification outcome.'
         }
       }
     }
   },
   {
     name: 'explain_receipt',
+    title: 'Format Human-Readable Receipt Explanation',
     description:
-      'Verify a paxiom.receipt.v0 receipt and return a concise human/agent-readable trust-state breakdown and next-action guidance.',
+      'Format a plain-text trust breakdown and next-action remediation checklist for an Ed25519-signed paxiom.receipt.v0 API delivery receipt. Use this instead of verify_receipt when displaying a readable verdict to a user or operator; use verify_receipt when code needs raw check fields for programmatic gating, or get_x402_verifier_info to discover live Base USDC settlement endpoints. Runs deterministically offline for free with no auth or rate limits: tampered, expired, or unconfirmed receipts return isError=false with an actionable diagnostic explanation rather than throwing, and omitting trustedPaxiomPublicKeys trusts the host Paxiom counter-attestation key by default. Pass output with the delivered HTTP response body to check SHA-256 JCS payload binding (omitting output caps trustState at valid_signature_only).',
     annotations: {
-      title: 'Explain Paxiom Receipt Verdict',
+      title: 'Format Human-Readable Receipt Explanation',
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -76,25 +130,49 @@ export const REMOTE_MCP_TOOLS = Object.freeze([
       properties: {
         receipt: {
           type: 'object',
-          description: 'Parsed paxiom.receipt.v0 JSON object.'
+          description: 'Parsed paxiom.receipt.v0 JSON envelope (or base64url-decoded X-Paxiom-Receipt HTTP header).'
         },
         output: {
-          description: 'Optional delivered API response JSON.'
+          description: 'Optional delivered HTTP response JSON body; pass whenever available so SHA-256 JCS payload binding is evaluated alongside the Ed25519 signature.'
         },
         trustedPaxiomPublicKeys: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Optional base64 32-byte Ed25519 public keys trusted to assert checkedByPaxiom=true.'
+          description: 'Optional canonical base64 32-byte Ed25519 public keys trusted to assert settlement.checkedByPaxiom=true (defaults to the host Paxiom key).'
+        }
+      }
+    },
+    outputSchema: {
+      type: 'object',
+      required: ['explanation', 'valid', 'trustState', 'receiptHash'],
+      properties: {
+        explanation: {
+          type: 'string',
+          description: 'Multi-line human-readable trust breakdown, failed/skipped check details, and next-step remediation guidance.'
+        },
+        valid: {
+          type: 'boolean',
+          description: 'True only when trustState reaches "verified".'
+        },
+        trustState: {
+          type: 'string',
+          enum: TRUST_STATE_ENUM,
+          description: 'Underlying verification state explained in the report.'
+        },
+        receiptHash: {
+          type: ['string', 'null'],
+          description: 'Hex SHA-256 digest of the canonical signing input, or null when schema validation failed.'
         }
       }
     }
   },
   {
     name: 'get_x402_verifier_info',
+    title: 'Get Paxiom x402 Verifier & Preflight Metadata',
     description:
-      'Return Paxiom Receipt Verifier service metadata, published Ed25519 counter-attestation public keys, and x402 Base USDC payment terms for live on-chain settlement verification ($0.002 USDC) and pre-payment seller preflight ($0.01 USDC).',
+      'Retrieve Paxiom Receipt Verifier service discovery metadata, published Ed25519 counter-attestation public keys, free HTTP endpoints, and x402 Base USDC payment terms for live on-chain settlement verification ($0.002 USDC) and pre-payment seller preflight ($0.01 USDC). Call this before invoking paid HTTP routes (/v1/receipt/verify-live or /v1/x402/preflight) to inspect current pricing, facilitator URL, and payTo recipient; use verify_receipt or explain_receipt instead when evaluating a receipt you already hold. Stateless, read-only, and free with no authentication or rate limits.',
     annotations: {
-      title: 'Get Paxiom x402 Verifier & Preflight Info',
+      title: 'Get Paxiom x402 Verifier & Preflight Metadata',
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -103,6 +181,32 @@ export const REMOTE_MCP_TOOLS = Object.freeze([
     inputSchema: {
       type: 'object',
       properties: {}
+    },
+    outputSchema: {
+      type: 'object',
+      required: ['service', 'receiptVersion', 'baseUrl', 'mcpEndpoint', 'npmPackage', 'trustedPaxiomKeys', 'freeEndpoints', 'paidX402Endpoints'],
+      properties: {
+        service: { type: 'string', description: 'Canonical verifier service identifier ("paxiom-receipt-verifier").' },
+        receiptVersion: { type: 'string', description: 'Supported Paxiom receipt schema version ("paxiom.receipt.v0").' },
+        baseUrl: { type: 'string', description: 'HTTPS origin of the verifier API.' },
+        mcpEndpoint: { type: 'string', description: 'Streamable-HTTP MCP endpoint URL.' },
+        npmPackage: {
+          type: 'object',
+          description: 'Local zero-dependency npm SDK and stdio MCP package details (@paxiom/receipts).'
+        },
+        trustedPaxiomKeys: {
+          type: 'array',
+          description: 'Published Ed25519 root counter-attestation public keys ({ keyId, algorithm, publicKey }).'
+        },
+        freeEndpoints: {
+          type: 'object',
+          description: 'Unauthenticated free HTTP routes for offline verification, demo fixtures, and .well-known discovery.'
+        },
+        paidX402Endpoints: {
+          type: ['object', 'null'],
+          description: 'Active x402 Base USDC payment terms, payTo address, facilitator URL, and priced route descriptors, or null if disabled.'
+        }
+      }
     }
   }
 ]);
@@ -319,9 +423,16 @@ export function handleRemoteMcpMessage(msg, env = {}, onMcpEvent = null) {
         }
         const verdict = verifyReceipt(args.receipt, opts);
         if (toolName === 'explain_receipt') {
+          const explanation = explain(verdict);
           return jsonRpcResult(id, {
             isError: false,
-            content: [{ type: 'text', text: explain(verdict) }]
+            content: [{ type: 'text', text: explanation }],
+            structuredContent: {
+              explanation,
+              valid: verdict.valid,
+              trustState: verdict.trustState,
+              receiptHash: verdict.receiptHash
+            }
           });
         }
         return jsonRpcResult(id, {

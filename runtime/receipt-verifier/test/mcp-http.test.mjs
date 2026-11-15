@@ -132,7 +132,7 @@ test('POST /mcp verify_receipt, explain_receipt, get_x402_verifier_info, and iss
     assert.equal(b2.result.structuredContent.valid, true);
     assert.equal(b2.result.structuredContent.trustState, 'verified');
 
-    // 3. explain_receipt returns human/agent text
+    // 3. explain_receipt returns human/agent text + structuredContent matching outputSchema
     const v3 = await fetch(`${base}/mcp`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -149,6 +149,9 @@ test('POST /mcp verify_receipt, explain_receipt, get_x402_verifier_info, and iss
     const b3 = await v3.json();
     assert.equal(b3.result.isError, false);
     assert.match(b3.result.content[0].text, /verified/i);
+    assert.equal(b3.result.structuredContent.valid, true);
+    assert.equal(b3.result.structuredContent.trustState, 'verified');
+    assert.equal(b3.result.structuredContent.explanation, b3.result.content[0].text);
 
     // 4. get_x402_verifier_info returns live discovery routes + public key
     const v4 = await fetch(`${base}/mcp`, {

@@ -27,71 +27,158 @@ function isValidJsonRpcId(id) {
   return id === null || typeof id === 'string' || (typeof id === 'number' && Number.isFinite(id));
 }
 
+const TRUST_STATE_ENUM = [
+  'verified',
+  'valid_signature_only',
+  'settlement_claimed_not_checked',
+  'unsupported_format',
+  'schema_invalid',
+  'invalid_signature',
+  'expired',
+  'output_hash_mismatch',
+  'settlement_failed',
+  'proof_invalid',
+  'proof_unavailable',
+  'error'
+];
+
 export const TOOLS = [
   {
     name: 'verify_receipt',
-    description: 'Verify a paxiom.receipt.v0 cryptographic receipt (schema, Ed25519 signature, output SHA-256 JCS binding, expiry, and honest settlement/proof trust state). Offline and deterministic.',
+    title: 'Verify Paxiom Receipt (Structured JSON)',
+    description:
+      'Validate an Ed25519-signed paxiom.receipt.v0 API delivery receipt (JSON Schema, Ed25519 signature, RFC 8785 JCS SHA-256 output binding, expiry, and settlement trust state) and return structured JSON fields. Use this instead of explain_receipt when automated code branches on valid or trustState; use explain_receipt for human-readable prose, or verify_receipt_live to confirm an on-chain Base USDC Transfer log. Deterministic and offline: invalid receipts return isError=false with valid=false and the failing trustState, and omitting output caps trustState at valid_signature_only.',
+    annotations: {
+      title: 'Verify Paxiom Receipt (Structured JSON)',
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
     inputSchema: {
       type: 'object',
       required: ['receipt'],
       properties: {
         receipt: {
           type: 'object',
-          description: 'Parsed paxiom.receipt.v0 JSON object.'
+          description: 'Parsed paxiom.receipt.v0 JSON envelope (or base64url-decoded X-Paxiom-Receipt header).'
         },
         output: {
-          description: 'Optional delivered API response JSON to verify payment-to-output hash binding.'
+          description: 'Optional delivered HTTP response JSON body; required to verify SHA-256 JCS outputHash binding and reach trustState="verified".'
         },
         trustedPaxiomPublicKeys: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Optional base64 32-byte Ed25519 public keys trusted to assert checkedByPaxiom=true.'
+          description: 'Optional canonical base64 32-byte Ed25519 public keys trusted to assert settlement.checkedByPaxiom=true.'
         }
+      }
+    },
+    outputSchema: {
+      type: 'object',
+      required: ['valid', 'trustState', 'checks', 'receiptHash', 'summary'],
+      properties: {
+        valid: { type: 'boolean', description: 'True only when trustState is "verified".' },
+        trustState: { type: 'string', enum: TRUST_STATE_ENUM, description: 'Machine-readable verification outcome classification.' },
+        checks: { type: 'object', description: 'Per-stage schema, signature, outputHash, binding, settlement, and proof statuses.' },
+        receiptHash: { type: ['string', 'null'], description: 'Hex SHA-256 digest of the canonical signing input, or null if schema validation failed.' },
+        summary: { type: 'string', description: 'One-sentence diagnostic summary of the verification outcome.' }
       }
     }
   },
   {
     name: 'explain_receipt',
-    description: 'Verify a paxiom.receipt.v0 receipt and return a concise human/agent-readable trust-state breakdown.',
+    title: 'Format Human-Readable Receipt Explanation',
+    description:
+      'Format a plain-text trust breakdown and next-action remediation checklist for an Ed25519-signed paxiom.receipt.v0 API delivery receipt. Use this instead of verify_receipt when displaying a readable verdict to a user or operator; use verify_receipt when code needs raw check fields for programmatic gating. Runs deterministically offline with no network calls: tampered, expired, or unconfirmed receipts return isError=false with an actionable diagnostic explanation rather than throwing. Pass output with the delivered HTTP response body to evaluate SHA-256 JCS payload binding (omitting output caps trustState at valid_signature_only).',
+    annotations: {
+      title: 'Format Human-Readable Receipt Explanation',
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
     inputSchema: {
       type: 'object',
       required: ['receipt'],
       properties: {
-        receipt: { type: 'object' },
-        output: {},
+        receipt: {
+          type: 'object',
+          description: 'Parsed paxiom.receipt.v0 JSON envelope (or base64url-decoded X-Paxiom-Receipt header).'
+        },
+        output: {
+          description: 'Optional delivered HTTP response JSON body; pass whenever available so SHA-256 JCS payload binding is evaluated alongside the Ed25519 signature.'
+        },
         trustedPaxiomPublicKeys: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Optional base64 32-byte Ed25519 public keys trusted to assert checkedByPaxiom=true.'
+          description: 'Optional canonical base64 32-byte Ed25519 public keys trusted to assert settlement.checkedByPaxiom=true.'
         }
+      }
+    },
+    outputSchema: {
+      type: 'object',
+      required: ['explanation', 'valid', 'trustState', 'receiptHash'],
+      properties: {
+        explanation: { type: 'string', description: 'Multi-line human-readable trust breakdown and next-step remediation guidance.' },
+        valid: { type: 'boolean', description: 'True only when trustState reaches "verified".' },
+        trustState: { type: 'string', enum: TRUST_STATE_ENUM, description: 'Underlying verification state explained in the report.' },
+        receiptHash: { type: ['string', 'null'], description: 'Hex SHA-256 digest of the canonical signing input, or null when schema validation failed.' }
       }
     }
   },
   {
     name: 'issue_receipt',
-    description: 'Sign and issue a schema-valid paxiom.receipt.v0 Ed25519 receipt binding request, payment, and delivered output. Uses PAXIOM_ISSUER_PRIVATE_KEY_PEM from env, or mints an ephemeral demo key when demoEphemeralKey=true.',
+    title: 'Sign & Issue Local Paxiom Receipt',
+    description:
+      'Sign and issue a schema-valid paxiom.receipt.v0 Ed25519 delivery receipt locally, binding HTTP request metadata, payment claim, and RFC 8785 JCS SHA-256 output hash. Use this on a seller or agent host to mint X-Paxiom-Receipt headers offline; never sends private keys over the network. Reads PAXIOM_ISSUER_PRIVATE_KEY_PEM from the local environment, or generates a one-time ephemeral key only when demoEphemeralKey=true (returns isError=true if neither is set).',
+    annotations: {
+      title: 'Sign & Issue Local Paxiom Receipt',
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false
+    },
     inputSchema: {
       type: 'object',
       required: ['issuerName', 'keyId', 'resource', 'output'],
       properties: {
-        issuerName: { type: 'string' },
-        keyId: { type: 'string' },
-        serviceName: { type: 'string' },
-        resource: { type: 'string' },
-        method: { type: 'string', default: 'POST' },
-        requestBody: {},
-        payment: { type: 'object' },
-        output: {},
+        issuerName: { type: 'string', description: 'Human-readable seller or service issuer name.' },
+        keyId: { type: 'string', description: 'Signer key identifier written into payload.issuer.keyId and signature.keyId.' },
+        serviceName: { type: 'string', description: 'Optional service display name (defaults to issuerName).' },
+        resource: { type: 'string', description: 'Canonical HTTPS URL or URI of the delivered API resource.' },
+        method: { type: 'string', default: 'POST', description: 'HTTP method bound to the receipt (defaults to POST).' },
+        requestBody: { description: 'Optional parsed JSON request body to bind via SHA-256 JCS hash.' },
+        payment: { type: 'object', description: 'Optional payment and settlement claim metadata (defaults to status="verify_only").' },
+        output: { description: 'Delivered JSON response payload whose RFC 8785 JCS SHA-256 digest is signed into delivery.outputHash.' },
         demoEphemeralKey: {
           type: 'boolean',
-          description: 'Set true only for testing when PAXIOM_ISSUER_PRIVATE_KEY_PEM is not configured.'
+          description: 'Set true only for testing to mint an ephemeral Ed25519 key when PAXIOM_ISSUER_PRIVATE_KEY_PEM is unset.'
         }
+      }
+    },
+    outputSchema: {
+      type: 'object',
+      required: ['receiptVersion', 'receipt', 'receiptHeader'],
+      properties: {
+        receiptVersion: { type: 'string', description: 'Issued receipt format version ("paxiom.receipt.v0").' },
+        receipt: { type: 'object', description: 'Signed paxiom.receipt.v0 JSON object.' },
+        receiptHeader: { type: 'string', description: 'Base64url-encoded receipt ready to attach as the X-Paxiom-Receipt HTTP header.' },
+        note: { type: 'string', description: 'Present when signed with a temporary demo key (demoEphemeralKey=true).' }
       }
     }
   },
   {
     name: 'preflight_x402_seller',
-    description: 'Scan an untrusted https:// x402 seller endpoint before signing an EIP-3009 payment ($0.01 USDC via x402 or PAXIOM_API_KEY). Checks canonical Circle Base USDC asset address, EIP-712 domain, payTo manifest bait-and-switch, budget cap, and X-Paxiom-Receipt readiness.',
+    title: 'Preflight Untrusted x402 Seller Endpoint',
+    description:
+      'Scan an untrusted https:// x402 seller URL before signing an EIP-3009 USDC authorization ($0.01 USDC via paymentHeader or PAXIOM_API_KEY against api.paxiom.org). Use this prior to paying an unfamiliar x402 endpoint to catch spoofed non-Circle USDC contracts, invalid EIP-712 domains, payTo manifest bait-and-switch, budget overruns, or missing X-Paxiom-Receipt support; returns paymentRequired=true with 402 terms if neither PAXIOM_API_KEY nor paymentHeader is supplied.',
+    annotations: {
+      title: 'Preflight Untrusted x402 Seller Endpoint',
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     inputSchema: {
       type: 'object',
       required: ['url'],
@@ -103,45 +190,72 @@ export const TOOLS = [
         method: {
           type: 'string',
           enum: ['POST', 'GET', 'HEAD'],
-          description: 'HTTP method to probe (default POST).'
+          description: 'HTTP method to probe on the seller URL (defaults to POST).'
         },
         maxBudgetAtomic: {
           type: 'string',
-          description: 'Optional caller budget cap in USDC atomic units (6 decimals).'
+          description: 'Optional caller budget ceiling in USDC atomic units (6 decimals, e.g. "50000" for $0.05).'
         },
         expectedNetwork: {
           type: 'string',
-          description: 'Optional expected network (base or base-sepolia).'
+          description: 'Optional expected CAIP-2 or short network identifier ("base" or "base-sepolia").'
         },
         paymentHeader: {
           type: 'string',
-          description: 'Optional base64 PAYMENT-SIGNATURE header when not using PAXIOM_API_KEY.'
+          description: 'Optional base64 x402 PAYMENT-SIGNATURE header when PAXIOM_API_KEY is not set in env.'
         }
+      }
+    },
+    outputSchema: {
+      type: 'object',
+      required: ['ok', 'status'],
+      properties: {
+        ok: { type: 'boolean', description: 'True when the preflight scan HTTP call succeeded.' },
+        status: { type: 'number', description: 'HTTP status returned by the Paxiom preflight endpoint (200 or 402).' },
+        paymentRequired: { type: 'boolean', description: 'True when HTTP 402 payment terms are returned for caller signing.' }
       }
     }
   },
   {
     name: 'verify_receipt_live',
-    description: 'Confirm a paxiom.receipt.v0 receipt claimed Base / Base Sepolia USDC Transfer log on-chain via https://api.paxiom.org/v1/receipt/verify-live ($0.002 USDC via x402 or PAXIOM_API_KEY) and return Paxiom Ed25519 counter-attestation.',
+    title: 'Verify Receipt On-Chain & Counter-Attest',
+    description:
+      'Confirm a paxiom.receipt.v0 receipt claimed Base or Base Sepolia USDC Transfer log on-chain via api.paxiom.org/v1/receipt/verify-live ($0.002 USDC via paymentHeader or PAXIOM_API_KEY) and mint a Paxiom root Ed25519 counter-attestation. Use this instead of offline verify_receipt when verify_receipt reports settlement_claimed_not_checked and you need independent on-chain settlement confirmation; pass expectedPayTo to bind the seller recipient address.',
+    annotations: {
+      title: 'Verify Receipt On-Chain & Counter-Attest',
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     inputSchema: {
       type: 'object',
       required: ['receipt'],
       properties: {
         receipt: {
           type: 'object',
-          description: 'Parsed paxiom.receipt.v0 JSON object.'
+          description: 'Parsed paxiom.receipt.v0 JSON object containing a settlement.transactionHash.'
         },
         output: {
-          description: 'Optional delivered API response JSON.'
+          description: 'Optional delivered HTTP response JSON body to bind alongside on-chain settlement.'
         },
         expectedPayTo: {
           type: 'string',
-          description: 'Expected 0x seller USDC recipient address (required to mint portable Paxiom root counter-attestation).'
+          description: 'Expected 0x seller USDC recipient address (required to mint a portable Paxiom counter-attested receipt).'
         },
         paymentHeader: {
           type: 'string',
-          description: 'Optional base64 PAYMENT-SIGNATURE header when not using PAXIOM_API_KEY.'
+          description: 'Optional base64 x402 PAYMENT-SIGNATURE header when PAXIOM_API_KEY is not set in env.'
         }
+      }
+    },
+    outputSchema: {
+      type: 'object',
+      required: ['ok', 'status'],
+      properties: {
+        ok: { type: 'boolean', description: 'True when live on-chain verification completed with HTTP 200.' },
+        status: { type: 'number', description: 'HTTP status returned by the Paxiom live verifier (200 or 402).' },
+        paymentRequired: { type: 'boolean', description: 'True when HTTP 402 payment terms are returned for caller signing.' }
       }
     }
   }
@@ -231,9 +345,16 @@ export function handleJsonRpcMessage(msg, env = process.env, runtimeOpts = {}) {
           opts.trustedPaxiomPublicKeys = args.trustedPaxiomPublicKeys;
         }
         const result = verifyReceipt(args.receipt, opts);
+        const explanation = explain(result);
         return jsonRpcResult(id, {
           isError: false,
-          content: [{ type: 'text', text: explain(result) }]
+          content: [{ type: 'text', text: explanation }],
+          structuredContent: {
+            explanation,
+            valid: result.valid,
+            trustState: result.trustState,
+            receiptHash: result.receiptHash
+          }
         });
       }
 
