@@ -1,8 +1,8 @@
 {
   "name": "@paxiom/receipts",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "mcpName": "io.github.k-luecke/paxiom-receipts",
-  "description": "Zero-dependency issuer, verifier, buyer preflight/live client, HTTP middleware, and MCP server for paxiom.receipt.v0 \u2014 proof-bound cryptographic receipts for x402 and agentic APIs.",
+  "description": "Zero-dependency open-standard issuer, verifier, x402 v2 middleware, buyer preflight/live client, and MCP server for proof-bound delivery receipts (paxiom.receipt.v0).",
   "type": "module",
   "license": "MIT",
   "homepage": "https://paxiom.org/receipts.html",
@@ -63,6 +63,7 @@
     "README.md",
     "canonicalization.md",
     "trust-states.md",
+    "x402-delivery-receipt-extension.md",
     "paxiom.receipt.v0.schema.json",
     "openapi.json",
     "server.json",
@@ -79,6 +80,7 @@
   "keywords": [
     "x402",
     "receipts",
+    "payment-receipt",
     "ed25519",
     "agent-payments",
     "mcp",

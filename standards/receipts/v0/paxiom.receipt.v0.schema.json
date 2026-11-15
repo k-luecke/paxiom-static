@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://paxiom.org/standards/receipts/v0/paxiom.receipt.v0.schema.json",
   "title": "Paxiom Receipt v0",
-  "description": "Developer-preview (v0 draft) schema for a proof-bound receipt for x402-paid APIs. x402 proves a payment; a Paxiom receipt binds payment, request, output, settlement metadata, and optional evidence into a single signed, machine-verifiable object. This schema validates STRUCTURE only; it does not assert that a receipt was settled onchain or that any proof is valid. Those are the verifier's job and are reported as trust states.",
+  "description": "Open specification schema for a proof-bound delivery receipt for x402 and HTTP APIs. x402 proves a payment; a delivery receipt binds request, output digest, payment terms, settlement metadata, and optional evidence into a single Ed25519-signed, transport-portable object. Schema validity is structural only; cryptographic and settlement verification are reported via deterministic trust states.",
   "type": "object",
   "additionalProperties": false,
   "required": ["receiptVersion", "payload", "signature"],
@@ -26,7 +26,9 @@
           "properties": {
             "name": { "type": "string", "minLength": 1 },
             "uri": { "type": "string" },
-            "keyId": { "type": "string", "minLength": 1 }
+            "keyId": { "type": "string", "minLength": 1 },
+            "payTo": { "type": "string", "minLength": 1 },
+            "keysUri": { "type": "string", "minLength": 1 }
           }
         },
         "service": {
@@ -59,19 +61,25 @@
             "asset": { "type": "string", "minLength": 1 },
             "amountAtomic": { "type": "string", "pattern": "^[0-9]+$" },
             "amountDisplay": { "type": "string", "minLength": 1 },
+            "payer": { "type": "string", "minLength": 1 },
+            "payTo": { "type": "string", "minLength": 1 },
             "paymentRequirementsHash": { "$ref": "#/$defs/sha256Hex" },
             "paymentPayloadHash": { "$ref": "#/$defs/sha256Hex" },
             "settlement": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["status", "transactionHash", "checkedByPaxiom"],
+              "required": ["status", "transactionHash"],
               "properties": {
                 "status": {
                   "type": "string",
                   "enum": ["not_required", "disabled", "verify_only", "claimed_not_checked", "verified_settled", "failed", "unknown"]
                 },
                 "transactionHash": {
-                  "oneOf": [{ "$ref": "#/$defs/sha256Hex" }, { "type": "null" }]
+                  "oneOf": [{ "$ref": "#/$defs/transactionId" }, { "type": "null" }]
+                },
+                "checkedByVerifier": { "type": "boolean" },
+                "verifier": {
+                  "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
                 },
                 "checkedByPaxiom": { "type": "boolean" }
               }
@@ -84,7 +92,16 @@
           "required": ["outputHash", "mimeType"],
           "properties": {
             "outputHash": { "$ref": "#/$defs/sha256Hex" },
-            "mimeType": { "type": "string", "minLength": 1 }
+            "mimeType": { "type": "string", "minLength": 1 },
+            "canonicalization": {
+              "type": "string",
+              "enum": ["jcs-sha256", "raw-sha256"]
+            },
+            "statusCode": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 599
+            }
           }
         },
         "evidence": {
@@ -120,6 +137,11 @@
       "type": "string",
       "pattern": "^0x[0-9a-f]{64}$",
       "description": "SHA-256 digest, lowercase hex, 0x-prefixed."
+    },
+    "transactionId": {
+      "type": "string",
+      "pattern": "^(?:0x[0-9a-f]{64}|[1-9A-HJ-NP-Za-km-z]{64,88})$",
+      "description": "Chain-native settlement transaction identifier: EVM 0x-prefixed 32-byte lowercase hex hash or Solana 64-88 char base58 signature."
     }
   }
 }

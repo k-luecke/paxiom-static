@@ -357,8 +357,8 @@ a:hover { color: var(--red); }
     </div>
     <div class="status-key-grid">
       <div class="status-key-cell">
-        <div class="label">Shipped Product</div>
-        <div class="value"><strong>Paxiom Receipts (<code>paxiom.receipt.v0</code>)</strong> &mdash; <code>@paxiom/receipts@0.1.3</code> on npm, <code>paxiom-receipts==0.1.3</code> on PyPI, Official MCP Registry (<code>io.github.k-luecke/paxiom-receipts</code>), and live Base Mainnet x402 preflight + settlement verifier + Ed25519 counter-attestation.</div>
+        <div class="label">Open Standard</div>
+        <div class="value"><strong>Paxiom Receipts (<code>paxiom.receipt.v0</code> &middot; <code>v0.2.0</code>)</strong> &mdash; MIT specification, <code>x402</code> v2 <code>delivery-receipt</code> extension draft, <code>@paxiom/receipts@0.2.0</code> on npm, <code>paxiom-receipts==0.2.0</code> on PyPI, Official MCP Registry (<code>io.github.k-luecke/paxiom-receipts</code>), and free public Base Mainnet reference verifier on <code>api.paxiom.org</code>.</div>
       </div>
       <div class="status-key-cell">
         <div class="label">R&amp;D Substrate Track</div>
@@ -382,23 +382,22 @@ a:hover { color: var(--red); }
         <span>Most recent first</span>
       </div>
 
-            <div class="log-entry">
-        <div class="log-date">2026.11.15</div>
+      <div class="log-entry">
+        <div class="log-date">2026.11.15 &middot; v0.2.0</div>
         <ul>
+          <li>Released <code>paxiom.receipt.v0</code> <code>v0.2.0</code> across Node (<code>@paxiom/receipts@0.2.0</code>) and Python (<code>paxiom-receipts==0.2.0</code>) alongside the <a href="/standards/receipts/v0/x402-delivery-receipt-extension.md"><code>x402</code> v2 <code>delivery-receipt</code> extension draft</a>: added vendor-neutral <code>Payment-Receipt</code> headers, <code>/.well-known/x402-keys.json</code> seller key discovery &amp; <code>unauthorized_issuer</code> verification, dual <code>jcs-sha256</code> / <code>raw-sha256</code> payload hashing, native <code>x402</code> v2 header auto-parsing, and CAIP-2 EVM + Solana base58 transaction signature support</li>
+          <li>Transitioned <code>https://api.paxiom.org</code> (<code>0.2.0</code>) into a 100% free, rate-limited public reference utility &mdash; removing commercial per-call paywalls and API-key gating on <code>POST /v1/receipt/verify-live</code> and <code>POST /v1/x402/preflight</code> so any <code>x402</code> buyer, wallet, or facilitator can adopt or self-host the standard without friction</li>
           <li>Published formatted HTML specification sheets for <a href="/trust-states.html">Trust States &amp; Precedence (<code>PXM-RC-101</code>)</a> and <a href="/canonicalization.html">Canonical JSON Profile (<code>PXM-RC-102</code>)</a> alongside raw Markdown artifacts</li>
-          <li>Restored <code>DM Sans</code> body typography and <code>Source Serif 4</code> display headers across all binder surfaces while preserving strict <code>script-src 'none'</code> CSP</li>
-          <li>Added apex <code>/.well-known/mcp.json</code> and <code>/.well-known/x402.json</code> discovery mirrors and <code>HEAD</code> route support on <code>api.paxiom.org</code></li>
         </ul>
       </div>
 
       <div class="log-entry">
         <div class="log-date">2026.11</div>
         <ul>
-          <li>Narrowed the public product surface onto a single wedge: <strong>Paxiom Receipts (<code>paxiom.receipt.v0</code>)</strong> &mdash; proof-bound Ed25519 receipts binding HTTP requests, delivered outputs, and x402 payments</li>
-          <li>Published <code>@paxiom/receipts@0.1.3</code> to npm, <code>paxiom-receipts==0.1.3</code> to PyPI (verified byte-for-byte via cross-language canonical JSON &amp; Ed25519 test vectors), and <code>io.github.k-luecke/paxiom-receipts</code> <code>0.1.3</code> to the Official MCP Registry (issuer, offline verifier, Fetch/Express/ASGI/WSGI middleware, CLI <code>paxiom-receipt</code>, stdio &amp; Streamable HTTP MCP servers, and Fermi security hardening)</li>
-          <li>Deployed live verifier at <code>https://api.paxiom.org</code> with free offline verification (<code>POST /v1/receipt/verify</code>), multi-RPC Base &amp; Base Sepolia USDC <code>Transfer</code>-log settlement verification (<code>POST /v1/receipt/verify-live</code>, <code>$0.002</code> USDC), SSRF-hardened pre-payment seller readiness scanning (<code>POST /v1/x402/preflight</code>, <code>$0.01</code> USDC), and Paxiom Ed25519 counter-attestation (<code>/.well-known/paxiom-keys.json</code>)</li>
-          <li>Verified live Base Mainnet x402 settlement into a separated self-custody revenue treasury and exposed both paid routes on <code>/.well-known/x402.json</code> for x402 Bazaar discovery</li>
-          <li>Rebuilt <code>paxiom.org</code> around the shipped Receipts product and consolidated the ten-sheet drawing set, Phase 1 substrate schedules, and historical gate notes into this Build Journal</li>
+          <li>Narrowed the public surface onto a single wedge: <strong>Paxiom Receipts (<code>paxiom.receipt.v0</code>)</strong> &mdash; proof-bound Ed25519 receipts binding HTTP requests, delivered outputs, and x402 payments</li>
+          <li>Published initial zero-dependency Node and Python SDKs (verified byte-for-byte via cross-language canonical JSON &amp; Ed25519 test vectors) and registered <code>io.github.k-luecke/paxiom-receipts</code> on the Official MCP Registry</li>
+          <li>Deployed the Base Mainnet &amp; Base Sepolia USDC <code>Transfer</code>-log verifier, SSRF-hardened pre-payment seller preflight scanner, and Ed25519 counter-attestation runtime at <code>https://api.paxiom.org</code></li>
+          <li>Consolidated the earlier ten-sheet drawing set, Phase 1 substrate schedules, and historical gate notes into this Build Journal</li>
         </ul>
       </div>
 
@@ -626,7 +625,7 @@ a:hover { color: var(--red); }
         <li>Additional EVM and Solana USDC settlement adapters beyond Base Mainnet &amp; Base Sepolia in <code>POST /v1/receipt/verify-live</code></li>
         <li>Optional facilitator receipt cross-checking alongside direct on-chain <code>Transfer</code> log verification</li>
         <li>Evidence-hash adapters binding upstream cryptographic witnesses (<code>A-201</code>/<code>A-202</code>) into <code>payload.evidence</code></li>
-        <li>Hosted usage dashboard for monthly B2B <code>X-API-Key</code> accounts</li>
+        <li>Upstream reference PRs for the <code>x402</code> v2 <code>delivery-receipt</code> extension across facilitator and wallet SDKs</li>
       </ul>
     </div>
 

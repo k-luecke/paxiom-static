@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <title>Paxiom &middot; Trust States & Precedence</title>
-<meta name="description" content="Paxiom Receipt v0 trust states: all fifteen deterministic verdicts, evaluation precedence, and per-check diagnostic structure.">
+<meta name="description" content="Paxiom Receipt v0 trust states: all sixteen deterministic verdicts, evaluation precedence, and per-check diagnostic structure.">
 <meta property="og:title" content="Paxiom · Trust States & Precedence">
-<meta property="og:description" content="Paxiom Receipt v0 trust states: all fifteen deterministic verdicts, evaluation precedence, and per-check diagnostic structure.">
+<meta property="og:description" content="Paxiom Receipt v0 trust states: all sixteen deterministic verdicts, evaluation precedence, and per-check diagnostic structure.">
 <meta property="og:url" content="https://paxiom.org/trust-states.html">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -106,17 +106,17 @@ a:hover { color: var(--red); }
     <div>
       <div class="project-mark">Paxiom &middot; Standard Specification Sheet</div>
       <div class="project-title">Trust States & Precedence</div>
-      <div class="project-subtitle">All fifteen verification verdicts and deterministic evaluation order.</div>
+      <div class="project-subtitle">All sixteen verification verdicts and deterministic evaluation order.</div>
     </div>
     <div class="meta">
       <span>Sheet PXM-RC-101</span><span class="sep">&middot;</span>
       <span>paxiom.receipt.v0</span><span class="sep">&middot;</span>
-      <span>v0.1.3</span>
+      <span>v0.2.0</span>
     </div>
   </header>
   <section class="hero">
-    <h1>Fifteen deterministic verdicts. <em>Strict top-to-bottom precedence.</em></h1>
-    <p class="lede">A conforming <code>paxiom.receipt.v0</code> verifier consumes a receipt (and, where supplied, the delivered output) and emits <strong>exactly one</strong> trust state plus a structured per-check breakdown. Trust states are the honesty contract: they separate what was independently verified from what was merely claimed.</p>
+    <h1>Sixteen deterministic verdicts. <em>Strict top-to-bottom precedence.</em></h1>
+    <p class="lede">A conforming <code>paxiom.receipt.v0</code> verifier consumes a receipt (and, where supplied, the delivered output and expected seller keys) and emits <strong>exactly one</strong> trust state plus a structured per-check breakdown. Trust states are the honesty contract: they separate what was independently verified from what was merely claimed.</p>
     <div class="actions">
       <a class="btn" href="/receipts.html">&larr; Back to Receipt v0</a>
       <a class="btn" href="/canonicalization.html">Canonical JSON Profile &rarr;</a>
@@ -126,19 +126,20 @@ a:hover { color: var(--red); }
 
   <section class="section">
     <div class="section-mark">01 &middot; The Enum</div>
-    <h2>All fifteen <em>trust states.</em></h2>
+    <h2>All sixteen <em>trust states.</em></h2>
     <div class="table-wrap">
       <table class="spec">
         <thead><tr><th>Trust state</th><th>Meaning</th></tr></thead>
         <tbody>
-          <tr><td><code>verified</code></td><td>Everything the offline verifier can check passed, and settlement is either Paxiom-counter-attested or not an unconfirmed on-chain claim.</td></tr>
+          <tr><td><code>verified</code></td><td>Everything the offline verifier can check passed, optional signer pinning matched, and settlement is either counter-attested by a trusted verifier key or not an unconfirmed on-chain claim.</td></tr>
           <tr><td><code>valid_signature_only</code></td><td>Signature is valid, but the verifier could not reach <code>verified</code> for a non-fatal reason (e.g., delivered output was not supplied, or <code>settlement.status = unknown</code>).</td></tr>
           <tr><td><code>schema_invalid</code></td><td>Receipt does not conform to <code>paxiom.receipt.v0.schema.json</code>.</td></tr>
           <tr><td><code>unsupported_format</code></td><td><code>receiptVersion</code> is not <code>paxiom.receipt.v0</code>.</td></tr>
           <tr><td><code>invalid_signature</code></td><td>Ed25519 signature does not verify against the embedded public key over the canonical signing input.</td></tr>
+          <tr><td><code>unauthorized_issuer</code></td><td>Signature is mathematically valid, but <code>signature.publicKey</code> is not in <code>expectedIssuerPublicKeys</code> (from the seller's HTTPS <code>/.well-known/x402-keys.json</code>) or <code>payTo</code> mismatches <code>expectedPayTo</code>.</td></tr>
           <tr><td><code>request_binding_missing</code></td><td>Required <code>request</code> binding fields absent or malformed.</td></tr>
           <tr><td><code>payment_binding_missing</code></td><td>Required <code>payment</code> binding fields absent or malformed.</td></tr>
-          <tr><td><code>output_hash_mismatch</code></td><td>Supplied output's canonical SHA-256 hash does not equal <code>delivery.outputHash</code>.</td></tr>
+          <tr><td><code>output_hash_mismatch</code></td><td>Supplied output's <code>jcs-sha256</code> or <code>raw-sha256</code> digest does not equal <code>delivery.outputHash</code>.</td></tr>
           <tr><td><code>settlement_claimed_not_checked</code></td><td>Signature and output hash verified, but the receipt asserts an on-chain settlement that this verifier did not independently confirm.</td></tr>
           <tr><td><code>settlement_failed</code></td><td><code>settlement.status = failed</code>.</td></tr>
           <tr><td><code>proof_not_provided</code></td><td>Evidence array is empty or all <code>not_provided</code> (informational in check breakdown; does not by itself block <code>verified</code>).</td></tr>
@@ -154,25 +155,26 @@ a:hover { color: var(--red); }
   <section class="section">
     <div class="section-mark">02 &middot; Precedence</div>
     <h2>Resolution order <em>(offline verifier).</em></h2>
-    <p>Evaluate top-to-bottom and <strong>return the first rule that applies</strong>. This guarantees, for example, that a tampered payload always surfaces as <code>output_hash_mismatch</code> rather than silently degrading:</p>
+    <p>Evaluate top-to-bottom and <strong>return the first rule that applies</strong>. This guarantees, for example, that key-substitution attacks surface as <code>unauthorized_issuer</code> and tampered payloads always surface as <code>output_hash_mismatch</code>:</p>
     <ol>
       <li>Verifier exception &rarr; <code>error</code>.</li>
       <li><code>receiptVersion</code> unrecognized &rarr; <code>unsupported_format</code>.</li>
       <li>Schema invalid &rarr; <code>schema_invalid</code>.</li>
       <li>Ed25519 signature fails over <code>canonicalize({ receiptVersion, payload })</code> &rarr; <code>invalid_signature</code>.</li>
+      <li><code>expectedIssuerPublicKeys</code> or <code>expectedPayTo</code> supplied and mismatched &rarr; <code>unauthorized_issuer</code>.</li>
       <li><code>expiresAt</code> present and past &rarr; <code>expired</code>.</li>
       <li><code>request</code> bindings missing or malformed &rarr; <code>request_binding_missing</code>.</li>
       <li><code>payment</code> bindings missing or malformed &rarr; <code>payment_binding_missing</code>.</li>
-      <li>Output supplied <strong>and</strong> its canonical hash &ne; <code>delivery.outputHash</code> &rarr; <code>output_hash_mismatch</code>.</li>
+      <li>Output supplied <strong>and</strong> its canonical or raw hash &ne; <code>delivery.outputHash</code> &rarr; <code>output_hash_mismatch</code>.</li>
       <li><code>settlement.status = failed</code> &rarr; <code>settlement_failed</code>.</li>
       <li>Evidence retrieved and invalid &rarr; <code>proof_invalid</code>; referenced but unreachable &rarr; <code>proof_unavailable</code>.</li>
-      <li><code>settlement.status &isin; { claimed_not_checked, verified_settled }</code> without a trusted Paxiom counter-attestation key &rarr; <strong><code>settlement_claimed_not_checked</code></strong> (issuer self-assertions never self-promote to verified settlement).</li>
+      <li><code>settlement.status &isin; { claimed_not_checked, verified_settled }</code> without a pinned key in <code>trustedVerifierPublicKeys</code> (or alias <code>trustedPaxiomPublicKeys</code>) &rarr; <strong><code>settlement_claimed_not_checked</code></strong> (issuer self-assertions never self-promote to verified settlement).</li>
       <li>Output <strong>not</strong> supplied, or <code>settlement.status = unknown</code> &rarr; <code>valid_signature_only</code>.</li>
       <li>Otherwise &rarr; <strong><code>verified</code></strong>.</li>
     </ol>
     <div class="note">
       <div class="note-label">Counter-Attestation Upgrade</div>
-      <p>Calling <code>POST https://api.paxiom.org/v1/receipt/verify-live</code> verifies canonical Base USDC <code>Transfer</code> event logs directly on-chain and returns a Paxiom counter-signed receipt verifiable offline when Paxiom's published key (<code>/.well-known/paxiom-keys.json</code>) is passed in <code>trustedPaxiomPublicKeys</code>.</p>
+      <p>Calling the free public reference endpoint <code>POST https://api.paxiom.org/v1/receipt/verify-live</code> verifies canonical Base USDC <code>Transfer</code> event logs directly on-chain and returns a counter-signed <code>Payment-Receipt</code> verifiable offline when the published verifier key (<code>/.well-known/x402-keys.json</code>) is passed in <code>trustedVerifierPublicKeys</code>.</p>
     </div>
   </section>
 

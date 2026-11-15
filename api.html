@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <title>Paxiom &middot; Verifier API &amp; @paxiom/receipts SDK</title>
-<meta name="description" content="Paxiom Receipt Verifier HTTP API (https://api.paxiom.org) and zero-dependency @paxiom/receipts npm SDK, CLI, and MCP server — free offline verification plus live Base Mainnet x402 settlement attestation.">
+<meta name="description" content="Paxiom Receipt Verifier public reference HTTP API (https://api.paxiom.org) and zero-dependency @paxiom/receipts &amp; paxiom-receipts SDKs, CLI, and MCP server — free offline and live Base Mainnet x402 verification.">
 <meta property="og:title" content="Paxiom · Verifier API &amp; @paxiom/receipts SDK">
 <meta property="og:description" content="HTTP API, @paxiom/receipts npm SDK, CLI, and MCP server for proof-bound x402 receipts.">
 <meta property="og:url" content="https://paxiom.org/api.html">
@@ -146,29 +146,29 @@ a:hover { color: var(--red); }
     </div>
     <div class="meta">
       <span>Sheet PXM-API-100</span><span class="sep">&middot;</span>
-      <span>@paxiom/receipts@0.1.3</span><span class="sep">&middot;</span>
-      <span>api.paxiom.org Live</span>
+      <span>@paxiom/receipts@0.2.0</span><span class="sep">&middot;</span>
+      <span>api.paxiom.org Public Reference</span>
     </div>
   </header>
 
   <section class="hero">
-    <h1>Verifier HTTP API &amp; <em>@paxiom/receipts SDK.</em></h1>
-    <p class="lede">Everything needed to attach <a href="/receipts.html"><code>paxiom.receipt.v0</code></a> headers to x402 endpoints, scan untrusted seller URLs before paying, verify receipts inside agent workflows or MCP clients, and counter-attest Base USDC settlement.</p>
+    <h1>Public Verifier API &amp; <em>Reference SDKs.</em></h1>
+    <p class="lede">Everything needed to attach <a href="/receipts.html"><code>paxiom.receipt.v0</code></a> <code>Payment-Receipt</code> headers to x402 endpoints, pin seller public keys via <code>/.well-known/x402-keys.json</code>, scan untrusted seller URLs before paying, verify receipts inside agent workflows or MCP clients, and counter-attest Base USDC settlement.</p>
   </section>
 
   <div class="status" role="note">
     <span class="dot" aria-hidden="true"></span>
-    <span class="k">Runtime status &middot; 5/5 capabilities live</span>
-    <p><code>https://api.paxiom.org</code> is live on Base Mainnet with <code>offlineVerification</code>, <code>liveSettlementVerification</code> (<code>$0.002</code> USDC), <code>x402Preflight</code> (<code>$0.01</code> USDC), <code>x402PaymentGating</code>, and <code>counterAttestation</code> enabled. Free offline checks require no account or payment; inspect <code>GET /version</code> at any time.</p>
+    <span class="k">Public reference runtime &middot; All routes free</span>
+    <p><code>https://api.paxiom.org</code> (`0.2.0`) runs as a free, rate-limited public reference utility on Base Mainnet with <code>offlineVerification</code>, <code>signerKeyDiscovery</code>, <code>rawAndJcsPayloadBinding</code>, <code>liveSettlementVerification</code> (60 req/min/IP), <code>x402Preflight</code> (30 req/min/IP), and <code>counterAttestation</code> enabled. No API key or payment is required; inspect <code>GET /version</code> at any time, or self-host the MIT runtime directly.</p>
   </div>
 
   <section class="section" id="sdk">
-    <div class="section-mark">01 &middot; npm SDK, CLI &amp; MCP</div>
-    <h2>Zero-dependency package <em>(@paxiom/receipts).</em></h2>
+    <div class="section-mark">01 &middot; npm &amp; PyPI SDKs, CLI &amp; MCP</div>
+    <h2>Zero-dependency packages <em>(@paxiom/receipts &amp; paxiom-receipts).</em></h2>
     <p>Install <a href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer"><code>@paxiom/receipts</code></a> (MIT, zero external dependencies, Node &ge;18) to sign receipts on your seller endpoints or verify them locally:</p>
 <pre class="cmd">npm install @paxiom/receipts</pre>
 
-    <p><strong>Seller middleware</strong> (Fetch / Cloudflare Workers / Next.js App Router, plus <code>createReceiptMiddleware</code> for Express / Node <code>http</code>):</p>
+    <p><strong>Seller middleware</strong> (Fetch / Cloudflare Workers / Next.js App Router, plus <code>createReceiptMiddleware</code> for Express / Node <code>http</code> &mdash; auto-parses <code>x402</code> v2 <code>PAYMENT-SIGNATURE</code> / <code>PAYMENT-RESPONSE</code> headers, hashes JSON via <code>jcs-sha256</code> or binary/text via <code>raw-sha256</code>, and emits <code>Payment-Receipt</code> + <code>X-Paxiom-Receipt</code>):</p>
 <pre class="cmd">import { withPaxiomReceipt } from '@paxiom/receipts';
 
 export default withPaxiomReceipt(paidHandler, {
@@ -177,16 +177,21 @@ export default withPaxiomReceipt(paidHandler, {
   serviceName: 'Orderbook Snapshot API'
 });</pre>
 
-    <p><strong>Buyer client helpers, TypeScript &amp; MCP server</strong> (built-in <code>.d.ts</code> declarations, zero dependencies):</p>
-<pre class="cmd">import { preflightX402, verifyResponseReceipt, verifyReceiptLive } from '@paxiom/receipts';
+    <p><strong>Buyer client helpers, key discovery, TypeScript &amp; MCP server</strong> (built-in <code>.d.ts</code> declarations, zero dependencies):</p>
+<pre class="cmd">import { discoverIssuerKeys, preflightX402, verifyResponseReceipt, verifyReceiptLive } from '@paxiom/receipts';
 
-<span class="c">// 1. Pre-payment seller safety scan ($0.01 USDC via x402 or PAXIOM_API_KEY):</span>
+<span class="c">// 1. Free pre-payment seller safety &amp; key-discovery scan:</span>
 const scan = await preflightX402('https://seller.example/v1/infer', { maxBudgetAtomic: '50000' });
 
-<span class="c">// 2. Free 1-line offline check on any Fetch Response (never throws):</span>
-const check = verifyResponseReceipt(paidResponse, { output: responseJson });
+<span class="c">// 2. Discover seller keys from /.well-known/x402-keys.json &amp; verify offline (never throws):</span>
+const keys = await discoverIssuerKeys('https://seller.example');
+const check = verifyResponseReceipt(paidResponse, {
+  output: responseJson,
+  expectedIssuerPublicKeys: keys.publicKeys,
+  expectedPayTo: '0xSeller...'
+});
 
-<span class="c">// 3. Live Base USDC settlement + Paxiom counter-attestation ($0.002 USDC):</span>
+<span class="c">// 3. Free live Base USDC settlement + Ed25519 counter-attestation:</span>
 const live = await verifyReceiptLive(check.receipt, { output: responseJson, expectedPayTo: '0xSeller...' });
 
 <span class="c"># Launch local stdio MCP (includes preflight_x402_seller &amp; verify_receipt_live) or remote HTTP MCP:</span>
@@ -197,56 +202,57 @@ claude mcp add --transport http paxiom https://api.paxiom.org/mcp</pre>
 <pre class="cmd">pip install paxiom-receipts
 
 from fastapi import FastAPI
-from paxiom_receipts import PaxiomReceiptMiddleware, preflight_x402, verify_response_receipt
+from paxiom_receipts import PaxiomReceiptMiddleware, discover_issuer_keys, preflight_x402, verify_response_receipt
 
 app = FastAPI()
 app.add_middleware(PaxiomReceiptMiddleware, private_key=PEM, issuer={'name': 'py-api', 'keyId': 'k1'})</pre>
   </section>
 
   <section class="section" id="http">
-    <div class="section-mark">02 &middot; Hosted HTTP API</div>
+    <div class="section-mark">02 &middot; Public Reference HTTP API</div>
     <h2>Routes on <em>api.paxiom.org.</em></h2>
-    <div class="baseurl">https://api.paxiom.org <span class="live">base mainnet live</span></div>
-    <p>You can also self-host the identical server offline via <code>node runtime/receipt-verifier/server.mjs</code>.</p>
+    <div class="baseurl">https://api.paxiom.org <span class="live">free public reference</span></div>
+    <p>You can also self-host the identical MIT server with your own verifier keys via <code>node runtime/receipt-verifier/server.mjs</code>.</p>
 
     <div class="endpoints-wrap">
     <table class="endpoints">
       <thead><tr><th>Method</th><th>Path</th><th>Access</th><th>Purpose</th></tr></thead>
       <tbody>
         <tr><td><span class="m get">GET</span></td><td class="path">/</td><td class="purpose">Free</td><td class="purpose">Machine-readable service discovery index (SDKs, manifests, OpenAPI, MCP, active routes).</td></tr>
-        <tr><td><span class="m get">GET</span></td><td class="path">/openapi.json</td><td class="purpose">Free</td><td class="purpose">OpenAPI 3.0 specification served directly from <code>api.paxiom.org</code> for agent toolkits.</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="path">/openapi.json</td><td class="purpose">Free</td><td class="purpose">OpenAPI 3.1 specification served directly from <code>api.paxiom.org</code> for agent toolkits.</td></tr>
         <tr><td><span class="m get">GET</span></td><td class="path">/.well-known/mcp.json</td><td class="purpose">Free</td><td class="purpose">MCP Server Card advertising <code>POST /mcp</code> and tool metadata.</td></tr>
-        <tr><td><span class="m get">GET</span></td><td class="path">/stats</td><td class="purpose">Free</td><td class="purpose">Zero-PII aggregate discovery, offline verification, and x402 funnel counters.</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="path">/stats</td><td class="purpose">Free</td><td class="purpose">Zero-PII aggregate discovery, offline verification, and live reference counters.</td></tr>
         <tr><td><span class="m get">GET</span></td><td class="path">/health</td><td class="purpose">Free</td><td class="purpose">Liveness check (<code>{ ok: true }</code>).</td></tr>
-        <tr><td><span class="m get">GET</span></td><td class="path">/version</td><td class="purpose">Free</td><td class="purpose">Service identity, active <code>capabilities</code>, and explicit <code>checks</code> / <code>notChecked</code> boundaries.</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="path">/version</td><td class="purpose">Free</td><td class="purpose">Service identity, active <code>capabilities</code>, <code>rateLimits</code>, and explicit <code>checks</code> / <code>notChecked</code> boundaries.</td></tr>
         <tr><td><span class="m get">GET</span></td><td class="path">/v1/receipt/demo</td><td class="purpose">Free</td><td class="purpose">Returns a signed demo receipt and its delivered output payload.</td></tr>
-        <tr><td><span class="m post">POST</span></td><td class="path">/v1/receipt/verify</td><td class="purpose">Free</td><td class="purpose">Offline verification. Body <code>{ receipt, output? }</code> &rarr; deterministic trust state + per-check breakdown.</td></tr>
-        <tr><td><span class="m post">POST</span></td><td class="path">/v1/receipt/verify-live</td><td class="purpose">$0.002 x402 / Key</td><td class="purpose">Confirms Base / Base Sepolia USDC <code>Transfer</code> logs via multi-RPC failover, upgrades verdict to <code>verified</code>, and returns a Paxiom counter-signed <code>X-Paxiom-Receipt</code>.</td></tr>
-        <tr><td><span class="m post">POST</span></td><td class="path">/v1/x402/preflight</td><td class="purpose">$0.01 x402 / Key</td><td class="purpose">SSRF-hardened pre-payment seller scan. Body <code>{ url, method?, maxBudgetAtomic?, expectedNetwork? }</code> &rarr; checks canonical Base USDC asset, EIP-712 domain, <code>payTo</code> manifest match, and <code>X-Paxiom-Receipt</code> support, signed in <code>X-Paxiom-Receipt</code>.</td></tr>
+        <tr><td><span class="m post">POST</span></td><td class="path">/v1/receipt/verify</td><td class="purpose">Free</td><td class="purpose">Offline verification. Body <code>{ receipt, output?, expectedIssuerPublicKeys?, expectedPayTo? }</code> &rarr; 16-state verdict + per-check breakdown.</td></tr>
+        <tr><td><span class="m post">POST</span></td><td class="path">/v1/receipt/verify-live</td><td class="purpose">Free (60/min)</td><td class="purpose">Confirms Base / Base Sepolia USDC <code>Transfer</code> logs via multi-RPC failover, upgrades verdict to <code>verified</code>, and returns a counter-signed <code>Payment-Receipt</code> (plus <code>X-Paxiom-Receipt</code>).</td></tr>
+        <tr><td><span class="m post">POST</span></td><td class="path">/v1/x402/preflight</td><td class="purpose">Free (30/min)</td><td class="purpose">SSRF-hardened pre-payment seller scan. Body <code>{ url, method?, maxBudgetAtomic?, expectedNetwork? }</code> &rarr; checks canonical Base USDC asset, EIP-712 domain, <code>payTo</code> manifest match, <code>/.well-known/x402-keys.json</code>, and <code>Payment-Receipt</code> support.</td></tr>
         <tr><td><span class="m post">POST</span></td><td class="path">/mcp</td><td class="purpose">Free</td><td class="purpose">Stateless MCP Streamable-HTTP server (<code>io.github.k-luecke/paxiom-receipts</code>) exposing <code>verify_receipt</code>, <code>explain_receipt</code>, and <code>get_x402_verifier_info</code>.</td></tr>
-        <tr><td><span class="m get">GET</span></td><td class="path">/.well-known/paxiom-keys.json</td><td class="purpose">Free</td><td class="purpose">Published Ed25519 public keys for offline verification of Paxiom counter-attestations.</td></tr>
-        <tr><td><span class="m get">GET</span></td><td class="path">/.well-known/x402.json</td><td class="purpose">Free</td><td class="purpose">x402 payment terms and Bazaar discovery schemas for <code>POST /v1/receipt/verify-live</code> and <code>POST /v1/x402/preflight</code>.</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="path">/.well-known/x402-keys.json</td><td class="purpose">Free</td><td class="purpose">Vendor-neutral Ed25519 public key manifest for offline verification of counter-attestations (also mirrored at <code>/.well-known/paxiom-keys.json</code>).</td></tr>
       </tbody>
     </table>
     </div>
-    <p>HTTP status codes: <code>200</code> for any completed verification or preflight verdict, <code>400</code> malformed JSON or disallowed SSRF target (never billed), <code>402</code> x402 payment required on paid routes, <code>413</code> payload over 256&nbsp;KiB, <code>404</code> unknown route.</p>
+    <p>HTTP status codes: <code>200</code> for any completed verification or preflight verdict, <code>400</code> malformed JSON or disallowed SSRF target, <code>413</code> payload over 256&nbsp;KiB, <code>429</code> per-IP burst rate limit exceeded (includes <code>Retry-After</code>), <code>404</code> unknown route.</p>
   </section>
 
   <section class="section">
     <div class="section-mark">03 &middot; HTTP examples</div>
-    <h2>Verify offline &amp; inspect <em>x402 terms.</em></h2>
+    <h2>Verify offline &amp; inspect <em>public verifier keys.</em></h2>
 <pre class="cmd">API=https://api.paxiom.org
 
-<span class="c"># 1. Fetch the canonical demo receipt + output and verify it for free:</span>
+<span class="c"># 1. Fetch the canonical demo receipt + output and verify it offline:</span>
 curl -s "$API/v1/receipt/demo" &gt; demo.json
 node -e 'const d=JSON.parse(require("fs").readFileSync("demo.json"));\
   process.stdout.write(JSON.stringify({receipt:d.receipt,output:d.output}))' \
   | curl -s -X POST "$API/v1/receipt/verify" \
       -H 'content-type: application/json' --data @-
 
-<span class="c"># 2. Inspect x402 payment terms ($0.002 Base USDC) &amp; Paxiom public keys:</span>
-curl -s "$API/.well-known/x402.json"
-curl -s "$API/.well-known/paxiom-keys.json"</pre>
+<span class="c"># 2. Inspect published verifier Ed25519 keys &amp; run a free preflight scan:</span>
+curl -s "$API/.well-known/x402-keys.json"
+curl -s -X POST "$API/v1/x402/preflight" \
+  -H 'content-type: application/json' \
+  -d '{"url":"https://seller.example/paid"}'</pre>
   </section>
 
   <section class="section">
@@ -256,9 +262,10 @@ curl -s "$API/.well-known/paxiom-keys.json"</pre>
       <div class="note-label">Explicit runtime boundaries</div>
       <ul>
         <li><code>POST /v1/receipt/verify</code> is strictly offline: it makes zero RPC or facilitator calls and reports unverified tx hashes as <code>settlement_claimed_not_checked</code>.</li>
+        <li>Passing <code>expectedIssuerPublicKeys</code> (from the seller's HTTPS <code>/.well-known/x402-keys.json</code>) and <code>expectedPayTo</code> rejects unauthorized intermediary key substitution with <code>unauthorized_issuer</code>.</li>
         <li><code>POST /v1/receipt/verify-live</code> verifies canonical Base Mainnet (<code>eip155:8453</code>) and Base Sepolia (<code>eip155:84532</code>) USDC <code>Transfer</code> event logs directly against JSON-RPC with automatic endpoint failover.</li>
-        <li>Counter-attested receipts (<code>checkedByPaxiom: true</code>) must be verified with <code>trustedPaxiomPublicKeys</code> loaded from <code>/.well-known/paxiom-keys.json</code> so untrusted signers cannot forge Paxiom settlement confirmation.</li>
-        <li>Teams preferring flat monthly billing over per-call x402 can request an <code>X-API-Key</code> via <a href="/contact.html">Contact</a> — commercial API accounts and integration agreements are contracted and invoiced through <strong><a href="https://driftboundlabs.com/ventures.html">Driftbound Labs LLC</a></strong>.</li>
+        <li>Counter-attested receipts (<code>checkedByVerifier: true</code> / <code>checkedByPaxiom: true</code>) must be verified with <code>trustedVerifierPublicKeys</code> loaded from <code>/.well-known/x402-keys.json</code> so untrusted signers cannot forge settlement confirmation.</li>
+        <li>The public <code>api.paxiom.org</code> runtime is provided free of charge under bounded per-IP rate limits; high-throughput gateways and facilitators can run <code>runtime/receipt-verifier/server.mjs</code> in-house under the MIT license.</li>
       </ul>
     </div>
   </section>
@@ -267,11 +274,12 @@ curl -s "$API/.well-known/paxiom-keys.json"</pre>
     <div class="section-mark">Machine-readable</div>
     <h2>Schemas &amp; references.</h2>
     <ul class="linklist">
-      <li><a href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer">@paxiom/receipts (npm)</a> <span class="desc">Node/TS/Edge SDK, middleware, CLI, and stdio MCP</span></li>
-      <li><a href="https://pypi.org/project/paxiom-receipts/" target="_blank" rel="noopener noreferrer">paxiom-receipts (PyPI)</a> <span class="desc">zero-dependency Python 3.10+ SDK &amp; FastAPI ASGI middleware</span></li>
+      <li><a href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer">@paxiom/receipts (npm)</a> <span class="desc">Node/TS/Edge SDK (`0.2.0`), middleware, CLI, and stdio MCP</span></li>
+      <li><a href="https://pypi.org/project/paxiom-receipts/" target="_blank" rel="noopener noreferrer">paxiom-receipts (PyPI)</a> <span class="desc">zero-dependency Python 3.10+ SDK (`0.2.0`) &amp; FastAPI ASGI middleware</span></li>
+      <li><a href="/standards/receipts/v0/x402-delivery-receipt-extension.md">x402 v2 Delivery Receipt Extension</a> <span class="desc">vendor-neutral <code>Payment-Receipt</code> header &amp; <code>/.well-known/x402-keys.json</code> draft</span></li>
       <li><a href="https://registry.modelcontextprotocol.io" target="_blank" rel="noopener noreferrer">io.github.k-luecke/paxiom-receipts</a> <span class="desc">Official MCP Registry entry (stdio + <code>https://api.paxiom.org/mcp</code>)</span></li>
-      <li><a href="/trust-states.html">Trust states (PXM-RC-101)</a> <span class="desc">all fifteen verdicts and precedence order</span></li>
-      <li><a href="/canonicalization.html">Canonicalization (PXM-RC-102)</a> <span class="desc">deterministic UTF-8 signing input and hash preimages</span></li>
+      <li><a href="/trust-states.html">Trust states (PXM-RC-101)</a> <span class="desc">all sixteen verdicts and precedence order</span></li>
+      <li><a href="/canonicalization.html">Canonicalization (PXM-RC-102)</a> <span class="desc">deterministic UTF-8 signing input and <code>jcs-sha256</code> / <code>raw-sha256</code> preimages</span></li>
       <li><a href="/standards/receipts/v0/openapi.json">OpenAPI 3.1</a> <span class="desc">verifier HTTP specification</span></li>
       <li><a href="/standards/receipts/v0/paxiom.receipt.v0.schema.json">JSON Schema</a> <span class="desc">structural validation</span></li>
       <li><a href="https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0" target="_blank" rel="noopener noreferrer">Spec &amp; Source on GitHub</a> <span class="desc">full documentation and cross-language test vectors</span></li>
@@ -280,8 +288,8 @@ curl -s "$API/.well-known/paxiom-keys.json"</pre>
   </section>
 
   <footer class="sheet-footer">
-    <div>Paxiom &middot; paxiom.org &middot; A <a href="https://driftboundlabs.com">Driftbound Labs</a> Product (&copy; 2026 Driftbound Labs LLC)</div>
-    <div>@paxiom/receipts@0.1.3 &middot; api.paxiom.org Live</div>
+    <div>Paxiom &middot; paxiom.org &middot; Maintained by <a href="https://driftboundlabs.com">Driftbound Labs LLC</a></div>
+    <div>@paxiom/receipts@0.2.0 &middot; api.paxiom.org Public Reference</div>
     <div class="sheet-id">PXM-API-100 &middot; API &amp; SDK</div>
   </footer>
 

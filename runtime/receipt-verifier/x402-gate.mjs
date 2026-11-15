@@ -205,8 +205,12 @@ export async function verifyMonetizedRequest(req, {
       };
     }
     const allowBrowserFreeLive = env.ALLOW_BROWSER_FREE_LIVE === 'true' || env.ALLOW_BROWSER_FREE_LIVE === '1';
-    const hasBrowserOrigin = Boolean(req && req.headers && String(req.headers.origin || '').trim());
-    if (hasBrowserOrigin && !allowBrowserFreeLive) {
+    const rawOrigin = String((req && req.headers && req.headers.origin) || '').trim().toLowerCase();
+    const secFetchSite = String((req && req.headers && req.headers['sec-fetch-site']) || '').trim().toLowerCase();
+    const isTrustedFirstPartyOrigin = rawOrigin === 'https://paxiom.org' || rawOrigin === 'https://www.paxiom.org';
+    const isUntrustedBrowserCrossSite = (Boolean(rawOrigin) && !isTrustedFirstPartyOrigin) ||
+      (secFetchSite === 'cross-site' && !isTrustedFirstPartyOrigin);
+    if (isUntrustedBrowserCrossSite && !allowBrowserFreeLive) {
       return {
         verified: false,
         authorized: false,
@@ -217,7 +221,7 @@ export async function verifyMonetizedRequest(req, {
           trustState: 'error',
           error: {
             code: 'cross_origin_unmetered_blocked',
-            message: 'Cross-origin browser requests to unmetered live endpoints are blocked; supply X-API-Key, enable X402_ENABLED, or set ALLOW_BROWSER_FREE_LIVE=true.'
+            message: 'Cross-origin browser requests to unmetered live endpoints are blocked; call from your backend/agent or set ALLOW_BROWSER_FREE_LIVE=true on self-hosted instances.'
           }
         }
       };

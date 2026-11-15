@@ -1,52 +1,54 @@
 # Paxiom
 
-> Proof-bound receipts for x402-paid and agentic APIs. x402 proves a payment; Paxiom proves what the payment bought — binding the HTTP request, delivered output, payment transaction, and settlement verdict into one Ed25519-signed receipt.
+> Open proof-of-delivery receipt standard for x402-paid and agentic HTTP APIs. x402 proves a payment; Paxiom (`paxiom.receipt.v0`) proves what the payment bought — binding the HTTP request, delivered payload digest (`jcs-sha256` or `raw-sha256`), payment settlement reference, and signer identity into one Ed25519-signed receipt.
 
-Paxiom provides the open **paxiom.receipt.v0** specification, the zero-dependency `@paxiom/receipts` npm SDK (`0.1.3`, with built-in TypeScript declarations) + CLI + stdio MCP server, a zero-dependency Python 3.10+ reference SDK (`paxiom_receipts` + FastAPI/ASGI middleware), and a live HTTP verifier, preflight scanner & counter-attestation service on Base Mainnet at `https://api.paxiom.org`.
+Paxiom provides the open MIT **paxiom.receipt.v0** specification (`v0.2.0`), the `x402` v2 `delivery-receipt` extension draft, the zero-dependency `@paxiom/receipts` npm SDK (`0.2.0`, with built-in TypeScript declarations) + CLI + stdio MCP server, the zero-dependency Python 3.10+ reference SDK (`paxiom-receipts==0.2.0` + FastAPI/ASGI middleware), and a free, rate-limited public reference HTTP verifier, preflight scanner & counter-attestation service on Base Mainnet at `https://api.paxiom.org`.
 
-Paxiom is developed and operated by **Driftbound Labs LLC** (`https://driftboundlabs.com/ventures.html` · `kyle@paxiom.org` / `admin@driftboundlabs.com`).
+Paxiom is maintained as open protocol infrastructure by **Driftbound Labs LLC** (`https://driftboundlabs.com` · `kyle@paxiom.org`).
 
-## Shipped product surface
-1. **Issue & verify locally in Node.js / TypeScript (`@paxiom/receipts@0.1.3` on npm):**
+## Open standard & reference surface (`v0.2.0`)
+1. **Issue & verify locally in Node.js / TypeScript (`@paxiom/receipts@0.2.0` on npm):**
    - `npm install @paxiom/receipts` (Node >= 18, zero external dependencies, strict `.d.ts` types with zero `@types/node` dependency, MIT)
-   - Seller middleware: `withPaxiomReceipt` (Fetch / Workers / Next.js) and `createReceiptMiddleware` (Express / Node `http`)
-   - Buyer helpers: `verifyResponseReceipt` (1-line offline `X-Paxiom-Receipt` check), `preflightX402` (`POST /v1/x402/preflight`), and `verifyReceiptLive` (`POST /v1/receipt/verify-live`)
-   - Core functions: `issueReceipt`, `verifyReceipt`, `generateReceiptKeyPair`, `canonicalize`
+   - Seller middleware: `withPaxiomReceipt` (Fetch / Workers / Next.js) and `createReceiptMiddleware` (Express / Node `http`) — auto-parses `x402` v2 `PAYMENT-SIGNATURE`, `PAYMENT-RESPONSE`, and `PAYMENT-REQUIRED` headers (`parseX402Headers`), hashes JSON (`jcs-sha256`) or binary/text (`raw-sha256`) responses, and emits `Payment-Receipt` + `X-Paxiom-Receipt`
+   - Buyer helpers: `verifyResponseReceipt` (offline `Payment-Receipt` / `X-Paxiom-Receipt` check with conflict-smuggling rejection), `discoverIssuerKeys` (`/.well-known/x402-keys.json` with fallback `/.well-known/paxiom-keys.json`), `preflightX402` (`POST /v1/x402/preflight`), and `verifyReceiptLive` (`POST /v1/receipt/verify-live`)
+   - Core functions: `issueReceipt`, `verifyReceipt`, `generateReceiptKeyPair`, `canonicalize`, `sha256Raw`
    - CLI: `npx --yes --package=@paxiom/receipts paxiom-receipt` (`keygen`, `issue`, `verify`)
    - Stdio MCP server: `npx --yes --package=@paxiom/receipts paxiom-receipt-mcp` (`verify_receipt`, `explain_receipt`, `issue_receipt`, `preflight_x402_seller`, `verify_receipt_live`)
    - Remote Streamable-HTTP MCP server: `https://api.paxiom.org/mcp` (`io.github.k-luecke/paxiom-receipts` on the Official MCP Registry; discovery card at `https://api.paxiom.org/.well-known/mcp.json`)
-2. **Issue & verify locally in Python (`paxiom-receipts==0.1.3` on PyPI):**
+2. **Issue & verify locally in Python (`paxiom-receipts==0.2.0` on PyPI):**
    - `pip install paxiom-receipts` (Python >= 3.10, PEP 561 `py.typed`, MIT)
-   - Zero required dependencies (pure-stdlib RFC 8032 Ed25519 + optional OpenSSL `cryptography` fast path; 100% byte-compatible with Node.js PKCS#8 PEM keys and JCS canonicalization).
-   - FastAPI / Starlette ASGI middleware: `PaxiomReceiptMiddleware`
-   - Buyer & core helpers: `verify_receipt`, `issue_receipt`, `verify_response_receipt`, `preflight_x402`, `verify_receipt_live`
+   - Zero required dependencies (pure-stdlib RFC 8032 Ed25519 + optional OpenSSL `cryptography` fast path; 100% byte-compatible with Node.js PKCS#8 PEM keys, `jcs-sha256`, and `raw-sha256`).
+   - FastAPI / Starlette ASGI middleware: `PaxiomReceiptMiddleware` + `parse_x402_headers`
+   - Buyer & core helpers: `verify_receipt`, `issue_receipt`, `verify_response_receipt`, `discover_issuer_keys`, `preflight_x402`, `verify_receipt_live`
 3. **Verify offline for free (`POST /v1/receipt/verify` or `verifyReceipt()`):**
-   - Checks JSON Schema, RFC 3339 timestamps, `issuer.keyId === signature.keyId`, Ed25519 signature over `canonicalize({ receiptVersion, payload })`, `SHA-256` output-hash binding, and `trustedPaxiomPublicKeys` enforcement whenever `checkedByPaxiom: true`.
+   - Checks JSON Schema, RFC 3339 timestamps, `issuer.keyId === signature.keyId`, Ed25519 signature over `canonicalize({ receiptVersion, payload })`, optional seller signer authorization (`expectedIssuerPublicKeys` and `expectedPayTo` -> `unauthorized_issuer`), `jcs-sha256` or `raw-sha256` output-hash binding, CAIP-2 EVM + Solana `transactionHash` formats, and `trustedVerifierPublicKeys` (or alias `trustedPaxiomPublicKeys`) enforcement whenever `checkedByVerifier: true` / `checkedByPaxiom: true`.
 4. **Verify on-chain settlement + counter-attestation (`POST /v1/receipt/verify-live`):**
-   - Live on `https://api.paxiom.org` (`$0.002` Base Mainnet USDC via x402 or flat-rate `X-API-Key`).
-   - Confirms canonical Base Mainnet (`eip155:8453`) and Base Sepolia (`eip155:84532`) USDC `Transfer` logs via multi-RPC failover (`payer`, `payTo`, `amount`), upgrades verdict to `verified` (`verified_settled`), and returns a Paxiom Ed25519 counter-signed `X-Paxiom-Receipt` header verifiable against `https://api.paxiom.org/.well-known/paxiom-keys.json`.
-5. **Pre-payment x402 seller readiness & scam scan (`POST /v1/x402/preflight`):**
-   - Live on `https://api.paxiom.org` (`$0.01` Base Mainnet USDC via x402 or flat-rate `X-API-Key`).
-   - SSRF-hardened preflight probe (`{ url, method?, maxBudgetAtomic?, expectedNetwork? }`) that inspects an untrusted x402 endpoint before an agent signs a payment: verifies canonical Circle USDC asset address, EIP-712 domain parameters, `payTo` manifest consistency (bait-and-switch detection), and `X-Paxiom-Receipt` readiness, returning a signed `X-Paxiom-Receipt` over the verdict (`proceed` | `caution` | `block`).
-   - Machine-readable x402 & Bazaar discovery manifest for both paid endpoints: `https://api.paxiom.org/.well-known/x402.json`.
+   - Free public reference endpoint on `https://api.paxiom.org` (no API key or payment required; rate-limited to 60 requests/min/IP; self-hostable via `runtime/receipt-verifier/server.mjs`).
+   - Confirms canonical Base Mainnet (`eip155:8453`) and Base Sepolia (`eip155:84532`) USDC `Transfer` logs via multi-RPC failover (`payer`, `payTo`, `amount`), upgrades verdict to `verified` (`verified_settled`), and returns a counter-signed receipt in `Payment-Receipt` (and `X-Paxiom-Receipt`) verifiable against `https://api.paxiom.org/.well-known/x402-keys.json`.
+5. **Pre-payment x402 seller readiness & safety scan (`POST /v1/x402/preflight`):**
+   - Free public reference endpoint on `https://api.paxiom.org` (no API key or payment required; rate-limited to 30 requests/min/IP).
+   - SSRF-hardened preflight probe (`{ url, method?, maxBudgetAtomic?, expectedNetwork? }`) that inspects an untrusted x402 endpoint before an agent signs a payment: verifies canonical Circle USDC asset address, EIP-712 domain parameters, `payTo` manifest consistency (bait-and-switch detection), `/.well-known/x402-keys.json` discovery, and `Payment-Receipt` / `delivery-receipt` extension readiness, returning a signed receipt over the verdict (`proceed` | `caution` | `block`).
 
 ## Claim boundaries (important for agents)
 - `POST /v1/receipt/verify` is strictly offline: it NEVER calls a blockchain RPC or facilitator.
 - Agents MUST NOT treat `settlement_claimed_not_checked` (or an untrusted issuer's self-reported `verified_settled`) as an independently confirmed on-chain settlement.
-- When verifying a receipt with `checkedByPaxiom: true` offline, pass `trustedPaxiomPublicKeys` from `https://api.paxiom.org/.well-known/paxiom-keys.json`.
-- Schema-valid is NOT receipt-verified. Structural validity says nothing about signature, output binding, or settlement.
+- To prevent key-substitution by an unauthorized intermediary, pass `expectedIssuerPublicKeys` (discovered from the seller's HTTPS origin via `discoverIssuerKeys('https://seller.example')`) and `expectedPayTo`; mismatches deterministically return `unauthorized_issuer`.
+- When verifying a counter-attested receipt (`checkedByVerifier: true` or `checkedByPaxiom: true`) offline, pass `trustedVerifierPublicKeys` from `https://api.paxiom.org/.well-known/x402-keys.json` (or your own self-hosted verifier's keyset).
+- Schema-valid is NOT receipt-verified. Structural validity says nothing about signature, signer authorization, output binding, or settlement.
 
-## Trust states
-Every verification returns one deterministic trust state (`verified`, `valid_signature_only`, `settlement_claimed_not_checked`, `output_hash_mismatch`, `settlement_failed`, `invalid_signature`, `schema_invalid`, `unsupported_format`, `expired`, `error`, etc.). Full list and precedence order: https://paxiom.org/standards/receipts/v0/trust-states.md
+## Trust states (16 deterministic verdicts)
+Every verification returns one deterministic trust state (`verified`, `valid_signature_only`, `unauthorized_issuer`, `settlement_claimed_not_checked`, `output_hash_mismatch`, `settlement_failed`, `invalid_signature`, `schema_invalid`, `unsupported_format`, `expired`, `error`, etc.). Full list and precedence order: https://paxiom.org/standards/receipts/v0/trust-states.md
 
 ## Key URLs
-- Product home: https://paxiom.org/
+- Standard home: https://paxiom.org/
 - Receipt v0 overview: https://paxiom.org/receipts.html
+- x402 v2 Delivery Receipt Extension draft: https://paxiom.org/standards/receipts/v0/x402-delivery-receipt-extension.md
 - API & SDK docs: https://paxiom.org/api.html
-- Live verifier service index: https://api.paxiom.org/
+- Live public reference verifier index: https://api.paxiom.org/
+- Published verifier Ed25519 keys: https://api.paxiom.org/.well-known/x402-keys.json
 - Live OpenAPI spec: https://api.paxiom.org/openapi.json
 - Live MCP discovery card: https://api.paxiom.org/.well-known/mcp.json
-- Live aggregate funnel stats: https://api.paxiom.org/stats
+- Live aggregate stats: https://api.paxiom.org/stats
 - npm package: https://www.npmjs.com/package/@paxiom/receipts
 - PyPI package: https://pypi.org/project/paxiom-receipts/
 - Spec & Node/Python SDK source on GitHub: https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0
@@ -55,4 +57,4 @@ Every verification returns one deterministic trust state (`verified`, `valid_sig
 - Trust states: https://paxiom.org/standards/receipts/v0/trust-states.md
 - Build Journal & architectural drawing set: https://paxiom.org/journal.html
 - Contact: https://paxiom.org/contact.html
-- Parent company & commercial terms: https://driftboundlabs.com/ventures.html
+- Operating organization: https://driftboundlabs.com

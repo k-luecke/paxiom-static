@@ -2,12 +2,15 @@ export { RECEIPT_VERSION, verifyReceipt, verifyFromFiles } from './verify.mjs';
 export {
   generateReceiptKeyPair,
   normalizeEd25519PrivateKey,
+  normalizeTransactionId,
   publicKeyFromPrivateKey,
   issueReceipt,
   decodeReceiptHeader
 } from './issue.mjs';
 export {
+  STANDARD_RECEIPT_HEADER_NAME,
   RECEIPT_HEADER_NAME,
+  parseX402Headers,
   withPaxiomReceipt,
   createReceiptMiddleware
 } from './middleware.mjs';
@@ -17,8 +20,10 @@ export { explain } from './explain.mjs';
 export {
   DEFAULT_PAXIOM_API_URL,
   PAXIOM_LIVE_VERIFIER_PUBLIC_KEY,
+  PAXIOM_TRUSTED_VERIFIER_PUBLIC_KEYS,
   PAXIOM_TRUSTED_PUBLIC_KEYS,
   resolveSafeApiOrigin,
+  discoverIssuerKeys,
   verifyResponseReceipt,
   preflightX402,
   verifyReceiptLive

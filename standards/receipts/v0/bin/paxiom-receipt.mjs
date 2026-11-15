@@ -5,12 +5,12 @@ import { verifyFromFiles } from '../src/verify.mjs';
 import { generateReceiptKeyPair, issueReceipt } from '../src/issue.mjs';
 import { explain } from '../src/explain.mjs';
 
-const USAGE = `paxiom-receipt — CLI for paxiom.receipt.v0
+const USAGE = `paxiom-receipt — CLI for paxiom.receipt.v0 (v0.2.0)
 
 Usage:
-  paxiom-receipt verify <receipt.json> [--output <output.json>] [--trusted-paxiom-key <pubKeyB64>] [--json]
+  paxiom-receipt verify <receipt.json> [--output <file>] [--expected-issuer-key <pubKeyB64>] [--expected-pay-to <addr>] [--trusted-verifier-key <pubKeyB64>] [--json]
   paxiom-receipt keygen [--key-id <id>] [--out <private.pem>]
-  paxiom-receipt issue  --key <private.pem> --issuer-name <name> --key-id <id> --resource <url> --output <output.json> [--method POST] [--tx <0x...>] [--out <receipt.json>]
+  paxiom-receipt issue  --key <private.pem> --issuer-name <name> --key-id <id> --resource <url> --output <file> [--raw] [--mime-type <mime>] [--pay-to <addr>] [--method POST] [--tx <hash>] [--out <receipt.json>]
 
 Exit codes:
   0  success (for verify: trustState === "verified")
@@ -19,9 +19,10 @@ Exit codes:
 `;
 
 const VALUE_FLAGS = new Set([
-  '--output', '-o', '--trusted-paxiom-key', '--key', '--key-id',
-  '--issuer-name', '--service-name', '--resource', '--method', '--tx',
-  '--amount-atomic', '--amount-display', '--network', '--out'
+  '--output', '-o', '--trusted-paxiom-key', '--trusted-verifier-key',
+  '--expected-issuer-key', '--expected-pay-to', '--pay-to', '--mime-type',
+  '--key', '--key-id', '--issuer-name', '--service-name', '--resource',
+  '--method', '--tx', '--amount-atomic', '--amount-display', '--network', '--out'
 ]);
 
 function requireFlagValue(argv, index, flag) {
@@ -34,14 +35,18 @@ function requireFlagValue(argv, index, flag) {
 }
 
 function parseArgs(argv) {
-  const args = { _: [], json: false, trustedKeys: [], hasOutFlag: false };
+  const args = { _: [], json: false, raw: false, trustedKeys: [], expectedIssuerKeys: [], hasOutFlag: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (VALUE_FLAGS.has(a)) {
       const val = requireFlagValue(argv, i, a);
       i++;
       if (a === '--output' || a === '-o') args.output = val;
-      else if (a === '--trusted-paxiom-key') args.trustedKeys.push(val);
+      else if (a === '--trusted-paxiom-key' || a === '--trusted-verifier-key') args.trustedKeys.push(val);
+      else if (a === '--expected-issuer-key') args.expectedIssuerKeys.push(val);
+      else if (a === '--expected-pay-to') args.expectedPayTo = val;
+      else if (a === '--pay-to') args.payTo = val;
+      else if (a === '--mime-type') args.mimeType = val;
       else if (a === '--key') args.key = val;
       else if (a === '--key-id') args.keyId = val;
       else if (a === '--issuer-name') args.issuerName = val;
@@ -54,6 +59,7 @@ function parseArgs(argv) {
       else if (a === '--network') args.network = val;
       else if (a === '--out') { args.out = val; args.hasOutFlag = true; }
     } else if (a === '--json') args.json = true;
+    else if (a === '--raw') args.raw = true;
     else if (a === '-h' || a === '--help') args.help = true;
     else args._.push(a);
   }
@@ -91,24 +97,32 @@ function main() {
     }
     try {
       const privateKey = readFileSync(args.key, 'utf8');
-      const output = JSON.parse(readFileSync(args.output, 'utf8'));
+      const rawBuf = readFileSync(args.output);
+      const output = args.raw ? rawBuf : JSON.parse(rawBuf.toString('utf8'));
       const { receipt } = issueReceipt({
         privateKey,
-        issuer: { name: args.issuerName, keyId: args.keyId },
+        issuer: {
+          name: args.issuerName,
+          keyId: args.keyId,
+          ...(args.payTo ? { payTo: args.payTo } : {})
+        },
         service: {
           name: args.serviceName || args.issuerName,
           resource: args.resource,
           method: args.method || 'POST'
         },
         payment: {
-          network: args.network || 'base',
+          network: args.network || 'eip155:8453',
           amountAtomic: args.amountAtomic || '0',
           amountDisplay: args.amountDisplay || '0',
+          ...(args.payTo ? { payTo: args.payTo } : {}),
           settlement: args.tx
-            ? { status: 'claimed_not_checked', transactionHash: args.tx, checkedByPaxiom: false }
-            : { status: 'verify_only', transactionHash: null, checkedByPaxiom: false }
+            ? { status: 'claimed_not_checked', transactionHash: args.tx, checkedByVerifier: false }
+            : { status: 'verify_only', transactionHash: null, checkedByVerifier: false }
         },
-        output
+        output,
+        canonicalization: args.raw ? 'raw-sha256' : 'jcs-sha256',
+        mimeType: args.mimeType || (args.raw ? 'application/octet-stream' : 'application/json')
       });
       const serialized = JSON.stringify(receipt, null, 2) + '\n';
       if (args.out) writeFileSync(args.out, serialized);
@@ -131,9 +145,10 @@ function main() {
 
   let result;
   try {
-    const extraOpts = args.trustedKeys.length > 0
-      ? { trustedPaxiomPublicKeys: args.trustedKeys }
-      : {};
+    const extraOpts = {};
+    if (args.trustedKeys.length > 0) extraOpts.trustedVerifierPublicKeys = args.trustedKeys;
+    if (args.expectedIssuerKeys.length > 0) extraOpts.expectedIssuerPublicKeys = args.expectedIssuerKeys;
+    if (args.expectedPayTo) extraOpts.expectedPayTo = args.expectedPayTo;
     result = verifyFromFiles(arg1, args.output, extraOpts);
   } catch (err) {
     result = { valid: false, trustState: 'error', checks: {}, receiptHash: null, summary: String((err && err.message) || err) };

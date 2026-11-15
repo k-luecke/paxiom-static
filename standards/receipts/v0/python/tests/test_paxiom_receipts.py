@@ -1,4 +1,4 @@
-"""Comprehensive unit & security regression tests for paxiom_receipts (Python v0.1.3)."""
+"""Comprehensive unit & security regression tests for paxiom_receipts (Python v0.2.0)."""
 from __future__ import annotations
 
 import asyncio
@@ -19,12 +19,15 @@ if str(PY_ROOT) not in sys.path:
 from paxiom_receipts import (  # noqa: E402
     PAXIOM_TRUSTED_PUBLIC_KEYS,
     RECEIPT_HEADER_NAME,
+    STANDARD_RECEIPT_HEADER_NAME,
     PaxiomReceiptMiddleware,
     canonicalize,
     decode_receipt_header,
+    discover_issuer_keys,
     explain,
     generate_receipt_keypair,
     issue_receipt,
+    parse_x402_headers,
     preflight_x402,
     resolve_safe_api_origin,
     verify_from_files,
@@ -312,6 +315,134 @@ process.stdout.write(JSON.stringify({ nodeHeader: nodeIssued.receiptHeader, rece
         )
         self.assertTrue(py_check_of_node["valid"])
         self.assertEqual(py_check_of_node["trustState"], "verified")
+
+    def test_v020_signer_auth_raw_sha256_solana_and_x402_headers(self) -> None:
+        kp = generate_receipt_keypair("py-v020-01")
+        other_kp = generate_receipt_keypair("py-other-01")
+        sol_sig = "5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW"
+        sol_pay_to = "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin"
+
+        # 1. parse_x402_headers decodes base64 PAYMENT-SIGNATURE + PAYMENT-RESPONSE
+        pay_sig_b64 = base64.b64encode(
+            json.dumps(
+                {
+                    "x402Version": 2,
+                    "accepted": {
+                        "scheme": "exact",
+                        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+                        "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        "amount": "15000",
+                        "payTo": sol_pay_to,
+                    },
+                }
+            ).encode("utf-8")
+        ).decode("ascii")
+        pay_resp_b64 = base64.b64encode(
+            json.dumps({"success": True, "transaction": sol_sig, "payer": "4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T"}).encode("utf-8")
+        ).decode("ascii")
+
+        parsed = parse_x402_headers({"payment-signature": pay_sig_b64}, {"payment-response": pay_resp_b64})
+        self.assertEqual(parsed["txHash"], sol_sig)
+        self.assertEqual(parsed["amountAtomic"], "15000")
+        self.assertEqual(parsed["amountDisplay"], "0.015")
+        self.assertEqual(parsed["payTo"], sol_pay_to)
+
+        # 2. ASGI middleware signs Markdown (raw-sha256) + emits both Payment-Receipt and X-Paxiom-Receipt
+        md_bytes = b"# Research Note\n\nProof-bound raw bytes.\n"
+
+        async def md_app(scope, receive, send):  # noqa: ANN001
+            await receive()
+            await send(
+                {
+                    "type": "http.response.start",
+                    "status": 200,
+                    "headers": [
+                        (b"content-type", b"text/markdown; charset=utf-8"),
+                        (b"payment-response", pay_resp_b64.encode("ascii")),
+                    ],
+                }
+            )
+            await send({"type": "http.response.body", "body": md_bytes, "more_body": False})
+
+        mw = PaxiomReceiptMiddleware(
+            md_app,
+            private_key=kp["privateKeyPem"],
+            issuer={"name": "PyRawSeller", "keyId": kp["keyId"]},
+        )
+
+        async def run_md():
+            sent: list[dict] = []
+
+            async def recv():
+                return {"type": "http.request", "body": b"query", "more_body": False}
+
+            async def snd(m):
+                sent.append(m)
+
+            await mw(
+                {
+                    "type": "http",
+                    "method": "POST",
+                    "scheme": "https",
+                    "path": "/v1/note",
+                    "headers": [
+                        (b"host", b"seller.example"),
+                        (b"content-type", b"text/plain"),
+                        (b"payment-signature", pay_sig_b64.encode("ascii")),
+                    ],
+                },
+                recv,
+                snd,
+            )
+            return {k.decode("latin-1").lower(): v.decode("latin-1") for k, v in sent[0]["headers"]}, sent[1]["body"]
+
+        hdrs, body = asyncio.run(run_md())
+        self.assertIn(STANDARD_RECEIPT_HEADER_NAME, hdrs)
+        self.assertEqual(hdrs[STANDARD_RECEIPT_HEADER_NAME], hdrs[RECEIPT_HEADER_NAME])
+
+        # Authorized key + matching Solana payTo -> settlement_claimed_not_checked (since txHash present)
+        ok_check = verify_response_receipt(
+            hdrs,
+            output=body,
+            expected_issuer_public_keys=[kp["publicKey"]],
+            expected_pay_to=sol_pay_to,
+        )
+        self.assertEqual(ok_check["trustState"], "settlement_claimed_not_checked")
+        self.assertEqual(ok_check["checks"]["issuerAuthorization"], "pass")
+        self.assertEqual(ok_check["checks"]["outputHash"], "pass")
+        self.assertEqual(ok_check["receipt"]["payload"]["delivery"]["canonicalization"], "raw-sha256")
+        self.assertEqual(ok_check["receipt"]["payload"]["payment"]["settlement"]["transactionHash"], sol_sig)
+
+        # Wrong seller key -> unauthorized_issuer
+        bad_key = verify_response_receipt(
+            hdrs,
+            output=body,
+            expected_issuer_public_keys=[other_kp["publicKey"]],
+        )
+        self.assertEqual(bad_key["trustState"], "unauthorized_issuer")
+
+        # Conflicting Payment-Receipt vs X-Paxiom-Receipt -> malformed_header
+        conflict = verify_response_receipt(
+            {
+                STANDARD_RECEIPT_HEADER_NAME: hdrs[STANDARD_RECEIPT_HEADER_NAME],
+                RECEIPT_HEADER_NAME: hdrs[RECEIPT_HEADER_NAME][:-2] + "AA",
+            },
+            output=body,
+        )
+        self.assertEqual(conflict["trustState"], "malformed_header")
+
+        # 3. discover_issuer_keys resolves /.well-known/x402-keys.json
+        disc = discover_issuer_keys(
+            "https://seller.example/v1/note",
+            transport=lambda u, h, b, t, m: (
+                200,
+                {"content-type": "application/json"},
+                json.dumps({"keys": [{"keyId": kp["keyId"], "algorithm": "ed25519", "publicKey": kp["publicKey"]}]}),
+            ),
+        )
+        self.assertTrue(disc["ok"])
+        self.assertEqual(disc["publicKeys"], [kp["publicKey"]])
+
 
 if __name__ == "__main__":
     unittest.main()

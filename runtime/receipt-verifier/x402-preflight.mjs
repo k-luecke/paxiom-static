@@ -513,9 +513,10 @@ export async function runX402Preflight(validatedTarget, {
     : readBoundedResponsePinnedHttps(validatedTarget, url, opts));
 
   const wkX402Url = `${validatedTarget.origin}/.well-known/x402.json`;
+  const wkX402KeysUrl = `${validatedTarget.origin}/.well-known/x402-keys.json`;
   const wkPaxiomKeysUrl = `${validatedTarget.origin}/.well-known/paxiom-keys.json`;
 
-  const [mainOutcome, wkX402Outcome, wkKeysOutcome] = await Promise.all([
+  const [mainOutcome, wkX402Outcome, wkX402KeysOutcome, wkKeysOutcome] = await Promise.all([
     doProbe(validatedTarget.normalizedUrl, {
       method: upperMethod,
       headers: probeHeaders,
@@ -523,6 +524,11 @@ export async function runX402Preflight(validatedTarget, {
       timeoutMs: PROBE_TIMEOUT_MS
     }).then((res) => ({ ok: true, res }), (err) => ({ ok: false, err })),
     doProbe(wkX402Url, {
+      method: 'GET',
+      headers: baseHeaders,
+      timeoutMs: WELL_KNOWN_TIMEOUT_MS
+    }).then((res) => ({ ok: true, res }), () => ({ ok: false, res: null })),
+    doProbe(wkX402KeysUrl, {
       method: 'GET',
       headers: baseHeaders,
       timeoutMs: WELL_KNOWN_TIMEOUT_MS
@@ -572,15 +578,22 @@ export async function runX402Preflight(validatedTarget, {
   const wkX402Json = wkX402Outcome.ok && wkX402Outcome.res.status === 200
     ? safeParseJson(wkX402Outcome.res.bodyText)
     : null;
-  const wkKeysJson = wkKeysOutcome.ok && wkKeysOutcome.res.status === 200
+  const wkX402KeysJson = wkX402KeysOutcome.ok && wkX402KeysOutcome.res.status === 200
+    ? safeParseJson(wkX402KeysOutcome.res.bodyText)
+    : null;
+  const wkPaxiomKeysJson = wkKeysOutcome.ok && wkKeysOutcome.res.status === 200
     ? safeParseJson(wkKeysOutcome.res.bodyText)
     : null;
+  const wkKeysJson = wkX402KeysJson || wkPaxiomKeysJson;
 
   const paxiomKeysCount = wkKeysJson && Array.isArray(wkKeysJson.keys)
     ? wkKeysJson.keys.filter((k) => k && k.algorithm === 'ed25519' && typeof k.publicKey === 'string').length
     : 0;
   const exposeHdr = String(mainRes.headers['access-control-expose-headers'] || '').toLowerCase();
-  const paxiomHeaderExposed = exposeHdr.includes('x-paxiom-receipt') || Boolean(mainRes.headers['x-paxiom-receipt']);
+  const paxiomHeaderExposed =
+    exposeHdr.includes('payment-receipt') ||
+    exposeHdr.includes('x-paxiom-receipt') ||
+    Boolean(mainRes.headers['payment-receipt'] || mainRes.headers['x-paxiom-receipt']);
   if (paxiomHeaderExposed || paxiomKeysCount > 0) {
     checks.paxiomReceipts = 'ready';
   }
@@ -787,12 +800,15 @@ export async function runX402Preflight(validatedTarget, {
   if (chosen.outputSchema && typeof chosen.outputSchema === 'object') {
     checks.bazaarSchema = 'present';
   }
+  if (challengeSource.extensions && typeof challengeSource.extensions === 'object' && challengeSource.extensions['delivery-receipt']) {
+    checks.paxiomReceipts = 'ready';
+  }
 
   if (checks.paxiomReceipts === 'not_detected') {
     findings.push({
       code: 'no_delivery_receipt_advertised',
       severity: 'low',
-      message: 'Seller does not advertise X-Paxiom-Receipt or /.well-known/paxiom-keys.json; payment alone will not cryptographically bind delivered output.'
+      message: 'Seller does not advertise Payment-Receipt / X-Paxiom-Receipt or /.well-known/x402-keys.json; payment alone will not cryptographically bind delivered output.'
     });
   }
 

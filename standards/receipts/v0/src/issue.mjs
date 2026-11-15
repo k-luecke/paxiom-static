@@ -4,6 +4,18 @@ import { sha256Hex, hashCanonical } from './hash.mjs';
 import { RECEIPT_VERSION } from './verify.mjs';
 
 const SHA256_HEX_RE = /^0x[0-9a-f]{64}$/;
+const EVM_TX_HASH_RE = /^0x[0-9a-fA-F]{64}$/;
+const SOLANA_TX_SIG_RE = /^[1-9A-HJ-NP-Za-km-z]{64,88}$/;
+
+export function normalizeTransactionId(rawTx) {
+  if (rawTx === null || rawTx === undefined) return null;
+  const s = String(rawTx);
+  if (EVM_TX_HASH_RE.test(s)) return s.toLowerCase();
+  if (SOLANA_TX_SIG_RE.test(s)) return s;
+  throw new TypeError(
+    `settlement.transactionHash must be 0x + 64 hex chars (EVM), 64-88 base58 chars (Solana), or null, got ${rawTx}`
+  );
+}
 
 /**
  * Normalize an Ed25519 private key input (KeyObject, PEM string, or JWK object)
@@ -88,9 +100,9 @@ function resolveDigestOrValue(explicitHash, value, fallbackEmpty = '') {
 /**
  * Issue and Ed25519-sign a schema-valid paxiom.receipt.v0 receipt.
  *
- * Zero external dependencies. Accepts raw objects/bytes OR precomputed sha256Hex
- * digests for request, payment, and output so middleware and proxy callers can bind
- * payloads with minimal boilerplate.
+ * Zero external dependencies. Supports both structured JSON (`jcs-sha256`) and
+ * exact binary/text payloads (`raw-sha256`), CAIP-2 + Solana/EVM transaction IDs,
+ * and vendor-neutral `checkedByVerifier` settlement metadata.
  */
 export function issueReceipt({
   privateKey,
@@ -104,6 +116,8 @@ export function issueReceipt({
   output,
   outputHash: explicitOutputHash,
   mimeType = 'application/json',
+  canonicalization: explicitCanonicalization,
+  statusCode,
   evidence
 } = {}) {
   if (!issuer || !issuer.name || !issuer.keyId) {
@@ -136,37 +150,66 @@ export function issueReceipt({
   );
 
   const settlementInput = payment.settlement || {};
-  const txHash = settlementInput.transactionHash == null
-    ? null
-    : String(settlementInput.transactionHash).toLowerCase();
-  if (txHash !== null && !SHA256_HEX_RE.test(txHash)) {
-    throw new TypeError(`settlement.transactionHash must be 0x + 64 lowercase hex chars or null, got ${settlementInput.transactionHash}`);
-  }
+  const txHash = normalizeTransactionId(settlementInput.transactionHash);
+  const checkedByVerifier = Boolean(
+    settlementInput.checkedByVerifier ?? settlementInput.checkedByPaxiom ?? false
+  );
 
   const settlement = {
     status: settlementInput.status || (txHash ? 'claimed_not_checked' : 'not_required'),
     transactionHash: txHash,
-    checkedByPaxiom: Boolean(settlementInput.checkedByPaxiom)
+    checkedByVerifier,
+    ...(settlementInput.verifier !== undefined ? { verifier: settlementInput.verifier } : {}),
+    ...(Object.hasOwn(settlementInput, 'checkedByPaxiom')
+      ? { checkedByPaxiom: Boolean(settlementInput.checkedByPaxiom) }
+      : {})
   };
 
-  const computedOutputHash = explicitOutputHash
-    ? resolveDigestOrValue(explicitOutputHash)
-    : output !== undefined
-      ? (Buffer.isBuffer(output) || output instanceof Uint8Array
-          ? sha256Hex(output)
-          : hashCanonical(output))
-      : (() => { throw new TypeError('Either output or outputHash is required to issue a receipt'); })();
+  const isRawBytes = Buffer.isBuffer(output) || output instanceof Uint8Array;
+  let canonicalizationMode = explicitCanonicalization || (isRawBytes ? 'raw-sha256' : undefined);
+  if (canonicalizationMode && canonicalizationMode !== 'jcs-sha256' && canonicalizationMode !== 'raw-sha256') {
+    throw new TypeError(`Invalid canonicalization mode: ${canonicalizationMode}`);
+  }
+
+  let computedOutputHash;
+  if (explicitOutputHash) {
+    computedOutputHash = resolveDigestOrValue(explicitOutputHash);
+  } else if (output !== undefined) {
+    if (canonicalizationMode === 'raw-sha256') {
+      if (isRawBytes) {
+        computedOutputHash = sha256Hex(output);
+      } else if (typeof output === 'string') {
+        computedOutputHash = sha256Hex(Buffer.from(output, 'utf8'));
+      } else {
+        throw new TypeError('canonicalization="raw-sha256" requires Buffer, Uint8Array, or string output');
+      }
+    } else {
+      computedOutputHash = hashCanonical(output);
+      if (!canonicalizationMode) canonicalizationMode = 'jcs-sha256';
+    }
+  } else {
+    throw new TypeError('Either output or outputHash is required to issue a receipt');
+  }
 
   const issuerObj = {
     name: String(issuer.name),
     keyId: String(issuer.keyId),
-    ...(issuer.uri ? { uri: String(issuer.uri) } : {})
+    ...(issuer.uri ? { uri: String(issuer.uri) } : {}),
+    ...(issuer.payTo ? { payTo: String(issuer.payTo) } : {}),
+    ...(issuer.keysUri ? { keysUri: String(issuer.keysUri) } : {})
+  };
+
+  const deliveryObj = {
+    outputHash: computedOutputHash,
+    mimeType: String(mimeType),
+    ...(canonicalizationMode ? { canonicalization: canonicalizationMode } : {}),
+    ...(statusCode !== undefined && statusCode !== null ? { statusCode: Number(statusCode) } : {})
   };
 
   const payload = {
     receiptId: String(receiptId),
-    issuedAt: String(issuedAt),
-    ...(expiresAt ? { expiresAt: String(expiresAt) } : {}),
+    issuedAt: issuedAt instanceof Date ? issuedAt.toISOString() : String(issuedAt),
+    ...(expiresAt ? { expiresAt: expiresAt instanceof Date ? expiresAt.toISOString() : String(expiresAt) } : {}),
     issuer: issuerObj,
     service: {
       name: String(service.name),
@@ -180,18 +223,17 @@ export function issueReceipt({
     },
     payment: {
       scheme: String(payment.scheme || 'x402'),
-      network: String(payment.network || 'base'),
+      network: String(payment.network || 'eip155:8453'),
       asset: String(payment.asset || 'USDC'),
       amountAtomic: String(payment.amountAtomic ?? '0'),
       amountDisplay: String(payment.amountDisplay ?? '0'),
+      ...(payment.payer ? { payer: String(payment.payer) } : {}),
+      ...(payment.payTo ? { payTo: String(payment.payTo) } : {}),
       paymentRequirementsHash,
       paymentPayloadHash,
       settlement
     },
-    delivery: {
-      outputHash: computedOutputHash,
-      mimeType: String(mimeType)
-    },
+    delivery: deliveryObj,
     evidence: Array.isArray(evidence) && evidence.length > 0
       ? evidence
       : [{ type: 'none', status: 'not_provided', hash: null, uri: null }]
@@ -218,7 +260,7 @@ export function issueReceipt({
 }
 
 /**
- * Decode a base64url `X-Paxiom-Receipt` HTTP header back into a receipt object.
+ * Decode a base64url `Payment-Receipt` or `X-Paxiom-Receipt` HTTP header back into a receipt object.
  */
 export function decodeReceiptHeader(headerValue) {
   if (typeof headerValue !== 'string' || !headerValue.trim()) {

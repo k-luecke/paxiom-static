@@ -2,6 +2,7 @@
 const LABEL = {
   schema: 'Schema',
   signature: 'Signature',
+  issuerAuthorization: 'Issuer auth',
   outputHash: 'Output binding',
   requestBinding: 'Request binding',
   paymentBinding: 'Payment binding',

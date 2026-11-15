@@ -116,6 +116,8 @@ test('x402 discovery exposes $0.002 verify-live + $0.01 preflight, closes pre-ve
   let facilitatorVerifyValid = true;
   const env = {
     RENDER: 'true',
+    PAXIOM_COMMERCIAL_GATE_ENABLED: 'true',
+    X402_ENABLED: 'true',
     CDP_FACILITATOR_URL: 'https://facilitator.mock'
   };
   const publicDns = async (host) => {
@@ -333,8 +335,10 @@ test('POST /v1/x402/preflight flags spoofed USDC, payTo bait-and-switch, and red
       })
     });
     assert.equal(okRes.status, 200);
+    const stdReceiptHdr = okRes.headers.get('payment-receipt');
     const receiptHdr = okRes.headers.get('x-paxiom-receipt');
     assert.ok(receiptHdr, 'expected signed X-Paxiom-Receipt header');
+    assert.equal(stdReceiptHdr, receiptHdr, 'expected matching Payment-Receipt header');
     const okBody = await okRes.json();
     assert.equal(okBody.verdict, 'proceed');
     assert.equal(okBody.riskLevel, 'low');
@@ -376,5 +380,69 @@ test('POST /v1/x402/preflight flags spoofed USDC, payTo bait-and-switch, and red
     const redirBody = await redirRes.json();
     assert.equal(redirBody.verdict, 'block');
     assert.equal(redirBody.findings[0].code, 'redirect_not_allowed');
+  });
+});
+
+test('Public reference RENDER=true preflight works 100% free, detects /.well-known/x402-keys.json + Payment-Receipt, and enforces 429 burst limits', async () => {
+  const sellerKey = generateReceiptKeyPair({ keyId: 'std-seller-01' });
+  const goodPayTo = '0x1111111111111111111111111111111111111111';
+  const publicDns = async () => [{ address: '93.184.216.34', family: 4 }];
+  const mockFetch = async (url) => {
+    if (url === 'https://std.seller.example/v1/infer') {
+      const challenge = {
+        x402Version: 2,
+        accepts: [{
+          scheme: 'exact',
+          network: 'eip155:8453',
+          amount: '2000',
+          resource: 'https://std.seller.example/v1/infer',
+          payTo: goodPayTo,
+          asset: NETWORK_CONFIGS.base.usdcAddress,
+          extra: { name: 'USD Coin', version: '2' }
+        }],
+        extensions: { 'delivery-receipt': { info: { receiptVersion: 'paxiom.receipt.v0' } } }
+      };
+      return new Response(JSON.stringify(challenge), {
+        status: 402,
+        headers: {
+          'content-type': 'application/json',
+          'access-control-expose-headers': 'PAYMENT-REQUIRED, Payment-Receipt'
+        }
+      });
+    }
+    if (url === 'https://std.seller.example/.well-known/x402-keys.json') {
+      return new Response(JSON.stringify({
+        version: 'x402-keys.v1',
+        keys: [{ keyId: sellerKey.keyId, algorithm: 'ed25519', publicKey: sellerKey.publicKey }]
+      }), { status: 200 });
+    }
+    return new Response('not found', { status: 404 });
+  };
+
+  await withServer({
+    env: { RENDER: 'true', RATE_LIMIT_PREFLIGHT_PER_MIN: '1' },
+    fetchImpl: mockFetch,
+    lookupImpl: publicDns
+  }, async (base) => {
+    // Unpaid, unauthenticated call succeeds with 200!
+    const r1 = await fetch(`${base}/v1/x402/preflight`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.7' },
+      body: JSON.stringify({ url: 'https://std.seller.example/v1/infer' })
+    });
+    assert.equal(r1.status, 200);
+    const b1 = await r1.json();
+    assert.equal(b1.verdict, 'proceed');
+    assert.equal(b1.checks.paxiomReceipts, 'ready');
+    assert.equal(b1.receiptSupport.paxiomWellKnownKeys, 1);
+
+    // Second burst call from same IP returns 429
+    const r2 = await fetch(`${base}/v1/x402/preflight`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.7' },
+      body: JSON.stringify({ url: 'https://std.seller.example/v1/infer' })
+    });
+    assert.equal(r2.status, 429);
+    assert.ok(r2.headers.get('retry-after'));
   });
 });

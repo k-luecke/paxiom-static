@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <title>Paxiom &middot; Contact</title>
-<meta name="description" content="Reach Paxiom directly — for x402 receipt integration sprints, hosted verifier API keys, or technical questions on paxiom.receipt.v0.">
+<meta name="description" content="Reach Paxiom directly — for x402 delivery-receipt standard feedback, facilitator interoperability, or scoped verification engineering.">
 <meta property="og:title" content="Paxiom · Contact">
-<meta property="og:description" content="Reach Paxiom directly — pilot integration sprints, hosted verifier API keys, and technical questions.">
+<meta property="og:description" content="Reach Paxiom directly — open-standard collaboration, facilitator interoperability, and technical questions.">
 <meta property="og:url" content="https://paxiom.org/contact.html">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
@@ -224,7 +224,7 @@ a:hover { color: var(--red); }
     <div>
       <div class="project-mark">Paxiom &middot; Contact</div>
       <div class="project-title">Contact</div>
-      <div class="project-subtitle">Direct to the builder. Pilot integrations, API keys, and spec feedback.</div>
+      <div class="project-subtitle">Direct to the author. Standard feedback, facilitator interop, and verification engineering.</div>
     </div>
     <div class="meta">
       <span>Sheet PXM-C-100</span><span class="sep">&middot;</span>
@@ -235,7 +235,7 @@ a:hover { color: var(--red); }
   <section class="page-header">
     <div class="mark">Sheet PXM-C-100</div>
     <h1>How to reach <em>Paxiom.</em></h1>
-    <p class="strap">No contact form and no sales queue. Messages go straight to the founder.</p>
+    <p class="strap">No contact form and no sales queue. Messages go straight to the author.</p>
   </section>
 
   <section class="channels" aria-label="Contact channels">
@@ -243,37 +243,36 @@ a:hover { color: var(--red); }
     <div class="channel">
       <div class="label">Email</div>
       <div class="value"><a href="mailto:kyle@paxiom.org">kyle@paxiom.org</a></div>
-      <div class="note">For pilot sprints, hosted verifier API keys, partnership inquiries, or technical questions. Concrete subject lines get fast replies.</div>
+      <div class="note">For <code>x402</code> v2 extension feedback, facilitator / wallet interoperability, or scoped verification engineering via Driftbound Labs LLC.</div>
     </div>
 
     <div class="channel">
       <div class="label">GitHub</div>
       <div class="value"><a href="https://github.com/k-luecke/paxiom-static" target="_blank" rel="noopener noreferrer">github.com/k-luecke/paxiom-static</a></div>
-      <div class="note">Open spec, verifier runtime, and public site source. Open an issue for schema proposals, edge cases, or bug reports.</div>
+      <div class="note">Open MIT spec, SDKs, verifier runtime, and public site source. Open an issue for schema proposals, edge cases, or bug reports.</div>
     </div>
 
     <div class="channel">
       <div class="label">npm (Node / TS / Edge)</div>
       <div class="value"><a href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer">@paxiom/receipts</a></div>
-      <div class="note">Zero-dependency TypeScript/ESM SDK, Fetch/Express middleware, CLI, and stdio MCP server.</div>
+      <div class="note">Zero-dependency TypeScript/ESM SDK (`0.2.0`), Fetch/Express middleware, CLI, and stdio MCP server.</div>
     </div>
 
     <div class="channel">
       <div class="label">PyPI &amp; MCP Registry</div>
       <div class="value"><a href="https://pypi.org/project/paxiom-receipts/" target="_blank" rel="noopener noreferrer">paxiom-receipts</a></div>
-      <div class="note">Zero-dependency Python 3.10+ / FastAPI SDK on PyPI, plus <code>io.github.k-luecke/paxiom-receipts</code> on the Official MCP Registry.</div>
+      <div class="note">Zero-dependency Python 3.10+ / FastAPI SDK (`0.2.0`) on PyPI, plus <code>io.github.k-luecke/paxiom-receipts</code> on the Official MCP Registry.</div>
     </div>
 
   </section>
 
   <div class="note-block">
-    <div class="note-label">Pilot sprints &amp; hosted X-API-Key access</div>
-    <p>Integrating <a href="/receipts.html">Paxiom Receipts</a> into an x402 endpoint, agent wallet, or gateway? Including these details helps us start immediately:</p>
+    <div class="note-label">Ecosystem collaboration &amp; self-hosting</div>
+    <p>Adopting <a href="/receipts.html">Paxiom Receipts</a> in an x402 endpoint, facilitator, agent wallet, or gateway? Both SDKs and the public reference runtime on <code>api.paxiom.org</code> are free under MIT. If reaching out for interop or a scoped engineering sprint, helpful context includes:</p>
     <ul>
-      <li>your endpoint URL, framework, or repository;</li>
-      <li>whether you need seller <em>issuance</em> (<code>@paxiom/receipts</code>), buyer <em>verification</em>, or both;</li>
-      <li>expected monthly volume if requesting a flat-rate <code>X-API-Key</code> for <code>POST /v1/receipt/verify-live</code>;</li>
-      <li>any settlement chains beyond Base Mainnet your roadmap requires.</li>
+      <li>your endpoint URL, framework, facilitator, or repository;</li>
+      <li>whether you are implementing seller <em>issuance</em> (<code>Payment-Receipt</code> + <code>/.well-known/x402-keys.json</code>), buyer <em>verification</em>, or self-hosted counter-attestation;</li>
+      <li>any settlement networks beyond Base Mainnet and Solana that your stack requires.</li>
     </ul>
   </div>
 
@@ -281,9 +280,9 @@ a:hover { color: var(--red); }
     <div class="subsection-mark">C-200 &middot; Good reasons to write</div>
     <h2>Where the conversation matters.</h2>
     <ul>
-      <li>Wiring proof-bound receipts into production x402 APIs, MCP servers, or agentic payment routers.</li>
-      <li>Provisioning flat monthly <code>X-API-Key</code> credentials alongside per-call x402 settlement on <code>api.paxiom.org</code>.</li>
-      <li>Standards alignment across x402 facilitators, Bazaar indexers, and agent wallet receipt logs.</li>
+      <li>Standards alignment on the <a href="/standards/receipts/v0/x402-delivery-receipt-extension.md"><code>x402</code> v2 <code>delivery-receipt</code> extension</a> across facilitators, Bazaar indexers, and agent wallets.</li>
+      <li>Wiring proof-bound receipts into x402 APIs, MCP servers, or payment routers.</li>
+      <li>Scoped protocol or verification engineering engagements through <a href="https://driftboundlabs.com/ventures.html">Driftbound Labs LLC</a>.</li>
       <li>Technical review or critique of <code>paxiom.receipt.v0</code> or the prints in the <a href="/journal.html">Build Journal</a>.</li>
     </ul>
   </section>

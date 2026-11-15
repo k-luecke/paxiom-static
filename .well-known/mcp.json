@@ -1,8 +1,8 @@
 {
   "name": "io.github.k-luecke/paxiom-receipts",
   "title": "Paxiom Receipts MCP",
-  "version": "0.1.3",
-  "description": "Verify and explain Ed25519 proof-bound receipts (paxiom.receipt.v0) for x402 APIs, and discover live Base USDC settlement & preflight endpoints.",
+  "version": "0.2.0",
+  "description": "Verify and explain Ed25519 proof-bound delivery receipts (paxiom.receipt.v0) for x402 APIs, and discover free public Base USDC settlement & preflight reference endpoints.",
   "websiteUrl": "https://paxiom.org/receipts.html",
   "transport": {
     "type": "streamable-http",
@@ -18,7 +18,7 @@
   "tools": [
     {
       "name": "verify_receipt",
-      "description": "Verify a paxiom.receipt.v0 cryptographic receipt (schema, Ed25519 signature, output SHA-256 JCS binding, expiry, and honest settlement/proof trust state). Deterministic and free; automatically trusts the host Paxiom counter-attestation public key when trustedPaxiomPublicKeys is omitted."
+      "description": "Verify a paxiom.receipt.v0 cryptographic delivery receipt (schema, Ed25519 signature, signer authorization via expectedIssuerPublicKeys / expectedPayTo, JCS or raw SHA-256 output binding, expiry, and honest settlement/proof trust state). Deterministic and free; automatically trusts the host counter-attestation public key when trustedVerifierPublicKeys is omitted."
     },
     {
       "name": "explain_receipt",
@@ -26,7 +26,7 @@
     },
     {
       "name": "get_x402_verifier_info",
-      "description": "Return Paxiom Receipt Verifier service metadata, published Ed25519 counter-attestation public keys, and x402 Base USDC payment terms for live on-chain settlement verification ($0.002 USDC) and pre-payment seller preflight ($0.01 USDC)."
+      "description": "Return Paxiom Receipt Verifier reference service metadata, published Ed25519 counter-attestation public keys (/.well-known/x402-keys.json), and free rate-limited public endpoints for live on-chain Base USDC settlement verification and pre-payment seller preflight."
     }
   ]
 }

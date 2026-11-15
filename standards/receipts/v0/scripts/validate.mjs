@@ -47,6 +47,12 @@ function validate(node, sch, path = '') {
     if (sch.const && node !== sch.const) errs.push(`${path}: expected const ${sch.const}`);
     if (sch.enum && !sch.enum.includes(node)) errs.push(`${path}: not in enum`);
     if (sch.pattern && !new RegExp(sch.pattern).test(node)) errs.push(`${path}: pattern ${sch.pattern}`);
+  } else if (t === 'integer') {
+    if (!Number.isInteger(node)) errs.push(`${path}: expected integer`);
+    else {
+      if (sch.minimum !== undefined && node < sch.minimum) errs.push(`${path}: below minimum`);
+      if (sch.maximum !== undefined && node > sch.maximum) errs.push(`${path}: above maximum`);
+    }
   } else if (t === 'boolean') {
     if (typeof node !== 'boolean') errs.push(`${path}: expected boolean`);
   } else if (t === 'null') {

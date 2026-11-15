@@ -2,18 +2,22 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Paxiom Receipt Verifier",
-    "version": "0.1.3",
+    "version": "0.2.0",
     "x-status": "live",
-    "description": "Verifier, counter-attestation, and x402 pre-payment readiness service for paxiom.receipt.v0 \u2014 proof-bound Ed25519 receipts for x402-paid and agentic APIs.\n\n- **Free offline verification (`POST /v1/receipt/verify`):** verifies receipt structure, Ed25519 signature over canonical JSON, SHA-256 output-hash binding, and honest settlement/evidence status with zero RPC calls (`settlement_claimed_not_checked` is never reported as `verified`).\n- **Live on-chain settlement verification (`POST /v1/receipt/verify-live`, $0.002 USDC via x402 or `X-API-Key`):** verifies canonical Base Mainnet (`eip155:8453`) and Base Sepolia (`eip155:84532`) USDC `Transfer` logs via multi-RPC failover and emits a Paxiom counter-attested receipt (`X-Paxiom-Receipt`).\n- **Pre-payment seller readiness scan (`POST /v1/x402/preflight`, $0.01 USDC via x402 or `X-API-Key`):** SSRF-hardened preflight scanner that probes an untrusted x402 endpoint before payment, verifying canonical Circle USDC asset address, EIP-712 domain parameters, `payTo` manifest consistency, and Paxiom receipt readiness.",
+    "description": "Free public reference verifier, counter-attestation utility, and x402 pre-payment readiness scanner for paxiom.receipt.v0 \u2014 open MIT proof-bound Ed25519 delivery receipts for x402-paid and agentic APIs.\n\n- **Free offline verification (`POST /v1/receipt/verify`):** verifies receipt structure, Ed25519 signature over canonical JSON, signer authorization (`expectedIssuerPublicKeys` / `expectedPayTo`), `jcs-sha256` or `raw-sha256` output-hash binding, and honest settlement/evidence status with zero RPC calls (`settlement_claimed_not_checked` is never reported as `verified`).\n- **Free rate-limited live on-chain settlement verification (`POST /v1/receipt/verify-live`):** verifies canonical Base Mainnet (`eip155:8453`) and Base Sepolia (`eip155:84532`) USDC `Transfer` logs via multi-RPC failover and emits an Ed25519 counter-attested receipt (`Payment-Receipt` and `X-Paxiom-Receipt`).\n- **Free rate-limited pre-payment seller readiness scan (`POST /v1/x402/preflight`):** SSRF-hardened preflight scanner that probes an untrusted x402 endpoint before payment, verifying canonical Circle USDC asset address, EIP-712 domain parameters, `payTo` manifest consistency, and `Payment-Receipt` / `X-Paxiom-Receipt` readiness.",
     "contact": {
       "name": "Paxiom",
       "url": "https://paxiom.org"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
     }
   },
   "servers": [
     {
       "url": "https://api.paxiom.org",
-      "description": "Public developer-preview verifier runtime (free offline verification on /v1/receipt/verify; inspect GET /version for opt-in live settlement capabilities)."
+      "description": "Free public rate-limited reference verifier runtime (inspect GET /version for active capabilities and rate limits)."
     },
     {
       "url": "http://localhost:8787",
@@ -95,11 +99,11 @@
     },
     "/stats": {
       "get": {
-        "summary": "Zero-PII aggregate funnel telemetry counters",
+        "summary": "Zero-PII aggregate telemetry counters",
         "operationId": "getFunnelStats",
         "responses": {
           "200": {
-            "description": "Aggregate request and settlement counters since process boot (zero PII).",
+            "description": "Aggregate request and verification counters since process boot (zero PII).",
             "content": {
               "application/json": {
                 "schema": {
@@ -126,7 +130,7 @@
                 "example": {
                   "ok": true,
                   "service": "paxiom-receipt-verifier",
-                  "version": "v0"
+                  "version": "0.2.0"
                 }
               }
             }
@@ -182,80 +186,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/VerifyResult"
-                },
-                "examples": {
-                  "verified": {
-                    "summary": "verified",
-                    "value": {
-                      "valid": true,
-                      "trustState": "verified",
-                      "checks": {
-                        "schema": "pass",
-                        "signature": "pass",
-                        "outputHash": "pass",
-                        "requestBinding": "pass",
-                        "paymentBinding": "pass",
-                        "settlement": "verify_only",
-                        "proof": "not_provided"
-                      },
-                      "receiptHash": "0xc6ceba580eda748250339f20d482c347d31c0b3260b3c813a3750814298f912e",
-                      "summary": "Receipt verified: schema, Ed25519 signature, output binding, and settlement (verify_only) all consistent."
-                    }
-                  },
-                  "output_hash_mismatch": {
-                    "summary": "output_hash_mismatch",
-                    "value": {
-                      "valid": false,
-                      "trustState": "output_hash_mismatch",
-                      "checks": {
-                        "schema": "pass",
-                        "signature": "pass",
-                        "outputHash": "fail",
-                        "requestBinding": "pass",
-                        "paymentBinding": "pass",
-                        "settlement": "not_checked",
-                        "proof": "not_checked"
-                      },
-                      "receiptHash": "0xc6ceba580eda748250339f20d482c347d31c0b3260b3c813a3750814298f912e",
-                      "summary": "Supplied output hash 0x793f\u2026 != receipt delivery.outputHash 0x36b3\u2026."
-                    }
-                  },
-                  "settlement_claimed_not_checked": {
-                    "summary": "settlement_claimed_not_checked",
-                    "value": {
-                      "valid": false,
-                      "trustState": "settlement_claimed_not_checked",
-                      "checks": {
-                        "schema": "pass",
-                        "signature": "pass",
-                        "outputHash": "pass",
-                        "requestBinding": "pass",
-                        "paymentBinding": "pass",
-                        "settlement": "claimed_not_checked",
-                        "proof": "not_provided"
-                      },
-                      "receiptHash": "0x\u2026",
-                      "summary": "Signature and output hash verified. Receipt claims an onchain settlement that this offline verifier did not check."
-                    }
-                  },
-                  "invalid_signature": {
-                    "summary": "invalid_signature",
-                    "value": {
-                      "valid": false,
-                      "trustState": "invalid_signature",
-                      "checks": {
-                        "schema": "pass",
-                        "signature": "fail",
-                        "outputHash": "not_checked",
-                        "requestBinding": "not_checked",
-                        "paymentBinding": "not_checked",
-                        "settlement": "not_checked",
-                        "proof": "not_checked"
-                      },
-                      "receiptHash": "0x\u2026",
-                      "summary": "Ed25519 signature does not verify over the canonical signing input."
-                    }
-                  }
                 }
               }
             }
@@ -266,14 +196,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResult"
-                },
-                "example": {
-                  "valid": false,
-                  "trustState": "error",
-                  "error": {
-                    "code": "invalid_json",
-                    "message": "Request body is not valid JSON"
-                  }
                 }
               }
             }
@@ -284,14 +206,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResult"
-                },
-                "example": {
-                  "valid": false,
-                  "trustState": "error",
-                  "error": {
-                    "code": "body_too_large",
-                    "message": "Request body exceeds 256 KiB"
-                  }
                 }
               }
             }
@@ -301,7 +215,7 @@
     },
     "/version": {
       "get": {
-        "summary": "Service identity, active capabilities, and explicit claim boundaries",
+        "summary": "Service identity, active capabilities, rate limits, and explicit claim boundaries",
         "operationId": "getVersion",
         "responses": {
           "200": {
@@ -317,9 +231,27 @@
         }
       }
     },
+    "/.well-known/x402-keys.json": {
+      "get": {
+        "summary": "Published Ed25519 public keys for receipt & counter-attestation verification",
+        "operationId": "getX402Keys",
+        "responses": {
+          "200": {
+            "description": "Active Ed25519 public key set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/.well-known/paxiom-keys.json": {
       "get": {
-        "summary": "Published Paxiom counter-attestation Ed25519 public keys",
+        "summary": "Legacy alias for /.well-known/x402-keys.json",
         "operationId": "getPaxiomKeys",
         "responses": {
           "200": {
@@ -335,31 +267,10 @@
         }
       }
     },
-    "/.well-known/x402.json": {
-      "get": {
-        "summary": "x402 payment and Bazaar discovery manifest",
-        "operationId": "getX402Discovery",
-        "responses": {
-          "200": {
-            "description": "Discovery manifest reporting x402 gating configuration for /v1/receipt/verify-live",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "x402 payment gating is not enabled on this host."
-          }
-        }
-      }
-    },
     "/v1/receipt/verify-live": {
       "post": {
-        "summary": "Verify receipt + live Base/Base-Sepolia USDC Transfer log settlement (opt-in)",
-        "description": "Performs offline receipt verification and, when live settlement verification is enabled on the host, independently verifies the Base or Base Sepolia USDC Transfer log against JSON-RPC and optionally returns a Paxiom counter-attested receipt. Supports X-API-Key/Bearer or x402 payment gating when configured.",
+        "summary": "Verify receipt + live Base/Base-Sepolia USDC Transfer log settlement (free, rate-limited)",
+        "description": "Performs offline receipt verification and independently verifies the Base or Base Sepolia USDC Transfer log against JSON-RPC, optionally returning an Ed25519 counter-attested receipt (`Payment-Receipt` and `X-Paxiom-Receipt`). Free public reference endpoint protected by per-IP burst rate limiting.",
         "operationId": "verifyReceiptLive",
         "requestBody": {
           "required": true,
@@ -377,11 +288,18 @@
                   "output": {},
                   "expectedPayTo": {
                     "type": "string",
-                    "description": "Optional expected 0x recipient address for the USDC Transfer log."
+                    "description": "Expected 0x recipient address for the USDC Transfer log (required to mint a counter-attested receipt)."
+                  },
+                  "expectedIssuerPublicKeys": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Optional pinned seller Ed25519 public keys."
                   },
                   "counterAttest": {
                     "type": "boolean",
-                    "description": "When true (default) and a Paxiom signing key is configured on the host, emits a counter-attested receipt on verified settlement."
+                    "description": "When true (default) and a signing key is configured on the host, emits a counter-attested receipt on verified settlement."
                   }
                 }
               }
@@ -390,7 +308,7 @@
         },
         "responses": {
           "200": {
-            "description": "Verification completed (includes liveSettlement details and optional counterAttestedReceipt).",
+            "description": "Verification completed (includes onchainSettlement details and optional counterAttestedReceipt).",
             "content": {
               "application/json": {
                 "schema": {
@@ -402,11 +320,11 @@
           "400": {
             "description": "Malformed JSON or missing receipt."
           },
-          "402": {
-            "description": "Payment required (x402 PaymentRequirements with outputSchema or invalid API key)."
+          "429": {
+            "description": "Per-IP rate limit exceeded (see Retry-After header)."
           },
           "502": {
-            "description": "Upstream RPC or facilitator error during live check."
+            "description": "Upstream RPC error during live check."
           },
           "503": {
             "description": "Live settlement verification is not enabled on this host."
@@ -416,8 +334,8 @@
     },
     "/v1/x402/preflight": {
       "post": {
-        "summary": "SSRF-hardened pre-payment x402 seller readiness & canonical USDC check ($0.01 USDC / X-API-Key)",
-        "description": "Probes an untrusted https:// x402 endpoint before an agent signs an EIP-3009 payment. Validates public DNS/IP ranges, inspects the 402 PaymentRequirements challenge and /.well-known/x402.json, verifies canonical Base / Base Sepolia USDC token address and EIP-712 domain, detects payTo bait-and-switch, checks Paxiom receipt support, and signs the report in X-Paxiom-Receipt.",
+        "summary": "SSRF-hardened pre-payment x402 seller readiness & canonical USDC check (free, rate-limited)",
+        "description": "Probes an untrusted https:// x402 endpoint before an agent signs an EIP-3009 payment. Validates public DNS/IP ranges, inspects the 402 PaymentRequirements challenge and /.well-known/x402.json, verifies canonical Base / Base Sepolia USDC token address and EIP-712 domain, detects payTo bait-and-switch, checks Payment-Receipt / X-Paxiom-Receipt and /.well-known/x402-keys.json support, and signs the report.",
         "operationId": "x402Preflight",
         "requestBody": {
           "required": true,
@@ -468,10 +386,13 @@
             }
           },
           "400": {
-            "description": "Invalid or SSRF-blocked target URL (never charges x402 facilitator)."
+            "description": "Invalid or SSRF-blocked target URL."
           },
-          "402": {
-            "description": "Payment required ($0.01 USDC on Base via x402 or X-API-Key)."
+          "403": {
+            "description": "Cross-site browser request rejected."
+          },
+          "429": {
+            "description": "Per-IP rate limit exceeded (see Retry-After header)."
           },
           "503": {
             "description": "Live x402 preflight scanning is not enabled on this host."
@@ -553,7 +474,25 @@
             "description": "A paxiom.receipt.v0 receipt. See standards/receipts/v0/paxiom.receipt.v0.schema.json."
           },
           "output": {
-            "description": "Optional delivered output. When present, enables the payment-to-output binding check. Omit to check signature only."
+            "description": "Optional delivered output (JSON value for jcs-sha256, or UTF-8 string for raw-sha256). Omit to check signature only."
+          },
+          "expectedIssuerPublicKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional pinned seller Ed25519 public keys (e.g. discovered from /.well-known/x402-keys.json)."
+          },
+          "expectedPayTo": {
+            "type": "string",
+            "description": "Optional expected seller payTo address from the 402 quote."
+          },
+          "trustedVerifierPublicKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional Ed25519 public keys trusted to assert settlement.checkedByVerifier=true."
           }
         }
       },
@@ -578,6 +517,7 @@
               "schema_invalid",
               "unsupported_format",
               "invalid_signature",
+              "unauthorized_issuer",
               "request_binding_missing",
               "payment_binding_missing",
               "output_hash_mismatch",
@@ -592,7 +532,7 @@
           },
           "checks": {
             "type": "object",
-            "description": "Per-dimension breakdown (schema, signature, outputHash, requestBinding, paymentBinding, settlement, proof)."
+            "description": "Per-dimension breakdown (schema, signature, issuerAuthorization, outputHash, requestBinding, paymentBinding, settlement, proof)."
           },
           "receiptHash": {
             "type": [

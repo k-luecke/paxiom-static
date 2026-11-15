@@ -21,7 +21,22 @@ from .ed25519_pure import (
 from .verify import RECEIPT_VERSION
 
 _SHA256_HEX_RE = re.compile(r"\A0x[0-9a-f]{64}\Z")
+_EVM_TX_HASH_RE = re.compile(r"\A0x[0-9a-fA-F]{64}\Z")
+_SOLANA_TX_SIG_RE = re.compile(r"\A[1-9A-HJ-NP-Za-km-z]{64,88}\Z")
 _SENTINEL = object()
+
+
+def normalize_transaction_id(raw_tx: Any) -> str | None:
+    if raw_tx is None:
+        return None
+    s = str(raw_tx)
+    if _EVM_TX_HASH_RE.match(s):
+        return s.lower()
+    if _SOLANA_TX_SIG_RE.match(s):
+        return s
+    raise TypeError(
+        f"settlement.transactionHash must be 0x + 64 hex chars (EVM), 64-88 base58 chars (Solana), or null, got {raw_tx}"
+    )
 
 
 def public_key_from_private_key(private_key: Any) -> str:
@@ -75,6 +90,8 @@ def issue_receipt(
     output: Any = _SENTINEL,
     output_hash: str | None = None,
     mime_type: str = "application/json",
+    canonicalization: str | None = None,
+    status_code: int | None = None,
     evidence: list[dict[str, Any]] | None = None,
     receipt_id: str | None = None,
     issued_at: str | None = None,
@@ -108,25 +125,42 @@ def issue_receipt(
     payment_payload_hash = _resolve_digest_or_value(pay.get("paymentPayloadHash"), pay_payload_val, "none")
 
     settlement_in = pay.get("settlement") or {}
-    raw_tx = settlement_in.get("transactionHash")
-    tx_hash = None if raw_tx is None else str(raw_tx).lower()
-    if tx_hash is not None and not _SHA256_HEX_RE.match(tx_hash):
-        raise TypeError(
-            f"settlement.transactionHash must be 0x + 64 lowercase hex chars or null, got {raw_tx}"
-        )
+    tx_hash = normalize_transaction_id(settlement_in.get("transactionHash"))
+    checked_by_verifier = bool(
+        settlement_in["checkedByVerifier"]
+        if "checkedByVerifier" in settlement_in
+        else settlement_in.get("checkedByPaxiom", False)
+    )
 
-    settlement = {
+    settlement: dict[str, Any] = {
         "status": settlement_in.get("status") or ("claimed_not_checked" if tx_hash else "not_required"),
         "transactionHash": tx_hash,
-        "checkedByPaxiom": bool(settlement_in.get("checkedByPaxiom", False)),
+        "checkedByVerifier": checked_by_verifier,
     }
+    if "verifier" in settlement_in:
+        settlement["verifier"] = settlement_in["verifier"]
+    if "checkedByPaxiom" in settlement_in:
+        settlement["checkedByPaxiom"] = bool(settlement_in["checkedByPaxiom"])
+
+    is_raw_bytes = isinstance(output, (bytes, bytearray, memoryview))
+    canon_mode = canonicalization or ("raw-sha256" if is_raw_bytes else None)
+    if canon_mode is not None and canon_mode not in ("jcs-sha256", "raw-sha256"):
+        raise TypeError(f"Invalid canonicalization mode: {canon_mode}")
 
     if output_hash:
         computed_output_hash = _resolve_digest_or_value(output_hash)
     elif output is not _SENTINEL:
-        computed_output_hash = (
-            sha256_hex(output) if isinstance(output, (bytes, bytearray, memoryview)) else hash_canonical(output)
-        )
+        if canon_mode == "raw-sha256":
+            if is_raw_bytes:
+                computed_output_hash = sha256_hex(output)
+            elif isinstance(output, str):
+                computed_output_hash = sha256_hex(output.encode("utf-8"))
+            else:
+                raise TypeError('canonicalization="raw-sha256" requires bytes or str output')
+        else:
+            computed_output_hash = hash_canonical(output)
+            if canon_mode is None:
+                canon_mode = "jcs-sha256"
     else:
         raise TypeError("Either output or output_hash is required to issue a receipt")
 
@@ -136,6 +170,34 @@ def issue_receipt(
     }
     if issuer.get("uri"):
         issuer_obj["uri"] = str(issuer["uri"])
+    if issuer.get("payTo"):
+        issuer_obj["payTo"] = str(issuer["payTo"])
+    if issuer.get("keysUri"):
+        issuer_obj["keysUri"] = str(issuer["keysUri"])
+
+    delivery_obj: dict[str, Any] = {
+        "outputHash": computed_output_hash,
+        "mimeType": str(mime_type),
+    }
+    if canon_mode:
+        delivery_obj["canonicalization"] = canon_mode
+    if status_code is not None:
+        delivery_obj["statusCode"] = int(status_code)
+
+    payment_obj: dict[str, Any] = {
+        "scheme": str(pay.get("scheme") or "x402"),
+        "network": str(pay.get("network") or "eip155:8453"),
+        "asset": str(pay.get("asset") or "USDC"),
+        "amountAtomic": str(pay.get("amountAtomic", "0")),
+        "amountDisplay": str(pay.get("amountDisplay", "0")),
+        "paymentRequirementsHash": payment_requirements_hash,
+        "paymentPayloadHash": payment_payload_hash,
+        "settlement": settlement,
+    }
+    if pay.get("payer"):
+        payment_obj["payer"] = str(pay["payer"])
+    if pay.get("payTo"):
+        payment_obj["payTo"] = str(pay["payTo"])
 
     now_iso = issued_at or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
     rid = receipt_id or f"rcpt_{uuid.uuid4().hex}"
@@ -154,20 +216,8 @@ def issue_receipt(
             "resourceHash": resource_hash,
             "bodyHash": body_hash,
         },
-        "payment": {
-            "scheme": str(pay.get("scheme") or "x402"),
-            "network": str(pay.get("network") or "base"),
-            "asset": str(pay.get("asset") or "USDC"),
-            "amountAtomic": str(pay.get("amountAtomic", "0")),
-            "amountDisplay": str(pay.get("amountDisplay", "0")),
-            "paymentRequirementsHash": payment_requirements_hash,
-            "paymentPayloadHash": payment_payload_hash,
-            "settlement": settlement,
-        },
-        "delivery": {
-            "outputHash": computed_output_hash,
-            "mimeType": str(mime_type),
-        },
+        "payment": payment_obj,
+        "delivery": delivery_obj,
         "evidence": (
             evidence
             if isinstance(evidence, list) and len(evidence) > 0

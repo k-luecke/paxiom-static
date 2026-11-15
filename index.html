@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
-<title>Paxiom — Signed Delivery Receipts for Paid HTTP APIs</title>
-<meta name="description" content="paxiom.receipt.v0 binds HTTP requests, canonical JSON response digests, and on-chain USDC settlement into an Ed25519-signed receipt header. Zero-dependency TypeScript &amp; Python SDKs, MCP server, and Base Mainnet verifier.">
-<meta property="og:title" content="Paxiom — Signed Delivery Receipts for Paid HTTP APIs">
-<meta property="og:description" content="Open Ed25519 delivery receipt standard (paxiom.receipt.v0), Node/Python SDKs, MCP server, and Base Mainnet USDC settlement verifier.">
+<title>Paxiom — Open Delivery Receipt Standard for x402 &amp; Paid HTTP APIs</title>
+<meta name="description" content="paxiom.receipt.v0 (v0.2.0) binds HTTP requests, canonical JSON or raw binary response digests, signer identity, and on-chain settlement into an Ed25519-signed Payment-Receipt header. Free MIT TypeScript &amp; Python SDKs and public reference verifier.">
+<meta property="og:title" content="Paxiom — Open Delivery Receipt Standard for x402 &amp; Paid HTTP APIs">
+<meta property="og:description" content="Open MIT Ed25519 delivery receipt standard (paxiom.receipt.v0), zero-dependency Node/Python SDKs, MCP server, and free public Base Mainnet reference verifier.">
 <meta property="og:url" content="https://paxiom.org/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
@@ -66,7 +66,7 @@ code {
   padding: 0 24px;
 }
 
-/* Simple flat top navigation (no floating glass, no rounded SaaS CTA pill) */
+/* Simple flat top navigation */
 .topbar {
   border-bottom: 1px solid var(--line);
 }
@@ -189,7 +189,7 @@ pre {
 }
 pre .c { color: #A1A1AA; }
 
-/* Clean flat specification & endpoint tables (no bento cards) */
+/* Clean flat specification & endpoint tables */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -257,9 +257,9 @@ footer a { color: var(--muted); }
 <main class="wrap">
 
   <section class="intro">
-    <h1>Signed delivery receipts for paid HTTP APIs.</h1>
-    <p>When a script or agent pays an HTTP endpoint (such as via <code>x402</code>), an on-chain transfer log proves funds moved, while <code>HTTP 200</code> delivers bytes over TLS. Once TLS terminates, nothing links the payment transaction to the response body that was actually returned.</p>
-    <p><strong>Paxiom</strong> (<code>paxiom.receipt.v0</code>) attaches an Ed25519-signed <code>X-Paxiom-Receipt</code> header binding the canonicalized request, the SHA-256 digest of the delivered JSON output, and the settlement reference so any buyer, audit log, or downstream process can verify delivery independently.</p>
+    <h1>Open delivery receipts for x402 and paid HTTP APIs.</h1>
+    <p>When a script or agent pays an HTTP endpoint via <code>x402</code>, an on-chain transfer log proves funds moved, while <code>HTTP 200</code> delivers bytes over TLS. Once TLS terminates, nothing links the payment transaction to the response body that was actually returned.</p>
+    <p><strong>Paxiom</strong> (<code>paxiom.receipt.v0</code>) is a free, MIT-licensed specification and reference toolkit that attaches an Ed25519-signed <code>Payment-Receipt</code> header (with <code>X-Paxiom-Receipt</code> backward compatibility) binding the canonicalized request, the SHA-256 digest of the delivered JSON or binary payload, the seller's published key identity, and the settlement reference so any buyer, wallet, or audit log can verify delivery independently.</p>
 
     <div class="install-bar">
       <span>npm install @paxiom/receipts</span>
@@ -272,22 +272,24 @@ footer a { color: var(--muted); }
       <span>&middot;</span>
       <a href="/receipts.html">Receipt v0 Wire Format</a>
       <span>&middot;</span>
+      <a href="/standards/receipts/v0/x402-delivery-receipt-extension.md">x402 v2 Extension Draft</a>
+      <span>&middot;</span>
       <a href="https://api.paxiom.org/v1/receipt/demo">Live Demo Fixtures (JSON)</a>
       <span>&middot;</span>
-      <a href="https://www.npmjs.com/package/@paxiom/receipts">npm (v0.1.3)</a>
+      <a href="https://www.npmjs.com/package/@paxiom/receipts">npm (v0.2.0)</a>
       <span>&middot;</span>
-      <a href="https://pypi.org/project/paxiom-receipts/">PyPI (v0.1.3)</a>
+      <a href="https://pypi.org/project/paxiom-receipts/">PyPI (v0.2.0)</a>
     </div>
   </section>
 
   <section class="sec">
     <h2>Usage</h2>
-    <p>Issuing receipts on the server and verifying signatures/hashes locally require zero runtime dependencies and zero network calls.</p>
+    <p>Issuing receipts on the seller endpoint and verifying signatures, signer keys, and payload digests on the buyer require zero runtime dependencies and zero paid gatekeepers.</p>
 
     <div class="two-col">
       <div class="col-block">
         <h3>1. Issue on the seller endpoint (Node.js or Python)</h3>
-<pre><span class="c">// Hash canonical JSON &amp; sign X-Paxiom-Receipt</span>
+<pre><span class="c">// Auto-binds x402 v2 headers &amp; signs Payment-Receipt</span>
 import { withPaxiomReceipt } from '@paxiom/receipts';
 
 export default withPaxiomReceipt(paidHandler, {
@@ -302,16 +304,19 @@ export default withPaxiomReceipt(paidHandler, {
       </div>
 
       <div class="col-block">
-        <h3>2. Verify payload binding &amp; on-chain settlement</h3>
-<pre><span class="c">// Offline: checks Ed25519 + canonical outputHash</span>
-import { verifyReceipt } from '@paxiom/receipts';
+        <h3>2. Pin seller keys, verify payload &amp; check settlement</h3>
+<pre><span class="c">// Discover seller keys &amp; verify offline</span>
+import { discoverIssuerKeys, verifyResponseReceipt } from '@paxiom/receipts';
 
-const res = verifyReceipt(receipt, { output });
-<span class="c">// res.trustState === 'settlement_claimed_not_checked'</span>
+const keys = await discoverIssuerKeys('https://api.acme.dev');
+const res = verifyResponseReceipt(httpRes, {
+  output,
+  expectedIssuerPublicKeys: keys.publicKeys,
+  expectedPayTo: '0xSeller...'
+});
 
-<span class="c"># Confirm Base USDC Transfer ($0.002 or X-API-Key):</span>
-curl -sX POST \
-  https://api.paxiom.org/v1/receipt/verify-live \
+<span class="c"># Free public Base USDC settlement check:</span>
+curl -sX POST https://api.paxiom.org/v1/receipt/verify-live \
   -H 'content-type: application/json' \
   -d '{"receipt": {...}, "output": {...}}'</pre>
       </div>
@@ -319,12 +324,12 @@ curl -sX POST \
   </section>
 
   <section class="sec">
-    <h2>Components &amp; Hosted Endpoints</h2>
+    <h2>Open SDKs &amp; Free Public Reference Endpoints</h2>
     <table>
       <thead>
         <tr>
           <th>Surface</th>
-          <th>Cost / License</th>
+          <th>Access / License</th>
           <th>Behavior</th>
         </tr>
       </thead>
@@ -332,27 +337,27 @@ curl -sX POST \
         <tr>
           <td><code>@paxiom/receipts</code><br><code>paxiom-receipts</code></td>
           <td>Free (MIT)</td>
-          <td>Node &ge;18 and Python &ge;3.10 libraries for RFC 8785-style JSON canonicalization, Ed25519 signing, offline verification, and CLI inspection.</td>
+          <td>Zero-dependency Node &ge;18 and Python &ge;3.10 SDKs for <code>jcs-sha256</code> &amp; <code>raw-sha256</code> payload binding, Ed25519 signing, <code>x402</code> v2 header parsing, key discovery, and offline verification.</td>
         </tr>
         <tr>
           <td><code>paxiom-receipt-mcp</code></td>
           <td>Free (MIT)</td>
-          <td>Local stdio MCP server and remote Streamable-HTTP endpoint (<code>https://api.paxiom.org/mcp</code>) exposing receipt checks to MCP clients.</td>
+          <td>Local stdio MCP server and remote Streamable-HTTP endpoint (<code>https://api.paxiom.org/mcp</code>) exposing receipt and preflight tools to MCP clients.</td>
         </tr>
         <tr>
           <td><code>POST /v1/receipt/verify</code></td>
           <td>Free</td>
-          <td>Stateless hosted mirror of offline verification (schema, canonical base64, Ed25519 signature, expiry, and <code>outputHash</code> match).</td>
+          <td>Stateless hosted mirror of offline verification (schema, canonical base64, Ed25519 signature, signer authorization, expiry, and <code>outputHash</code> match).</td>
         </tr>
         <tr>
           <td><code>POST /v1/receipt/verify-live</code></td>
-          <td>$0.002 USDC or <code>X-API-Key</code></td>
-          <td>Queries Base Mainnet / Base Sepolia RPC logs to confirm the claimed USDC <code>Transfer</code> settled to <code>expectedPayTo</code>, returning a Paxiom counter-signed receipt.</td>
+          <td>Free (60 req/min/IP)</td>
+          <td>Public reference verifier that queries Base Mainnet / Base Sepolia RPC logs to confirm the claimed USDC <code>Transfer</code> settled, returning a counter-signed <code>Payment-Receipt</code>.</td>
         </tr>
         <tr>
           <td><code>POST /v1/x402/preflight</code></td>
-          <td>$0.01 USDC or <code>X-API-Key</code></td>
-          <td>Probes an unfamiliar <code>402 Payment Required</code> endpoint prior to payment to flag spoofed token contracts, redirect traps, or missing receipt support.</td>
+          <td>Free (30 req/min/IP)</td>
+          <td>Public pre-payment scanner that probes an unfamiliar <code>402 Payment Required</code> endpoint to flag spoofed token contracts, redirect traps, or missing <code>/.well-known/x402-keys.json</code> / receipt support.</td>
         </tr>
       </tbody>
     </table>
@@ -360,7 +365,7 @@ curl -sX POST \
 
   <section class="sec">
     <h2>Why Verification Is Not a Boolean</h2>
-    <p>A seller holds their own signing key, so a valid seller signature alone cannot prove that a claimed blockchain transaction hash actually settled. Offline verifiers evaluate receipts in strict precedence order (<a href="/trust-states.html">all 15 states</a>) so callers never mistake an unverified claim for confirmed settlement:</p>
+    <p>A seller holds their own signing key, so a valid seller signature alone cannot prove that the signer owns the paid endpoint or that a claimed transaction hash settled on-chain. Verifiers evaluate receipts in strict precedence order (<a href="/trust-states.html">all 16 states</a>) so callers never mistake an unverified claim for confirmed delivery:</p>
     <table>
       <thead>
         <tr>
@@ -371,15 +376,19 @@ curl -sX POST \
       <tbody>
         <tr>
           <td><code>verified</code></td>
-          <td>Schema, Ed25519 signature, and <code>outputHash</code> match, and settlement is either <code>not_required</code> or counter-attested against a pinned key in <a href="https://api.paxiom.org/.well-known/paxiom-keys.json"><code>/.well-known/paxiom-keys.json</code></a>.</td>
+          <td>Schema, Ed25519 signature, optional signer pinning, and <code>outputHash</code> match, and settlement is either <code>not_required</code> or counter-attested against a pinned verifier key in <a href="https://api.paxiom.org/.well-known/x402-keys.json"><code>/.well-known/x402-keys.json</code></a>.</td>
         </tr>
         <tr>
           <td><code>settlement_claimed_not_checked</code></td>
           <td>Seller signature and payload hash are intact, but the receipt cites an on-chain payment that has not yet been checked against chain logs.</td>
         </tr>
         <tr>
+          <td><code>unauthorized_issuer</code></td>
+          <td>Signature is mathematically valid, but the signing key is not in <code>expectedIssuerPublicKeys</code> (from the seller's <code>/.well-known/x402-keys.json</code>) or <code>payTo</code> mismatches <code>expectedPayTo</code>.</td>
+        </tr>
+        <tr>
           <td><code>output_hash_mismatch</code></td>
-          <td>Signature is valid, but the delivered JSON body does not match <code>payload.delivery.outputHash</code> (truncated, substituted, or mutated in transit).</td>
+          <td>Signature is valid, but the delivered JSON or binary body does not match <code>payload.delivery.outputHash</code> (truncated, substituted, or mutated in transit).</td>
         </tr>
         <tr>
           <td><code>invalid_signature</code></td>
@@ -390,12 +399,12 @@ curl -sX POST \
   </section>
 
   <section class="sec" style="border-bottom:0;padding-bottom:16px;">
-    <h2>Commercial API Keys &amp; Integration</h2>
-    <p style="margin-bottom:0;">Paxiom is developed and operated by <a href="https://driftboundlabs.com/ventures.html">Driftbound Labs LLC</a>. Teams that prefer flat monthly invoiced <code>X-API-Key</code> billing over per-request <code>x402</code> micropayments — or want a scoped 3–5 day integration sprint — can reach us via <a href="/contact.html">Contact</a> (<a href="mailto:kyle@paxiom.org">kyle@paxiom.org</a>).</p>
+    <h2>Open Standard &amp; Ecosystem Governance</h2>
+    <p style="margin-bottom:0;"><code>paxiom.receipt.v0</code>, both reference SDKs, and the <code>api.paxiom.org</code> runtime are 100% open-source under the MIT license with zero paywalls or vendor lock-in &mdash; any facilitator, wallet, or gateway can self-host the verifier using its own keys. Paxiom is maintained by <a href="https://driftboundlabs.com">Driftbound Labs LLC</a>; for <code>x402</code> extension collaboration, multi-chain adapter feedback, or scoped verification engineering engagements, reach out via <a href="/contact.html">Contact</a> (<a href="mailto:kyle@paxiom.org">kyle@paxiom.org</a>).</p>
   </section>
 
   <footer>
-    <div>Paxiom &middot; Operated by <a href="https://driftboundlabs.com">Driftbound Labs LLC</a></div>
+    <div>Paxiom &middot; Maintained by <a href="https://driftboundlabs.com">Driftbound Labs LLC</a></div>
     <div>
       <a href="/receipts.html">Spec</a> &middot;
       <a href="/canonicalization.html">Canonicalization</a> &middot;

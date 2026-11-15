@@ -1,8 +1,10 @@
 export const RECEIPT_VERSION: 'paxiom.receipt.v0';
+export const STANDARD_RECEIPT_HEADER_NAME: 'payment-receipt';
 export const RECEIPT_HEADER_NAME: 'x-paxiom-receipt';
 export const MAX_DEPTH: number;
 export const DEFAULT_PAXIOM_API_URL: 'https://api.paxiom.org';
 export const PAXIOM_LIVE_VERIFIER_PUBLIC_KEY: string;
+export const PAXIOM_TRUSTED_VERIFIER_PUBLIC_KEYS: readonly string[];
 export const PAXIOM_TRUSTED_PUBLIC_KEYS: readonly string[];
 
 export interface CryptoKeyLike {
@@ -39,14 +41,16 @@ export type PaxiomSettlementStatus =
   | 'failed'
   | 'unknown';
 
+export type PaxiomCanonicalizationMode = 'jcs-sha256' | 'raw-sha256';
+
 export type PaxiomTrustState =
   | 'verified'
   | 'valid_signature_only'
   | 'settlement_claimed_not_checked'
   | 'settlement_failed'
-  | 'proof_not_provided'
-  | 'proof_claimed_not_checked'
-  | 'proof_failed'
+  | 'unauthorized_issuer'
+  | 'proof_invalid'
+  | 'proof_unavailable'
   | 'output_hash_mismatch'
   | 'invalid_signature'
   | 'expired'
@@ -58,6 +62,8 @@ export interface PaxiomReceiptIssuer {
   name: string;
   uri?: string;
   keyId: string;
+  payTo?: string;
+  keysUri?: string;
 }
 
 export interface PaxiomReceiptService {
@@ -69,12 +75,14 @@ export interface PaxiomReceiptService {
 export interface PaxiomReceiptSettlement {
   status: PaxiomSettlementStatus;
   transactionHash?: string | null;
-  checkedByPaxiom: boolean;
+  checkedByVerifier?: boolean;
+  verifier?: string | null;
+  checkedByPaxiom?: boolean;
 }
 
 export interface PaxiomReceiptEvidence {
-  type: 'none' | 'zk' | 'tee' | 'sig' | 'hash' | 'attestation' | 'custom';
-  status: 'not_provided' | 'claimed_not_checked' | 'verified' | 'failed';
+  type: 'none' | 'zk' | 'attestation' | 'tee' | 'archive' | 'other';
+  status: 'not_provided' | 'provided' | 'unavailable' | 'invalid' | 'verified';
   hash: string | null;
   uri: string | null;
 }
@@ -97,7 +105,9 @@ export interface PaxiomReceiptV0 {
       network: string;
       asset: string;
       amountAtomic: string;
-      amountDisplay?: string;
+      amountDisplay: string;
+      payer?: string;
+      payTo?: string;
       paymentRequirementsHash: string;
       paymentPayloadHash: string;
       settlement: PaxiomReceiptSettlement;
@@ -106,6 +116,8 @@ export interface PaxiomReceiptV0 {
     delivery: {
       outputHash: string;
       mimeType: string;
+      canonicalization?: PaxiomCanonicalizationMode;
+      statusCode?: number;
     };
   };
   signature: {
@@ -119,7 +131,10 @@ export interface PaxiomReceiptV0 {
 export interface VerifyReceiptOptions {
   output?: unknown;
   now?: string | number | Date;
-  trustedPaxiomPublicKeys?: readonly string[];
+  expectedIssuerPublicKeys?: readonly string[] | ReadonlySet<string>;
+  expectedPayTo?: string;
+  trustedVerifierPublicKeys?: readonly string[] | ReadonlySet<string>;
+  trustedPaxiomPublicKeys?: readonly string[] | ReadonlySet<string>;
 }
 
 export interface VerifyReceiptResult {
@@ -157,6 +172,8 @@ export interface IssueReceiptOptions {
     asset?: string;
     amountAtomic?: string | number | bigint;
     amountDisplay?: string;
+    payer?: string;
+    payTo?: string;
     paymentRequirements?: unknown;
     paymentPayload?: unknown;
     paymentRequirementsHash?: string;
@@ -166,6 +183,8 @@ export interface IssueReceiptOptions {
   output?: unknown;
   outputHash?: string;
   mimeType?: string;
+  canonicalization?: PaxiomCanonicalizationMode;
+  statusCode?: number;
   evidence?: PaxiomReceiptEvidence[];
   receiptId?: string;
   issuedAt?: string | Date;
@@ -175,6 +194,17 @@ export interface IssueReceiptOptions {
 export interface IssuedReceiptBundle {
   receipt: PaxiomReceiptV0;
   receiptHeader: string;
+}
+
+export interface ParsedX402Headers {
+  txHash: string | null;
+  network: string | null;
+  scheme: string | null;
+  asset: string | null;
+  amountAtomic: string | null;
+  amountDisplay: string | null;
+  payer: string | null;
+  payTo: string | null;
 }
 
 export interface MiddlewareOptions {
@@ -190,8 +220,20 @@ export interface MiddlewareOptions {
     req?: NodeRequestLike;
     res?: NodeResponseLike;
     txHash: string | null;
+    parsedX402?: ParsedX402Headers;
   }) => Record<string, unknown> | Promise<Record<string, unknown>>;
   onReceipt?: (receipt: PaxiomReceiptV0) => void | Promise<void>;
+}
+
+export interface DiscoverIssuerKeysResult {
+  ok: boolean;
+  status: number;
+  origin: string;
+  keysUrl: string | null;
+  issuer?: string | null;
+  payTo?: string | null;
+  keys: Array<{ keyId?: string; algorithm?: string; publicKey: string }>;
+  publicKeys: string[];
 }
 
 export interface VerifyResponseReceiptResult {
@@ -210,6 +252,7 @@ export interface PaxiomClientCommonOptions {
   fetch?: typeof globalThis.fetch;
   fetchImpl?: typeof globalThis.fetch;
   timeoutMs?: number;
+  trustedVerifierPublicKeys?: readonly string[];
   trustedPaxiomPublicKeys?: readonly string[];
 }
 
@@ -280,18 +323,26 @@ export interface VerifyReceiptLiveResult {
 export function verifyReceipt(receipt: unknown, options?: VerifyReceiptOptions): VerifyReceiptResult;
 export function verifyFromFiles(
   receiptPath: string,
-  options?: { outputPath?: string; now?: string | number | Date; trustedPaxiomPublicKeys?: readonly string[] }
+  outputPath?: string,
+  extraOpts?: VerifyReceiptOptions
 ): VerifyReceiptResult;
 
 export function generateReceiptKeyPair(opts?: string | { keyId?: string }): GeneratedReceiptKeyPair;
 export function normalizeEd25519PrivateKey(
   privateKey: string | CryptoKeyLike | Record<string, unknown>
 ): CryptoKeyLike;
+export function normalizeTransactionId(rawTx: string | null | undefined): string | null;
 export function publicKeyFromPrivateKey(
   privateKey: string | CryptoKeyLike | Record<string, unknown>
 ): string;
 export function issueReceipt(options: IssueReceiptOptions): IssuedReceiptBundle;
 export function decodeReceiptHeader(headerValue: string): PaxiomReceiptV0;
+
+export function parseX402Headers(headers?: {
+  paymentSignature?: string;
+  paymentResponse?: string;
+  paymentRequired?: string;
+}): ParsedX402Headers;
 
 export function withPaxiomReceipt<TArgs extends unknown[]>(
   handler: (request: Request, ...rest: TArgs) => Response | Promise<Response>,
@@ -313,9 +364,13 @@ export function hashCanonical(value: unknown): string;
 export function explain(result: VerifyReceiptResult): string;
 
 export function resolveSafeApiOrigin(rawBaseUrl?: string): string;
+export function discoverIssuerKeys(
+  originOrResourceUrl: string,
+  options?: { fetch?: typeof globalThis.fetch; fetchImpl?: typeof globalThis.fetch; timeoutMs?: number }
+): Promise<DiscoverIssuerKeysResult>;
 export function verifyResponseReceipt(
   responseOrHeaders: unknown,
-  options?: { output?: unknown; trustedPaxiomPublicKeys?: readonly string[] }
+  options?: VerifyReceiptOptions
 ): VerifyResponseReceiptResult;
 export function preflightX402(
   targetUrl: string,

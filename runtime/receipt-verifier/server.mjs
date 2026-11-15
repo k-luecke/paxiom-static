@@ -1,9 +1,11 @@
-// Public runtime for the Paxiom Receipt Verifier:
-//   - Free offline routes (`/health`, `/version`, `/v1/receipt/demo`, `POST /v1/receipt/verify`)
+// Public reference runtime for the Paxiom Receipt Verifier (`https://api.paxiom.org`, v0.2.0):
+//   - Offline routes (`/health`, `/version`, `/v1/receipt/demo`, `POST /v1/receipt/verify`,
+//     `GET /.well-known/x402-keys.json`, `GET /.well-known/paxiom-keys.json`, `POST /mcp`)
 //     are always active with zero env vars and zero external calls.
-//   - Live settlement + dual-monetization route (`POST /v1/receipt/verify-live`,
-//     `GET /.well-known/paxiom-keys.json`, `GET /.well-known/x402.json`) activates
-//     only when `LIVE_VERIFY_ENABLED=true` or `X402_ENABLED=true`.
+//   - Free, rate-limited public reference routes (`POST /v1/receipt/verify-live` and
+//     `POST /v1/x402/preflight`) activate when `LIVE_VERIFY_ENABLED=true` (enabled by
+//     default on Render). Commercial x402/API-key gating is disabled by default on the
+//     public reference host unless `PAXIOM_COMMERCIAL_GATE_ENABLED=true` is explicitly set.
 import http from 'node:http';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -28,8 +30,11 @@ import {
 } from './x402-preflight.mjs';
 import { handleMcpHttpRequest, buildMcpServerCard } from './mcp-http.mjs';
 
+export const RUNTIME_VERSION = '0.2.0';
 const MAX_BODY_BYTES = 256 * 1024; // 256 KiB
 const MAX_DRAIN_AFTER_413 = 64 * 1024; // bounded post-413 drain window before destroying socket
+const MAX_RATE_LIMIT_BUCKETS = 4096;
+
 const EX = new URL('../../standards/receipts/v0/examples/', import.meta.url);
 const demoReceipt = JSON.parse(readFileSync(new URL('valid.receipt.json', EX), 'utf8'));
 const demoOutput = JSON.parse(readFileSync(new URL('valid.output.json', EX), 'utf8'));
@@ -43,6 +48,84 @@ try {
   // Fallback when runtime directory is deployed standalone without static site root
 }
 
+/**
+ * Zero-dependency, bounded O(1)-memory per-IP rate limiter.
+ */
+export function createBoundedRateLimiter({
+  windowMs = 60_000,
+  maxBuckets = MAX_RATE_LIMIT_BUCKETS
+} = {}) {
+  const buckets = new Map();
+
+  function sweepExpired(nowMs) {
+    for (const [k, entry] of buckets.entries()) {
+      if (entry.resetAt <= nowMs) buckets.delete(k);
+    }
+  }
+
+  return function checkLimit(bucketKey, limitPerWindow, nowMs = Date.now()) {
+    if (!Number.isFinite(limitPerWindow) || limitPerWindow <= 0) {
+      return { allowed: true, limit: 0, remaining: 0, retryAfterSeconds: 0 };
+    }
+    let entry = buckets.get(bucketKey);
+    if (!entry || entry.resetAt <= nowMs) {
+      if (buckets.size >= maxBuckets) {
+        sweepExpired(nowMs);
+        if (buckets.size >= maxBuckets) {
+          const oldestKey = buckets.keys().next().value;
+          if (oldestKey !== undefined) buckets.delete(oldestKey);
+        }
+      }
+      entry = { count: 1, resetAt: nowMs + windowMs };
+      buckets.set(bucketKey, entry);
+      return {
+        allowed: true,
+        limit: limitPerWindow,
+        remaining: Math.max(0, limitPerWindow - 1),
+        retryAfterSeconds: Math.max(1, Math.ceil(windowMs / 1000))
+      };
+    }
+
+    if (entry.count >= limitPerWindow) {
+      return {
+        allowed: false,
+        limit: limitPerWindow,
+        remaining: 0,
+        retryAfterSeconds: Math.max(1, Math.ceil((entry.resetAt - nowMs) / 1000))
+      };
+    }
+
+    entry.count += 1;
+    return {
+      allowed: true,
+      limit: limitPerWindow,
+      remaining: Math.max(0, limitPerWindow - entry.count),
+      retryAfterSeconds: Math.max(1, Math.ceil((entry.resetAt - nowMs) / 1000))
+    };
+  };
+}
+
+function resolveClientIp(req, env) {
+  const trustProxy = isFlagEnabled(env.RENDER) || isFlagEnabled(env.TRUST_PROXY);
+  if (trustProxy && req && req.headers) {
+    const cfIp = String(req.headers['cf-connecting-ip'] || req.headers['true-client-ip'] || '').trim();
+    if (cfIp) return cfIp.slice(0, 64);
+    const xff = String(req.headers['x-forwarded-for'] || '').trim();
+    if (xff) {
+      const first = xff.split(',')[0].trim();
+      if (first) return first.slice(0, 64);
+    }
+  }
+  return String((req && req.socket && req.socket.remoteAddress) || 'local').slice(0, 64);
+}
+
+function parseRateLimit(rawVal, defaultLimit) {
+  if (rawVal === undefined || rawVal === null || rawVal === '') return defaultLimit;
+  const n = Number(rawVal);
+  if (!Number.isFinite(n) || n < 0) return defaultLimit;
+  return Math.floor(n);
+}
+
 function createFunnelStats() {
   const startedMs = Date.now();
   return {
@@ -53,6 +136,7 @@ function createFunnelStats() {
       openApiReads: 0,
       llmsTxtReads: 0,
       x402ManifestReads: 0,
+      x402KeysReads: 0,
       paxiomKeysReads: 0,
       mcpCardReads: 0,
       mcpGetReads: 0,
@@ -71,14 +155,18 @@ function createFunnelStats() {
     },
     verifyLive: {
       unpaid402Quotes: 0,
+      rateLimited: 0,
       precheckRejected: 0,
+      freePublicServed: 0,
       paidX402Settled: 0,
       paidApiKeyServed: 0,
       verifiedSettledUpgrades: 0
     },
     x402Preflight: {
       unpaid402Quotes: 0,
+      rateLimited: 0,
       ssrfOrLexicalBlocked: 0,
+      freePublicServed: 0,
       paidX402Settled: 0,
       paidApiKeyServed: 0,
       verdictProceed: 0,
@@ -92,7 +180,7 @@ function snapshotFunnelStats(stats) {
   return {
     ok: true,
     service: 'paxiom-receipt-verifier',
-    version: '0.1.3',
+    version: RUNTIME_VERSION,
     privacy: 'aggregate_counters_only_zero_pii',
     startedAt: stats.startedAt,
     uptimeSeconds: Math.max(0, Math.floor((Date.now() - stats.startedMs) / 1000)),
@@ -112,9 +200,11 @@ function buildRootServiceIndex(env = process.env) {
   return {
     ok: true,
     service: 'paxiom-receipt-verifier',
-    version: '0.1.3',
+    version: RUNTIME_VERSION,
     receiptVersion: RECEIPT_VERSION,
+    license: 'MIT',
     docsUrl: 'https://paxiom.org/api.html',
+    extensionSpecUrl: 'https://paxiom.org/standards/receipts/v0/x402-delivery-receipt-extension.md',
     sdk: {
       npm: '@paxiom/receipts',
       python: 'paxiom-receipts',
@@ -125,6 +215,7 @@ function buildRootServiceIndex(env = process.env) {
       llmsTxt: '/llms.txt',
       mcpEndpoint: '/mcp',
       mcpCard: '/.well-known/mcp.json',
+      x402Keys: '/.well-known/x402-keys.json',
       paxiomKeys: '/.well-known/paxiom-keys.json',
       ...(x402Enabled ? { x402Manifest: '/.well-known/x402.json' } : {}),
       version: '/version',
@@ -148,14 +239,16 @@ const RENDER_PRODUCTION_DEFAULTS = Object.freeze({
   LIVE_VERIFY_ENABLED: 'true',
   BASE_RPC_URL: 'https://base-rpc.publicnode.com,https://mainnet.base.org,https://1rpc.io/base',
   BASE_SEPOLIA_RPC_URL: 'https://base-sepolia-rpc.publicnode.com,https://sepolia.base.org',
-  X402_ENABLED: 'true',
+  X402_ENABLED: 'false',
   X402_NETWORK: 'base',
   X402_PRICE_ATOMIC: '2000',
   X402_PREFLIGHT_PRICE_ATOMIC: '10000',
   X402_PAY_TO: '0x9786F5532ab7d7556CDa53E3f6c2d937c9b87Bc4',
   X402_FACILITATOR_URL: 'https://facilitator.payai.network',
   X402_RESOURCE_URL: 'https://api.paxiom.org/v1/receipt/verify-live',
-  X402_PREFLIGHT_RESOURCE_URL: 'https://api.paxiom.org/v1/x402/preflight'
+  X402_PREFLIGHT_RESOURCE_URL: 'https://api.paxiom.org/v1/x402/preflight',
+  RATE_LIMIT_VERIFY_LIVE_PER_MIN: '60',
+  RATE_LIMIT_PREFLIGHT_PER_MIN: '30'
 });
 
 export function resolveRuntimeEnv(rawEnv = process.env) {
@@ -167,6 +260,12 @@ export function resolveRuntimeEnv(rawEnv = process.env) {
     if (rawEnv.CDP_FACILITATOR_URL && !rawEnv.X402_FACILITATOR_URL) {
       merged.X402_FACILITATOR_URL = rawEnv.CDP_FACILITATOR_URL;
     }
+    // Public reference utility guarantee: on Render production, ignore any legacy
+    // X402_ENABLED / PAXIOM_API_KEYS dashboard variables unless PAXIOM_COMMERCIAL_GATE_ENABLED=true.
+    if (!isFlagEnabled(rawEnv.PAXIOM_COMMERCIAL_GATE_ENABLED)) {
+      merged.X402_ENABLED = 'false';
+      merged.PAXIOM_API_KEYS = '';
+    }
     return merged;
   }
   return rawEnv;
@@ -177,11 +276,13 @@ function buildVersionPayload(env = process.env) {
   const x402Enabled = isFlagEnabled(env.X402_ENABLED);
   return {
     service: 'paxiom-receipt-verifier',
+    version: RUNTIME_VERSION,
     receiptVersion: RECEIPT_VERSION,
-    runtime: liveEnabled ? 'live-settlement-enabled' : 'developer-preview',
+    runtime: liveEnabled ? 'public-reference-live' : 'developer-preview',
     checks: [
       'schema',
       'signature',
+      'issuerAuthorization',
       'outputHash',
       'bindingFields',
       'settlementStatusVocabulary',
@@ -196,16 +297,27 @@ function buildVersionPayload(env = process.env) {
     ],
     capabilities: {
       offlineVerification: true,
+      signerKeyDiscovery: true,
+      rawAndJcsPayloadBinding: true,
       liveSettlementVerification: liveEnabled,
       x402Preflight: liveEnabled,
       x402PaymentGating: x402Enabled,
       counterAttestation: Boolean(getConfiguredPaxiomKey(env))
     },
+    rateLimits: liveEnabled && !x402Enabled
+      ? {
+          windowSeconds: Math.max(1, Math.floor((Number(env.RATE_LIMIT_WINDOW_MS) || 60_000) / 1000)),
+          verifyLivePerMinute: parseRateLimit(env.RATE_LIMIT_VERIFY_LIVE_PER_MIN, 60),
+          preflightPerMinute: parseRateLimit(env.RATE_LIMIT_PREFLIGHT_PER_MIN, 30)
+        }
+      : null,
     endpoints: {
       serviceIndex: 'GET /',
       openApi: 'GET /openapi.json',
       llmsTxt: 'GET /llms.txt',
       mcpCard: 'GET /.well-known/mcp.json',
+      x402Keys: 'GET /.well-known/x402-keys.json',
+      paxiomKeys: 'GET /.well-known/paxiom-keys.json',
       stats: 'GET /stats',
       freeOfflineVerify: 'POST /v1/receipt/verify',
       remoteMcp: 'POST /mcp',
@@ -216,8 +328,8 @@ function buildVersionPayload(env = process.env) {
     },
     x402Enabled,
     note: liveEnabled
-      ? 'POST /v1/receipt/verify remains free and offline. POST /v1/receipt/verify-live ($0.002 USDC) verifies claimed Base/Base-Sepolia USDC settlements via JSON-RPC. POST /v1/x402/preflight ($0.01 USDC) scans x402 seller endpoints before payment.'
-      : 'Developer-preview reference verifier for paxiom.receipt.v0. Verifies receipt schema, Ed25519 signature, and output binding. Reports settlement and proof-evidence states but does NOT independently verify onchain settlement, facilitator records, or proof-source evidence in v0. Free — no x402 gating.'
+      ? 'Free public reference verifier for paxiom.receipt.v0 (MIT). POST /v1/receipt/verify runs offline; POST /v1/receipt/verify-live confirms Base & Base Sepolia USDC Transfer logs via JSON-RPC; POST /v1/x402/preflight scans x402 seller endpoints before payment. Protected by per-IP burst rate limits.'
+      : 'Developer-preview reference verifier for paxiom.receipt.v0. Verifies receipt schema, Ed25519 signature, signer authorization, and output binding offline. Free — no payment gating.'
   };
 }
 
@@ -228,7 +340,8 @@ function isFlagEnabled(val) {
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, HEAD, POST, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'content-type, accept, authorization, x-api-key, payment-signature, x-payment, mcp-session-id, mcp-protocol-version'
+  'Access-Control-Allow-Headers': 'content-type, accept, authorization, x-api-key, payment-signature, x-payment, mcp-session-id, mcp-protocol-version',
+  'Access-Control-Expose-Headers': 'Payment-Receipt, X-Paxiom-Receipt, PAYMENT-REQUIRED, PAYMENT-RESPONSE, Retry-After'
 };
 
 function send(res, status, body, extraHeaders = {}) {
@@ -339,10 +452,23 @@ async function handleOfflineVerify(req, res, env, stats) {
   const parsed = await parseVerifyPayload(req, res);
   if (!parsed) return;
   try {
-    const opts = Object.prototype.hasOwnProperty.call(parsed, 'output') ? { output: parsed.output } : {};
-    const paxiomKey = getConfiguredPaxiomKey(env);
-    if (paxiomKey) {
-      opts.trustedPaxiomPublicKeys = [paxiomKey.publicKey];
+    const opts = {};
+    if (Object.prototype.hasOwnProperty.call(parsed, 'output')) opts.output = parsed.output;
+    if (Array.isArray(parsed.expectedIssuerPublicKeys)) {
+      opts.expectedIssuerPublicKeys = parsed.expectedIssuerPublicKeys;
+    }
+    if (typeof parsed.expectedPayTo === 'string' && parsed.expectedPayTo.trim()) {
+      opts.expectedPayTo = parsed.expectedPayTo;
+    }
+    if (Array.isArray(parsed.trustedVerifierPublicKeys)) {
+      opts.trustedVerifierPublicKeys = parsed.trustedVerifierPublicKeys;
+    } else if (Array.isArray(parsed.trustedPaxiomPublicKeys)) {
+      opts.trustedPaxiomPublicKeys = parsed.trustedPaxiomPublicKeys;
+    } else {
+      const paxiomKey = getConfiguredPaxiomKey(env);
+      if (paxiomKey) {
+        opts.trustedVerifierPublicKeys = [paxiomKey.publicKey];
+      }
     }
     const verdict = verifyReceipt(parsed.receipt, opts);
     if (stats) {
@@ -356,7 +482,7 @@ async function handleOfflineVerify(req, res, env, stats) {
   }
 }
 
-async function handleLiveVerify(req, res, { env, fetchImpl, stats }) {
+async function handleLiveVerify(req, res, { env, fetchImpl, stats, checkRateLimit }) {
   const liveEnabled = isFlagEnabled(env.LIVE_VERIFY_ENABLED) || isFlagEnabled(env.X402_ENABLED);
   if (!liveEnabled) {
     return send(res, 503, errBody(
@@ -374,14 +500,34 @@ async function handleLiveVerify(req, res, { env, fetchImpl, stats }) {
     )
   );
 
-  // If x402 gating is enabled and caller sent an unpaid discovery probe (GET or empty/{} POST),
-  // return the 402 PaymentRequirements challenge immediately for x402 clients & Bazaar indexers.
   let rawBodyText = '';
-  if (req.method === 'GET' && !hasPaymentOrAuthHeader && isFlagEnabled(env.X402_ENABLED) && env.X402_PAY_TO) {
-    const auth = await authorizeMonetizedRequest(req, { env, fetchImpl });
-    if (stats && auth.status === 402) stats.verifyLive.unpaid402Quotes += 1;
-    return send(res, auth.status, auth.body, auth.headers);
+  if (req.method === 'GET') {
+    if (!hasPaymentOrAuthHeader && isFlagEnabled(env.X402_ENABLED) && env.X402_PAY_TO) {
+      const auth = await authorizeMonetizedRequest(req, { env, fetchImpl });
+      if (stats && auth.status === 402) stats.verifyLive.unpaid402Quotes += 1;
+      return send(res, auth.status, auth.body, auth.headers);
+    }
+    return send(res, 405, errBody('method_not_allowed', 'Send a JSON POST request with { receipt, output?, expectedPayTo? } to /v1/receipt/verify-live.'), { allow: 'POST, OPTIONS' });
   }
+
+  // Enforce per-IP burst rate limit on unmetered public endpoints
+  if (!isFlagEnabled(env.X402_ENABLED) && !checkApiKey(req, env).authorized && checkRateLimit) {
+    const ip = resolveClientIp(req, env);
+    const limit = parseRateLimit(env.RATE_LIMIT_VERIFY_LIVE_PER_MIN, 60);
+    const rl = checkRateLimit(`verify-live:${ip}`, limit);
+    if (!rl.allowed) {
+      if (stats) stats.verifyLive.rateLimited += 1;
+      return send(res, 429, errBody(
+        'rate_limit_exceeded',
+        `Rate limit exceeded (${rl.limit} requests/min per IP on public reference verifier). Retry after ${rl.retryAfterSeconds}s.`
+      ), {
+        'Retry-After': String(rl.retryAfterSeconds),
+        'X-RateLimit-Limit': String(rl.limit),
+        'X-RateLimit-Remaining': '0'
+      });
+    }
+  }
+
   try {
     rawBodyText = await readBody(req);
   } catch (err) {
@@ -395,7 +541,6 @@ async function handleLiveVerify(req, res, { env, fetchImpl, stats }) {
   try {
     parsed = JSON.parse(rawBodyText || '{}');
   } catch {
-    // Malformed JSON is ALWAYS rejected 400 before touching facilitator /settle.
     return send(res, 400, errBody('invalid_json', 'Request body is not valid JSON'));
   }
 
@@ -412,7 +557,6 @@ async function handleLiveVerify(req, res, { env, fetchImpl, stats }) {
     return send(res, 400, errBody('missing_receipt', 'Request must be a JSON object with a "receipt" field'));
   }
 
-  // Unpaid/unauthenticated callers receive 402/401 immediately before prechecks
   if (!hasPaymentOrAuthHeader || (!isFlagEnabled(env.X402_ENABLED) && !checkApiKey(req, env).authorized)) {
     let authEarly;
     try {
@@ -435,13 +579,14 @@ async function handleLiveVerify(req, res, { env, fetchImpl, stats }) {
 
   const hasOutput = Object.prototype.hasOwnProperty.call(parsed, 'output') && parsed.output !== undefined;
   const paxiomKey = getConfiguredPaxiomKey(env);
+  const rcptBoundPayTo = parsed.receipt?.payload?.payment?.payTo || parsed.receipt?.payload?.issuer?.payTo || null;
   const verifyOpts = {
     ...(hasOutput ? { output: parsed.output } : {}),
-    ...(paxiomKey ? { trustedPaxiomPublicKeys: [paxiomKey.publicKey] } : {})
+    ...(Array.isArray(parsed.expectedIssuerPublicKeys) ? { expectedIssuerPublicKeys: parsed.expectedIssuerPublicKeys } : {}),
+    ...(normalizedExpectedPayTo && rcptBoundPayTo ? { expectedPayTo: normalizedExpectedPayTo } : {}),
+    ...(paxiomKey ? { trustedVerifierPublicKeys: [paxiomKey.publicKey] } : {})
   };
 
-  // Run deterministic offline verification & chain-support eligibility BEFORE settling x402 payment
-  // so paying callers are never debited on-chain for malformed, expired, or unsupported receipts.
   let baseResult;
   try {
     baseResult = verifyReceipt(parsed.receipt, verifyOpts);
@@ -487,6 +632,7 @@ async function handleLiveVerify(req, res, { env, fetchImpl, stats }) {
   if (stats) {
     if (auth.mode === 'x402') stats.verifyLive.paidX402Settled += 1;
     else if (auth.mode === 'api_key') stats.verifyLive.paidApiKeyServed += 1;
+    else stats.verifyLive.freePublicServed += 1;
   }
 
   let onchain;
@@ -525,15 +671,20 @@ async function handleLiveVerify(req, res, { env, fetchImpl, stats }) {
   let counterAttestedReceipt = null;
   let counterAttestationSkippedReason = null;
 
+  const alreadyCounterAttested = Boolean(
+    parsed.receipt.payload.payment.settlement.checkedByVerifier ||
+    parsed.receipt.payload.payment.settlement.checkedByPaxiom
+  );
+
   // Strict counter-attestation guard (FERMI-PAX-01):
-  // Only sign a portable Paxiom root counter-attestation when the caller explicitly pinned
-  // `expectedPayTo` (verified against the on-chain USDC Transfer recipient) and the input
-  // receipt was not already a Paxiom counter-attestation, preserving seller & transfer provenance.
+  // Only sign a portable verifier counter-attestation when `expectedPayTo` was explicitly pinned
+  // and verified against the on-chain USDC Transfer recipient, and the input receipt was not already
+  // counter-attested.
   const canCounterAttest = Boolean(
     paxiomKey &&
     normalizedExpectedPayTo &&
     onchain.recipientChecked &&
-    !parsed.receipt.payload.payment.settlement.checkedByPaxiom
+    !alreadyCounterAttested
   );
 
   if (canCounterAttest) {
@@ -553,20 +704,26 @@ async function handleLiveVerify(req, res, { env, fetchImpl, stats }) {
       issuer: {
         name: env.PAXIOM_ISSUER_NAME || 'Paxiom Receipt Verifier',
         uri: env.PAXIOM_ISSUER_URI || 'https://paxiom.org',
-        keyId: paxiomKey.keyId
+        keyId: paxiomKey.keyId,
+        keysUri: 'https://api.paxiom.org/.well-known/x402-keys.json'
       },
       service: orig.service,
       request: orig.request,
       payment: {
         ...orig.payment,
+        payTo: orig.payment.payTo || onchain.matchedTransfer.to,
+        payer: orig.payment.payer || onchain.matchedTransfer.from,
         settlement: {
           status: 'verified_settled',
           transactionHash: onchain.transactionHash,
-          checkedByPaxiom: true
+          checkedByVerifier: true,
+          verifier: env.PAXIOM_VERIFIER_URI || 'https://api.paxiom.org'
         }
       },
       outputHash: orig.delivery.outputHash,
+      canonicalization: orig.delivery.canonicalization || 'jcs-sha256',
       mimeType: orig.delivery.mimeType,
+      statusCode: orig.delivery.statusCode,
       evidence: [
         {
           type: 'attestation',
@@ -577,6 +734,7 @@ async function handleLiveVerify(req, res, { env, fetchImpl, stats }) {
       ]
     });
     counterAttestedReceipt = issued.receipt;
+    extraHeaders['Payment-Receipt'] = issued.receiptHeader;
     extraHeaders['X-Paxiom-Receipt'] = issued.receiptHeader;
   } else if (paxiomKey && !normalizedExpectedPayTo) {
     counterAttestationSkippedReason = 'expectedPayTo_required_for_counter_attestation';
@@ -602,7 +760,7 @@ async function handleLiveVerify(req, res, { env, fetchImpl, stats }) {
 const ALLOWED_PREFLIGHT_METHODS = new Set(['POST', 'GET', 'HEAD']);
 const DEC_UINT_STRING_RE = /^[0-9]+$/;
 
-async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats }) {
+async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats, checkRateLimit }) {
   const liveEnabled = isFlagEnabled(env.LIVE_VERIFY_ENABLED) || isFlagEnabled(env.X402_ENABLED);
   if (!liveEnabled) {
     return send(res, 503, errBody(
@@ -620,10 +778,31 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats
     )
   );
 
-  if (req.method === 'GET' && !hasPaymentOrAuthHeader && isFlagEnabled(env.X402_ENABLED) && env.X402_PAY_TO) {
-    const auth = await authorizeMonetizedRequest(req, { env, fetchImpl, route: 'preflight' });
-    if (stats && auth.status === 402) stats.x402Preflight.unpaid402Quotes += 1;
-    return send(res, auth.status, auth.body, auth.headers);
+  if (req.method === 'GET') {
+    if (!hasPaymentOrAuthHeader && isFlagEnabled(env.X402_ENABLED) && env.X402_PAY_TO) {
+      const auth = await authorizeMonetizedRequest(req, { env, fetchImpl, route: 'preflight' });
+      if (stats && auth.status === 402) stats.x402Preflight.unpaid402Quotes += 1;
+      return send(res, auth.status, auth.body, auth.headers);
+    }
+    return send(res, 405, errBody('method_not_allowed', 'Send a JSON POST request with { url, method?, maxBudgetAtomic?, expectedNetwork? } to /v1/x402/preflight.'), { allow: 'POST, OPTIONS' });
+  }
+
+  // Enforce per-IP burst rate limit on unmetered public endpoints
+  if (!isFlagEnabled(env.X402_ENABLED) && !checkApiKey(req, env).authorized && checkRateLimit) {
+    const ip = resolveClientIp(req, env);
+    const limit = parseRateLimit(env.RATE_LIMIT_PREFLIGHT_PER_MIN, 30);
+    const rl = checkRateLimit(`preflight:${ip}`, limit);
+    if (!rl.allowed) {
+      if (stats) stats.x402Preflight.rateLimited += 1;
+      return send(res, 429, errBody(
+        'rate_limit_exceeded',
+        `Rate limit exceeded (${rl.limit} requests/min per IP on public reference preflight scanner). Retry after ${rl.retryAfterSeconds}s.`
+      ), {
+        'Retry-After': String(rl.retryAfterSeconds),
+        'X-RateLimit-Limit': String(rl.limit),
+        'X-RateLimit-Remaining': '0'
+      });
+    }
   }
 
   let rawBodyText = '';
@@ -687,8 +866,7 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats
   }
 
   // Phase 1 gate (`FERMI-PAX-R2-01` & `FERMI-PAX-R2-03`):
-  // Verify API key, block cross-origin browser unmetered calls, OR validate x402 payment
-  // via facilitator `/verify` BEFORE executing live `dns.lookup` (closing unauthenticated DNS oracle).
+  // Block cross-origin browser unmetered probes (or verify opt-in gate) BEFORE live `dns.lookup`.
   let verifiedAuth;
   try {
     verifiedAuth = await verifyMonetizedRequest(req, { env, fetchImpl, route: 'preflight' });
@@ -700,7 +878,7 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats
     return send(res, verifiedAuth.status, verifiedAuth.body, verifiedAuth.headers);
   }
 
-  // Deterministic SSRF & DNS public-IP validation BEFORE settling caller's x402 payment (`/settle`)
+  // Deterministic SSRF & DNS public-IP validation BEFORE any outbound probe or settlement
   const targetValidation = await validatePublicHttpsTarget(
     parsed.url,
     lookupImpl ? { lookupImpl } : {}
@@ -710,7 +888,6 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats
     return send(res, 400, errBody(targetValidation.code, targetValidation.message));
   }
 
-  // Phase 2 gate: Settle payment on-chain ONLY after target DNS resolves to a public global IP
   let auth;
   try {
     auth = await settleMonetizedRequest(verifiedAuth, { fetchImpl });
@@ -724,6 +901,7 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats
   if (stats) {
     if (auth.mode === 'x402') stats.x402Preflight.paidX402Settled += 1;
     else if (auth.mode === 'api_key') stats.x402Preflight.paidApiKeyServed += 1;
+    else stats.x402Preflight.freePublicServed += 1;
   }
 
   const probeFetchImpl = fetchImpl === globalThis.fetch ? null : fetchImpl;
@@ -754,7 +932,8 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats
       issuer: {
         name: env.PAXIOM_ISSUER_NAME || 'Paxiom Receipt Verifier',
         uri: env.PAXIOM_ISSUER_URI || 'https://paxiom.org',
-        keyId: paxiomKey.keyId
+        keyId: paxiomKey.keyId,
+        keysUri: 'https://api.paxiom.org/.well-known/x402-keys.json'
       },
       service: {
         name: 'Paxiom x402 Seller Preflight',
@@ -767,8 +946,8 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats
         body: rawBodyText
       },
       payment: {
-        scheme: isX402Paid ? 'x402' : 'api-key',
-        network: env.X402_NETWORK || 'base',
+        scheme: isX402Paid ? 'x402' : 'public-reference',
+        network: env.X402_NETWORK || 'eip155:8453',
         asset: 'USDC',
         amountAtomic: isX402Paid ? priceAtomic : '0',
         amountDisplay: isX402Paid ? (Number(priceAtomic) / 1e6).toString() : '0',
@@ -777,14 +956,16 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats
         settlement: {
           status: validTx ? 'claimed_not_checked' : 'not_required',
           transactionHash: validTx,
-          checkedByPaxiom: false
+          checkedByVerifier: false
         }
       },
-      output: report
+      output: report,
+      statusCode: 200
     });
+    extraHeaders['Payment-Receipt'] = issued.receiptHeader;
     extraHeaders['X-Paxiom-Receipt'] = issued.receiptHeader;
     if (!extraHeaders['Access-Control-Expose-Headers']) {
-      extraHeaders['Access-Control-Expose-Headers'] = 'PAYMENT-REQUIRED, PAYMENT-RESPONSE, X-Paxiom-Receipt';
+      extraHeaders['Access-Control-Expose-Headers'] = 'PAYMENT-REQUIRED, PAYMENT-RESPONSE, Payment-Receipt, X-Paxiom-Receipt';
     }
   }
 
@@ -794,6 +975,9 @@ async function handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats
 export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThis.fetch, lookupImpl } = {}) {
   const env = resolveRuntimeEnv(rawEnv);
   const stats = createFunnelStats();
+  const checkRateLimit = createBoundedRateLimiter({
+    windowMs: Math.max(1000, Number(env.RATE_LIMIT_WINDOW_MS) || 60_000)
+  });
   const onMcpEvent = (ev) => {
     if (!ev) return;
     if (ev.kind === 'get_metadata') stats.discovery.mcpGetReads += 1;
@@ -839,7 +1023,7 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
       return send(res, 200, snapshotFunnelStats(stats));
     }
     if (isRead && path === '/health') {
-      return send(res, 200, { ok: true, service: 'paxiom-receipt-verifier', version: '0.1.3', receiptVersion: RECEIPT_VERSION });
+      return send(res, 200, { ok: true, service: 'paxiom-receipt-verifier', version: RUNTIME_VERSION, receiptVersion: RECEIPT_VERSION });
     }
     if (isRead && path === '/version') {
       return send(res, 200, buildVersionPayload(env));
@@ -853,10 +1037,14 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
         verify: { method: 'POST', path: '/v1/receipt/verify', body: { receipt: '<receipt>', output: '<output?>' } }
       });
     }
-    if (isRead && path === '/.well-known/paxiom-keys.json') {
-      if (method === 'GET') stats.discovery.paxiomKeysReads += 1;
+    if (isRead && (path === '/.well-known/x402-keys.json' || path === '/.well-known/paxiom-keys.json')) {
+      if (method === 'GET') {
+        if (path === '/.well-known/x402-keys.json') stats.discovery.x402KeysReads += 1;
+        else stats.discovery.paxiomKeysReads += 1;
+      }
       const paxiomKey = getConfiguredPaxiomKey(env);
       return send(res, 200, {
+        version: 'x402-keys.v1',
         issuer: env.PAXIOM_ISSUER_NAME || 'Paxiom Receipt Verifier',
         keys: paxiomKey
           ? [{ keyId: paxiomKey.keyId, algorithm: 'ed25519', publicKey: paxiomKey.publicKey }]
@@ -865,7 +1053,7 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
     }
     if (isRead && (path === '/.well-known/x402.json' || path === '/.well-known/x402')) {
       if (!isFlagEnabled(env.X402_ENABLED) || !env.X402_PAY_TO) {
-        return send(res, 404, errBody('x402_disabled', 'x402 payment discovery is not enabled on this instance.'));
+        return send(res, 404, errBody('x402_disabled', 'x402 payment discovery is not enabled on this public reference instance; all routes are free.'));
       }
       if (method === 'GET') stats.discovery.x402ManifestReads += 1;
       return send(res, 200, buildX402PaymentRequirements(env, { route: 'discovery' }));
@@ -874,10 +1062,10 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
       return handleOfflineVerify(req, res, env, stats);
     }
     if ((method === 'POST' || method === 'GET') && path === '/v1/receipt/verify-live') {
-      return handleLiveVerify(req, res, { env, fetchImpl, stats });
+      return handleLiveVerify(req, res, { env, fetchImpl, stats, checkRateLimit });
     }
     if ((method === 'POST' || method === 'GET') && path === '/v1/x402/preflight') {
-      return handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats });
+      return handleX402Preflight(req, res, { env, fetchImpl, lookupImpl, stats, checkRateLimit });
     }
     if (path === '/mcp') {
       return handleMcpHttpRequest(req, res, { env, readBody, corsHeaders: CORS, onMcpEvent });
@@ -886,7 +1074,6 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
   };
 }
 
-// Default (req,res) handler for serverless platforms (Vercel).
 export const handle = createHandler();
 
 export function createServer(options = {}) {
@@ -899,11 +1086,10 @@ export function createServer(options = {}) {
 
 export default handle;
 
-// Run directly: node runtime/receipt-verifier/server.mjs
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
   const port = Number(process.env.PORT) || 8787;
   createServer().listen(port, () => {
-    process.stdout.write(`paxiom-receipt-verifier (v0) on http://localhost:${port}\n`);
-    process.stdout.write(`  GET  /health\n  GET  /version\n  GET  /v1/receipt/demo\n  POST /v1/receipt/verify\n  POST /v1/receipt/verify-live\n  POST /v1/x402/preflight\n  POST /mcp\n`);
+    process.stdout.write(`paxiom-receipt-verifier (${RUNTIME_VERSION}) on http://localhost:${port}\n`);
+    process.stdout.write(`  GET  /health\n  GET  /version\n  GET  /.well-known/x402-keys.json\n  GET  /v1/receipt/demo\n  POST /v1/receipt/verify\n  POST /v1/receipt/verify-live\n  POST /v1/x402/preflight\n  POST /mcp\n`);
   });
 }

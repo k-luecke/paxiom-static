@@ -25,7 +25,7 @@ export const MAX_MCP_BATCH_SIZE = 32;
 export const REMOTE_MCP_SERVER_INFO = Object.freeze({
   name: 'io.github.k-luecke/paxiom-receipts',
   title: 'Paxiom Receipts MCP',
-  version: '0.1.3'
+  version: '0.2.0'
 });
 
 const TRUST_STATE_ENUM = [
@@ -35,6 +35,7 @@ const TRUST_STATE_ENUM = [
   'unsupported_format',
   'schema_invalid',
   'invalid_signature',
+  'unauthorized_issuer',
   'expired',
   'output_hash_mismatch',
   'settlement_failed',
@@ -48,7 +49,7 @@ export const REMOTE_MCP_TOOLS = Object.freeze([
     name: 'verify_receipt',
     title: 'Verify Paxiom Receipt (Structured JSON)',
     description:
-      'Validate an Ed25519-signed paxiom.receipt.v0 API delivery receipt (JSON Schema, Ed25519 signature, RFC 8785 JCS SHA-256 output binding, expiry, and settlement trust state) and return structured JSON fields. Use this instead of explain_receipt when automated code branches on valid or trustState; use explain_receipt when presenting human-readable guidance, or get_x402_verifier_info for live on-chain settlement endpoints. Deterministic, offline, and free with no auth or rate limits: invalid or tampered receipts return isError=false with valid=false and the failing trustState, omitting output caps trustState at valid_signature_only, and omitting trustedPaxiomPublicKeys trusts the host Paxiom counter-attestation key by default.',
+      'Validate an Ed25519-signed paxiom.receipt.v0 API delivery receipt (JSON Schema, Ed25519 signature, signer authorization via expectedIssuerPublicKeys / expectedPayTo, JCS or raw SHA-256 output binding, expiry, and settlement trust state) and return structured JSON fields. Use this instead of explain_receipt when automated code branches on valid or trustState; use explain_receipt when presenting human-readable guidance, or get_x402_verifier_info for live on-chain settlement endpoints. Deterministic, offline, and free with no auth: invalid or tampered receipts return isError=false with valid=false and the failing trustState, omitting output caps trustState at valid_signature_only, and omitting trustedVerifierPublicKeys trusts the host counter-attestation key by default.',
     annotations: {
       title: 'Verify Paxiom Receipt (Structured JSON)',
       readOnlyHint: true,
@@ -62,15 +63,29 @@ export const REMOTE_MCP_TOOLS = Object.freeze([
       properties: {
         receipt: {
           type: 'object',
-          description: 'Parsed paxiom.receipt.v0 JSON envelope (or base64url-decoded X-Paxiom-Receipt HTTP header).'
+          description: 'Parsed paxiom.receipt.v0 JSON envelope (decoded from Payment-Receipt or X-Paxiom-Receipt HTTP header).'
         },
         output: {
-          description: 'Optional delivered HTTP response JSON body; required to verify SHA-256 JCS outputHash binding and reach trustState="verified".'
+          description: 'Optional delivered HTTP response payload (JSON value for jcs-sha256, or UTF-8 string for raw-sha256); required to reach trustState="verified".'
+        },
+        expectedIssuerPublicKeys: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Optional pinned base64 Ed25519 seller public keys (e.g. from /.well-known/x402-keys.json). Mismatch returns trustState="unauthorized_issuer".'
+        },
+        expectedPayTo: {
+          type: 'string',
+          description: 'Optional expected seller payTo address from the 402 quote. Mismatch returns trustState="unauthorized_issuer".'
+        },
+        trustedVerifierPublicKeys: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Optional canonical base64 32-byte Ed25519 public keys trusted to assert settlement.checkedByVerifier=true (defaults to the host key).'
         },
         trustedPaxiomPublicKeys: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Optional canonical base64 32-byte Ed25519 public keys trusted to assert settlement.checkedByPaxiom=true (defaults to the host Paxiom key).'
+          description: 'Backward-compatible alias for trustedVerifierPublicKeys.'
         }
       }
     },
@@ -80,7 +95,7 @@ export const REMOTE_MCP_TOOLS = Object.freeze([
       properties: {
         valid: {
           type: 'boolean',
-          description: 'True only when trustState is "verified" (valid signature, matching outputHash, non-expired, and confirmed or verify_only settlement).'
+          description: 'True only when trustState is "verified" (valid signature, authorized signer if pinned, matching outputHash, non-expired, and confirmed or verify_only settlement).'
         },
         trustState: {
           type: 'string',
@@ -89,11 +104,12 @@ export const REMOTE_MCP_TOOLS = Object.freeze([
         },
         checks: {
           type: 'object',
-          required: ['schema', 'signature', 'outputHash', 'requestBinding', 'paymentBinding', 'settlement', 'proof'],
+          required: ['schema', 'signature', 'issuerAuthorization', 'outputHash', 'requestBinding', 'paymentBinding', 'settlement', 'proof'],
           properties: {
             schema: { type: 'string', description: 'Draft-07 schema check status (pass, fail, not_checked).' },
             signature: { type: 'string', description: 'Ed25519 signature and keyId consistency status (pass, fail, not_checked).' },
-            outputHash: { type: 'string', description: 'RFC 8785 JCS SHA-256 payload hash check (pass, fail, not_provided, not_checked, error).' },
+            issuerAuthorization: { type: 'string', description: 'Seller key / payTo authorization status (pass, fail, unpinned, not_checked).' },
+            outputHash: { type: 'string', description: 'JCS or raw SHA-256 payload hash check (pass, fail, not_provided, not_checked, error).' },
             requestBinding: { type: 'string', description: 'Request method and resource binding check (pass, not_checked).' },
             paymentBinding: { type: 'string', description: 'Payment metadata binding check (pass, not_checked).' },
             settlement: { type: 'string', description: 'Reported settlement state from the receipt payload.' },
@@ -116,7 +132,7 @@ export const REMOTE_MCP_TOOLS = Object.freeze([
     name: 'explain_receipt',
     title: 'Format Human-Readable Receipt Explanation',
     description:
-      'Format a plain-text trust breakdown and next-action remediation checklist for an Ed25519-signed paxiom.receipt.v0 API delivery receipt. Use this instead of verify_receipt when displaying a readable verdict to a user or operator; use verify_receipt when code needs raw check fields for programmatic gating, or get_x402_verifier_info to discover live Base USDC settlement endpoints. Runs deterministically offline for free with no auth or rate limits: tampered, expired, or unconfirmed receipts return isError=false with an actionable diagnostic explanation rather than throwing, and omitting trustedPaxiomPublicKeys trusts the host Paxiom counter-attestation key by default. Pass output with the delivered HTTP response body to check SHA-256 JCS payload binding (omitting output caps trustState at valid_signature_only).',
+      'Format a plain-text trust breakdown and next-action remediation checklist for an Ed25519-signed paxiom.receipt.v0 API delivery receipt. Use this instead of verify_receipt when displaying a readable verdict to a user or operator; use verify_receipt when code needs raw check fields for programmatic gating, or get_x402_verifier_info to discover live Base USDC settlement endpoints. Runs deterministically offline for free with no auth: tampered, unauthorized, expired, or unconfirmed receipts return isError=false with an actionable diagnostic explanation rather than throwing, and omitting trustedVerifierPublicKeys trusts the host counter-attestation key by default. Pass output with the delivered HTTP response body to check SHA-256 payload binding (omitting output caps trustState at valid_signature_only).',
     annotations: {
       title: 'Format Human-Readable Receipt Explanation',
       readOnlyHint: true,
@@ -130,15 +146,29 @@ export const REMOTE_MCP_TOOLS = Object.freeze([
       properties: {
         receipt: {
           type: 'object',
-          description: 'Parsed paxiom.receipt.v0 JSON envelope (or base64url-decoded X-Paxiom-Receipt HTTP header).'
+          description: 'Parsed paxiom.receipt.v0 JSON envelope (decoded from Payment-Receipt or X-Paxiom-Receipt HTTP header).'
         },
         output: {
-          description: 'Optional delivered HTTP response JSON body; pass whenever available so SHA-256 JCS payload binding is evaluated alongside the Ed25519 signature.'
+          description: 'Optional delivered HTTP response payload; pass whenever available so SHA-256 payload binding is evaluated alongside the Ed25519 signature.'
+        },
+        expectedIssuerPublicKeys: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Optional pinned base64 Ed25519 seller public keys (e.g. from /.well-known/x402-keys.json).'
+        },
+        expectedPayTo: {
+          type: 'string',
+          description: 'Optional expected seller payTo address from the 402 quote.'
+        },
+        trustedVerifierPublicKeys: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Optional canonical base64 32-byte Ed25519 public keys trusted to assert settlement.checkedByVerifier=true (defaults to the host key).'
         },
         trustedPaxiomPublicKeys: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Optional canonical base64 32-byte Ed25519 public keys trusted to assert settlement.checkedByPaxiom=true (defaults to the host Paxiom key).'
+          description: 'Backward-compatible alias for trustedVerifierPublicKeys.'
         }
       }
     },
@@ -170,7 +200,7 @@ export const REMOTE_MCP_TOOLS = Object.freeze([
     name: 'get_x402_verifier_info',
     title: 'Get Paxiom x402 Verifier & Preflight Metadata',
     description:
-      'Retrieve Paxiom Receipt Verifier service discovery metadata, published Ed25519 counter-attestation public keys, free HTTP endpoints, and x402 Base USDC payment terms for live on-chain settlement verification ($0.002 USDC) and pre-payment seller preflight ($0.01 USDC). Call this before invoking paid HTTP routes (/v1/receipt/verify-live or /v1/x402/preflight) to inspect current pricing, facilitator URL, and payTo recipient; use verify_receipt or explain_receipt instead when evaluating a receipt you already hold. Stateless, read-only, and free with no authentication or rate limits.',
+      'Retrieve Paxiom Receipt Verifier reference service discovery metadata, published Ed25519 counter-attestation public keys (/.well-known/x402-keys.json), and free rate-limited public HTTP endpoints for offline verification, live Base USDC settlement verification (/v1/receipt/verify-live), and pre-payment seller safety preflight (/v1/x402/preflight). Stateless, read-only, and free with no authentication required.',
     annotations: {
       title: 'Get Paxiom x402 Verifier & Preflight Metadata',
       readOnlyHint: true,
@@ -187,7 +217,7 @@ export const REMOTE_MCP_TOOLS = Object.freeze([
       required: ['service', 'receiptVersion', 'baseUrl', 'mcpEndpoint', 'npmPackage', 'trustedPaxiomKeys', 'freeEndpoints', 'paidX402Endpoints'],
       properties: {
         service: { type: 'string', description: 'Canonical verifier service identifier ("paxiom-receipt-verifier").' },
-        receiptVersion: { type: 'string', description: 'Supported Paxiom receipt schema version ("paxiom.receipt.v0").' },
+        receiptVersion: { type: 'string', description: 'Supported receipt schema version ("paxiom.receipt.v0").' },
         baseUrl: { type: 'string', description: 'HTTPS origin of the verifier API.' },
         mcpEndpoint: { type: 'string', description: 'Streamable-HTTP MCP endpoint URL.' },
         npmPackage: {
@@ -196,15 +226,15 @@ export const REMOTE_MCP_TOOLS = Object.freeze([
         },
         trustedPaxiomKeys: {
           type: 'array',
-          description: 'Published Ed25519 root counter-attestation public keys ({ keyId, algorithm, publicKey }).'
+          description: 'Published Ed25519 counter-attestation public keys ({ keyId, algorithm, publicKey }).'
         },
         freeEndpoints: {
           type: 'object',
-          description: 'Unauthenticated free HTTP routes for offline verification, demo fixtures, and .well-known discovery.'
+          description: 'Unauthenticated free HTTP routes for offline verification, live settlement verification, seller preflight, and .well-known key discovery.'
         },
         paidX402Endpoints: {
           type: ['object', 'null'],
-          description: 'Active x402 Base USDC payment terms, payTo address, facilitator URL, and priced route descriptors, or null if disabled.'
+          description: 'Null on the free public reference verifier (or custom x402 gate descriptor if enabled on a self-hosted instance).'
         }
       }
     }
@@ -270,13 +300,19 @@ export function buildVerifierDiscoveryPayload(env = {}) {
     freeEndpoints: {
       offlineVerify: `${baseUrl}/v1/receipt/verify`,
       demoFixture: `${baseUrl}/v1/receipt/demo`,
+      x402Keys: `${baseUrl}/.well-known/x402-keys.json`,
       paxiomKeys: `${baseUrl}/.well-known/paxiom-keys.json`,
-      x402Discovery: `${baseUrl}/.well-known/x402.json`
+      ...(liveEnabled && !x402Enabled
+        ? {
+            liveOnchainVerify: verifyLiveResource,
+            x402SellerPreflight: preflightResource
+          }
+        : {})
     },
-    paidX402Endpoints: liveEnabled
+    paidX402Endpoints: liveEnabled && x402Enabled
       ? {
           x402Enabled,
-          network: env.X402_NETWORK || 'base',
+          network: env.X402_NETWORK || 'eip155:8453',
           asset: 'USDC',
           payTo: env.X402_PAY_TO || null,
           facilitatorUrl: env.X402_FACILITATOR_URL || 'https://facilitator.payai.network',
@@ -285,15 +321,13 @@ export function buildVerifierDiscoveryPayload(env = {}) {
               method: 'POST',
               url: verifyLiveResource,
               priceAtomic: String(env.X402_PRICE_ATOMIC || '2000'),
-              priceUsd: '0.002',
-              purpose: 'Confirm Base / Base Sepolia USDC Transfer log on-chain and emit Paxiom Ed25519 counter-attested X-Paxiom-Receipt.'
+              purpose: 'Confirm Base / Base Sepolia USDC Transfer log on-chain and emit Ed25519 counter-attested Payment-Receipt.'
             },
             {
               method: 'POST',
               url: preflightResource,
               priceAtomic: String(env.X402_PREFLIGHT_PRICE_ATOMIC || '10000'),
-              priceUsd: '0.01',
-              purpose: 'SSRF-hardened pre-payment x402 seller readiness scan (canonical Circle USDC check, EIP-712 domain check, payTo bait-and-switch check, X-Paxiom-Receipt readiness).'
+              purpose: 'SSRF-hardened pre-payment x402 seller readiness scan.'
             }
           ]
         }
@@ -301,10 +335,6 @@ export function buildVerifierDiscoveryPayload(env = {}) {
   };
 }
 
-/**
- * Pure JSON-RPC 2.0 handler for a single message object.
- * Returns a JSON-RPC response object, or `null` for notifications / client responses.
- */
 export function buildMcpServerCard(env = {}) {
   const verifyLiveResource = env.X402_RESOURCE_URL || 'https://api.paxiom.org/v1/receipt/verify-live';
   let baseUrl = 'https://api.paxiom.org';
@@ -318,7 +348,7 @@ export function buildMcpServerCard(env = {}) {
     title: REMOTE_MCP_SERVER_INFO.title,
     version: REMOTE_MCP_SERVER_INFO.version,
     description:
-      'Verify and explain Ed25519 proof-bound receipts (paxiom.receipt.v0) for x402 APIs, and discover live Base USDC settlement & preflight endpoints.',
+      'Verify and explain Ed25519 proof-bound delivery receipts (paxiom.receipt.v0) for x402 APIs, and discover free public Base USDC settlement & preflight reference endpoints.',
     websiteUrl: 'https://paxiom.org/receipts.html',
     transport: {
       type: 'streamable-http',
@@ -341,7 +371,6 @@ export function handleRemoteMcpMessage(msg, env = {}, onMcpEvent = null) {
     return jsonRpcError(null, -32600, 'Invalid JSON-RPC 2.0 id: must be string, finite number, or null');
   }
 
-  // Client JSON-RPC response (has result or error, no method) -> acknowledge with 202 (null)
   if (!Object.hasOwn(msg, 'method')) {
     if (Object.hasOwn(msg, 'result') || Object.hasOwn(msg, 'error')) {
       return null;
@@ -353,7 +382,6 @@ export function handleRemoteMcpMessage(msg, env = {}, onMcpEvent = null) {
     return jsonRpcError(Object.hasOwn(msg, 'id') ? msg.id : null, -32600, 'Invalid JSON-RPC 2.0 method');
   }
 
-  // Notifications (e.g. notifications/initialized) do not carry an `id`
   if (!Object.hasOwn(msg, 'id')) {
     return null;
   }
@@ -374,7 +402,7 @@ export function handleRemoteMcpMessage(msg, env = {}, onMcpEvent = null) {
       },
       serverInfo: REMOTE_MCP_SERVER_INFO,
       instructions:
-        'Use verify_receipt or explain_receipt to check paxiom.receipt.v0 cryptographic receipts offline for free. Use get_x402_verifier_info for live Base USDC settlement counter-attestation ($0.002) and pre-payment x402 seller preflight ($0.01) endpoints.'
+        'Use verify_receipt or explain_receipt to check paxiom.receipt.v0 cryptographic delivery receipts offline for free. Use get_x402_verifier_info to inspect published verifier keys and free rate-limited live Base USDC settlement and pre-payment seller preflight reference endpoints.'
     });
   }
 
@@ -413,12 +441,20 @@ export function handleRemoteMcpMessage(msg, env = {}, onMcpEvent = null) {
         if (Object.hasOwn(args, 'output')) {
           opts.output = args.output;
         }
-        if (Array.isArray(args.trustedPaxiomPublicKeys)) {
+        if (Array.isArray(args.expectedIssuerPublicKeys)) {
+          opts.expectedIssuerPublicKeys = args.expectedIssuerPublicKeys;
+        }
+        if (typeof args.expectedPayTo === 'string' && args.expectedPayTo.trim()) {
+          opts.expectedPayTo = args.expectedPayTo;
+        }
+        if (Array.isArray(args.trustedVerifierPublicKeys)) {
+          opts.trustedVerifierPublicKeys = args.trustedVerifierPublicKeys;
+        } else if (Array.isArray(args.trustedPaxiomPublicKeys)) {
           opts.trustedPaxiomPublicKeys = args.trustedPaxiomPublicKeys;
         } else {
           const hostKey = resolveHostPaxiomPublicKey(env);
           if (hostKey) {
-            opts.trustedPaxiomPublicKeys = [hostKey.publicKey];
+            opts.trustedVerifierPublicKeys = [hostKey.publicKey];
           }
         }
         const verdict = verifyReceipt(args.receipt, opts);
@@ -473,9 +509,6 @@ export function handleRemoteMcpMessage(msg, env = {}, onMcpEvent = null) {
   return jsonRpcError(id, -32601, `Method not found: ${method}`);
 }
 
-/**
- * HTTP route handler for `/mcp` (`POST`, `GET`, `DELETE`).
- */
 export async function handleMcpHttpRequest(req, res, { env = {}, readBody, corsHeaders = {}, onMcpEvent = null }) {
   const sendJson = (status, payload, extraHeaders = {}) => {
     res.writeHead(status, {
@@ -497,8 +530,6 @@ export async function handleMcpHttpRequest(req, res, { env = {}, readBody, corsH
 
   if (req.method === 'GET') {
     const accept = String((req.headers && req.headers.accept) || '').toLowerCase();
-    // Per MCP Streamable-HTTP spec, stateless servers without server-initiated SSE streams
-    // MUST return 405 Method Not Allowed when a client attempts to open an SSE listener.
     if (accept.includes('text/event-stream')) {
       return sendJson(
         405,

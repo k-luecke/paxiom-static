@@ -1,16 +1,19 @@
 import { verifyReceipt } from './verify.mjs';
 import { decodeReceiptHeader } from './issue.mjs';
-import { RECEIPT_HEADER_NAME } from './middleware.mjs';
+import { RECEIPT_HEADER_NAME, STANDARD_RECEIPT_HEADER_NAME } from './middleware.mjs';
 
 export const DEFAULT_PAXIOM_API_URL = 'https://api.paxiom.org';
 export const PAXIOM_LIVE_VERIFIER_PUBLIC_KEY = 'hsRfDKd2AWxv0KwTs3gsDLMY7nPtVGky1Tc6NWgSxIY=';
-export const PAXIOM_TRUSTED_PUBLIC_KEYS = Object.freeze([PAXIOM_LIVE_VERIFIER_PUBLIC_KEY]);
+export const PAXIOM_TRUSTED_VERIFIER_PUBLIC_KEYS = Object.freeze([PAXIOM_LIVE_VERIFIER_PUBLIC_KEY]);
+export const PAXIOM_TRUSTED_PUBLIC_KEYS = PAXIOM_TRUSTED_VERIFIER_PUBLIC_KEYS;
 
 const DEFAULT_CLIENT_TIMEOUT_MS = 15000;
 const MAX_CLIENT_RESPONSE_BYTES = 1024 * 1024; // 1 MiB safety cap
+const MAX_KEYS_RESPONSE_BYTES = 64 * 1024; // 64 KiB cap for /.well-known key manifests
 const ALLOWED_PREFLIGHT_METHODS = new Set(['POST', 'GET', 'HEAD']);
 const DEC_UINT_RE = /^[0-9]+$/;
 const EVM_ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
+const STRICT_BASE64_32_RE = /^[A-Za-z0-9+/]{43}=$/;
 
 function isLoopbackHttpHost(hostname) {
   const bare = String(hostname || '').replace(/^\[|\]$/g, '').toLowerCase();
@@ -93,7 +96,7 @@ async function readBoundedFetchResponse(fetchImpl, url, init, {
     });
 
     if (res.status >= 300 && res.status < 400) {
-      throw new Error(`Refusing HTTP ${res.status} redirect from Paxiom verifier endpoint`);
+      throw new Error(`Refusing HTTP ${res.status} redirect from endpoint`);
     }
 
     let bodyBuf = Buffer.alloc(0);
@@ -108,7 +111,7 @@ async function readBoundedFetchResponse(fetchImpl, url, init, {
         total += buf.length;
         if (total > maxBytes) {
           try { await reader.cancel(); } catch { /* ignore */ }
-          throw new Error(`Verifier response exceeded ${maxBytes} bytes`);
+          throw new Error(`Response exceeded ${maxBytes} bytes`);
         }
         chunks.push(buf);
       }
@@ -117,7 +120,7 @@ async function readBoundedFetchResponse(fetchImpl, url, init, {
       const txt = await res.text();
       bodyBuf = Buffer.from(txt, 'utf8');
       if (bodyBuf.length > maxBytes) {
-        throw new Error(`Verifier response exceeded ${maxBytes} bytes`);
+        throw new Error(`Response exceeded ${maxBytes} bytes`);
       }
     }
 
@@ -131,7 +134,7 @@ async function readBoundedFetchResponse(fetchImpl, url, init, {
   }
 }
 
-function buildAuthHeaders({ apiKey, paymentHeader }) {
+function buildJsonHeaders({ apiKey, paymentHeader } = {}) {
   const headers = {
     accept: 'application/json',
     'content-type': 'application/json'
@@ -146,12 +149,67 @@ function buildAuthHeaders({ apiKey, paymentHeader }) {
 }
 
 /**
- * Inspect a Fetch `Response`, Node `IncomingMessage`, or headers object for an
- * `X-Paxiom-Receipt` header and verify it deterministically offline. Never throws.
+ * Discover authorized Ed25519 receipt signing keys for a seller origin via
+ * `/.well-known/x402-keys.json` (with automatic fallback to `/.well-known/paxiom-keys.json`).
+ */
+export async function discoverIssuerKeys(originOrResourceUrl, options = {}) {
+  const opts = options && typeof options === 'object' ? options : {};
+  const origin = resolveSafeApiOrigin(originOrResourceUrl);
+  const fetchImpl = opts.fetch || opts.fetchImpl || globalThis.fetch;
+  const paths = ['/.well-known/x402-keys.json', '/.well-known/paxiom-keys.json'];
+
+  for (const path of paths) {
+    const url = `${origin}${path}`;
+    const { status, bodyText } = await readBoundedFetchResponse(
+      fetchImpl,
+      url,
+      { method: 'GET', headers: { accept: 'application/json' } },
+      { timeoutMs: opts.timeoutMs, maxBytes: MAX_KEYS_RESPONSE_BYTES }
+    );
+    if (status === 404) continue;
+    if (status < 200 || status >= 300) {
+      return { ok: false, status, origin, keysUrl: url, keys: [], publicKeys: [] };
+    }
+    let parsed;
+    try {
+      parsed = JSON.parse(bodyText);
+    } catch {
+      return { ok: false, status, origin, keysUrl: url, keys: [], publicKeys: [] };
+    }
+    const rawKeys = parsed && Array.isArray(parsed.keys) ? parsed.keys : [];
+    const validKeys = rawKeys.filter(
+      (k) => k && typeof k === 'object' &&
+        (k.algorithm === undefined || k.algorithm === 'ed25519') &&
+        typeof k.publicKey === 'string' &&
+        STRICT_BASE64_32_RE.test(k.publicKey) &&
+        Buffer.from(k.publicKey, 'base64').length === 32
+    );
+    return {
+      ok: validKeys.length > 0,
+      status,
+      origin,
+      keysUrl: url,
+      issuer: parsed && typeof parsed.issuer === 'string' ? parsed.issuer : null,
+      payTo: parsed && typeof parsed.payTo === 'string' ? parsed.payTo : null,
+      keys: validKeys,
+      publicKeys: validKeys.map((k) => k.publicKey)
+    };
+  }
+  return { ok: false, status: 404, origin, keysUrl: null, keys: [], publicKeys: [] };
+}
+
+/**
+ * Inspect a Fetch `Response`, Node `IncomingMessage`, or headers object for a
+ * `Payment-Receipt` (or `X-Paxiom-Receipt`) header and verify it deterministically offline.
+ * Never throws.
  */
 export function verifyResponseReceipt(responseOrHeaders, options = {}) {
-  const rawHeader = extractHeaderValue(responseOrHeaders, RECEIPT_HEADER_NAME);
-  if (!rawHeader || !rawHeader.trim()) {
+  const stdHeader = extractHeaderValue(responseOrHeaders, STANDARD_RECEIPT_HEADER_NAME);
+  const paxHeader = extractHeaderValue(responseOrHeaders, RECEIPT_HEADER_NAME);
+  const cleanStd = stdHeader && stdHeader.trim() ? stdHeader.trim() : '';
+  const cleanPax = paxHeader && paxHeader.trim() ? paxHeader.trim() : '';
+
+  if (!cleanStd && !cleanPax) {
     return {
       present: false,
       valid: false,
@@ -161,6 +219,18 @@ export function verifyResponseReceipt(responseOrHeaders, options = {}) {
     };
   }
 
+  if (cleanStd && cleanPax && cleanStd !== cleanPax) {
+    return {
+      present: true,
+      valid: false,
+      trustState: 'malformed_header',
+      receipt: null,
+      verdict: null,
+      error: 'Conflicting Payment-Receipt and X-Paxiom-Receipt headers on response'
+    };
+  }
+
+  const rawHeader = cleanStd || cleanPax;
   let receipt;
   try {
     receipt = decodeReceiptHeader(rawHeader);
@@ -180,11 +250,18 @@ export function verifyResponseReceipt(responseOrHeaders, options = {}) {
     if (Object.hasOwn(options, 'output') && options.output !== undefined) {
       verifyOpts.output = options.output;
     }
-    verifyOpts.trustedPaxiomPublicKeys = Array.isArray(options.trustedPaxiomPublicKeys)
-      ? options.trustedPaxiomPublicKeys
-      : PAXIOM_TRUSTED_PUBLIC_KEYS;
+    if (options.expectedIssuerPublicKeys) {
+      verifyOpts.expectedIssuerPublicKeys = options.expectedIssuerPublicKeys;
+    }
+    if (options.expectedPayTo) {
+      verifyOpts.expectedPayTo = options.expectedPayTo;
+    }
+    const trusted = options.trustedVerifierPublicKeys || options.trustedPaxiomPublicKeys;
+    verifyOpts.trustedVerifierPublicKeys = Array.isArray(trusted)
+      ? trusted
+      : PAXIOM_TRUSTED_VERIFIER_PUBLIC_KEYS;
   } else {
-    verifyOpts.trustedPaxiomPublicKeys = PAXIOM_TRUSTED_PUBLIC_KEYS;
+    verifyOpts.trustedVerifierPublicKeys = PAXIOM_TRUSTED_VERIFIER_PUBLIC_KEYS;
   }
 
   const verdict = verifyReceipt(receipt, verifyOpts);
@@ -192,14 +269,15 @@ export function verifyResponseReceipt(responseOrHeaders, options = {}) {
     present: true,
     valid: verdict.valid,
     trustState: verdict.trustState,
+    checks: verdict.checks,
     receipt,
     verdict
   };
 }
 
 /**
- * Run a pre-payment x402 seller readiness & USDC safety scan (`POST /v1/x402/preflight`)
- * before an agent wallet signs an EIP-3009 payment authorization.
+ * Run a free pre-payment x402 seller readiness & USDC safety scan (`POST /v1/x402/preflight`)
+ * before an agent wallet signs a payment authorization.
  */
 export async function preflightX402(targetUrl, options = {}) {
   if (typeof targetUrl !== 'string' || !targetUrl.trim()) {
@@ -240,7 +318,7 @@ export async function preflightX402(targetUrl, options = {}) {
     `${origin}/v1/x402/preflight`,
     {
       method: 'POST',
-      headers: buildAuthHeaders({ apiKey: opts.apiKey, paymentHeader: opts.paymentHeader }),
+      headers: buildJsonHeaders({ apiKey: opts.apiKey, paymentHeader: opts.paymentHeader }),
       body: JSON.stringify(reqBody)
     },
     { timeoutMs: opts.timeoutMs }
@@ -278,12 +356,13 @@ export async function preflightX402(targetUrl, options = {}) {
     };
   }
 
-  const trustedKeys = Array.isArray(opts.trustedPaxiomPublicKeys)
-    ? opts.trustedPaxiomPublicKeys
-    : PAXIOM_TRUSTED_PUBLIC_KEYS;
+  const rawTrusted = opts.trustedVerifierPublicKeys || opts.trustedPaxiomPublicKeys;
+  const trustedKeys = Array.isArray(rawTrusted)
+    ? rawTrusted
+    : PAXIOM_TRUSTED_VERIFIER_PUBLIC_KEYS;
   const receiptVerification = verifyResponseReceipt(response, {
     output: bodyJson,
-    trustedPaxiomPublicKeys: trustedKeys
+    trustedVerifierPublicKeys: trustedKeys
   });
   const paymentResponse = decodeBase64JsonObject(
     extractHeaderValue(response, 'payment-response') || extractHeaderValue(response, 'x-payment-response')
@@ -304,7 +383,7 @@ export async function preflightX402(targetUrl, options = {}) {
 /**
  * Verify a `paxiom.receipt.v0` receipt's claimed Base / Base Sepolia USDC settlement
  * live on-chain (`POST /v1/receipt/verify-live`) and optionally obtain a portable
- * Paxiom Ed25519 counter-attested receipt (`expectedPayTo` required for counter-attestation).
+ * Ed25519 counter-attested receipt (`expectedPayTo` required for counter-attestation).
  */
 export async function verifyReceiptLive(receipt, options = {}) {
   if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt)) {
@@ -333,7 +412,7 @@ export async function verifyReceiptLive(receipt, options = {}) {
     `${origin}/v1/receipt/verify-live`,
     {
       method: 'POST',
-      headers: buildAuthHeaders({ apiKey: opts.apiKey, paymentHeader: opts.paymentHeader }),
+      headers: buildJsonHeaders({ apiKey: opts.apiKey, paymentHeader: opts.paymentHeader }),
       body: JSON.stringify(reqBody)
     },
     { timeoutMs: opts.timeoutMs }
@@ -373,14 +452,15 @@ export async function verifyReceiptLive(receipt, options = {}) {
     };
   }
 
-  const trustedKeys = Array.isArray(opts.trustedPaxiomPublicKeys)
-    ? opts.trustedPaxiomPublicKeys
-    : PAXIOM_TRUSTED_PUBLIC_KEYS;
+  const rawTrusted = opts.trustedVerifierPublicKeys || opts.trustedPaxiomPublicKeys;
+  const trustedKeys = Array.isArray(rawTrusted)
+    ? rawTrusted
+    : PAXIOM_TRUSTED_VERIFIER_PUBLIC_KEYS;
   const counterAttestedReceipt = bodyJson.counterAttestedReceipt || null;
   const counterAttestedVerification = counterAttestedReceipt
     ? verifyReceipt(counterAttestedReceipt, {
         ...(hasOutput ? { output: opts.output } : {}),
-        trustedPaxiomPublicKeys: trustedKeys
+        trustedVerifierPublicKeys: trustedKeys
       })
     : null;
   const paymentResponse = decodeBase64JsonObject(

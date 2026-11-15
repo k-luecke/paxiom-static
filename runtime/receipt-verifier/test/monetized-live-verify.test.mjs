@@ -234,30 +234,108 @@ test('x402 facilitator verify -> settle -> serve flow + never charges malformed 
   });
 });
 
-test('RENDER=true auto-enables live x402 discovery, capabilities, and unpaid 402 probe response', async (t) => {
-  const srv = createServer({ env: { RENDER: 'true' } });
+test('RENDER=true forces free public reference mode (even if legacy X402_ENABLED=true is set), serves /.well-known/x402-keys.json, emits Payment-Receipt, and enforces 429 burst rate limits', async (t) => {
+  const sellerKey = generateReceiptKeyPair({ keyId: 'seller-free-01' });
+  const paxiomKey = generateReceiptKeyPair({ keyId: 'paxiom-free-01' });
+  const sellerPayTo = '0x1111111111111111111111111111111111111111';
+  const buyerAddr = '0x2222222222222222222222222222222222222222';
+  const txHash = '0x' + 'ab'.repeat(32);
+  const output = { free: true };
+  const { receipt: claimedReceipt } = issueReceipt({
+    privateKey: sellerKey.privateKeyPem,
+    issuer: { name: 'Seller', keyId: sellerKey.keyId },
+    service: { name: 'FreeTest', resource: 'https://s.example/api', method: 'POST' },
+    payment: {
+      network: 'eip155:8453',
+      asset: 'USDC',
+      amountAtomic: '2000',
+      amountDisplay: '0.002',
+      settlement: { status: 'claimed_not_checked', transactionHash: txHash, checkedByVerifier: false }
+    },
+    output
+  });
+
+  const mockRpc = async (_url, init) => {
+    const req = JSON.parse(init.body);
+    if (req.method === 'eth_blockNumber') {
+      return new Response(JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x200' }), { status: 200 });
+    }
+    return new Response(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      result: {
+        status: '0x1',
+        blockNumber: '0x1ff',
+        logs: [{
+          address: NETWORK_CONFIGS.base.usdcAddress,
+          topics: [ERC20_TRANSFER_TOPIC0, padAddressTopic(buyerAddr), padAddressTopic(sellerPayTo)],
+          data: padUint256Hex(2000)
+        }]
+      }
+    }), { status: 200 });
+  };
+
+  const srv = createServer({
+    env: {
+      RENDER: 'true',
+      X402_ENABLED: 'true', // stale dashboard variable must be ignored unless PAXIOM_COMMERCIAL_GATE_ENABLED=true!
+      PAXIOM_API_KEYS: 'stale_dashboard_key',
+      BASE_RPC_URL: 'https://rpc.base.mock',
+      PAXIOM_SIGNING_PRIVATE_KEY_PEM: paxiomKey.privateKeyPem,
+      PAXIOM_SIGNING_KEY_ID: paxiomKey.keyId,
+      RATE_LIMIT_VERIFY_LIVE_PER_MIN: '2'
+    },
+    fetchImpl: mockRpc
+  });
   await new Promise((r) => srv.listen(0, '127.0.0.1', r));
   t.after(() => srv.close());
   const { port } = srv.address();
   const base = `http://127.0.0.1:${port}`;
 
   const ver = await fetch(`${base}/version`).then((r) => r.json());
-  assert.equal(ver.x402Enabled, true);
+  assert.equal(ver.version, '0.2.0');
+  assert.equal(ver.x402Enabled, false);
   assert.equal(ver.capabilities.liveSettlementVerification, true);
+  assert.equal(ver.rateLimits.verifyLivePerMinute, 2);
 
+  // x402 payment discovery is 404 on the free public verifier, while /.well-known/x402-keys.json is 200
   const discRes = await fetch(`${base}/.well-known/x402.json`);
-  assert.equal(discRes.status, 200);
-  const disc = await discRes.json();
-  assert.equal(disc.accepts[0].payTo, '0x9786F5532ab7d7556CDa53E3f6c2d937c9b87Bc4');
-  assert.equal(disc.accepts[0].outputSchema.input.discoverable, true);
+  assert.equal(discRes.status, 404);
+  const keysRes = await fetch(`${base}/.well-known/x402-keys.json`);
+  assert.equal(keysRes.status, 200);
+  const keysJson = await keysRes.json();
+  assert.equal(keysJson.keys[0].publicKey, paxiomKey.publicKey);
 
-  const probe = await fetch(`${base}/v1/receipt/verify-live`, {
+  // Unauthenticated, unpaid POST /v1/receipt/verify-live succeeds with 200 + Payment-Receipt + checkedByVerifier=true!
+  const r1 = await fetch(`${base}/v1/receipt/verify-live`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: '{}'
+    headers: { 'content-type': 'application/json', 'cf-connecting-ip': '198.51.100.42' },
+    body: JSON.stringify({ receipt: claimedReceipt, output, expectedPayTo: sellerPayTo })
   });
-  assert.equal(probe.status, 402);
-  assert.ok(probe.headers.get('payment-required'));
+  assert.equal(r1.status, 200);
+  assert.ok(r1.headers.get('payment-receipt'));
+  assert.equal(r1.headers.get('payment-receipt'), r1.headers.get('x-paxiom-receipt'));
+  const b1 = await r1.json();
+  assert.equal(b1.valid, true);
+  assert.equal(b1.counterAttestedReceipt.payload.payment.settlement.checkedByVerifier, true);
+
+  // Second request within 60s window succeeds
+  const r2 = await fetch(`${base}/v1/receipt/verify-live`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'cf-connecting-ip': '198.51.100.42' },
+    body: JSON.stringify({ receipt: claimedReceipt, output, expectedPayTo: sellerPayTo })
+  });
+  assert.equal(r2.status, 200);
+
+  // Third request from same IP hits 429 rate_limit_exceeded with Retry-After!
+  const r3 = await fetch(`${base}/v1/receipt/verify-live`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'cf-connecting-ip': '198.51.100.42' },
+    body: JSON.stringify({ receipt: claimedReceipt, output, expectedPayTo: sellerPayTo })
+  });
+  assert.equal(r3.status, 429);
+  assert.ok(Number(r3.headers.get('retry-after')) >= 1);
+  assert.equal((await r3.json()).error.code, 'rate_limit_exceeded');
 });
 
 test('comma-separated BASE_RPC_URL automatically fails over when primary RPC rate-limits (-32011)', async () => {

@@ -28,7 +28,12 @@ function strictDecodeBase64(value, expectedByteLength, label) {
   return raw;
 }
 
-// --- minimal draft-07 validator (covers exactly the constructs this schema uses) ---
+function normalizePayToId(addr) {
+  const s = String(addr || '').trim();
+  return /^0x[0-9a-fA-F]{40}$/.test(s) ? s.toLowerCase() : s;
+}
+
+// --- minimal draft-07 validator (covers the constructs this schema uses) ---
 function validateSchema(node, sch, path, root, depth = 0) {
   if (depth > MAX_DEPTH) return [`${path}: nesting exceeds max depth ${MAX_DEPTH}`];
   const errs = [];
@@ -60,6 +65,13 @@ function validateSchema(node, sch, path, root, depth = 0) {
       if (sch.pattern && !new RegExp(sch.pattern).test(node)) errs.push(`${path}: pattern mismatch`);
       if (sch.format === 'date-time' && !isValidIsoDateTime(node)) errs.push(`${path}: invalid date-time`);
       break;
+    case 'integer':
+      if (!Number.isInteger(node)) errs.push(`${path}: expected integer`);
+      else {
+        if (sch.minimum !== undefined && node < sch.minimum) errs.push(`${path}: below minimum`);
+        if (sch.maximum !== undefined && node > sch.maximum) errs.push(`${path}: above maximum`);
+      }
+      break;
     case 'boolean':
       if (typeof node !== 'boolean') errs.push(`${path}: expected boolean`);
       break;
@@ -80,7 +92,6 @@ function validateSchema(node, sch, path, root, depth = 0) {
 }
 
 function ed25519PublicKey(publicKeyB64) {
-  // v0 encoding: canonical base64 of the raw 32-byte Ed25519 public key.
   const raw = strictDecodeBase64(publicKeyB64, 32, 'Ed25519 publicKey');
   return crypto.createPublicKey({
     format: 'jwk',
@@ -91,20 +102,20 @@ function ed25519PublicKey(publicKeyB64) {
 const CHECK = { PASS: 'pass', FAIL: 'fail', SKIP: 'not_checked' };
 
 /**
- * Verify a paxiom.receipt.v0 receipt, optionally against the delivered output.
+ * Verify a paxiom.receipt.v0 receipt, optionally against the delivered output and
+ * expected seller signing keys / payTo identity.
  * Offline only: no chain calls, no facilitator calls, no evidence fetching.
- * @param {object} receipt  parsed receipt JSON
- * @param {object} [opts]
- * @param {object} [opts.output]  parsed delivered output JSON (enables output-hash check)
- * @returns {{valid:boolean, trustState:string, checks:object, receiptHash:(string|null), summary:string}}
  */
 export function verifyReceipt(receipt, opts = {}) {
-  // Finding A: an explicit `output: undefined` must behave exactly like omitting
-  // output (no throw during hashing), not like supplying a value to hash.
-  const hasOutput = Object.prototype.hasOwnProperty.call(opts, 'output') && opts.output !== undefined;
+  const safeOpts = opts && typeof opts === 'object' ? opts : {};
+  const hasOutput = Object.prototype.hasOwnProperty.call(safeOpts, 'output') && safeOpts.output !== undefined;
+  const hasExpectedKeys = Array.isArray(safeOpts.expectedIssuerPublicKeys) || safeOpts.expectedIssuerPublicKeys instanceof Set;
+  const hasExpectedPayTo = typeof safeOpts.expectedPayTo === 'string' && safeOpts.expectedPayTo.trim() !== '';
+
   const checks = {
     schema: CHECK.SKIP,
     signature: CHECK.SKIP,
+    issuerAuthorization: (hasExpectedKeys || hasExpectedPayTo) ? CHECK.SKIP : 'unpinned',
     outputHash: hasOutput ? CHECK.SKIP : 'not_provided',
     requestBinding: CHECK.SKIP,
     paymentBinding: CHECK.SKIP,
@@ -121,13 +132,13 @@ export function verifyReceipt(receipt, opts = {}) {
 
   let receiptHash = null;
 
-  // (2) version gate — before anything else
+  // (1) version gate — before anything else
   if (!receipt || receipt.receiptVersion !== RECEIPT_VERSION) {
     return done('unsupported_format',
       `Unsupported receiptVersion: ${receipt && receipt.receiptVersion}. Expected ${RECEIPT_VERSION}.`);
   }
 
-  // (3) schema
+  // (2) schema
   const schemaErrs = validateSchema(receipt, schema, 'receipt', schema);
   if (schemaErrs.length) {
     checks.schema = CHECK.FAIL;
@@ -135,11 +146,10 @@ export function verifyReceipt(receipt, opts = {}) {
   }
   checks.schema = CHECK.PASS;
 
-  // derive a (non-authoritative) display hash now that shape is known
   const input = signingInput(receipt);
   receiptHash = sha256Hex(input);
 
-  // (4) signature + keyId consistency
+  // (3) signature + keyId consistency
   if (receipt.payload.issuer.keyId !== receipt.signature.keyId) {
     checks.signature = CHECK.FAIL;
     return done('invalid_signature',
@@ -161,25 +171,61 @@ export function verifyReceipt(receipt, opts = {}) {
 
   const p = receipt.payload;
 
+  // (4) signer authorization (when caller pins expected seller public keys and/or payTo)
+  if (hasExpectedKeys) {
+    const allowedSet = new Set(safeOpts.expectedIssuerPublicKeys);
+    if (!allowedSet.has(receipt.signature.publicKey)) {
+      checks.issuerAuthorization = CHECK.FAIL;
+      return done('unauthorized_issuer',
+        'Receipt signature is valid, but signature.publicKey is not in expectedIssuerPublicKeys for this resource.');
+    }
+  }
+  if (hasExpectedPayTo) {
+    const wantPayTo = normalizePayToId(safeOpts.expectedPayTo);
+    const receiptPayTo = p.payment.payTo || p.issuer.payTo || null;
+    if (!receiptPayTo || normalizePayToId(receiptPayTo) !== wantPayTo) {
+      checks.issuerAuthorization = CHECK.FAIL;
+      return done('unauthorized_issuer',
+        receiptPayTo
+          ? `Receipt payTo (${receiptPayTo}) does not match expectedPayTo (${safeOpts.expectedPayTo}).`
+          : `Caller pinned expectedPayTo (${safeOpts.expectedPayTo}), but receipt does not bind a payTo address.`);
+    }
+  }
+  if (hasExpectedKeys || hasExpectedPayTo) {
+    checks.issuerAuthorization = CHECK.PASS;
+  }
+
   // (5) expiry
-  if (p.expiresAt && Date.parse(p.expiresAt) < Date.now()) {
+  const nowMs = safeOpts.now !== undefined
+    ? (safeOpts.now instanceof Date ? safeOpts.now.getTime() : typeof safeOpts.now === 'number' ? safeOpts.now : Date.parse(String(safeOpts.now)))
+    : Date.now();
+  if (p.expiresAt && Date.parse(p.expiresAt) < nowMs) {
     return done('expired', `Receipt expired at ${p.expiresAt}.`);
   }
 
-  // (6)(7) bindings — schema guarantees presence/format; treat as pass
+  // (6)(7) bindings — schema guarantees presence/format
   checks.requestBinding = CHECK.PASS;
   checks.paymentBinding = CHECK.PASS;
 
-  // (8) output hash — only when an output is supplied
+  // (8) output hash — supports both jcs-sha256 (canonical JSON) and raw-sha256 (exact bytes)
   if (hasOutput) {
     let recomputed;
+    const mode = p.delivery.canonicalization || 'jcs-sha256';
     try {
-      recomputed = hashCanonical(opts.output);
+      if (mode === 'raw-sha256') {
+        if (Buffer.isBuffer(safeOpts.output) || safeOpts.output instanceof Uint8Array) {
+          recomputed = sha256Hex(safeOpts.output);
+        } else if (typeof safeOpts.output === 'string') {
+          recomputed = sha256Hex(Buffer.from(safeOpts.output, 'utf8'));
+        } else {
+          throw new TypeError('delivery.canonicalization="raw-sha256" requires raw Buffer, Uint8Array, or string output');
+        }
+      } else {
+        recomputed = hashCanonical(safeOpts.output);
+      }
     } catch (err) {
-      // Finding B: un-canonicalizable output (pathological nesting depth, or a
-      // non-representable value) -> clean `error` result, never a process crash.
       checks.outputHash = 'error';
-      return done('error', `Could not canonicalize supplied output: ${(err && err.message) || err}.`);
+      return done('error', `Could not hash supplied output (${mode}): ${(err && err.message) || err}.`);
     }
     if (recomputed !== p.delivery.outputHash) {
       checks.outputHash = CHECK.FAIL;
@@ -189,7 +235,7 @@ export function verifyReceipt(receipt, opts = {}) {
     checks.outputHash = CHECK.PASS;
   }
 
-  // proof/evidence interpretation (informational; offline v0 never fetches)
+  // proof/evidence interpretation
   const evidence = p.evidence || [];
   const anyInvalid = evidence.some((e) => e.status === 'invalid');
   const anyUnavailable = evidence.some((e) => e.status === 'unavailable');
@@ -210,20 +256,23 @@ export function verifyReceipt(receipt, opts = {}) {
   if (anyInvalid) return done('proof_invalid', 'A provided evidence record failed verification.');
   if (anyUnavailable) return done('proof_unavailable', 'A referenced evidence record could not be retrieved.');
 
-  // (11) unconfirmed onchain settlement or untrusted checkedByPaxiom claim
-  const trustedPaxiomSet = opts.trustedPaxiomPublicKeys ? new Set(opts.trustedPaxiomPublicKeys) : null;
-  const isTrustedPaxiomSigner = Boolean(trustedPaxiomSet && trustedPaxiomSet.has(receipt.signature.publicKey));
-  if (p.payment.settlement.checkedByPaxiom && !isTrustedPaxiomSigner) {
+  // (11) unconfirmed onchain settlement or untrusted counter-verifier claim
+  const rawTrustedKeys = safeOpts.trustedVerifierPublicKeys || safeOpts.trustedPaxiomPublicKeys || null;
+  const trustedVerifierSet = rawTrustedKeys ? new Set(rawTrustedKeys) : null;
+  const isTrustedVerifierSigner = Boolean(trustedVerifierSet && trustedVerifierSet.has(receipt.signature.publicKey));
+  const assertsVerifierCheck = Boolean(p.payment.settlement.checkedByVerifier || p.payment.settlement.checkedByPaxiom);
+
+  if (assertsVerifierCheck && !isTrustedVerifierSigner) {
     return done('settlement_claimed_not_checked',
-      'Receipt asserts checkedByPaxiom=true, but signer is not in trustedPaxiomPublicKeys.');
+      'Receipt asserts independent verifier settlement check, but signer is not in trustedVerifierPublicKeys.');
   }
   if ((st === 'not_required' || st === 'disabled' || st === 'verify_only') &&
       p.payment.settlement.transactionHash !== null) {
     return done('settlement_claimed_not_checked',
       'Receipt carries a non-null settlement.transactionHash under a non-settled status that this offline verifier did not check.');
   }
-  const paxiomCounterVerified = st === 'verified_settled' && p.payment.settlement.checkedByPaxiom && isTrustedPaxiomSigner;
-  if (st === 'claimed_not_checked' || (st === 'verified_settled' && !paxiomCounterVerified)) {
+  const counterVerified = st === 'verified_settled' && assertsVerifierCheck && isTrustedVerifierSigner;
+  if (st === 'claimed_not_checked' || (st === 'verified_settled' && !counterVerified)) {
     return done('settlement_claimed_not_checked',
       hasOutput
         ? 'Signature and output hash verified. Receipt claims an onchain settlement that this offline verifier did not check.'
@@ -248,6 +297,10 @@ export function verifyReceipt(receipt, opts = {}) {
 export function verifyFromFiles(receiptPath, outputPath, extraOpts = {}) {
   const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
   const opts = { ...extraOpts };
-  if (outputPath) opts.output = JSON.parse(readFileSync(outputPath, 'utf8'));
+  if (outputPath) {
+    const rawBuf = readFileSync(outputPath);
+    const mode = receipt?.payload?.delivery?.canonicalization || 'jcs-sha256';
+    opts.output = mode === 'raw-sha256' ? rawBuf : JSON.parse(rawBuf.toString('utf8'));
+  }
   return verifyReceipt(receipt, opts);
 }

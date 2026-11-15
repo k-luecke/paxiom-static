@@ -1,287 +1,120 @@
-# Paxiom Receipt v0 — developer preview
+# Paxiom Receipt v0 (`@paxiom/receipts` & `paxiom-receipts` `v0.2.0`)
 
-**Status:** v0 draft · developer preview · conformance target. Not a production
-standard, not a legal or compliance certificate.
+**License:** MIT · **Status:** Open protocol specification, conformance vectors, zero-dependency Node.js & Python SDKs, and free public reference verifier (`https://api.paxiom.org`).
 
 > **x402 proves a payment. Paxiom proves what the payment bought.**
 
-A **Paxiom receipt** binds *payment, request, output, settlement metadata, and
-optional evidence* into a single signed, machine-verifiable object. It is
-**provider-neutral**: any x402-paid API can emit one, and any agent can verify one
-with only a public key.
+A **`paxiom.receipt.v0` delivery receipt** binds **HTTP request, `x402` payment terms, settlement claim, and delivered response payload** into a single Ed25519-signed envelope carried in `Payment-Receipt` (and `X-Paxiom-Receipt`). It is **100% open, free, and vendor-neutral**: any `x402` resource server on Base, EVM, or Solana can mint receipts offline with zero dependencies, and any buyer wallet or agent router can verify them with only a public key.
 
-This directory contains the public **`paxiom.receipt.v0` spec** and the
-zero-dependency **`@paxiom/receipts` reference package**:
-- **Issuer & middleware SDK** (`src/issue.mjs`, `src/middleware.mjs`, `src/index.mjs`, `src/index.d.ts`)
-- **Offline verifier, explainer & buyer client** (`src/verify.mjs`, `src/explain.mjs`, `src/client.mjs`)
-- **CLI** (`bin/paxiom-receipt.mjs` — `keygen`, `issue`, `verify`)
-- **MCP tool server** (`mcp/server.mjs` — `verify_receipt`, `explain_receipt`, `issue_receipt`, `preflight_x402_seller`, `verify_receipt_live`)
-- **Python 3.10+ zero-dependency SDK** (`python/paxiom_receipts` — `verify_receipt`, `issue_receipt`, `verify_response_receipt`, `preflight_x402`, `verify_receipt_live`, and FastAPI/ASGI `PaxiomReceiptMiddleware`)
+See [`x402-delivery-receipt-extension.md`](./x402-delivery-receipt-extension.md) for the formal **`x402` v2 `delivery-receipt` extension specification**.
+
+## What's New in `v0.2.0`
+
+- **Vendor-neutral `Payment-Receipt` header + settlement fields:** Middleware and verifiers emit and inspect `Payment-Receipt` alongside `X-Paxiom-Receipt`, and use vendor-neutral `settlement.checkedByVerifier` + `trustedVerifierPublicKeys` (while preserving 100% backward compatibility with `v0.1.x` `checkedByPaxiom` fixtures).
+- **Signer authorization (`unauthorized_issuer`) & `/.well-known/x402-keys.json` discovery:** `discoverIssuerKeys()` / `discover_issuer_keys()` fetches a seller's published Ed25519 keys, and `verifyReceipt()` / `verify_receipt()` enforces `expectedIssuerPublicKeys` and `expectedPayTo` so spoofed keys never pass as `verified`.
+- **Dual `jcs-sha256` + `raw-sha256` payload hashing:** Automatically canonicalizes JSON responses via RFC 8785 JCS and hashes Markdown, plain text, CSV, images, PDFs, and binary responses (`<= 256 KiB`) via `raw-sha256` alongside `delivery.statusCode`.
+- **Native `x402` v2 header auto-parsing & Solana + CAIP-2 support:** Seller middleware decodes `PAYMENT-SIGNATURE`, `PAYMENT-RESPONSE`, and `PAYMENT-REQUIRED` automatically to bind CAIP-2 `network` (`eip155:8453`, `solana:...`), `amountAtomic`, `payer`, `payTo`, and EVM `0x` or Solana base58 `transactionHash`.
+- **100% Free Public Reference Endpoints (`https://api.paxiom.org`):** Offline verification (`/v1/receipt/verify`), pre-payment seller safety preflight (`/v1/x402/preflight`), and live Base/Base-Sepolia USDC on-chain settlement counter-attestation (`/v1/receipt/verify-live`) are all **free, rate-limited public reference utilities** — no API keys or micropayment paywalls required.
 
 ## Install & Quick Start
 
 ```bash
-# Node.js / TypeScript / Edge (npm):
+# Node.js / TypeScript / Edge (zero dependencies, MIT):
 npm install @paxiom/receipts
 
-# Python 3.10+ / FastAPI (PyPI, zero dependencies):
+# Python 3.10+ / FastAPI / ASGI (zero dependencies, MIT):
 pip install paxiom-receipts
 ```
 
 ```js
 import {
   generateReceiptKeyPair,
-  issueReceipt,
-  verifyReceipt,
+  withPaxiomReceipt,
+  discoverIssuerKeys,
   verifyResponseReceipt,
   preflightX402,
-  verifyReceiptLive,
-  withPaxiomReceipt
+  verifyReceiptLive
 } from '@paxiom/receipts';
 ```
 
-- **CLI (zero install):** `npx @paxiom/receipts --help` (or `npx -p @paxiom/receipts paxiom-receipt verify <receipt.json> --output <output.json>`)
+- **CLI (zero install):** `npx @paxiom/receipts --help`
 - **MCP stdio server:** `npx -y --package=@paxiom/receipts paxiom-receipt-mcp`
-- **Live HTTP Verifier & Preflight (`https://api.paxiom.org`):**
+- **Free Public Reference API (`https://api.paxiom.org`):**
+  - `GET https://api.paxiom.org/.well-known/x402-keys.json` — published verifier Ed25519 keys
   - `POST https://api.paxiom.org/v1/receipt/verify` — free offline verification
-  - `POST https://api.paxiom.org/v1/x402/preflight` — pre-payment x402 seller readiness, Circle USDC asset check, and `payTo` bait-and-switch scan (`$0.01` USDC via x402 or `X-API-Key`)
-  - `POST https://api.paxiom.org/v1/receipt/verify-live` — live Base / Base Sepolia USDC settlement verification + Paxiom Ed25519 counter-attestation (`$0.002` USDC via x402 or `X-API-Key`)
+  - `POST https://api.paxiom.org/v1/x402/preflight` — free rate-limited pre-payment `x402` seller readiness & canonical Circle USDC check
+  - `POST https://api.paxiom.org/v1/receipt/verify-live` — free rate-limited Base / Base Sepolia USDC `Transfer` log verification + Ed25519 counter-attestation
 
-## Why this exists
+## Seller Middleware (`withPaxiomReceipt` & `createReceiptMiddleware`)
 
-x402 (and most receipt-issuing services today) prove that a *payment happened*.
-They do not, in a neutral and interoperable way, prove *what was delivered in
-return*. Every incumbent signs only its own output in its own ad-hoc format
-(Ed25519 here, HMAC there, EIP-712 elsewhere, SHA-256 trust-hash somewhere else).
-There is no shared receipt that binds **payment + request + output + settlement +
-proof** so that any agent can verify any seller uniformly. Paxiom v0 is a first,
-deliberately small draft of that shared object.
-
-## What a v0 receipt does and does NOT claim
-
-**Does:** binds payment, request, resource, output, settlement *metadata*, and
-optional evidence into one Ed25519-signed object with explicit, honest status
-fields.
-
-**Does NOT claim:**
-- that all receipts are settled onchain,
-- that all proofs are cryptographically verified,
-- that any x402 implementation is secure,
-- that a receipt is a legal or compliance certificate.
-
-The verifier's job is to explain **what was actually checked** and **what was only
-claimed**. Honesty about settlement is a core promise: a receipt that merely
-*asserts* an onchain settlement the verifier did not confirm is reported as
-`settlement_claimed_not_checked`, never as fully `verified`.
-
-> **Schema-valid ≠ receipt-verified.** The JSON Schema validates receipt *shape*
-> only. It does not prove settlement, signature validity, output binding, or proof
-> correctness. Those checks are performed by a Paxiom verifier and reported through
-> trust states. A structurally valid receipt can still be `invalid_signature`,
-> `output_hash_mismatch`, `settlement_claimed_not_checked`, and so on.
-
-## Top-level shape
-
-```json
-{
-  "receiptVersion": "paxiom.receipt.v0",
-  "payload": { "...": "..." },
-  "signature": { "algorithm": "ed25519", "keyId": "...", "publicKey": "...", "value": "..." }
-}
-```
-
-The signature signs the **canonical JSON** of `{ receiptVersion, payload }` — see
-[`canonicalization.md`](./canonicalization.md). `receiptHash` is intentionally
-**not** part of the signed payload in v0; the verifier derives it.
-
-### Payload groups
-
-| Group | Purpose |
-|-------|---------|
-| `receiptId` | Issuer-scoped unique id for this receipt. |
-| `issuedAt` (+ optional `expiresAt`) | RFC 3339 timestamps. |
-| `issuer` | `name`, optional `uri`, and `keyId` naming the signing key. |
-| `service` | `name`, `resource` (URL), `method`. |
-| `request` | `requestHash`, `resourceHash`, `bodyHash` — binds the exact call. |
-| `payment` | x402 payment metadata + explicit `settlement` sub-object. |
-| `delivery` | `outputHash` (of the delivered bytes) + `mimeType`. |
-| `evidence` | Array of optional proof records; `[{type:"none",status:"not_provided",...}]` when absent. |
-
-### Settlement status (enum)
-
-`not_required` · `disabled` · `verify_only` · `claimed_not_checked` ·
-`verified_settled` · `failed` · `unknown`
-
-`claimed_not_checked` means: *the receipt carries settlement metadata, but the
-Paxiom verifier did not independently check the chain or facilitator.* A hosted
-verifier may later upgrade this to `verified_settled` after an onchain or
-facilitator-backed check.
-
-See [`trust-states.md`](./trust-states.md) for the full verifier verdict set and
-how settlement status maps to a verdict.
-
-## Files
-
-```
-standards/receipts/v0/
-  README.md                          # this file
-  paxiom.receipt.v0.schema.json      # JSON Schema (structure only)
-  canonicalization.md                # Paxiom v0 canonical JSON profile + signing input
-  trust-states.md                    # verifier verdict enum + resolution order
-  examples/
-    valid.output.json                        # delivered output bytes
-    valid.receipt.json                       # REAL Ed25519 receipt -> `verified` (verify_only)
-    output-mismatch.output.json              # different output -> output_hash_mismatch vs valid.receipt.json
-    settlement-claimed-not-checked.receipt.json  # REAL Ed25519 receipt -> settlement_claimed_not_checked
-```
-
-### About the example fixtures
-
-`valid.receipt.json` and `settlement-claimed-not-checked.receipt.json` are
-**cryptographically real**: they were signed by a freshly generated Ed25519 key
-whose private half was discarded. Each embeds its own raw public key
-(base64, 32 bytes) so a verifier can check the signature with nothing else. No
-real payment credentials, wallets, or API keys appear in any fixture — the payment
-and request hashes are computed over harmless demo preimages.
-
-To regenerate the fixtures (manual tool; fresh keypair each run, so this is
-non-deterministic and rewrites the committed vectors — see the script header):
-
-```bash
-node standards/receipts/v0/scripts/gen-fixtures.mjs standards/receipts/v0/examples
-```
-
-### Conformance self-test
-
-A zero-dependency check (JSON validity, schema conformance, cross-file hash
-consistency, real Ed25519 signature verification, tamper detection, documented
-trust-state outcomes) runs with plain Node:
-
-```bash
-node standards/receipts/v0/scripts/validate.mjs   # run from repo root
-```
-
-## Reference verifier (CLI)
-
-A dependency-free reference verifier ships alongside the spec. It is **offline
-only** — it verifies the local receipt object and never makes chain, facilitator,
-or network calls.
-
-```bash
-node standards/receipts/v0/bin/paxiom-receipt.mjs verify \
-  standards/receipts/v0/examples/valid.receipt.json \
-  --output standards/receipts/v0/examples/valid.output.json
-# -> ✓ VERIFIED   (exit 0)
-
-# machine-readable:
-node standards/receipts/v0/bin/paxiom-receipt.mjs verify <receipt.json> --output <output.json> --json
-```
-
-Exit codes: `0` when `trustState === "verified"`, `1` for any other trust state,
-`2` for usage/IO errors. Result shape:
-
-```json
-{ "valid": true, "trustState": "verified", "checks": { "...": "..." }, "receiptHash": "0x…", "summary": "…" }
-```
-
-What it checks (and only this in v0): version gate → schema shape → Ed25519
-signature over `canonicalize({receiptVersion, payload})` → `delivery.outputHash`
-vs supplied output → request/payment binding presence → honest settlement/evidence
-interpretation → one deterministic trust state. It does **not** check onchain
-settlement, facilitator responses, evidence retrieval, or foreign receipt formats.
-
-Source: `src/{canonicalize,hash,verify,explain}.mjs`, CLI `bin/paxiom-receipt.mjs`.
-Tests: `node --test standards/receipts/v0/test/` (one case per trust state).
-
-
-## Issuer SDK & seller middleware (`@paxiom/receipts`)
-
-Any x402-paid Node/Fetch service can emit signed `paxiom.receipt.v0` receipts with zero external dependencies:
+Wrap any Fetch handler (`Cloudflare Workers`, `Next.js`, `Hono`, `Bun`, `Deno`) or Express / Node `http.Server` route. The middleware auto-parses `x402` v2 `PAYMENT-SIGNATURE` / `PAYMENT-RESPONSE` headers, hashes JSON (`jcs-sha256`) or non-JSON (`raw-sha256`) payloads, and attaches both `Payment-Receipt` and `X-Paxiom-Receipt`:
 
 ```js
-import {
-  generateReceiptKeyPair,
-  issueReceipt,
-  verifyReceipt,
-  withPaxiomReceipt
-} from '@paxiom/receipts';
+import { generateReceiptKeyPair, withPaxiomReceipt } from '@paxiom/receipts';
 
 const keys = generateReceiptKeyPair({ keyId: 'seller-key-01' });
 
-// Wrap any Fetch-style handler `(Request) => Promise<Response>` to attach `X-Paxiom-Receipt`:
-const handler = withPaxiomReceipt(
+export const POST = withPaxiomReceipt(
   async () => Response.json({ forecast: 'sunny', tempC: 23 }),
   {
     privateKey: keys.privateKeyPem,
-    issuer: { name: 'weather-seller', uri: 'https://seller.example', keyId: keys.keyId },
+    issuer: {
+      name: 'weather-seller',
+      uri: 'https://seller.example',
+      keyId: keys.keyId,
+      payTo: '0x9786F5532ab7d7556CDa53E3f6c2d937c9b87Bc4',
+      keysUri: 'https://seller.example/.well-known/x402-keys.json'
+    },
     serviceName: 'Weather Forecast API'
   }
 );
 ```
 
-Express / Node `http.Server` middleware is also exported via `createReceiptMiddleware(options)`. Built-in TypeScript declarations (`src/index.d.ts`) are included with zero extra `@types/*` packages.
-
-### Buyer wallet & router helpers (`verifyResponseReceipt` · `preflightX402` · `verifyReceiptLive`)
+## Buyer Verification & Signer Authorization
 
 ```js
 import {
+  discoverIssuerKeys,
   verifyResponseReceipt,
   preflightX402,
   verifyReceiptLive
 } from '@paxiom/receipts';
 
-// 1. Pre-payment seller safety scan ($0.01 USDC via x402 fetch wrapper or X-API-Key):
+// 1. Free pre-payment seller safety scan (catches non-Circle USDC spoofing & payTo bait-and-switch):
 const scan = await preflightX402('https://seller.example/v1/query', {
-  fetch: x402WrappedFetch,
   maxBudgetAtomic: '10000',
-  expectedNetwork: 'base'
+  expectedNetwork: 'eip155:8453'
 });
 if (scan.verdict === 'block') throw new Error('Unsafe x402 quote');
 
-// 2. Verify delivered X-Paxiom-Receipt header offline in 1 line:
-const delivery = verifyResponseReceipt(paidResponse, { output: parsedBody });
+// 2. Discover seller's pinned Ed25519 keys from /.well-known/x402-keys.json:
+const keyDoc = await discoverIssuerKeys('https://seller.example');
 
-// 3. Confirm Base USDC Transfer log on-chain + obtain Paxiom counter-attestation ($0.002 USDC):
-const live = await verifyReceiptLive(delivery.receipt, {
+// 3. Verify Payment-Receipt / X-Paxiom-Receipt offline with signer + payTo authorization:
+const delivery = verifyResponseReceipt(paidResponse, {
   output: parsedBody,
-  expectedPayTo: scan.report.selectedQuote.payTo,
-  fetch: x402WrappedFetch
+  expectedIssuerPublicKeys: keyDoc.ok ? keyDoc.publicKeys : undefined,
+  expectedPayTo: scan.report?.selectedQuote?.payTo
 });
+
+// 4. Optional free on-chain Base USDC Transfer confirmation + counter-attestation:
+if (delivery.trustState === 'settlement_claimed_not_checked') {
+  const live = await verifyReceiptLive(delivery.receipt, {
+    output: parsedBody,
+    expectedPayTo: scan.report?.selectedQuote?.payTo
+  });
+}
 ```
 
-### CLI (`keygen` · `issue` · `verify`)
+## Conformance & Self-Tests
 
 ```bash
-# 1. Generate an Ed25519 signing keypair (writes 0600 private key PEM + metadata JSON)
-node standards/receipts/v0/bin/paxiom-receipt.mjs keygen --out ./seller-key-01.private.pem --key-id seller-key-01
+# Validate JSON Schema + cryptographic test vectors:
+npm --prefix standards/receipts/v0 run validate
 
-# 2. Sign a receipt binding output bytes + request + x402 payment metadata
-node standards/receipts/v0/bin/paxiom-receipt.mjs issue \
-  --key ./seller-key-01.private.pem \
-  --key-id seller-key-01 \
-  --issuer-name "example-seller" \
-  --service-name "Demo Paid Endpoint" \
-  --resource "https://seller.example/v1/query" \
-  --output standards/receipts/v0/examples/valid.output.json \
-  --out ./issued.receipt.json
+# Run Node.js SDK, CLI, HTTP server, and MCP unit tests:
+npm --prefix standards/receipts/v0 test
+
+# Run Python 3.10+ zero-dependency SDK + Node<->Python cross-language tests:
+python3 -m unittest discover -s standards/receipts/v0/python/tests -v
 ```
-
-### MCP server (stdio JSON-RPC 2.0)
-
-Agents (Claude Desktop, Cursor, Antigravity, MCP clients) can verify, explain, and issue receipts directly over stdio:
-
-```bash
-node standards/receipts/v0/mcp/server.mjs
-```
-
-Tools exposed:
-- `verify_receipt` — deterministic `trustState` + per-check breakdown (supports `trustedPaxiomPublicKeys`)
-- `explain_receipt` — human-readable verification report alongside structured result
-- `issue_receipt` — sign a `paxiom.receipt.v0` receipt given `privateKeyPem` and delivery/payment metadata
-
-## Versioning
-
-`receiptVersion` is a hard gate: a verifier that does not recognise the exact
-string returns `unsupported_format`. Future dialects (including adapters that map
-*non-Paxiom* receipt formats into this shape) will bump the version or ship as
-named adapters; v0 makes no forward-compatibility promise.

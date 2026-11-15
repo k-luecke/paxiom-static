@@ -12,16 +12,20 @@ import urllib.request
 from .issue import decode_receipt_header
 from .verify import verify_receipt
 
+STANDARD_RECEIPT_HEADER_NAME = "payment-receipt"
 RECEIPT_HEADER_NAME = "x-paxiom-receipt"
 DEFAULT_PAXIOM_API_URL = "https://api.paxiom.org"
 PAXIOM_LIVE_VERIFIER_PUBLIC_KEY = "hsRfDKd2AWxv0KwTs3gsDLMY7nPtVGky1Tc6NWgSxIY="
-PAXIOM_TRUSTED_PUBLIC_KEYS: tuple[str, ...] = (PAXIOM_LIVE_VERIFIER_PUBLIC_KEY,)
+PAXIOM_TRUSTED_VERIFIER_PUBLIC_KEYS: tuple[str, ...] = (PAXIOM_LIVE_VERIFIER_PUBLIC_KEY,)
+PAXIOM_TRUSTED_PUBLIC_KEYS: tuple[str, ...] = PAXIOM_TRUSTED_VERIFIER_PUBLIC_KEYS
 
 DEFAULT_CLIENT_TIMEOUT_SECONDS = 15.0
 MAX_CLIENT_RESPONSE_BYTES = 1024 * 1024  # 1 MiB safety cap
+MAX_KEYS_RESPONSE_BYTES = 64 * 1024  # 64 KiB cap for /.well-known key manifests
 _ALLOWED_PREFLIGHT_METHODS = frozenset({"POST", "GET", "HEAD"})
 _DEC_UINT_RE = re.compile(r"\A[0-9]+\Z")
 _EVM_ADDRESS_RE = re.compile(r"\A0x[0-9a-fA-F]{40}\Z")
+_STRICT_BASE64_32_RE = re.compile(r"\A[A-Za-z0-9+/]{43}=\Z")
 _SENTINEL = object()
 
 
@@ -84,6 +88,39 @@ def _decode_base64_json_object(raw: str | None) -> dict[str, Any] | None:
     return None
 
 
+def _default_urllib_request(
+    url: str,
+    headers: dict[str, str],
+    body_bytes: bytes | None,
+    timeout_seconds: float,
+    max_bytes: int,
+    method: str = "POST",
+) -> tuple[int, dict[str, str], str]:
+    opener = urllib.request.build_opener(_NoRedirectHandler)
+    req = urllib.request.Request(url, data=body_bytes, headers=headers, method=method)
+
+    def _read_bounded(stream: Any) -> str:
+        raw = stream.read(max_bytes + 1)
+        if len(raw) > max_bytes:
+            raise ValueError(f"Response exceeded {max_bytes} bytes")
+        return raw.decode("utf-8")
+
+    try:
+        with opener.open(req, timeout=timeout_seconds) as resp:
+            status = int(getattr(resp, "status", 200))
+            if 300 <= status < 400:
+                raise RuntimeError(f"Refusing HTTP {status} redirect from endpoint")
+            resp_headers = {str(k).lower(): str(v) for k, v in resp.headers.items()}
+            return status, resp_headers, _read_bounded(resp)
+    except urllib.error.HTTPError as http_err:
+        status = int(http_err.code)
+        if 300 <= status < 400:
+            raise RuntimeError(f"Refusing HTTP {status} redirect from endpoint") from http_err
+        resp_headers = {str(k).lower(): str(v) for k, v in (http_err.headers.items() if http_err.headers else [])}
+        body_text = _read_bounded(http_err.fp) if http_err.fp is not None else ""
+        return status, resp_headers, body_text
+
+
 def _default_urllib_transport(
     url: str,
     headers: dict[str, str],
@@ -91,36 +128,14 @@ def _default_urllib_transport(
     timeout_seconds: float,
     max_bytes: int,
 ) -> tuple[int, dict[str, str], str]:
-    opener = urllib.request.build_opener(_NoRedirectHandler)
-    req = urllib.request.Request(url, data=body_bytes, headers=headers, method="POST")
-
-    def _read_bounded(stream: Any) -> str:
-        raw = stream.read(max_bytes + 1)
-        if len(raw) > max_bytes:
-            raise ValueError(f"Verifier response exceeded {max_bytes} bytes")
-        return raw.decode("utf-8")
-
-    try:
-        with opener.open(req, timeout=timeout_seconds) as resp:
-            status = int(getattr(resp, "status", 200))
-            if 300 <= status < 400:
-                raise RuntimeError(f"Refusing HTTP {status} redirect from Paxiom verifier endpoint")
-            resp_headers = {str(k).lower(): str(v) for k, v in resp.headers.items()}
-            return status, resp_headers, _read_bounded(resp)
-    except urllib.error.HTTPError as http_err:
-        status = int(http_err.code)
-        if 300 <= status < 400:
-            raise RuntimeError(f"Refusing HTTP {status} redirect from Paxiom verifier endpoint") from http_err
-        resp_headers = {str(k).lower(): str(v) for k, v in (http_err.headers.items() if http_err.headers else [])}
-        body_text = _read_bounded(http_err.fp) if http_err.fp is not None else ""
-        return status, resp_headers, body_text
+    return _default_urllib_request(url, headers, body_bytes, timeout_seconds, max_bytes, method="POST")
 
 
-def _build_auth_headers(api_key: str | None, payment_header: str | None) -> dict[str, str]:
+def _build_json_headers(api_key: str | None, payment_header: str | None) -> dict[str, str]:
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "user-agent": "paxiom-receipts-python/0.1.3",
+        "user-agent": "paxiom-receipts-python/0.2.0",
     }
     if api_key is not None and str(api_key).strip():
         headers["x-api-key"] = str(api_key).strip()
@@ -129,15 +144,86 @@ def _build_auth_headers(api_key: str | None, payment_header: str | None) -> dict
     return headers
 
 
+def discover_issuer_keys(
+    origin_or_resource_url: str,
+    *,
+    timeout_seconds: float = DEFAULT_CLIENT_TIMEOUT_SECONDS,
+    transport: Callable[[str, dict[str, str], bytes | None, float, int], tuple[int, dict[str, str], str]] | None = None,
+    get_transport: Callable[[str, dict[str, str], float, int], tuple[int, dict[str, str], str]] | None = None,
+) -> dict[str, Any]:
+    """Discover authorized Ed25519 seller keys via /.well-known/x402-keys.json (fallback /.well-known/paxiom-keys.json)."""
+    origin = resolve_safe_api_origin(origin_or_resource_url)
+    eff_timeout = float(timeout_seconds) if timeout_seconds > 0 else DEFAULT_CLIENT_TIMEOUT_SECONDS
+    for path in ("/.well-known/x402-keys.json", "/.well-known/paxiom-keys.json"):
+        url = f"{origin}{path}"
+        if transport is not None:
+            status, _hdrs, body_text = transport(
+                url,
+                {"accept": "application/json", "user-agent": "paxiom-receipts-python/0.2.0"},
+                None,
+                eff_timeout,
+                MAX_KEYS_RESPONSE_BYTES,
+            )
+        elif get_transport is not None:
+            status, _hdrs, body_text = get_transport(
+                url,
+                {"accept": "application/json", "user-agent": "paxiom-receipts-python/0.2.0"},
+                eff_timeout,
+                MAX_KEYS_RESPONSE_BYTES,
+            )
+        else:
+            status, _hdrs, body_text = _default_urllib_request(
+                url,
+                {"accept": "application/json", "user-agent": "paxiom-receipts-python/0.2.0"},
+                None,
+                eff_timeout,
+                MAX_KEYS_RESPONSE_BYTES,
+                method="GET",
+            )
+        if status == 404:
+            continue
+        if status < 200 or status >= 300:
+            return {"ok": False, "status": status, "origin": origin, "keysUrl": url, "keys": [], "publicKeys": []}
+        try:
+            parsed = json.loads(body_text)
+        except Exception:
+            return {"ok": False, "status": status, "origin": origin, "keysUrl": url, "keys": [], "publicKeys": []}
+        raw_keys = parsed.get("keys") if isinstance(parsed, dict) and isinstance(parsed.get("keys"), list) else []
+        valid_keys = [
+            k
+            for k in raw_keys
+            if isinstance(k, dict)
+            and k.get("algorithm", "ed25519") == "ed25519"
+            and isinstance(k.get("publicKey"), str)
+            and bool(_STRICT_BASE64_32_RE.match(k["publicKey"]))
+            and len(base64.b64decode(k["publicKey"])) == 32
+        ]
+        return {
+            "ok": len(valid_keys) > 0,
+            "status": status,
+            "origin": origin,
+            "keysUrl": url,
+            "issuer": parsed.get("issuer") if isinstance(parsed, dict) and isinstance(parsed.get("issuer"), str) else None,
+            "payTo": parsed.get("payTo") if isinstance(parsed, dict) and isinstance(parsed.get("payTo"), str) else None,
+            "keys": valid_keys,
+            "publicKeys": [k["publicKey"] for k in valid_keys],
+        }
+    return {"ok": False, "status": 404, "origin": origin, "keysUrl": None, "keys": [], "publicKeys": []}
+
+
 def verify_response_receipt(
     response_or_headers: Any,
     *,
     output: Any = _SENTINEL,
+    expected_issuer_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
+    expected_pay_to: str | None = None,
+    trusted_verifier_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
     trusted_paxiom_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
 ) -> dict[str, Any]:
-    """Inspect a response or headers mapping for X-Paxiom-Receipt and verify offline. Never raises."""
-    raw_hdr = _extract_header_value(response_or_headers, RECEIPT_HEADER_NAME)
-    if not raw_hdr or not raw_hdr.strip():
+    """Inspect a response or headers mapping for Payment-Receipt or X-Paxiom-Receipt and verify offline. Never raises."""
+    std_hdr = (_extract_header_value(response_or_headers, STANDARD_RECEIPT_HEADER_NAME) or "").strip()
+    pax_hdr = (_extract_header_value(response_or_headers, RECEIPT_HEADER_NAME) or "").strip()
+    if not std_hdr and not pax_hdr:
         return {
             "present": False,
             "valid": False,
@@ -145,6 +231,16 @@ def verify_response_receipt(
             "receipt": None,
             "verdict": None,
         }
+    if std_hdr and pax_hdr and std_hdr != pax_hdr:
+        return {
+            "present": True,
+            "valid": False,
+            "trustState": "malformed_header",
+            "receipt": None,
+            "verdict": None,
+            "error": "Conflicting Payment-Receipt and X-Paxiom-Receipt headers on response",
+        }
+    raw_hdr = std_hdr or pax_hdr
     try:
         receipt = decode_receipt_header(raw_hdr)
     except Exception as err:
@@ -157,20 +253,22 @@ def verify_response_receipt(
             "error": str(err),
         }
 
-    trusted = (
-        trusted_paxiom_public_keys
-        if trusted_paxiom_public_keys is not None
-        else PAXIOM_TRUSTED_PUBLIC_KEYS
-    )
-    verdict = (
-        verify_receipt(receipt, output=output, trusted_paxiom_public_keys=trusted)
-        if output is not _SENTINEL
-        else verify_receipt(receipt, trusted_paxiom_public_keys=trusted)
-    )
+    raw_trusted = trusted_verifier_public_keys if trusted_verifier_public_keys is not None else trusted_paxiom_public_keys
+    trusted = raw_trusted if raw_trusted is not None else PAXIOM_TRUSTED_VERIFIER_PUBLIC_KEYS
+
+    kwargs: dict[str, Any] = {
+        "expected_issuer_public_keys": expected_issuer_public_keys,
+        "expected_pay_to": expected_pay_to,
+        "trusted_verifier_public_keys": trusted,
+    }
+    if output is not _SENTINEL:
+        kwargs["output"] = output
+    verdict = verify_receipt(receipt, **kwargs)
     return {
         "present": True,
         "valid": verdict["valid"],
         "trustState": verdict["trustState"],
+        "checks": verdict["checks"],
         "receipt": receipt,
         "verdict": verdict,
     }
@@ -186,6 +284,7 @@ def preflight_x402(
     api_key: str | None = None,
     payment_header: str | None = None,
     timeout_seconds: float = DEFAULT_CLIENT_TIMEOUT_SECONDS,
+    trusted_verifier_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
     trusted_paxiom_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
     transport: Callable[[str, dict[str, str], bytes, float, int], tuple[int, dict[str, str], str]] | None = None,
 ) -> dict[str, Any]:
@@ -212,7 +311,7 @@ def preflight_x402(
     call_fn = transport or _default_urllib_transport
     status, resp_headers, body_text = call_fn(
         f"{origin}/v1/x402/preflight",
-        _build_auth_headers(api_key, payment_header),
+        _build_json_headers(api_key, payment_header),
         json.dumps(req_body).encode("utf-8"),
         float(timeout_seconds) if timeout_seconds > 0 else DEFAULT_CLIENT_TIMEOUT_SECONDS,
         MAX_CLIENT_RESPONSE_BYTES,
@@ -251,10 +350,11 @@ def preflight_x402(
             "paymentResponse": None,
         }
 
+    raw_trusted = trusted_verifier_public_keys if trusted_verifier_public_keys is not None else trusted_paxiom_public_keys
     receipt_ver = verify_response_receipt(
         resp_headers,
         output=body_json,
-        trusted_paxiom_public_keys=trusted_paxiom_public_keys,
+        trusted_verifier_public_keys=raw_trusted,
     )
     pay_resp = _decode_base64_json_object(
         _extract_header_value(resp_headers, "payment-response")
@@ -281,6 +381,7 @@ def verify_receipt_live(
     api_key: str | None = None,
     payment_header: str | None = None,
     timeout_seconds: float = DEFAULT_CLIENT_TIMEOUT_SECONDS,
+    trusted_verifier_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
     trusted_paxiom_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
     transport: Callable[[str, dict[str, str], bytes, float, int], tuple[int, dict[str, str], str]] | None = None,
 ) -> dict[str, Any]:
@@ -301,7 +402,7 @@ def verify_receipt_live(
     call_fn = transport or _default_urllib_transport
     status, resp_headers, body_text = call_fn(
         f"{origin}/v1/receipt/verify-live",
-        _build_auth_headers(api_key, payment_header),
+        _build_json_headers(api_key, payment_header),
         json.dumps(req_body).encode("utf-8"),
         float(timeout_seconds) if timeout_seconds > 0 else DEFAULT_CLIENT_TIMEOUT_SECONDS,
         MAX_CLIENT_RESPONSE_BYTES,
@@ -342,17 +443,14 @@ def verify_receipt_live(
             "paymentResponse": None,
         }
 
-    trusted = (
-        trusted_paxiom_public_keys
-        if trusted_paxiom_public_keys is not None
-        else PAXIOM_TRUSTED_PUBLIC_KEYS
-    )
+    raw_trusted = trusted_verifier_public_keys if trusted_verifier_public_keys is not None else trusted_paxiom_public_keys
+    trusted = raw_trusted if raw_trusted is not None else PAXIOM_TRUSTED_VERIFIER_PUBLIC_KEYS
     counter_rcpt = body_json.get("counterAttestedReceipt")
     counter_ver = (
         (
-            verify_receipt(counter_rcpt, output=output, trusted_paxiom_public_keys=trusted)
+            verify_receipt(counter_rcpt, output=output, trusted_verifier_public_keys=trusted)
             if has_output
-            else verify_receipt(counter_rcpt, trusted_paxiom_public_keys=trusted)
+            else verify_receipt(counter_rcpt, trusted_verifier_public_keys=trusted)
         )
         if isinstance(counter_rcpt, dict)
         else None

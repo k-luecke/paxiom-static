@@ -13,20 +13,189 @@ from .ed25519_pure import ed25519_verify
 
 RECEIPT_VERSION = "paxiom.receipt.v0"
 
-_EMBEDDED_SCHEMA: dict[str, Any] = json.loads('{"$defs":{"sha256Hex":{"description":"SHA-256 digest, lowercase hex, 0x-prefixed.","pattern":"^0x[0-9a-f]{64}$","type":"string"}},"$id":"https://paxiom.org/standards/receipts/v0/paxiom.receipt.v0.schema.json","$schema":"http://json-schema.org/draft-07/schema#","additionalProperties":false,"description":"Developer-preview (v0 draft) schema for a proof-bound receipt for x402-paid APIs. x402 proves a payment; a Paxiom receipt binds payment, request, output, settlement metadata, and optional evidence into a single signed, machine-verifiable object. This schema validates STRUCTURE only; it does not assert that a receipt was settled onchain or that any proof is valid. Those are the verifier\'s job and are reported as trust states.","properties":{"payload":{"additionalProperties":false,"properties":{"delivery":{"additionalProperties":false,"properties":{"mimeType":{"minLength":1,"type":"string"},"outputHash":{"$ref":"#/$defs/sha256Hex"}},"required":["outputHash","mimeType"],"type":"object"},"evidence":{"items":{"additionalProperties":false,"properties":{"hash":{"oneOf":[{"$ref":"#/$defs/sha256Hex"},{"type":"null"}]},"status":{"enum":["not_provided","provided","unavailable","invalid","verified"],"type":"string"},"type":{"enum":["none","zk","attestation","tee","archive","other"],"type":"string"},"uri":{"oneOf":[{"type":"string"},{"type":"null"}]}},"required":["type","status","hash","uri"],"type":"object"},"type":"array"},"expiresAt":{"format":"date-time","type":"string"},"issuedAt":{"format":"date-time","type":"string"},"issuer":{"additionalProperties":false,"properties":{"keyId":{"minLength":1,"type":"string"},"name":{"minLength":1,"type":"string"},"uri":{"type":"string"}},"required":["name","keyId"],"type":"object"},"payment":{"additionalProperties":false,"properties":{"amountAtomic":{"pattern":"^[0-9]+$","type":"string"},"amountDisplay":{"minLength":1,"type":"string"},"asset":{"minLength":1,"type":"string"},"network":{"minLength":1,"type":"string"},"paymentPayloadHash":{"$ref":"#/$defs/sha256Hex"},"paymentRequirementsHash":{"$ref":"#/$defs/sha256Hex"},"scheme":{"minLength":1,"type":"string"},"settlement":{"additionalProperties":false,"properties":{"checkedByPaxiom":{"type":"boolean"},"status":{"enum":["not_required","disabled","verify_only","claimed_not_checked","verified_settled","failed","unknown"],"type":"string"},"transactionHash":{"oneOf":[{"$ref":"#/$defs/sha256Hex"},{"type":"null"}]}},"required":["status","transactionHash","checkedByPaxiom"],"type":"object"}},"required":["scheme","network","asset","amountAtomic","amountDisplay","paymentRequirementsHash","paymentPayloadHash","settlement"],"type":"object"},"receiptId":{"minLength":1,"type":"string"},"request":{"additionalProperties":false,"properties":{"bodyHash":{"$ref":"#/$defs/sha256Hex"},"requestHash":{"$ref":"#/$defs/sha256Hex"},"resourceHash":{"$ref":"#/$defs/sha256Hex"}},"required":["requestHash","resourceHash","bodyHash"],"type":"object"},"service":{"additionalProperties":false,"properties":{"method":{"minLength":1,"type":"string"},"name":{"minLength":1,"type":"string"},"resource":{"minLength":1,"type":"string"}},"required":["name","resource","method"],"type":"object"}},"required":["receiptId","issuedAt","issuer","service","request","payment","delivery","evidence"],"type":"object"},"receiptVersion":{"const":"paxiom.receipt.v0","type":"string"},"signature":{"additionalProperties":false,"properties":{"algorithm":{"const":"ed25519","type":"string"},"keyId":{"minLength":1,"type":"string"},"publicKey":{"minLength":1,"type":"string"},"value":{"minLength":1,"type":"string"}},"required":["algorithm","keyId","publicKey","value"],"type":"object"}},"required":["receiptVersion","payload","signature"],"title":"Paxiom Receipt v0","type":"object"}')
+_EMBEDDED_SCHEMA: dict[str, Any] = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://paxiom.org/standards/receipts/v0/paxiom.receipt.v0.schema.json",
+    "title": "Paxiom Receipt v0",
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["receiptVersion", "payload", "signature"],
+    "properties": {
+        "receiptVersion": {"type": "string", "const": "paxiom.receipt.v0"},
+        "payload": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["receiptId", "issuedAt", "issuer", "service", "request", "payment", "delivery", "evidence"],
+            "properties": {
+                "receiptId": {"type": "string", "minLength": 1},
+                "issuedAt": {"type": "string", "format": "date-time"},
+                "expiresAt": {"type": "string", "format": "date-time"},
+                "issuer": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["name", "keyId"],
+                    "properties": {
+                        "name": {"type": "string", "minLength": 1},
+                        "uri": {"type": "string"},
+                        "keyId": {"type": "string", "minLength": 1},
+                        "payTo": {"type": "string", "minLength": 1},
+                        "keysUri": {"type": "string", "minLength": 1},
+                    },
+                },
+                "service": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["name", "resource", "method"],
+                    "properties": {
+                        "name": {"type": "string", "minLength": 1},
+                        "resource": {"type": "string", "minLength": 1},
+                        "method": {"type": "string", "minLength": 1},
+                    },
+                },
+                "request": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["requestHash", "resourceHash", "bodyHash"],
+                    "properties": {
+                        "requestHash": {"$ref": "#/$defs/sha256Hex"},
+                        "resourceHash": {"$ref": "#/$defs/sha256Hex"},
+                        "bodyHash": {"$ref": "#/$defs/sha256Hex"},
+                    },
+                },
+                "payment": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": [
+                        "scheme",
+                        "network",
+                        "asset",
+                        "amountAtomic",
+                        "amountDisplay",
+                        "paymentRequirementsHash",
+                        "paymentPayloadHash",
+                        "settlement",
+                    ],
+                    "properties": {
+                        "scheme": {"type": "string", "minLength": 1},
+                        "network": {"type": "string", "minLength": 1},
+                        "asset": {"type": "string", "minLength": 1},
+                        "amountAtomic": {"type": "string", "pattern": "^[0-9]+$"},
+                        "amountDisplay": {"type": "string", "minLength": 1},
+                        "payer": {"type": "string", "minLength": 1},
+                        "payTo": {"type": "string", "minLength": 1},
+                        "paymentRequirementsHash": {"$ref": "#/$defs/sha256Hex"},
+                        "paymentPayloadHash": {"$ref": "#/$defs/sha256Hex"},
+                        "settlement": {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "required": ["status", "transactionHash"],
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "not_required",
+                                        "disabled",
+                                        "verify_only",
+                                        "claimed_not_checked",
+                                        "verified_settled",
+                                        "failed",
+                                        "unknown",
+                                    ],
+                                },
+                                "transactionHash": {
+                                    "oneOf": [{"$ref": "#/$defs/transactionId"}, {"type": "null"}]
+                                },
+                                "checkedByVerifier": {"type": "boolean"},
+                                "verifier": {
+                                    "oneOf": [{"type": "string", "minLength": 1}, {"type": "null"}]
+                                },
+                                "checkedByPaxiom": {"type": "boolean"},
+                            },
+                        },
+                    },
+                },
+                "delivery": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["outputHash", "mimeType"],
+                    "properties": {
+                        "outputHash": {"$ref": "#/$defs/sha256Hex"},
+                        "mimeType": {"type": "string", "minLength": 1},
+                        "canonicalization": {
+                            "type": "string",
+                            "enum": ["jcs-sha256", "raw-sha256"],
+                        },
+                        "statusCode": {
+                            "type": "integer",
+                            "minimum": 100,
+                            "maximum": 599,
+                        },
+                    },
+                },
+                "evidence": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["type", "status", "hash", "uri"],
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": ["none", "zk", "attestation", "tee", "archive", "other"],
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["not_provided", "provided", "unavailable", "invalid", "verified"],
+                            },
+                            "hash": {"oneOf": [{"$ref": "#/$defs/sha256Hex"}, {"type": "null"}]},
+                            "uri": {"oneOf": [{"type": "string"}, {"type": "null"}]},
+                        },
+                    },
+                },
+            },
+        },
+        "signature": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["algorithm", "keyId", "publicKey", "value"],
+            "properties": {
+                "algorithm": {"type": "string", "const": "ed25519"},
+                "keyId": {"type": "string", "minLength": 1},
+                "publicKey": {"type": "string", "minLength": 1},
+                "value": {"type": "string", "minLength": 1},
+            },
+        },
+    },
+    "$defs": {
+        "sha256Hex": {
+            "type": "string",
+            "pattern": "^0x[0-9a-f]{64}$",
+        },
+        "transactionId": {
+            "type": "string",
+            "pattern": "^(?:0x[0-9a-f]{64}|[1-9A-HJ-NP-Za-km-z]{64,88})$",
+        },
+    },
+}
+
 _ISO_DATETIME_RE = re.compile(
     r"\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})\Z"
 )
 _STRICT_BASE64_RE = re.compile(r"\A[A-Za-z0-9+/]+={0,2}\Z")
+_EVM_ADDR_RE = re.compile(r"\A0x[0-9a-fA-F]{40}\Z")
 
 _SENTINEL = object()
+
+
+def _normalize_pay_to(addr: str) -> str:
+    s = str(addr or "").strip()
+    return s.lower() if _EVM_ADDR_RE.match(s) else s
 
 
 def _parse_iso_epoch_seconds(value: str) -> float | None:
     if not isinstance(value, str) or not _ISO_DATETIME_RE.match(value):
         return None
     norm = value[:-1] + "+00:00" if value.endswith("Z") else value
-    # Python 3.10 fromisoformat handles 3 or 6 fractional digits; normalize variable 1..9 digits to 6
     if "." in norm:
         head, tail = norm.split(".", 1)
         tz_idx = max(tail.find("+"), tail.find("-"))
@@ -56,6 +225,8 @@ def _kind(val: Any) -> str:
         return "null"
     if isinstance(val, bool):
         return "boolean"
+    if isinstance(val, int):
+        return "integer"
     if isinstance(val, str):
         return "string"
     if isinstance(val, list):
@@ -115,12 +286,20 @@ def _validate_schema(node: Any, sch: dict[str, Any], path: str, root: dict[str, 
                 errs.append(f"{path}: pattern mismatch")
         if sch.get("format") == "date-time" and _parse_iso_epoch_seconds(node) is None:
             errs.append(f"{path}: invalid date-time")
+    elif stype == "integer":
+        if _kind(node) != "integer":
+            errs.append(f"{path}: expected integer")
+        else:
+            if "minimum" in sch and node < sch["minimum"]:
+                errs.append(f"{path}: below minimum")
+            if "maximum" in sch and node > sch["maximum"]:
+                errs.append(f"{path}: above maximum")
     elif stype == "boolean":
         if _kind(node) != "boolean":
-            return [f"{path}: expected boolean"]
+            errs.append(f"{path}: expected boolean")
     elif stype == "null":
         if node is not None:
-            return [f"{path}: expected null"]
+            errs.append(f"{path}: expected null")
 
     if "$ref" in sch:
         cur: Any = root
@@ -142,13 +321,19 @@ def verify_receipt(
     receipt: Any,
     *,
     output: Any = _SENTINEL,
+    expected_issuer_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
+    expected_pay_to: str | None = None,
+    trusted_verifier_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
     trusted_paxiom_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
     now: float | datetime | str | None = None,
 ) -> dict[str, Any]:
     has_output = output is not _SENTINEL
+    has_expected_keys = expected_issuer_public_keys is not None
+    has_expected_pay_to = bool(expected_pay_to is not None and str(expected_pay_to).strip())
     checks: dict[str, str] = {
         "schema": "not_checked",
         "signature": "not_checked",
+        "issuerAuthorization": "not_checked" if (has_expected_keys or has_expected_pay_to) else "unpinned",
         "outputHash": "not_checked" if has_output else "not_provided",
         "requestBinding": "not_checked",
         "paymentBinding": "not_checked",
@@ -200,6 +385,30 @@ def verify_receipt(
 
     p = receipt["payload"]
 
+    if has_expected_keys:
+        allowed_keys = set(expected_issuer_public_keys or ())
+        if receipt["signature"]["publicKey"] not in allowed_keys:
+            checks["issuerAuthorization"] = "fail"
+            return done(
+                "unauthorized_issuer",
+                "Receipt signature is valid, but signature.publicKey is not in expected_issuer_public_keys for this resource.",
+            )
+
+    if has_expected_pay_to:
+        want_pay_to = _normalize_pay_to(str(expected_pay_to))
+        rcpt_pay_to = p["payment"].get("payTo") or p["issuer"].get("payTo")
+        if not rcpt_pay_to or _normalize_pay_to(str(rcpt_pay_to)) != want_pay_to:
+            checks["issuerAuthorization"] = "fail"
+            return done(
+                "unauthorized_issuer",
+                f"Receipt payTo ({rcpt_pay_to}) does not match expected_pay_to ({expected_pay_to})."
+                if rcpt_pay_to
+                else f"Caller pinned expected_pay_to ({expected_pay_to}), but receipt does not bind a payTo address.",
+            )
+
+    if has_expected_keys or has_expected_pay_to:
+        checks["issuerAuthorization"] = "pass"
+
     if "expiresAt" in p and p["expiresAt"]:
         exp_ts = _parse_iso_epoch_seconds(p["expiresAt"])
         if now is None:
@@ -218,11 +427,20 @@ def verify_receipt(
     checks["paymentBinding"] = "pass"
 
     if has_output:
+        mode = p["delivery"].get("canonicalization") or "jcs-sha256"
         try:
-            recomputed = hash_canonical(output)
+            if mode == "raw-sha256":
+                if isinstance(output, (bytes, bytearray, memoryview)):
+                    recomputed = sha256_hex(output)
+                elif isinstance(output, str):
+                    recomputed = sha256_hex(output.encode("utf-8"))
+                else:
+                    raise TypeError('delivery.canonicalization="raw-sha256" requires bytes or str output')
+            else:
+                recomputed = hash_canonical(output)
         except Exception as err:
             checks["outputHash"] = "error"
-            return done("error", f"Could not canonicalize supplied output: {err}.")
+            return done("error", f"Could not hash supplied output ({mode}): {err}.")
         if recomputed != p["delivery"]["outputHash"]:
             checks["outputHash"] = "fail"
             return done(
@@ -256,12 +474,15 @@ def verify_receipt(
     if any_unavailable:
         return done("proof_unavailable", "A referenced evidence record could not be retrieved.")
 
-    trusted_set = set(trusted_paxiom_public_keys) if trusted_paxiom_public_keys is not None else None
-    is_trusted_paxiom = bool(trusted_set and receipt["signature"]["publicKey"] in trusted_set)
-    if settlement["checkedByPaxiom"] and not is_trusted_paxiom:
+    raw_trusted = trusted_verifier_public_keys if trusted_verifier_public_keys is not None else trusted_paxiom_public_keys
+    trusted_set = set(raw_trusted) if raw_trusted is not None else None
+    is_trusted_verifier = bool(trusted_set and receipt["signature"]["publicKey"] in trusted_set)
+    asserts_verifier = bool(settlement.get("checkedByVerifier") or settlement.get("checkedByPaxiom"))
+
+    if asserts_verifier and not is_trusted_verifier:
         return done(
             "settlement_claimed_not_checked",
-            "Receipt asserts checkedByPaxiom=true, but signer is not in trustedPaxiomPublicKeys.",
+            "Receipt asserts independent verifier settlement check, but signer is not in trusted_verifier_public_keys.",
         )
 
     if st in ("not_required", "disabled", "verify_only") and settlement.get("transactionHash") is not None:
@@ -270,8 +491,8 @@ def verify_receipt(
             "Receipt carries a non-null settlement.transactionHash under a non-settled status that this offline verifier did not check.",
         )
 
-    paxiom_counter_verified = st == "verified_settled" and settlement["checkedByPaxiom"] and is_trusted_paxiom
-    if st == "claimed_not_checked" or (st == "verified_settled" and not paxiom_counter_verified):
+    counter_verified = st == "verified_settled" and asserts_verifier and is_trusted_verifier
+    if st == "claimed_not_checked" or (st == "verified_settled" and not counter_verified):
         return done(
             "settlement_claimed_not_checked",
             "Signature and output hash verified. Receipt claims an onchain settlement that this offline verifier did not check."
@@ -297,13 +518,31 @@ def verify_from_files(
     receipt_path: str | Path,
     output_path: str | Path | None = None,
     *,
+    expected_issuer_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
+    expected_pay_to: str | None = None,
+    trusted_verifier_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
     trusted_paxiom_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
 ) -> dict[str, Any]:
     receipt = json.loads(Path(receipt_path).read_text(encoding="utf-8"))
     if output_path is not None:
-        output = json.loads(Path(output_path).read_text(encoding="utf-8"))
-        return verify_receipt(receipt, output=output, trusted_paxiom_public_keys=trusted_paxiom_public_keys)
-    return verify_receipt(receipt, trusted_paxiom_public_keys=trusted_paxiom_public_keys)
+        raw_bytes = Path(output_path).read_bytes()
+        mode = ((receipt.get("payload") or {}).get("delivery") or {}).get("canonicalization") or "jcs-sha256"
+        output: Any = raw_bytes if mode == "raw-sha256" else json.loads(raw_bytes.decode("utf-8"))
+        return verify_receipt(
+            receipt,
+            output=output,
+            expected_issuer_public_keys=expected_issuer_public_keys,
+            expected_pay_to=expected_pay_to,
+            trusted_verifier_public_keys=trusted_verifier_public_keys,
+            trusted_paxiom_public_keys=trusted_paxiom_public_keys,
+        )
+    return verify_receipt(
+        receipt,
+        expected_issuer_public_keys=expected_issuer_public_keys,
+        expected_pay_to=expected_pay_to,
+        trusted_verifier_public_keys=trusted_verifier_public_keys,
+        trusted_paxiom_public_keys=trusted_paxiom_public_keys,
+    )
 
 
 def explain(result: dict[str, Any]) -> str:
@@ -311,7 +550,16 @@ def explain(result: dict[str, Any]) -> str:
     ts = str(result.get("trustState", "error")).upper()
     lines = [f"{icon} {ts} — {result.get('summary', '')}"]
     checks = result.get("checks") or {}
-    for k in ("schema", "signature", "outputHash", "requestBinding", "paymentBinding", "settlement", "proof"):
+    for k in (
+        "schema",
+        "signature",
+        "issuerAuthorization",
+        "outputHash",
+        "requestBinding",
+        "paymentBinding",
+        "settlement",
+        "proof",
+    ):
         if k in checks:
             lines.append(f"  {k}: {checks[k]}")
     if result.get("receiptHash"):
