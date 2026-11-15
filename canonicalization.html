@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<title>Paxiom &middot; Canonical JSON Profile</title>
+<meta name="description" content="Paxiom Receipt v0 canonical JSON profile, Ed25519 signing input, and SHA-256 request/payment/output hash preimages.">
+<meta property="og:title" content="Paxiom · Canonical JSON Profile">
+<meta property="og:description" content="Paxiom Receipt v0 canonical JSON profile, Ed25519 signing input, and SHA-256 request/payment/output hash preimages.">
+<meta property="og:url" content="https://paxiom.org/canonicalization.html">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.frame { max-width: 1080px; margin: 0 auto; padding: 20px 18px 36px; }
+.title-block { border-bottom: 2px solid var(--ink); padding-bottom: 16px; margin-bottom: 18px; }
+.title-mark { display: block; margin-bottom: 12px; }
+.paxiom-mark { width: 42px; height: 42px; color: var(--ink); display: block; }
+.title-block .project-mark { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px; }
+.title-block .project-title { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-size: 28px; font-weight: 500; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
+.title-block .project-subtitle { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-style: italic; font-size: 14.5px; color: var(--ink-mid); margin-top: 4px; max-width: 52ch; }
+.title-block .meta { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.04em; color: var(--ink-faint); margin-top: 12px; line-height: 1.7; }
+.title-block .meta .sep { margin: 0 6px; color: var(--rule-faint); }
+.hero { margin-bottom: 30px; padding: 6px 0 10px; }
+.hero h1 { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: clamp(28px, 5vw, 42px); line-height: 1.06; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 14px; max-width: 26ch; }
+.hero h1 em { font-style: italic; color: var(--ink-mid); font-weight: 400; }
+.hero .lede { font-size: 17px; line-height: 1.58; color: var(--ink); max-width: 64ch; margin-bottom: 16px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn {
+  display: inline-block; padding: 9px 15px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
+  text-decoration: none; border-radius: 8px;
+  border: 1.5px solid var(--ink); color: var(--ink);
+}
+.btn:hover { background: var(--ink); color: var(--paper); }
+.section { margin-bottom: 36px; }
+.section-mark { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.section h2 { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: 24px; letter-spacing: -0.01em; margin-bottom: 12px; color: var(--ink); }
+.section h2 em { font-style: italic; color: var(--ink-mid); }
+.section p { font-size: 15.5px; line-height: 1.62; color: var(--ink); max-width: 68ch; margin-bottom: 12px; }
+.section ol, .section ul { max-width: 68ch; margin: 8px 0 16px 22px; font-size: 15px; line-height: 1.58; }
+.section li { margin-bottom: 6px; }
+p code, li code, td code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; background: var(--paper-dark); padding: 1px 5px; border-radius: 2px; color: var(--blue); font-weight: 500; }
+.table-wrap { overflow-x: auto; margin: 8px 0 16px; border: 1.5px solid var(--ink); border-radius: 8px; background: var(--paper); }
+table.spec { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+table.spec th, table.spec td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule-faint); vertical-align: top; }
+table.spec tr:last-child td { border-bottom: none; }
+table.spec th { background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+pre.cmd { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.6; background: var(--ink); color: var(--paper); padding: 16px 18px; border-radius: 8px; overflow-x: auto; margin: 8px 0 18px; white-space: pre; }
+.note { border: 1.5px solid var(--amber); border-radius: 8px; padding: 14px 16px; margin: 10px 0 20px; background: var(--paper); }
+.note .note-label { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--amber); margin-bottom: 6px; }
+.note p { font-size: 14.5px; line-height: 1.55; margin: 0; max-width: 68ch; }
+.sheet-footer { border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; }
+.sheet-footer .sheet-id { color: var(--ink); font-weight: 600; }
+a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--red); }
+@media (min-width: 768px) {
+  .frame { padding: 40px 32px 48px; }
+  body { background-image: linear-gradient(rgba(26,35,50,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(26,35,50,0.04) 1px, transparent 1px); background-size: 24px 24px; }
+  .title-block { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 24px; padding-bottom: 20px; }
+  .title-mark { margin-bottom: 0; } .paxiom-mark { width: 54px; height: 54px; }
+  .title-block .project-title { font-size: 34px; } .title-block .meta { text-align: right; margin-top: 0; }
+}
+.paxiom-bar { position: sticky; top: 0; z-index: 100; background: rgba(245,241,232,0.88); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule-faint); }
+.paxiom-bar-inner { max-width: 1200px; margin: 0 auto; padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.paxiom-bar-mark { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; }
+.paxiom-bar-mark svg { width: 22px; height: 22px; display: block; }
+.paxiom-bar-nav { display: flex; gap: 18px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+.paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; padding-bottom: 2px; }
+.paxiom-bar-nav a:hover { color: var(--ink); } .paxiom-bar-nav a.active { color: var(--ink); border-bottom: 1.5px solid var(--ink); }
+@media (max-width: 600px) { .paxiom-bar-inner { padding: 8px 14px; } .paxiom-bar-mark span { display: none; } .paxiom-bar-nav { gap: 14px; font-size: 9.5px; letter-spacing: 0.11em; } }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
+<div class="paxiom-bar">
+  <div class="paxiom-bar-inner">
+    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
+      <span>Paxiom</span>
+    </a>
+    <nav class="paxiom-bar-nav" aria-label="Primary">
+      <a href="/receipts.html" class="active">Receipts</a>
+      <a href="/api.html">API &amp; SDK</a>
+      <a href="/journal.html">Build Journal</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </div>
+</div>
+<div class="frame">
+  <header class="title-block">
+    <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg></div>
+    <div>
+      <div class="project-mark">Paxiom &middot; Standard Specification Sheet</div>
+      <div class="project-title">Canonical JSON Profile</div>
+      <div class="project-subtitle">Deterministic UTF-8 byte serialization and Ed25519 signing preimages.</div>
+    </div>
+    <div class="meta">
+      <span>Sheet PXM-RC-102</span><span class="sep">&middot;</span>
+      <span>paxiom.receipt.v0</span><span class="sep">&middot;</span>
+      <span>v0.1.3</span>
+    </div>
+  </header>
+  <section class="hero">
+    <h1>Byte-for-byte reproducible <em>Ed25519 signing inputs.</em></h1>
+    <p class="lede">Signature and output-hash verification across Node.js, Edge Workers, and Python must produce identical UTF-8 byte sequences. <code>paxiom.receipt.v0</code> defines a compact, self-contained deterministic JSON canonicalization profile implemented identically in <code>@paxiom/receipts</code> and <code>paxiom-receipts</code>.</p>
+    <div class="actions">
+      <a class="btn" href="/receipts.html">&larr; Back to Receipt v0</a>
+      <a class="btn" href="/trust-states.html">Trust States &rarr;</a>
+      <a class="btn" href="/standards/receipts/v0/canonicalization.md">Raw Markdown (.md)</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-mark">01 &middot; Serialization Rules</div>
+    <h2>Seven deterministic <em>rules.</em></h2>
+    <ol>
+      <li>Encode output as <strong>UTF-8</strong>.</li>
+      <li><strong>Object keys sorted lexicographically</strong> by UTF-16 code unit order recursively at every nesting level.</li>
+      <li><strong>Array order is preserved</strong> (arrays represent ordered sequences and are never re-sorted).</li>
+      <li><strong>No insignificant whitespace</strong> &mdash; zero spaces or newlines between JSON tokens.</li>
+      <li><strong>Monetary amounts and hashes are strings, never JSON numbers.</strong> All amounts (<code>amountAtomic</code>, <code>amountDisplay</code>) and digests are strings; <code>checkedByPaxiom</code> (boolean) is the sole non-string scalar in v0 payloads.</li>
+      <li><strong>Hashes</strong> are SHA-256 formatted as <strong>lowercase hex with a <code>0x</code> prefix</strong> (66 characters total).</li>
+      <li><code>null</code> serializes as <code>null</code>; keys with <code>null</code> values remain part of the signed structure (e.g., <code>settlement.transactionHash</code>).</li>
+    </ol>
+    <div class="note">
+      <div class="note-label">Stack-Depth Hardening</div>
+      <p>Conforming verifiers reject non-JSON values (<code>undefined</code>, <code>NaN</code>, <code>Infinity</code>) and cap recursion depth at <code>256</code> so adversarial deeply-nested outputs return a structured <code>error</code> trust state rather than overflowing the call stack.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-mark">02 &middot; Signing Input</div>
+    <h2>Reference canonicalizer &amp; <em>Ed25519 envelope.</em></h2>
+    <p>The Ed25519 signature covers the UTF-8 canonical JSON of <strong>exactly</strong> <code>{ receiptVersion, payload }</code> (excluding the outer <code>signature</code> object itself):</p>
+<pre class="cmd">function canonicalize(value) {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return '[' + value.map(canonicalize).join(',') + ']';
+  const keys = Object.keys(value).sort();
+  return '{' + keys.map(k =&gt; JSON.stringify(k) + ':' + canonicalize(value[k])).join(',') + '}';
+}
+
+const signingInput = Buffer.from(canonicalize({ receiptVersion, payload }), 'utf8');
+const sigValue = crypto.sign(null, signingInput, privateKey).toString('base64');</pre>
+  </section>
+
+  <section class="section">
+    <div class="section-mark">03 &middot; Binding Digests</div>
+    <h2>Hash preimages across <em>request, payment, and delivery.</em></h2>
+    <div class="table-wrap">
+      <table class="spec">
+        <thead><tr><th>Receipt field</th><th>SHA-256 Preimage</th></tr></thead>
+        <tbody>
+          <tr><td><code>delivery.outputHash</code></td><td><code>sha256( canonicalize(output) )</code> (or raw UTF-8/bytes for non-JSON responses)</td></tr>
+          <tr><td><code>request.bodyHash</code></td><td><code>sha256( canonicalize(requestBody) )</code></td></tr>
+          <tr><td><code>request.resourceHash</code></td><td><code>sha256( utf8(resourceUrl) )</code></td></tr>
+          <tr><td><code>request.requestHash</code></td><td><code>sha256( canonicalize({ bodyHash, method, resource }) )</code></td></tr>
+          <tr><td><code>payment.paymentRequirementsHash</code></td><td><code>sha256( canonicalize(x402PaymentRequirements) )</code></td></tr>
+          <tr><td><code>payment.paymentPayloadHash</code></td><td><code>sha256( canonicalize(x402PaymentPayload) )</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <footer class="sheet-footer">
+    <div>Paxiom &middot; paxiom.org</div>
+    <div>Spec: paxiom.receipt.v0 &middot; MIT</div>
+    <div class="sheet-id">PXM-RC-102 &middot; Canonical JSON Profile</div>
+  </footer>
+</div>
+</body>
+</html>

@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <style>
 :root {
   --rule: #1A2332;
@@ -49,8 +49,8 @@ body {
 .sheet-mark-link:hover { opacity: 0.65; }
 .sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
 .sheet-project { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
-.sheet-title { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
-.sheet-subtitle { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
+.sheet-title { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
+.sheet-subtitle { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
 .sheet-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 16px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.04em; text-align: right; }
 .sheet-meta dt { color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
 .sheet-meta dd { color: var(--ink); font-weight: 500; }
@@ -70,14 +70,14 @@ body {
 }
 .page-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
 h1.page-title {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   font-weight: 500; font-size: clamp(36px, 5vw, 52px);
   line-height: 1.05; letter-spacing: -0.02em;
   color: var(--ink); margin-bottom: 14px; max-width: 24ch;
 }
 h1.page-title em { font-style: italic; color: var(--ink-mid); }
 .page-strap {
-  font-family: 'Times New Roman', Times, serif; font-style: italic;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-style: italic;
   font-size: 17px; color: var(--ink-mid);
   max-width: 64ch; line-height: 1.5; margin-bottom: 36px;
 }
@@ -208,7 +208,7 @@ h1.page-title em { font-style: italic; color: var(--ink-mid); }
 /* ─── Phase cards ────────────────────────────── */
 .phase-section { margin-bottom: 40px; }
 .phase-section h2 {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   font-weight: 500; font-size: 24px;
   letter-spacing: -0.01em;
   color: var(--ink); margin-bottom: 18px;
@@ -258,7 +258,7 @@ h1.page-title em { font-style: italic; color: var(--ink-mid); }
 
 .phase-card-body { padding: 18px 20px 22px; }
 .phase-card-title {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   font-size: 22px; font-weight: 500;
   letter-spacing: -0.005em;
   color: var(--ink); margin-bottom: 6px; line-height: 1.2;
@@ -271,7 +271,7 @@ h1.page-title em { font-style: italic; color: var(--ink-mid); }
   margin-bottom: 14px;
 }
 .phase-card-summary {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   font-size: 15px; line-height: 1.55;
   color: var(--ink); margin-bottom: 16px;
   max-width: 64ch;
@@ -293,7 +293,7 @@ h1.page-title em { font-style: italic; color: var(--ink-mid); }
 }
 .phase-card-cell ul {
   list-style: none;
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   font-size: 14px; line-height: 1.55;
   color: var(--ink);
 }
@@ -328,18 +328,18 @@ h1.page-title em { font-style: italic; color: var(--ink-mid); }
 }
 .section-mark-text::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
 .section h2 {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   font-weight: 500; font-size: 22px; letter-spacing: -0.01em;
   margin-bottom: 12px; color: var(--ink);
 }
 .section h2 em { font-style: italic; color: var(--ink-mid); }
 .section p {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   font-size: 16px; line-height: 1.6;
   color: var(--ink); max-width: 64ch; margin-bottom: 14px;
 }
 .section ul {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   font-size: 15px; line-height: 1.55;
   color: var(--ink); margin: 8px 0 16px 22px;
   max-width: 64ch;

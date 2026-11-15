@@ -2,6 +2,8 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://paxiom.org/</loc></url>
   <url><loc>https://paxiom.org/receipts.html</loc></url>
+  <url><loc>https://paxiom.org/trust-states.html</loc></url>
+  <url><loc>https://paxiom.org/canonicalization.html</loc></url>
   <url><loc>https://paxiom.org/api.html</loc></url>
   <url><loc>https://paxiom.org/journal.html</loc></url>
   <url><loc>https://paxiom.org/contact.html</loc></url>

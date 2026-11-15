@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <style>
 :root {
   --rule: #1A2332;
@@ -39,8 +39,8 @@ body {
 .sheet-mark-link:hover { opacity: 0.65; }
 .sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
 .sheet-project { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
-.sheet-title { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
-.sheet-subtitle { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
+.sheet-title { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
+.sheet-subtitle { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
 .sheet-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 16px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.04em; text-align: right; }
 .sheet-meta dt { color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
 .sheet-meta dd { color: var(--ink); font-weight: 500; }
@@ -49,9 +49,9 @@ body {
 
 .page-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
 .page-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
-h1.page-title { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: clamp(36px, 5vw, 52px); line-height: 1.05; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 14px; max-width: 24ch; }
+h1.page-title { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: clamp(36px, 5vw, 52px); line-height: 1.05; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 14px; max-width: 24ch; }
 h1.page-title em { font-style: italic; color: var(--ink-mid); }
-.page-strap { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 17px; color: var(--ink-mid); max-width: 64ch; line-height: 1.5; margin-bottom: 36px; }
+.page-strap { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-style: italic; font-size: 17px; color: var(--ink-mid); max-width: 64ch; line-height: 1.5; margin-bottom: 36px; }
 
 .gate-card { border: 1.5px solid var(--ink); background: var(--paper); margin-bottom: 16px; position: relative; }
 .gate-card.scaffolded::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--blue); }
@@ -66,12 +66,12 @@ h1.page-title em { font-style: italic; color: var(--ink-mid); }
 .gate-card.closed .gate-status::before { background: var(--green); box-shadow: 0 0 0 2px rgba(45,106,79,0.3); }
 
 .gate-card-body { padding: 18px 20px 22px; }
-.gate-card-title { font-family: 'Times New Roman', Times, serif; font-size: 22px; font-weight: 500; letter-spacing: -0.005em; color: var(--ink); margin-bottom: 6px; line-height: 1.2; }
-.gate-card-acceptance { font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55; color: var(--ink); margin-bottom: 14px; max-width: 64ch; }
+.gate-card-title { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-size: 22px; font-weight: 500; letter-spacing: -0.005em; color: var(--ink); margin-bottom: 6px; line-height: 1.2; }
+.gate-card-acceptance { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.55; color: var(--ink); margin-bottom: 14px; max-width: 64ch; }
 .gate-card-grid { display: grid; grid-template-columns: 1fr; gap: 18px; border-top: 1px solid var(--rule-faint); padding-top: 16px; }
 @media (min-width: 768px) { .gate-card-grid { grid-template-columns: 1fr 1fr; gap: 22px; } }
 .gate-card-cell .label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; font-weight: 600; }
-.gate-card-cell ul { list-style: none; font-family: 'Times New Roman', Times, serif; font-size: 14px; line-height: 1.55; color: var(--ink); }
+.gate-card-cell ul { list-style: none; font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 14px; line-height: 1.55; color: var(--ink); }
 .gate-card-cell li { padding: 3px 0 3px 14px; position: relative; }
 .gate-card-cell li::before { content: '·'; position: absolute; left: 0; color: var(--rule-faint); font-weight: bold; }
 .gate-card-cell li code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 5px; border-radius: 2px; color: var(--blue); font-weight: 500; }
@@ -88,8 +88,8 @@ pre.cmd { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace
 .section { margin-bottom: 36px; }
 .section-mark-text { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
 .section-mark-text::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
-.section h2 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 22px; letter-spacing: -0.01em; margin-bottom: 12px; color: var(--ink); }
-.section p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; color: var(--ink); max-width: 64ch; margin-bottom: 14px; }
+.section h2 { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: 22px; letter-spacing: -0.01em; margin-bottom: 12px; color: var(--ink); }
+.section p { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.6; color: var(--ink); max-width: 64ch; margin-bottom: 14px; }
 
 .sheet-footer { border-top: 1.5px solid var(--ink); padding: 14px 24px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); align-items: center; }
 .sheet-footer .center { text-align: center; }

@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -31,16 +31,16 @@ body {
 .title-mark { display: block; margin-bottom: 12px; }
 .paxiom-mark { width: 42px; height: 42px; color: var(--ink); display: block; }
 .title-block .project-mark { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px; }
-.title-block .project-title { font-family: 'Times New Roman', Times, serif; font-size: 28px; font-weight: 500; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
-.title-block .project-subtitle { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 14px; color: var(--ink-mid); margin-top: 4px; max-width: 46ch; }
+.title-block .project-title { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-size: 28px; font-weight: 500; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
+.title-block .project-subtitle { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-style: italic; font-size: 14px; color: var(--ink-mid); margin-top: 4px; max-width: 46ch; }
 .title-block .meta { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.04em; color: var(--ink-faint); margin-top: 12px; line-height: 1.7; }
 .title-block .meta span { display: inline-block; }
 .title-block .meta .sep { margin: 0 6px; color: var(--rule-faint); }
 
 .hero { margin-bottom: 26px; padding: 8px 0 8px; }
-.hero h1 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: clamp(28px, 6vw, 40px); line-height: 1.05; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 16px; max-width: 24ch; }
+.hero h1 { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: clamp(28px, 6vw, 40px); line-height: 1.05; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 16px; max-width: 24ch; }
 .hero h1 em { font-style: italic; color: var(--ink-mid); font-weight: 400; }
-.hero .lede { font-family: 'Times New Roman', Times, serif; font-size: 17px; line-height: 1.55; color: var(--ink); max-width: 62ch; margin-bottom: 14px; }
+.hero .lede { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 17px; line-height: 1.55; color: var(--ink); max-width: 62ch; margin-bottom: 14px; }
 
 .status {
   border: 1.5px solid var(--blue); border-radius: 8px; padding: 14px 16px; margin: 4px 0 28px; background: var(--paper);
@@ -48,15 +48,15 @@ body {
 }
 .status .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--blue); display: inline-block; flex: none; align-self: center; }
 .status .k { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--blue); }
-.status p { font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.5; color: var(--ink); max-width: 68ch; margin: 0; }
+.status p { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.5; color: var(--ink); max-width: 68ch; margin: 0; }
 .status code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; background: var(--paper-dark); padding: 1px 5px; border-radius: 2px; color: var(--blue); }
 
 .section { margin-bottom: 36px; }
 .section .section-mark { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
 .section .section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
-.section h2 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 24px; letter-spacing: -0.01em; margin-bottom: 14px; color: var(--ink); }
+.section h2 { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: 24px; letter-spacing: -0.01em; margin-bottom: 14px; color: var(--ink); }
 .section h2 em { font-style: italic; color: var(--ink-mid); }
-.section p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; color: var(--ink); max-width: 64ch; margin-bottom: 14px; }
+.section p { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.6; color: var(--ink); max-width: 64ch; margin-bottom: 14px; }
 .section p code, td code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); font-weight: 500; }
 
 .baseurl {
@@ -73,7 +73,7 @@ body {
 .endpoints .m.get { color: var(--blue); }
 .endpoints .m.post { color: var(--amber); }
 .endpoints .path { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; color: var(--ink); white-space: nowrap; }
-.endpoints .purpose { font-family: 'Times New Roman', Times, serif; color: var(--ink-mid); }
+.endpoints .purpose { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; color: var(--ink-mid); }
 .endpoints-wrap { overflow-x: auto; }
 
 pre.cmd { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.6; background: var(--ink); color: var(--paper); padding: 16px 18px; border-radius: 8px; overflow-x: auto; margin: 6px 0 18px; max-width: 100%; white-space: pre; }
@@ -82,7 +82,7 @@ pre.cmd .c { color: var(--rule-faint); }
 .note { border: 1.5px solid var(--rule-faint); border-radius: 8px; padding: 14px 16px; margin: 6px 0 22px; background: var(--paper); }
 .note .note-label { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
 .note ul { list-style: none; }
-.note li { font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55; color: var(--ink); max-width: 68ch; padding: 3px 0 3px 16px; position: relative; }
+.note li { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.55; color: var(--ink); max-width: 68ch; padding: 3px 0 3px 16px; position: relative; }
 .note li::before { content: '\2013'; position: absolute; left: 0; color: var(--rule-faint); }
 .note li code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; background: var(--paper-dark); padding: 1px 5px; border-radius: 2px; color: var(--blue); }
 
@@ -90,7 +90,7 @@ pre.cmd .c { color: var(--rule-faint); }
 .linklist li { padding: 6px 0; border-bottom: 1px solid var(--rule-faint); }
 .linklist li:last-child { border-bottom: none; }
 .linklist a { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; color: var(--blue); }
-.linklist .desc { font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--ink-mid); font-size: 14px; }
+.linklist .desc { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-style: italic; color: var(--ink-mid); font-size: 14px; }
 
 .sheet-footer { border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; }
 .sheet-footer .sheet-id { color: var(--ink); font-weight: 600; }
@@ -267,11 +267,14 @@ curl -s "$API/.well-known/paxiom-keys.json"</pre>
     <div class="section-mark">Machine-readable</div>
     <h2>Schemas &amp; references.</h2>
     <ul class="linklist">
-      <li><a href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer">@paxiom/receipts</a> <span class="desc">npm package (SDK, middleware, CLI, stdio MCP)</span></li>
+      <li><a href="https://www.npmjs.com/package/@paxiom/receipts" target="_blank" rel="noopener noreferrer">@paxiom/receipts (npm)</a> <span class="desc">Node/TS/Edge SDK, middleware, CLI, and stdio MCP</span></li>
+      <li><a href="https://pypi.org/project/paxiom-receipts/" target="_blank" rel="noopener noreferrer">paxiom-receipts (PyPI)</a> <span class="desc">zero-dependency Python 3.10+ SDK &amp; FastAPI ASGI middleware</span></li>
+      <li><a href="https://registry.modelcontextprotocol.io" target="_blank" rel="noopener noreferrer">io.github.k-luecke/paxiom-receipts</a> <span class="desc">Official MCP Registry entry (stdio + <code>https://api.paxiom.org/mcp</code>)</span></li>
+      <li><a href="/trust-states.html">Trust states (PXM-RC-101)</a> <span class="desc">all fifteen verdicts and precedence order</span></li>
+      <li><a href="/canonicalization.html">Canonicalization (PXM-RC-102)</a> <span class="desc">deterministic UTF-8 signing input and hash preimages</span></li>
       <li><a href="/standards/receipts/v0/openapi.json">OpenAPI 3.1</a> <span class="desc">verifier HTTP specification</span></li>
-      <li><a href="https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0" target="_blank" rel="noopener noreferrer">Spec &amp; Source on GitHub</a> <span class="desc">full documentation and test suite</span></li>
-      <li><a href="/standards/receipts/v0/trust-states.md">Trust states</a> <span class="desc">all fifteen verdicts and precedence order</span></li>
       <li><a href="/standards/receipts/v0/paxiom.receipt.v0.schema.json">JSON Schema</a> <span class="desc">structural validation</span></li>
+      <li><a href="https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0" target="_blank" rel="noopener noreferrer">Spec &amp; Source on GitHub</a> <span class="desc">full documentation and cross-language test vectors</span></li>
       <li><a href="/llms.txt">llms.txt</a> <span class="desc">agent-facing summary and claim boundaries</span></li>
     </ul>
   </section>

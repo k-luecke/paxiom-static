@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <style>
 :root {
   --rule: #1A2332;
@@ -43,8 +43,8 @@ body {
 .sheet-mark-link:hover { opacity: 0.65; }
 .sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
 .sheet-project { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
-.sheet-title { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
-.sheet-subtitle { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
+.sheet-title { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
+.sheet-subtitle { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
 .sheet-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 16px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.04em; text-align: right; }
 .sheet-meta dt { color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
 .sheet-meta dd { color: var(--ink); font-weight: 500; }
@@ -56,9 +56,9 @@ body {
 }
 .cover-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
 .cover-mark::after { content: ''; flex: 1; height: 1px; background: var(--rule-faint); }
-.cover-title { font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: clamp(48px, 7.5vw, 88px); line-height: 0.96; letter-spacing: -0.025em; color: var(--ink); margin-bottom: 28px; }
+.cover-title { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 400; font-size: clamp(48px, 7.5vw, 88px); line-height: 0.96; letter-spacing: -0.025em; color: var(--ink); margin-bottom: 28px; }
 .cover-title em { font-style: italic; font-weight: 400; color: var(--ink-mid); }
-.cover-strap { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 22px; line-height: 1.45; color: var(--ink-mid); max-width: 60ch; margin-bottom: 64px; }
+.cover-strap { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-style: italic; font-size: 22px; line-height: 1.45; color: var(--ink-mid); max-width: 60ch; margin-bottom: 64px; }
 .cover-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 56px; }
 @media (max-width: 700px) { .cover-grid { grid-template-columns: 1fr; } }
 .cover-cell { padding: 20px 24px; border-right: 1px solid var(--rule-faint); border-bottom: 1px solid var(--rule-faint); }
@@ -66,38 +66,38 @@ body {
 .cover-cell:nth-last-child(-n+2) { border-bottom: none; }
 @media (max-width: 700px) { .cover-cell { border-right: none; border-bottom: 1px solid var(--rule-faint); } .cover-cell:last-child { border-bottom: none; } }
 .cover-cell-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
-.cover-cell-value { font-family: 'Times New Roman', Times, serif; font-size: 17px; color: var(--ink); line-height: 1.35; }
+.cover-cell-value { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 17px; color: var(--ink); line-height: 1.35; }
 .cover-cell-value em { font-style: italic; color: var(--ink-mid); }
 .toc-section-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-top: 36px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-faint); }
 .toc-section-label:first-child { margin-top: 0; }
 .toc-row { display: grid; grid-template-columns: 80px 1fr auto; gap: 24px; padding: 10px 0; border-bottom: 1px dotted var(--rule-faint); align-items: baseline; }
 .toc-row:last-of-type { border-bottom: none; }
 .toc-num { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; font-weight: 500; color: var(--blue); letter-spacing: 0.04em; }
-.toc-title { font-family: 'Times New Roman', Times, serif; font-size: 16px; color: var(--ink); }
+.toc-title { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; color: var(--ink); }
 .toc-title em { font-style: italic; color: var(--ink-mid); font-size: 14px; display: block; margin-top: 2px; }
 .toc-page { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--ink-faint); letter-spacing: 0.04em; }
 .section-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
 .section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
-.section-title { font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: 40px; line-height: 1.05; letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px; }
+.section-title { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 400; font-size: 40px; line-height: 1.05; letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px; }
 .section-title em { font-style: italic; color: var(--ink-mid); }
-.section-strap { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 18px; color: var(--ink-mid); margin-bottom: 44px; max-width: 60ch; line-height: 1.5; }
-.prose p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.65; margin-bottom: 18px; max-width: 68ch; color: var(--ink); }
+.section-strap { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-style: italic; font-size: 18px; color: var(--ink-mid); margin-bottom: 44px; max-width: 60ch; line-height: 1.5; }
+.prose p { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.65; margin-bottom: 18px; max-width: 68ch; color: var(--ink); }
 .prose p.lead { font-size: 19px; line-height: 1.55; color: var(--ink-mid); font-style: italic; margin-bottom: 28px; }
-.prose h3 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 22px; margin-top: 40px; margin-bottom: 14px; color: var(--ink); letter-spacing: -0.005em; }
+.prose h3 { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: 22px; margin-top: 40px; margin-bottom: 14px; color: var(--ink); letter-spacing: -0.005em; }
 .prose h4 { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); margin-top: 32px; margin-bottom: 10px; }
 .prose strong { font-weight: 600; color: var(--ink); }
 .prose em { font-style: italic; color: var(--ink-mid); }
 .prose code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); word-break: break-all; }
-.prose ul, .prose ol { margin: 12px 0 22px 28px; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.65; max-width: 68ch; }
+.prose ul, .prose ol { margin: 12px 0 22px 28px; font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.65; max-width: 68ch; }
 .prose li { margin-bottom: 8px; }
 .callout { border: 1px solid var(--ink); margin: 32px 0; background: var(--paper); }
 .callout-header { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; padding: 9px 18px; background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; align-items: center; }
 .callout-tag { font-weight: 600; }
 .callout-id { color: var(--paper-dark); opacity: 0.7; }
 .callout-body { padding: 20px 24px; }
-.callout-body p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; color: var(--ink); margin-bottom: 12px; }
+.callout-body p { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.6; color: var(--ink); margin-bottom: 12px; }
 .callout-body p:last-child { margin-bottom: 0; }
-.callout-body ul { margin: 10px 0 6px 22px; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; }
+.callout-body ul { margin: 10px 0 6px 22px; font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.6; }
 .callout-body li { margin-bottom: 6px; }
 .callout-body code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); }
 .callout.note { border-style: dashed; border-color: var(--ink-faint); }
@@ -129,10 +129,10 @@ body {
   color: var(--ink-faint);
   margin-bottom: 6px;
 }
-.steps p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; color: var(--ink); margin: 0; max-width: 68ch; }
+.steps p { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.6; color: var(--ink); margin: 0; max-width: 68ch; }
 .schedule { margin: 24px 0; border: 1.5px solid var(--ink); width: 100%; border-collapse: collapse; }
 .schedule th { background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; text-align: left; padding: 10px 12px; font-weight: 500; }
-.schedule td { padding: 12px; border-bottom: 1px solid var(--rule-faint); border-right: 1px solid var(--rule-faint); font-family: 'Times New Roman', Times, serif; font-size: 14px; vertical-align: top; color: var(--ink); }
+.schedule td { padding: 12px; border-bottom: 1px solid var(--rule-faint); border-right: 1px solid var(--rule-faint); font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 14px; vertical-align: top; color: var(--ink); }
 .schedule td:last-child { border-right: none; }
 .schedule tr:last-child td { border-bottom: none; }
 .schedule .addr { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; word-break: break-all; }
@@ -148,7 +148,7 @@ body {
 .xrefs li { display: grid; grid-template-columns: 130px 1fr auto; gap: 18px; padding: 12px 0; border-bottom: 1px dotted var(--rule-faint); align-items: baseline; }
 .xrefs li:last-child { border-bottom: none; }
 .xrefs .ref { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--blue); font-weight: 500; letter-spacing: 0.04em; }
-.xrefs .ref-label { font-family: 'Times New Roman', Times, serif; font-size: 15px; color: var(--ink); font-style: italic; }
+.xrefs .ref-label { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; color: var(--ink); font-style: italic; }
 .xrefs .planned-tag { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); }
 .xrefs a { color: var(--blue); text-decoration: none; }
 .xrefs a:hover { color: var(--red); text-decoration: underline; }
@@ -253,47 +253,47 @@ independently.
 <div class="cover-grid">
   <div class="cover-cell">
     <div class="cover-cell-label">Document Type</div>
-    <div class="cover-cell-value">Architecture Specification<em>recording surface, not build spec</em></div>
+    <div class="cover-cell-value">Architecture Specification <em>recording surface, not build spec</em></div>
   </div>
   <div class="cover-cell">
     <div class="cover-cell-label">Audience</div>
-    <div class="cover-cell-value">Counterparties &amp; auditors<em>integrating protocols, operators</em></div>
+    <div class="cover-cell-value">Counterparties &amp; auditors <em>integrating protocols, operators</em></div>
   </div>
   <div class="cover-cell">
     <div class="cover-cell-label">Status</div>
-    <div class="cover-cell-value">Testnet<em>proof of concept on Sepolia, mainnet pending</em></div>
+    <div class="cover-cell-value">Testnet <em>proof of concept on Sepolia, mainnet pending</em></div>
   </div>
   <div class="cover-cell">
     <div class="cover-cell-label">Series</div>
-    <div class="cover-cell-value">CA · Compliance Architecture<em>CA.02 (HyperBEAM) and CA.03 (ZK) forthcoming</em></div>
+    <div class="cover-cell-value">CA · Compliance Architecture <em>CA.02 (HyperBEAM) and CA.03 (ZK) forthcoming</em></div>
   </div>
   <div class="cover-cell">
     <div class="cover-cell-label">Companion Set</div>
-    <div class="cover-cell-value">A · B · E · O · F<em>Phase 1, Narrative, Identity, Ops, Vision</em></div>
+    <div class="cover-cell-value">A · B · E · O · F <em>Phase 1, Narrative, Identity, Ops, Vision</em></div>
   </div>
   <div class="cover-cell">
     <div class="cover-cell-label">What This Is Not</div>
-    <div class="cover-cell-value">Not an omission proof<em>see CA.01.1; addressed by CA.03</em></div>
+    <div class="cover-cell-value">Not an omission proof <em>see CA.01.1; addressed by CA.03</em></div>
   </div>
 </div>
 
 <div class="toc-section-label">Front Matter</div>
-<div class="toc-row"><div class="toc-num">CA-000</div><div class="toc-title">Cover &amp; Index<em>this sheet</em></div><div class="toc-page">↑</div></div>
-<div class="toc-row"><div class="toc-num">CA-100</div><div class="toc-title">Purpose<em>why this document exists, who it's for</em></div><div class="toc-page"><a href="#ca-100">CA-100</a></div></div>
+<div class="toc-row"><div class="toc-num">CA-000</div><div class="toc-title">Cover &amp; Index <em>this sheet</em></div><div class="toc-page">↑</div></div>
+<div class="toc-row"><div class="toc-num">CA-100</div><div class="toc-title">Purpose <em>why this document exists, who it's for</em></div><div class="toc-page"><a href="#ca-100">CA-100</a></div></div>
 
 <div class="toc-section-label">The Architecture</div>
-<div class="toc-row"><div class="toc-num">CA-200</div><div class="toc-title">Scope and Limits<em>what this proves and what it does not</em></div><div class="toc-page"><a href="#ca-200">CA-200</a></div></div>
-<div class="toc-row"><div class="toc-num">CA-300</div><div class="toc-title">Components<em>deployed contracts and AO processes</em></div><div class="toc-page"><a href="#ca-300">CA-300</a></div></div>
-<div class="toc-row"><div class="toc-num">CA-400</div><div class="toc-title">Reference Cycle<em>cross-chain settlement, end to end</em></div><div class="toc-page"><a href="#ca-400">CA-400</a></div></div>
+<div class="toc-row"><div class="toc-num">CA-200</div><div class="toc-title">Scope and Limits <em>what this proves and what it does not</em></div><div class="toc-page"><a href="#ca-200">CA-200</a></div></div>
+<div class="toc-row"><div class="toc-num">CA-300</div><div class="toc-title">Components <em>deployed contracts and AO processes</em></div><div class="toc-page"><a href="#ca-300">CA-300</a></div></div>
+<div class="toc-row"><div class="toc-num">CA-400</div><div class="toc-title">Reference Cycle <em>cross-chain settlement, end to end</em></div><div class="toc-page"><a href="#ca-400">CA-400</a></div></div>
 
 <div class="toc-section-label">Verification</div>
-<div class="toc-row"><div class="toc-num">CA-500</div><div class="toc-title">Independent Verification<em>retrieving and confirming any recorded event</em></div><div class="toc-page"><a href="#ca-500">CA-500</a></div></div>
+<div class="toc-row"><div class="toc-num">CA-500</div><div class="toc-title">Independent Verification <em>retrieving and confirming any recorded event</em></div><div class="toc-page"><a href="#ca-500">CA-500</a></div></div>
 
 <div class="toc-section-label">Forward</div>
-<div class="toc-row"><div class="toc-num">CA-600</div><div class="toc-title">Roadmap<em>planned extensions and revisions</em></div><div class="toc-page"><a href="#ca-600">CA-600</a></div></div>
+<div class="toc-row"><div class="toc-num">CA-600</div><div class="toc-title">Roadmap <em>planned extensions and revisions</em></div><div class="toc-page"><a href="#ca-600">CA-600</a></div></div>
 
 <div class="toc-section-label">Back Matter</div>
-<div class="toc-row"><div class="toc-num">CA-700</div><div class="toc-title">References<em>related documents and external infrastructure</em></div><div class="toc-page"><a href="#ca-700">CA-700</a></div></div>
+<div class="toc-row"><div class="toc-num">CA-700</div><div class="toc-title">References <em>related documents and external infrastructure</em></div><div class="toc-page"><a href="#ca-700">CA-700</a></div></div>
 
 <!-- ═════════════════════════════════════════════
      CA-100 · PURPOSE

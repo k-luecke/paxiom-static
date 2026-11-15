@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<title>Paxiom &middot; Trust States & Precedence</title>
+<meta name="description" content="Paxiom Receipt v0 trust states: all fifteen deterministic verdicts, evaluation precedence, and per-check diagnostic structure.">
+<meta property="og:title" content="Paxiom · Trust States & Precedence">
+<meta property="og:description" content="Paxiom Receipt v0 trust states: all fifteen deterministic verdicts, evaluation precedence, and per-check diagnostic structure.">
+<meta property="og:url" content="https://paxiom.org/trust-states.html">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.frame { max-width: 1080px; margin: 0 auto; padding: 20px 18px 36px; }
+.title-block { border-bottom: 2px solid var(--ink); padding-bottom: 16px; margin-bottom: 18px; }
+.title-mark { display: block; margin-bottom: 12px; }
+.paxiom-mark { width: 42px; height: 42px; color: var(--ink); display: block; }
+.title-block .project-mark { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px; }
+.title-block .project-title { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-size: 28px; font-weight: 500; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
+.title-block .project-subtitle { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-style: italic; font-size: 14.5px; color: var(--ink-mid); margin-top: 4px; max-width: 52ch; }
+.title-block .meta { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.04em; color: var(--ink-faint); margin-top: 12px; line-height: 1.7; }
+.title-block .meta .sep { margin: 0 6px; color: var(--rule-faint); }
+.hero { margin-bottom: 30px; padding: 6px 0 10px; }
+.hero h1 { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: clamp(28px, 5vw, 42px); line-height: 1.06; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 14px; max-width: 26ch; }
+.hero h1 em { font-style: italic; color: var(--ink-mid); font-weight: 400; }
+.hero .lede { font-size: 17px; line-height: 1.58; color: var(--ink); max-width: 64ch; margin-bottom: 16px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn {
+  display: inline-block; padding: 9px 15px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
+  text-decoration: none; border-radius: 8px;
+  border: 1.5px solid var(--ink); color: var(--ink);
+}
+.btn:hover { background: var(--ink); color: var(--paper); }
+.section { margin-bottom: 36px; }
+.section-mark { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.section h2 { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: 24px; letter-spacing: -0.01em; margin-bottom: 12px; color: var(--ink); }
+.section h2 em { font-style: italic; color: var(--ink-mid); }
+.section p { font-size: 15.5px; line-height: 1.62; color: var(--ink); max-width: 68ch; margin-bottom: 12px; }
+.section ol, .section ul { max-width: 68ch; margin: 8px 0 16px 22px; font-size: 15px; line-height: 1.58; }
+.section li { margin-bottom: 6px; }
+p code, li code, td code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; background: var(--paper-dark); padding: 1px 5px; border-radius: 2px; color: var(--blue); font-weight: 500; }
+.table-wrap { overflow-x: auto; margin: 8px 0 16px; border: 1.5px solid var(--ink); border-radius: 8px; background: var(--paper); }
+table.spec { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+table.spec th, table.spec td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule-faint); vertical-align: top; }
+table.spec tr:last-child td { border-bottom: none; }
+table.spec th { background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+pre.cmd { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.6; background: var(--ink); color: var(--paper); padding: 16px 18px; border-radius: 8px; overflow-x: auto; margin: 8px 0 18px; white-space: pre; }
+.note { border: 1.5px solid var(--amber); border-radius: 8px; padding: 14px 16px; margin: 10px 0 20px; background: var(--paper); }
+.note .note-label { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--amber); margin-bottom: 6px; }
+.note p { font-size: 14.5px; line-height: 1.55; margin: 0; max-width: 68ch; }
+.sheet-footer { border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; }
+.sheet-footer .sheet-id { color: var(--ink); font-weight: 600; }
+a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--red); }
+@media (min-width: 768px) {
+  .frame { padding: 40px 32px 48px; }
+  body { background-image: linear-gradient(rgba(26,35,50,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(26,35,50,0.04) 1px, transparent 1px); background-size: 24px 24px; }
+  .title-block { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 24px; padding-bottom: 20px; }
+  .title-mark { margin-bottom: 0; } .paxiom-mark { width: 54px; height: 54px; }
+  .title-block .project-title { font-size: 34px; } .title-block .meta { text-align: right; margin-top: 0; }
+}
+.paxiom-bar { position: sticky; top: 0; z-index: 100; background: rgba(245,241,232,0.88); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule-faint); }
+.paxiom-bar-inner { max-width: 1200px; margin: 0 auto; padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.paxiom-bar-mark { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; }
+.paxiom-bar-mark svg { width: 22px; height: 22px; display: block; }
+.paxiom-bar-nav { display: flex; gap: 18px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+.paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; padding-bottom: 2px; }
+.paxiom-bar-nav a:hover { color: var(--ink); } .paxiom-bar-nav a.active { color: var(--ink); border-bottom: 1.5px solid var(--ink); }
+@media (max-width: 600px) { .paxiom-bar-inner { padding: 8px 14px; } .paxiom-bar-mark span { display: none; } .paxiom-bar-nav { gap: 14px; font-size: 9.5px; letter-spacing: 0.11em; } }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
+<div class="paxiom-bar">
+  <div class="paxiom-bar-inner">
+    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
+      <span>Paxiom</span>
+    </a>
+    <nav class="paxiom-bar-nav" aria-label="Primary">
+      <a href="/receipts.html" class="active">Receipts</a>
+      <a href="/api.html">API &amp; SDK</a>
+      <a href="/journal.html">Build Journal</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </div>
+</div>
+<div class="frame">
+  <header class="title-block">
+    <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg></div>
+    <div>
+      <div class="project-mark">Paxiom &middot; Standard Specification Sheet</div>
+      <div class="project-title">Trust States & Precedence</div>
+      <div class="project-subtitle">All fifteen verification verdicts and deterministic evaluation order.</div>
+    </div>
+    <div class="meta">
+      <span>Sheet PXM-RC-101</span><span class="sep">&middot;</span>
+      <span>paxiom.receipt.v0</span><span class="sep">&middot;</span>
+      <span>v0.1.3</span>
+    </div>
+  </header>
+  <section class="hero">
+    <h1>Fifteen deterministic verdicts. <em>Strict top-to-bottom precedence.</em></h1>
+    <p class="lede">A conforming <code>paxiom.receipt.v0</code> verifier consumes a receipt (and, where supplied, the delivered output) and emits <strong>exactly one</strong> trust state plus a structured per-check breakdown. Trust states are the honesty contract: they separate what was independently verified from what was merely claimed.</p>
+    <div class="actions">
+      <a class="btn" href="/receipts.html">&larr; Back to Receipt v0</a>
+      <a class="btn" href="/canonicalization.html">Canonical JSON Profile &rarr;</a>
+      <a class="btn" href="/standards/receipts/v0/trust-states.md">Raw Markdown (.md)</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-mark">01 &middot; The Enum</div>
+    <h2>All fifteen <em>trust states.</em></h2>
+    <div class="table-wrap">
+      <table class="spec">
+        <thead><tr><th>Trust state</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>verified</code></td><td>Everything the offline verifier can check passed, and settlement is either Paxiom-counter-attested or not an unconfirmed on-chain claim.</td></tr>
+          <tr><td><code>valid_signature_only</code></td><td>Signature is valid, but the verifier could not reach <code>verified</code> for a non-fatal reason (e.g., delivered output was not supplied, or <code>settlement.status = unknown</code>).</td></tr>
+          <tr><td><code>schema_invalid</code></td><td>Receipt does not conform to <code>paxiom.receipt.v0.schema.json</code>.</td></tr>
+          <tr><td><code>unsupported_format</code></td><td><code>receiptVersion</code> is not <code>paxiom.receipt.v0</code>.</td></tr>
+          <tr><td><code>invalid_signature</code></td><td>Ed25519 signature does not verify against the embedded public key over the canonical signing input.</td></tr>
+          <tr><td><code>request_binding_missing</code></td><td>Required <code>request</code> binding fields absent or malformed.</td></tr>
+          <tr><td><code>payment_binding_missing</code></td><td>Required <code>payment</code> binding fields absent or malformed.</td></tr>
+          <tr><td><code>output_hash_mismatch</code></td><td>Supplied output's canonical SHA-256 hash does not equal <code>delivery.outputHash</code>.</td></tr>
+          <tr><td><code>settlement_claimed_not_checked</code></td><td>Signature and output hash verified, but the receipt asserts an on-chain settlement that this verifier did not independently confirm.</td></tr>
+          <tr><td><code>settlement_failed</code></td><td><code>settlement.status = failed</code>.</td></tr>
+          <tr><td><code>proof_not_provided</code></td><td>Evidence array is empty or all <code>not_provided</code> (informational in check breakdown; does not by itself block <code>verified</code>).</td></tr>
+          <tr><td><code>proof_unavailable</code></td><td>An evidence record references an external artifact the verifier could not retrieve.</td></tr>
+          <tr><td><code>proof_invalid</code></td><td>An evidence record was retrieved and failed verification.</td></tr>
+          <tr><td><code>expired</code></td><td><code>expiresAt</code> is present and in the past relative to verifier evaluation time.</td></tr>
+          <tr><td><code>error</code></td><td>The verifier itself encountered an unexpected failure (e.g., nesting depth &gt; 256 or I/O error).</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-mark">02 &middot; Precedence</div>
+    <h2>Resolution order <em>(offline verifier).</em></h2>
+    <p>Evaluate top-to-bottom and <strong>return the first rule that applies</strong>. This guarantees, for example, that a tampered payload always surfaces as <code>output_hash_mismatch</code> rather than silently degrading:</p>
+    <ol>
+      <li>Verifier exception &rarr; <code>error</code>.</li>
+      <li><code>receiptVersion</code> unrecognized &rarr; <code>unsupported_format</code>.</li>
+      <li>Schema invalid &rarr; <code>schema_invalid</code>.</li>
+      <li>Ed25519 signature fails over <code>canonicalize({ receiptVersion, payload })</code> &rarr; <code>invalid_signature</code>.</li>
+      <li><code>expiresAt</code> present and past &rarr; <code>expired</code>.</li>
+      <li><code>request</code> bindings missing or malformed &rarr; <code>request_binding_missing</code>.</li>
+      <li><code>payment</code> bindings missing or malformed &rarr; <code>payment_binding_missing</code>.</li>
+      <li>Output supplied <strong>and</strong> its canonical hash &ne; <code>delivery.outputHash</code> &rarr; <code>output_hash_mismatch</code>.</li>
+      <li><code>settlement.status = failed</code> &rarr; <code>settlement_failed</code>.</li>
+      <li>Evidence retrieved and invalid &rarr; <code>proof_invalid</code>; referenced but unreachable &rarr; <code>proof_unavailable</code>.</li>
+      <li><code>settlement.status &isin; { claimed_not_checked, verified_settled }</code> without a trusted Paxiom counter-attestation key &rarr; <strong><code>settlement_claimed_not_checked</code></strong> (issuer self-assertions never self-promote to verified settlement).</li>
+      <li>Output <strong>not</strong> supplied, or <code>settlement.status = unknown</code> &rarr; <code>valid_signature_only</code>.</li>
+      <li>Otherwise &rarr; <strong><code>verified</code></strong>.</li>
+    </ol>
+    <div class="note">
+      <div class="note-label">Counter-Attestation Upgrade</div>
+      <p>Calling <code>POST https://api.paxiom.org/v1/receipt/verify-live</code> verifies canonical Base USDC <code>Transfer</code> event logs directly on-chain and returns a Paxiom counter-signed receipt verifiable offline when Paxiom's published key (<code>/.well-known/paxiom-keys.json</code>) is passed in <code>trustedPaxiomPublicKeys</code>.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-mark">03 &middot; Test Vectors &amp; Breakdown</div>
+    <h2>Fixture outcomes &amp; <em>per-check diagnostics.</em></h2>
+    <div class="table-wrap">
+      <table class="spec">
+        <thead><tr><th>Receipt fixture</th><th>Output supplied</th><th>Expected trust state</th></tr></thead>
+        <tbody>
+          <tr><td><code>valid.receipt.json</code></td><td><code>valid.output.json</code></td><td><code>verified</code></td></tr>
+          <tr><td><code>valid.receipt.json</code></td><td><code>output-mismatch.output.json</code></td><td><code>output_hash_mismatch</code></td></tr>
+          <tr><td><code>valid.receipt.json</code></td><td><em>(none)</em></td><td><code>valid_signature_only</code></td></tr>
+          <tr><td><code>settlement-claimed-not-checked.receipt.json</code></td><td><code>valid.output.json</code></td><td><code>settlement_claimed_not_checked</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+<pre class="cmd">{
+  "trustState": "settlement_claimed_not_checked",
+  "checks": {
+    "schema": "pass",
+    "signature": "pass",
+    "outputHash": "pass",
+    "requestBinding": "pass",
+    "paymentBinding": "pass",
+    "settlement": "claimed_not_checked",
+    "proof": "not_provided"
+  },
+  "summary": "Signature and output hash verified. Receipt claims an onchain settlement that this verifier did not check."
+}</pre>
+  </section>
+  <footer class="sheet-footer">
+    <div>Paxiom &middot; paxiom.org</div>
+    <div>Spec: paxiom.receipt.v0 &middot; MIT</div>
+    <div class="sheet-id">PXM-RC-101 &middot; Trust States & Precedence</div>
+  </footer>
+</div>
+</body>
+</html>

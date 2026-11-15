@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -39,12 +39,12 @@ body {
   color: var(--ink-faint); margin-bottom: 4px;
 }
 .title-block .project-title {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   font-size: 28px; font-weight: 500; line-height: 1.1;
   letter-spacing: -0.01em; color: var(--ink);
 }
 .title-block .project-subtitle {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   font-style: italic; font-size: 14px; color: var(--ink-mid);
   margin-top: 4px; max-width: 44ch;
 }
@@ -59,7 +59,7 @@ body {
 /* Hero */
 .hero { margin-bottom: 34px; padding: 8px 0 16px; }
 .hero h1 {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   font-weight: 500;
   font-size: clamp(30px, 7vw, 44px);
   line-height: 1.05; letter-spacing: -0.02em;
@@ -67,7 +67,7 @@ body {
 }
 .hero h1 em { font-style: italic; color: var(--ink-mid); font-weight: 400; }
 .hero .lede {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   font-size: 17px; line-height: 1.55; color: var(--ink);
   max-width: 60ch; margin-bottom: 14px;
 }
@@ -99,19 +99,19 @@ body {
 }
 .section .section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
 .section h2 {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   font-weight: 500; font-size: 24px; letter-spacing: -0.01em;
   margin-bottom: 14px; color: var(--ink);
 }
 .section h2 em { font-style: italic; color: var(--ink-mid); }
 .section p, .section li.prose {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   font-size: 16px; line-height: 1.6; color: var(--ink);
   max-width: 64ch; margin-bottom: 14px;
 }
 .section ul.prose-list { list-style: none; max-width: 64ch; margin-bottom: 14px; }
 .section ul.prose-list li {
-  font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.5;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.5;
   color: var(--ink); padding: 4px 0 4px 16px; position: relative;
 }
 .section ul.prose-list li::before { content: '\2013'; position: absolute; left: 0; color: var(--rule-faint); }
@@ -158,7 +158,7 @@ pre.cmd .c { color: var(--rule-faint); }
 .cap-cell.live .label::before { background: var(--amber); }
 .cap-cell.never .label { color: var(--ink-faint); }
 .cap-cell.never .label::before { background: transparent; border: 1.5px solid var(--ink-faint); width: 6px; height: 6px; }
-.cap-cell ul { list-style: none; font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.5; }
+.cap-cell ul { list-style: none; font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.5; }
 .cap-cell li { padding: 4px 0 4px 14px; position: relative; color: var(--ink); }
 .cap-cell li::before { content: '\00B7'; position: absolute; left: 0; color: var(--rule-faint); font-weight: bold; }
 .cap-cell.never li { color: var(--ink-faint); font-style: italic; }
@@ -184,7 +184,7 @@ pre.cmd .c { color: var(--rule-faint); }
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--amber); margin-bottom: 6px;
 }
 .note p {
-  font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55; color: var(--ink); max-width: 68ch; margin: 0;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.55; color: var(--ink); max-width: 68ch; margin: 0;
 }
 
 .linklist { list-style: none; margin: 4px 0 14px; }
@@ -194,7 +194,7 @@ pre.cmd .c { color: var(--rule-faint); }
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   font-size: 12px; letter-spacing: 0.02em; color: var(--blue);
 }
-.linklist .desc { font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--ink-mid); font-size: 14px; }
+.linklist .desc { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-style: italic; color: var(--ink-mid); font-size: 14px; }
 
 .pilot { border: 1.5px solid var(--ink); border-radius: 8px; padding: 22px; margin-bottom: 20px; }
 
@@ -376,7 +376,7 @@ a:hover { color: var(--red); }
       <span class="chip bad">unsupported_format</span>
       <span class="chip bad">expired</span>
     </div>
-    <p>All fifteen trust states and their strict precedence order are documented in the specification. <a class="read-more" href="/standards/receipts/v0/trust-states.md">Read the trust states &rarr;</a></p>
+    <p>All fifteen trust states and their strict precedence order are documented in the specification. <a class="read-more" href="/trust-states.html">Read the trust states &rarr;</a></p>
   </section>
 
   <section class="section" id="run">
@@ -414,8 +414,8 @@ curl -s https://api.paxiom.org/.well-known/x402.json</pre>
       <li><a href="/api.html">Verifier API &amp; SDK Guide</a> <span class="desc">HTTP endpoints, SDK examples, and MCP setup</span></li>
       <li><a href="https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0" target="_blank" rel="noopener noreferrer">Receipt v0 &mdash; Spec &amp; Source</a> <span class="desc">format, middleware docs, and test vectors on GitHub</span></li>
       <li><a href="/standards/receipts/v0/paxiom.receipt.v0.schema.json">JSON Schema</a> <span class="desc">structural validation schema</span></li>
-      <li><a href="/standards/receipts/v0/canonicalization.md">Canonicalization</a> <span class="desc">the exact UTF-8 bytes covered by Ed25519</span></li>
-      <li><a href="/standards/receipts/v0/trust-states.md">Trust states</a> <span class="desc">all fifteen verdicts and precedence order</span></li>
+      <li><a href="/canonicalization.html">Canonicalization (PXM-RC-102)</a> <span class="desc">the exact UTF-8 bytes covered by Ed25519 (<a href="/standards/receipts/v0/canonicalization.md">raw .md</a>)</span></li>
+      <li><a href="/trust-states.html">Trust states (PXM-RC-101)</a> <span class="desc">all fifteen verdicts and precedence order (<a href="/standards/receipts/v0/trust-states.md">raw .md</a>)</span></li>
       <li><a href="/standards/receipts/v0/openapi.json">OpenAPI 3.1</a> <span class="desc">machine-readable verifier HTTP specification</span></li>
       <li><a href="/standards/receipts/v0/examples/valid.receipt.json">Example receipt</a> <span class="desc">signed Ed25519 fixture</span></li>
       <li><a href="/llms.txt">llms.txt</a> <span class="desc">agent-facing summary and claim boundaries</span></li>

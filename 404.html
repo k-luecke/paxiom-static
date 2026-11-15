@@ -4,45 +4,99 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
-<meta name="description" content="Page not found on paxiom.org. The Paxiom static site moved or this path does not exist. Return to the homepage.">
-<title>Paxiom — Page Not Found</title>
+<meta name="description" content="Page not found on paxiom.org. Return to Paxiom Receipts, Verifier API, or Build Journal.">
+<title>Paxiom &middot; 404 Not Found</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <style>
-  body {
-    margin: 0;
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #f7f8f6;
-    color: #101312;
-  }
-  main {
-    width: min(620px, calc(100vw - 40px));
-  }
-  h1 {
-    font-size: clamp(36px, 7vw, 72px);
-    line-height: 1;
-    margin: 0 0 18px;
-    letter-spacing: 0;
-  }
-  p {
-    color: #64706a;
-    font-size: 18px;
-    line-height: 1.55;
-  }
-  a {
-    color: #234f7d;
-    font-weight: 700;
-    text-decoration: none;
-  }
-  a:hover { text-decoration: underline; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.6;
+  min-height: 100vh; display: flex; flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+.paxiom-bar {
+  background: rgba(245, 241, 232, 0.92);
+  border-bottom: 1px solid var(--rule-faint);
+}
+.paxiom-bar-inner {
+  max-width: 1200px; margin: 0 auto; padding: 10px 18px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.paxiom-bar-mark {
+  display: inline-flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--ink);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+}
+.paxiom-bar-mark svg { width: 22px; height: 22px; display: block; }
+.paxiom-bar-nav {
+  display: flex; gap: 18px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; }
+.paxiom-bar-nav a:hover { color: var(--ink); }
+main {
+  flex: 1; display: grid; place-items: center; padding: 48px 18px;
+}
+.card {
+  width: min(640px, 100%); border: 1.5px solid var(--ink); border-radius: 8px;
+  padding: 28px 26px; background: var(--paper);
+}
+.kicker {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--red); margin-bottom: 10px;
+}
+h1 {
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500;
+  font-size: clamp(30px, 5vw, 44px); line-height: 1.08; margin-bottom: 12px;
+}
+p { color: var(--ink-mid); font-size: 16px; margin-bottom: 20px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn {
+  display: inline-block; padding: 9px 16px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  text-decoration: none; border-radius: 8px;
+  border: 1.5px solid var(--ink); color: var(--ink);
+}
+.btn.primary { background: var(--ink); color: var(--paper); }
+.btn:hover { background: var(--blue); border-color: var(--blue); color: var(--paper); }
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
+<div class="paxiom-bar">
+  <div class="paxiom-bar-inner">
+    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
+      <span>Paxiom</span>
+    </a>
+    <nav class="paxiom-bar-nav" aria-label="Primary">
+      <a href="/receipts.html">Receipts</a>
+      <a href="/api.html">API &amp; SDK</a>
+      <a href="/journal.html">Build Journal</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </div>
+</div>
 <main>
-  <h1>404</h1>
-  <p>The Paxiom static site moved or this path does not exist.</p>
-  <p><a href="/">Return to paxiom.org</a></p>
+  <div class="card">
+    <div class="kicker">HTTP 404 &middot; Missing Sheet</div>
+    <h1>No artifact at this path.</h1>
+    <p>This URL does not match a published specification sheet or endpoint guide on <code>paxiom.org</code>.</p>
+    <div class="actions">
+      <a class="btn primary" href="/">Product Home</a>
+      <a class="btn" href="/receipts.html">Receipt Spec v0</a>
+      <a class="btn" href="/api.html">API &amp; SDK</a>
+    </div>
+  </div>
 </main>
 </body>
 </html>

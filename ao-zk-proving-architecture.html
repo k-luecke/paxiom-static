@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <style>
 :root {
   --rule: #1A2332;
@@ -43,8 +43,8 @@ body {
 .sheet-mark-link:hover { opacity: 0.65; }
 .sheet-title-block { display: flex; flex-direction: column; gap: 4px; }
 .sheet-project { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
-.sheet-title { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
-.sheet-subtitle { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
+.sheet-title { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: 28px; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
+.sheet-subtitle { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-style: italic; font-size: 15px; color: var(--ink-mid); margin-top: 2px; }
 .sheet-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 16px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.04em; text-align: right; }
 .sheet-meta dt { color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
 .sheet-meta dd { color: var(--ink); font-weight: 500; }
@@ -56,9 +56,9 @@ body {
 }
 .cover-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
 .cover-mark::after { content: ''; flex: 1; height: 1px; background: var(--rule-faint); }
-.cover-title { font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: clamp(48px, 7.5vw, 88px); line-height: 0.96; letter-spacing: -0.025em; color: var(--ink); margin-bottom: 28px; }
+.cover-title { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 400; font-size: clamp(48px, 7.5vw, 88px); line-height: 0.96; letter-spacing: -0.025em; color: var(--ink); margin-bottom: 28px; }
 .cover-title em { font-style: italic; font-weight: 400; color: var(--ink-mid); }
-.cover-strap { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 22px; line-height: 1.45; color: var(--ink-mid); max-width: 60ch; margin-bottom: 64px; }
+.cover-strap { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-style: italic; font-size: 22px; line-height: 1.45; color: var(--ink-mid); max-width: 60ch; margin-bottom: 64px; }
 .cover-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 56px; }
 @media (max-width: 700px) { .cover-grid { grid-template-columns: 1fr; } }
 .cover-cell { padding: 20px 24px; border-right: 1px solid var(--rule-faint); border-bottom: 1px solid var(--rule-faint); }
@@ -66,38 +66,38 @@ body {
 .cover-cell:nth-last-child(-n+2) { border-bottom: none; }
 @media (max-width: 700px) { .cover-cell { border-right: none; border-bottom: 1px solid var(--rule-faint); } .cover-cell:last-child { border-bottom: none; } }
 .cover-cell-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
-.cover-cell-value { font-family: 'Times New Roman', Times, serif; font-size: 17px; color: var(--ink); line-height: 1.35; }
+.cover-cell-value { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 17px; color: var(--ink); line-height: 1.35; }
 .cover-cell-value em { font-style: italic; color: var(--ink-mid); }
 .toc-section-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-top: 36px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-faint); }
 .toc-section-label:first-child { margin-top: 0; }
 .toc-row { display: grid; grid-template-columns: 80px 1fr auto; gap: 24px; padding: 10px 0; border-bottom: 1px dotted var(--rule-faint); align-items: baseline; }
 .toc-row:last-of-type { border-bottom: none; }
 .toc-num { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; font-weight: 500; color: var(--blue); letter-spacing: 0.04em; }
-.toc-title { font-family: 'Times New Roman', Times, serif; font-size: 16px; color: var(--ink); }
+.toc-title { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; color: var(--ink); }
 .toc-title em { font-style: italic; color: var(--ink-mid); font-size: 14px; display: block; margin-top: 2px; }
 .toc-page { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--ink-faint); letter-spacing: 0.04em; }
 .section-mark { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
 .section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
-.section-title { font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: 40px; line-height: 1.05; letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px; }
+.section-title { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 400; font-size: 40px; line-height: 1.05; letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px; }
 .section-title em { font-style: italic; color: var(--ink-mid); }
-.section-strap { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 18px; color: var(--ink-mid); margin-bottom: 44px; max-width: 60ch; line-height: 1.5; }
-.prose p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.65; margin-bottom: 18px; max-width: 68ch; color: var(--ink); }
+.section-strap { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-style: italic; font-size: 18px; color: var(--ink-mid); margin-bottom: 44px; max-width: 60ch; line-height: 1.5; }
+.prose p { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.65; margin-bottom: 18px; max-width: 68ch; color: var(--ink); }
 .prose p.lead { font-size: 19px; line-height: 1.55; color: var(--ink-mid); font-style: italic; margin-bottom: 28px; }
-.prose h3 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 22px; margin-top: 40px; margin-bottom: 14px; color: var(--ink); letter-spacing: -0.005em; }
+.prose h3 { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: 22px; margin-top: 40px; margin-bottom: 14px; color: var(--ink); letter-spacing: -0.005em; }
 .prose h4 { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); margin-top: 32px; margin-bottom: 10px; }
 .prose strong { font-weight: 600; color: var(--ink); }
 .prose em { font-style: italic; color: var(--ink-mid); }
 .prose code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); word-break: break-all; }
-.prose ul, .prose ol { margin: 12px 0 22px 28px; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.65; max-width: 68ch; }
+.prose ul, .prose ol { margin: 12px 0 22px 28px; font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.65; max-width: 68ch; }
 .prose li { margin-bottom: 8px; }
 .callout { border: 1px solid var(--ink); margin: 32px 0; background: var(--paper); }
 .callout-header { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; padding: 9px 18px; background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; align-items: center; }
 .callout-tag { font-weight: 600; }
 .callout-id { color: var(--paper-dark); opacity: 0.7; }
 .callout-body { padding: 20px 24px; }
-.callout-body p { font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; color: var(--ink); margin-bottom: 12px; }
+.callout-body p { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.6; color: var(--ink); margin-bottom: 12px; }
 .callout-body p:last-child { margin-bottom: 0; }
-.callout-body ul { margin: 10px 0 6px 22px; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.6; }
+.callout-body ul { margin: 10px 0 6px 22px; font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.6; }
 .callout-body li { margin-bottom: 6px; }
 .callout-body code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 13px; background: var(--paper-dark); padding: 1px 6px; border-radius: 2px; color: var(--blue); }
 .callout.note { border-style: dashed; border-color: var(--ink-faint); }
@@ -112,18 +112,18 @@ body {
 .diagram svg { display: block; min-width: 880px; width: 100%; height: auto; }
 .diagram-caption { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 4px 0 28px; padding-top: 8px; border-top: 1px solid var(--rule-faint); }
 .diagram-caption .fig-num { color: var(--blue); margin-right: 8px; font-weight: 500; }
-.diagram-note { font-family: 'Times New Roman', Times, serif; font-size: 14px; color: var(--ink-mid); line-height: 1.55; margin: 12px 0 24px; max-width: 68ch; font-style: italic; }
+.diagram-note { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 14px; color: var(--ink-mid); line-height: 1.55; margin: 12px 0 24px; max-width: 68ch; font-style: italic; }
 .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; padding: 18px 22px; background: var(--paper-dark); border: 1px solid var(--rule-faint); margin-bottom: 18px; }
 @media (max-width: 700px) { .legend { grid-template-columns: 1fr; gap: 18px; } }
 .legend-group { display: flex; flex-direction: column; gap: 8px; }
 .legend-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px; }
-.legend-item { display: flex; align-items: center; gap: 10px; font-family: 'Times New Roman', Times, serif; font-size: 14px; color: var(--ink); line-height: 1.4; }
+.legend-item { display: flex; align-items: center; gap: 10px; font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 14px; color: var(--ink); line-height: 1.4; }
 .swatch { width: 14px; height: 14px; border: 1px solid var(--rule); flex-shrink: 0; }
 
 /* Components table — schedule style */
 .schedule { margin: 24px 0; border: 1.5px solid var(--ink); width: 100%; border-collapse: collapse; }
 .schedule th { background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; text-align: left; padding: 10px 12px; font-weight: 500; }
-.schedule td { padding: 14px 12px; border-bottom: 1px solid var(--rule-faint); border-right: 1px solid var(--rule-faint); font-family: 'Times New Roman', Times, serif; font-size: 15px; vertical-align: top; color: var(--ink); line-height: 1.5; }
+.schedule td { padding: 14px 12px; border-bottom: 1px solid var(--rule-faint); border-right: 1px solid var(--rule-faint); font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; vertical-align: top; color: var(--ink); line-height: 1.5; }
 .schedule td:last-child { border-right: none; }
 .schedule tr:last-child td { border-bottom: none; }
 .schedule .comp { font-weight: 600; color: var(--ink); }
@@ -149,15 +149,15 @@ body {
   content: counter(step, decimal-leading-zero);
   position: absolute;
   left: 0; top: 24px;
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   font-size: 28px;
   color: var(--blue);
   font-weight: 500;
   line-height: 1;
   letter-spacing: -0.01em;
 }
-.steps .step-title { font-family: 'Times New Roman', Times, serif; font-weight: 600; font-size: 17px; color: var(--ink); margin-bottom: 8px; line-height: 1.3; }
-.steps .step-body { font-family: 'Times New Roman', Times, serif; font-size: 15px; color: var(--ink); line-height: 1.6; margin-bottom: 10px; max-width: 68ch; }
+.steps .step-title { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-weight: 600; font-size: 17px; color: var(--ink); margin-bottom: 8px; line-height: 1.3; }
+.steps .step-body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; color: var(--ink); line-height: 1.6; margin-bottom: 10px; max-width: 68ch; }
 .steps .step-body code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 5px; color: var(--blue); }
 .steps .step-measure { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); }
 .steps .step-measure::before { content: '→ Measure: '; color: var(--ink-faint); }
@@ -171,8 +171,8 @@ body {
   .bench-card { border-right: none !important; border-bottom: 1px solid var(--rule-faint) !important; }
   .bench-card:last-child { border-bottom: none !important; }
 }
-.bench-card h3 { font-family: 'Times New Roman', Times, serif; font-weight: 500; font-size: 18px; margin-bottom: 8px; color: var(--ink); line-height: 1.25; letter-spacing: -0.005em; }
-.bench-card p { font-family: 'Times New Roman', Times, serif; font-size: 14px; color: var(--ink); line-height: 1.55; margin: 0; }
+.bench-card h3 { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 500; font-size: 18px; margin-bottom: 8px; color: var(--ink); line-height: 1.25; letter-spacing: -0.005em; }
+.bench-card p { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 14px; color: var(--ink); line-height: 1.55; margin: 0; }
 .bench-card p code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 5px; color: var(--blue); }
 .bench-card .ballpark { display: block; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--blue); margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--rule-faint); letter-spacing: 0.04em; font-weight: 500; }
 
@@ -278,45 +278,45 @@ coordination history are both first-class artifacts on Arweave.
 <div class="cover-grid">
   <div class="cover-cell">
     <div class="cover-cell-label">Document Type</div>
-    <div class="cover-cell-value">Architecture Reference<em>topology, schemas, build order</em></div>
+    <div class="cover-cell-value">Architecture Reference <em>topology, schemas, build order</em></div>
   </div>
   <div class="cover-cell">
     <div class="cover-cell-label">Audience</div>
-    <div class="cover-cell-value">Engineers &amp; protocol reviewers<em>and operators of the dispatcher</em></div>
+    <div class="cover-cell-value">Engineers &amp; protocol reviewers <em>and operators of the dispatcher</em></div>
   </div>
   <div class="cover-cell">
     <div class="cover-cell-label">Status</div>
-    <div class="cover-cell-value">Reference · Rev. A<em>v0.4 of the architecture sketch</em></div>
+    <div class="cover-cell-value">Reference · Rev. A <em>v0.4 of the architecture sketch</em></div>
   </div>
   <div class="cover-cell">
     <div class="cover-cell-label">Series</div>
-    <div class="cover-cell-value">T · Technical Architecture<em>the layer underneath A-series Phase 1</em></div>
+    <div class="cover-cell-value">T · Technical Architecture <em>the layer underneath A-series Phase 1</em></div>
   </div>
   <div class="cover-cell">
     <div class="cover-cell-label">Companion Set</div>
-    <div class="cover-cell-value">A · B · CA · M · O<em>Phase 1, Narrative, Compliance, Audit Relay, Ops</em></div>
+    <div class="cover-cell-value">A · B · CA · M · O <em>Phase 1, Narrative, Compliance, Audit Relay, Ops</em></div>
   </div>
   <div class="cover-cell">
     <div class="cover-cell-label">Boundary</div>
-    <div class="cover-cell-value">Composability claim only<em>not a total-cost claim — see T-600</em></div>
+    <div class="cover-cell-value">Composability claim only <em>not a total-cost claim — see T-600</em></div>
   </div>
 </div>
 
 <div class="toc-section-label">Front Matter</div>
-<div class="toc-row"><div class="toc-num">T-000</div><div class="toc-title">Cover &amp; Index<em>this sheet</em></div><div class="toc-page">↑</div></div>
+<div class="toc-row"><div class="toc-num">T-000</div><div class="toc-title">Cover &amp; Index <em>this sheet</em></div><div class="toc-page">↑</div></div>
 
 <div class="toc-section-label">Topology</div>
-<div class="toc-row"><div class="toc-num">T-100</div><div class="toc-title">Architecture Diagram<em>coordinator → MU → SU → CU → aggregator</em></div><div class="toc-page"><a href="#t-100">T-100</a></div></div>
-<div class="toc-row"><div class="toc-num">T-200</div><div class="toc-title">Components<em>seven roles in the dispatcher graph</em></div><div class="toc-page"><a href="#t-200">T-200</a></div></div>
-<div class="toc-row"><div class="toc-num">T-300</div><div class="toc-title">Message Schemas<em>jobs, results, manifests, receipts</em></div><div class="toc-page"><a href="#t-300">T-300</a></div></div>
+<div class="toc-row"><div class="toc-num">T-100</div><div class="toc-title">Architecture Diagram <em>coordinator → MU → SU → CU → aggregator</em></div><div class="toc-page"><a href="#t-100">T-100</a></div></div>
+<div class="toc-row"><div class="toc-num">T-200</div><div class="toc-title">Components <em>seven roles in the dispatcher graph</em></div><div class="toc-page"><a href="#t-200">T-200</a></div></div>
+<div class="toc-row"><div class="toc-num">T-300</div><div class="toc-title">Message Schemas <em>jobs, results, manifests, receipts</em></div><div class="toc-page"><a href="#t-300">T-300</a></div></div>
 
 <div class="toc-section-label">Build &amp; Measurement</div>
-<div class="toc-row"><div class="toc-num">T-400</div><div class="toc-title">Build Order for Benchmarks<em>six steps from segmentation to scaling</em></div><div class="toc-page"><a href="#t-400">T-400</a></div></div>
-<div class="toc-row"><div class="toc-num">T-500</div><div class="toc-title">What to Expect<em>rough ballparks before measurement</em></div><div class="toc-page"><a href="#t-500">T-500</a></div></div>
+<div class="toc-row"><div class="toc-num">T-400</div><div class="toc-title">Build Order for Benchmarks <em>six steps from segmentation to scaling</em></div><div class="toc-page"><a href="#t-400">T-400</a></div></div>
+<div class="toc-row"><div class="toc-num">T-500</div><div class="toc-title">What to Expect <em>rough ballparks before measurement</em></div><div class="toc-page"><a href="#t-500">T-500</a></div></div>
 
 <div class="toc-section-label">Boundary &amp; Path</div>
-<div class="toc-row"><div class="toc-num">T-600</div><div class="toc-title">Boundary of the Claim<em>composability, not total compute</em></div><div class="toc-page"><a href="#t-600">T-600</a></div></div>
-<div class="toc-row"><div class="toc-num">T-700</div><div class="toc-title">Minimum Viable Proving Path<em>three deliverables, end-to-end</em></div><div class="toc-page"><a href="#t-700">T-700</a></div></div>
+<div class="toc-row"><div class="toc-num">T-600</div><div class="toc-title">Boundary of the Claim <em>composability, not total compute</em></div><div class="toc-page"><a href="#t-600">T-600</a></div></div>
+<div class="toc-row"><div class="toc-num">T-700</div><div class="toc-title">Minimum Viable Proving Path <em>three deliverables, end-to-end</em></div><div class="toc-page"><a href="#t-700">T-700</a></div></div>
 
 <!-- ═════════════════════════════════════════════
      T-100 · ARCHITECTURE DIAGRAM

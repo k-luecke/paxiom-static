@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -35,12 +35,12 @@ body {
   color: var(--ink-faint); margin-bottom: 4px;
 }
 .title-block .project-title {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   font-size: 28px; font-weight: 500; line-height: 1.1;
   letter-spacing: -0.01em; color: var(--ink);
 }
 .title-block .project-subtitle {
-  font-family: 'Times New Roman', Times, serif; font-style: italic;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-style: italic;
   font-size: 14px; color: var(--ink-mid); margin-top: 4px; max-width: 44ch;
 }
 .title-block .meta {
@@ -59,13 +59,13 @@ body {
 }
 .page-header .mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
 .page-header h1 {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   font-weight: 500; font-size: clamp(32px, 6vw, 44px); line-height: 1.05;
   letter-spacing: -0.015em; color: var(--ink); margin-bottom: 14px;
 }
 .page-header h1 em { font-style: italic; color: var(--ink-mid); font-weight: 400; }
 .page-header .strap {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   font-size: 17px; color: var(--ink); max-width: 62ch; line-height: 1.55; margin-bottom: 18px;
 }
 
@@ -100,7 +100,7 @@ body {
   color: var(--blue); margin-bottom: 6px;
 }
 .status-key-cell .value {
-  font-family: 'Times New Roman', Times, serif; font-size: 15.5px; line-height: 1.5; color: var(--ink);
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15.5px; line-height: 1.5; color: var(--ink);
 }
 .status-key-cell .value code {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
@@ -117,13 +117,13 @@ body {
 }
 .subsection-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
 .subsection h2 {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   font-weight: 500; font-size: 24px; letter-spacing: -0.01em;
   margin-bottom: 14px; color: var(--ink);
 }
 .subsection h2 em { font-style: italic; color: var(--ink-mid); }
 .subsection p {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   font-size: 16px; line-height: 1.6; color: var(--ink);
   max-width: 64ch; margin-bottom: 14px;
 }
@@ -143,7 +143,7 @@ body {
   font-size: 11px; letter-spacing: 0.12em; color: var(--blue);
   font-weight: 600; margin-bottom: 6px;
 }
-.log-entry ul { list-style: none; font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55; }
+.log-entry ul { list-style: none; font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.55; }
 .log-entry li { padding: 3px 0 3px 14px; position: relative; color: var(--ink); }
 .log-entry li::before { content: '\00B7'; position: absolute; left: 0; color: var(--rule-faint); font-weight: bold; }
 .log-entry li code {
@@ -152,7 +152,7 @@ body {
 }
 .log-note {
   padding: 12px 18px;
-  font-family: 'Times New Roman', Times, serif; font-style: italic;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-style: italic;
   font-size: 13px; color: var(--ink-faint); border-top: 1px solid var(--rule-faint);
 }
 
@@ -176,13 +176,13 @@ body {
 .doc-card-header .status { text-align: right; opacity: 0.72; font-size: 9px; }
 .doc-card-body { padding: 18px 18px 20px; }
 .doc-card-body .title {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   font-size: 22px; font-weight: 500; letter-spacing: -0.005em;
   margin-bottom: 8px; color: var(--ink); line-height: 1.2;
 }
 .doc-card-body .title em { font-style: italic; color: var(--ink-mid); }
 .doc-card-body .purpose {
-  font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.55;
   color: var(--ink-mid); margin-bottom: 12px; max-width: 56ch;
 }
 .doc-card-body .open {
@@ -209,7 +209,7 @@ body {
 .list-block.amber .list-label::before { background: var(--amber); }
 .list-block.constraints .list-label { color: var(--red); }
 .list-block.constraints .list-label::before { background: var(--red); }
-.list-block ul { list-style: none; font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55; }
+.list-block ul { list-style: none; font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.55; }
 .list-block li { padding: 4px 0 4px 14px; position: relative; color: var(--ink); }
 .list-block li::before { content: '\00B7'; position: absolute; left: 0; color: var(--rule-faint); font-weight: bold; }
 .list-block li code {
@@ -227,7 +227,7 @@ body {
   color: var(--amber); margin-bottom: 6px;
 }
 .note-block p {
-  font-family: 'Times New Roman', Times, serif; font-size: 15px; line-height: 1.55;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.55;
   color: var(--ink); max-width: 66ch; margin: 0;
 }
 
@@ -235,7 +235,7 @@ body {
 .archive-links li { padding: 10px 0; border-bottom: 1px solid var(--rule-faint); display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; }
 .archive-links li:last-child { border-bottom: none; }
 .archive-links a { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--blue); }
-.archive-links .desc { font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--ink-mid); font-size: 14.5px; }
+.archive-links .desc { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-style: italic; color: var(--ink-mid); font-size: 14.5px; }
 
 .sheet-footer {
   border-top: 1.5px solid var(--ink); padding: 16px 0; margin-top: 32px;
@@ -382,11 +382,20 @@ a:hover { color: var(--red); }
         <span>Most recent first</span>
       </div>
 
+            <div class="log-entry">
+        <div class="log-date">2026.11.15</div>
+        <ul>
+          <li>Published formatted HTML specification sheets for <a href="/trust-states.html">Trust States &amp; Precedence (<code>PXM-RC-101</code>)</a> and <a href="/canonicalization.html">Canonical JSON Profile (<code>PXM-RC-102</code>)</a> alongside raw Markdown artifacts</li>
+          <li>Restored <code>DM Sans</code> body typography and <code>Source Serif 4</code> display headers across all binder surfaces while preserving strict <code>script-src 'none'</code> CSP</li>
+          <li>Added apex <code>/.well-known/mcp.json</code> and <code>/.well-known/x402.json</code> discovery mirrors and <code>HEAD</code> route support on <code>api.paxiom.org</code></li>
+        </ul>
+      </div>
+
       <div class="log-entry">
         <div class="log-date">2026.11</div>
         <ul>
           <li>Narrowed the public product surface onto a single wedge: <strong>Paxiom Receipts (<code>paxiom.receipt.v0</code>)</strong> &mdash; proof-bound Ed25519 receipts binding HTTP requests, delivered outputs, and x402 payments</li>
-          <li>Published <code>@paxiom/receipts@0.1.3</code> to npm, <code>paxiom-receipts==0.1.3</code> to PyPI (verified byte-for-byte via cross-language RFC 8785 &amp; Ed25519 test vectors), and <code>io.github.k-luecke/paxiom-receipts</code> <code>0.1.3</code> to the Official MCP Registry (issuer, offline verifier, Fetch/Express/ASGI/WSGI middleware, CLI <code>paxiom-receipt</code>, stdio &amp; Streamable HTTP MCP servers, and Fermi security hardening)</li>
+          <li>Published <code>@paxiom/receipts@0.1.3</code> to npm, <code>paxiom-receipts==0.1.3</code> to PyPI (verified byte-for-byte via cross-language canonical JSON &amp; Ed25519 test vectors), and <code>io.github.k-luecke/paxiom-receipts</code> <code>0.1.3</code> to the Official MCP Registry (issuer, offline verifier, Fetch/Express/ASGI/WSGI middleware, CLI <code>paxiom-receipt</code>, stdio &amp; Streamable HTTP MCP servers, and Fermi security hardening)</li>
           <li>Deployed live verifier at <code>https://api.paxiom.org</code> with free offline verification (<code>POST /v1/receipt/verify</code>), multi-RPC Base &amp; Base Sepolia USDC <code>Transfer</code>-log settlement verification (<code>POST /v1/receipt/verify-live</code>, <code>$0.002</code> USDC), SSRF-hardened pre-payment seller readiness scanning (<code>POST /v1/x402/preflight</code>, <code>$0.01</code> USDC), and Paxiom Ed25519 counter-attestation (<code>/.well-known/paxiom-keys.json</code>)</li>
           <li>Verified live Base Mainnet x402 settlement into a separated self-custody revenue treasury and exposed both paid routes on <code>/.well-known/x402.json</code> for x402 Bazaar discovery</li>
           <li>Rebuilt <code>paxiom.org</code> around the shipped Receipts product and consolidated the ten-sheet drawing set, Phase 1 substrate schedules, and historical gate notes into this Build Journal</li>
