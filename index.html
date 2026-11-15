@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
-<title>Paxiom &middot; Signed Proof-of-Delivery Receipts for Paid APIs</title>
-<meta name="description" content="Payment headers prove money moved. Paxiom proves what the payment bought — Ed25519 delivery receipts, zero-dependency TypeScript (@paxiom/receipts) &amp; Python (paxiom-receipts) SDKs, MCP server, and Base Mainnet USDC verification.">
-<meta property="og:title" content="Paxiom · Proof-of-Delivery Receipts for Paid APIs">
-<meta property="og:description" content="Bind HTTP requests, response hashes, and on-chain payments into one verifiable Ed25519 receipt.">
+<title>Paxiom — Signed Delivery Receipts for Paid HTTP APIs</title>
+<meta name="description" content="paxiom.receipt.v0 binds HTTP requests, canonical JSON response digests, and on-chain USDC settlement into an Ed25519-signed receipt header. Zero-dependency TypeScript &amp; Python SDKs, MCP server, and Base Mainnet verifier.">
+<meta property="og:title" content="Paxiom — Signed Delivery Receipts for Paid HTTP APIs">
+<meta property="og:description" content="Open Ed25519 delivery receipt standard (paxiom.receipt.v0), Node/Python SDKs, MCP server, and Base Mainnet USDC settlement verifier.">
 <meta property="og:url" content="https://paxiom.org/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
@@ -15,25 +15,18 @@
 <link rel="stylesheet" href="/fonts.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #F8F6F0;
-  --surface: #FFFFFF;
-  --surface-subtle: #F1EDE2;
-  --ink: #16202E;
-  --ink-mid: #435062;
-  --ink-faint: #6E7A8A;
-  --border: #E2DDD0;
-  --border-strong: #C9C2B0;
-  --blue: #1E40AF;
-  --blue-soft: rgba(30, 64, 175, 0.08);
-  --green: #15803D;
-  --green-soft: rgba(21, 128, 61, 0.10);
-  --amber: #A16207;
-  --amber-soft: rgba(161, 98, 7, 0.11);
-  --red: #B91C1C;
-  --red-soft: rgba(185, 28, 28, 0.09);
+  --bg: #FAFAF8;
+  --ink: #18181B;
+  --muted: #52525B;
+  --faint: #71717A;
+  --line: #E4E4E7;
+  --code-bg: #F4F4F1;
+  --pre-bg: #18181B;
+  --pre-ink: #E4E4E7;
+  --link: #1E3A8A;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,618 +34,373 @@ html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 16px;
   line-height: 1.62;
   -webkit-font-smoothing: antialiased;
 }
 
-a { color: var(--blue); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+a:hover { color: var(--ink); }
 
-/* Single Clean Top Bar */
-.paxiom-bar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(248, 246, 240, 0.92);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
+code, pre {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
-.paxiom-bar-inner {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 14px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-.paxiom-bar-mark {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+
+code {
+  font-size: 0.88em;
+  background: var(--code-bg);
+  padding: 1px 5px;
+  border-radius: 3px;
   color: var(--ink);
-  font-weight: 600;
-  font-size: 17px;
-  letter-spacing: -0.01em;
 }
-.paxiom-bar-mark:hover { text-decoration: none; color: var(--blue); }
-.paxiom-bar-mark svg { width: 24px; height: 24px; display: block; }
 
-.paxiom-bar-nav {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  font-size: 14.5px;
-  font-weight: 500;
-}
-.paxiom-bar-nav a { color: var(--ink-mid); }
-.paxiom-bar-nav a:hover { color: var(--ink); text-decoration: none; }
-.paxiom-bar-nav .nav-btn {
-  background: var(--ink);
-  color: #FFFFFF;
-  padding: 7px 14px;
-  border-radius: 7px;
-  font-size: 13.5px;
-}
-.paxiom-bar-nav .nav-btn:hover { background: var(--blue); color: #FFFFFF; }
-
-.container {
-  max-width: 1120px;
+.wrap {
+  max-width: 960px;
   margin: 0 auto;
   padding: 0 24px;
 }
 
-/* Split Comfortable Hero */
-.hero-split {
-  display: grid;
-  grid-template-columns: 1.12fr 0.88fr;
-  gap: 44px;
-  align-items: center;
-  padding: 60px 0 56px;
+/* Simple flat top navigation (no floating glass, no rounded SaaS CTA pill) */
+.topbar {
+  border-bottom: 1px solid var(--line);
 }
-
-.eyebrow-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--blue-soft);
-  color: var(--blue);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 5px 12px;
-  border-radius: 999px;
-  margin-bottom: 18px;
-}
-.eyebrow-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--green);
-}
-
-.hero-copy h1 {
-  font-family: 'Source Serif 4', Georgia, serif;
-  font-size: clamp(34px, 4.4vw, 50px);
-  font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  margin-bottom: 18px;
-}
-.hero-copy h1 em {
-  font-style: italic;
-  font-weight: 500;
-  color: var(--blue);
-}
-
-.hero-copy .lede {
-  font-size: 18px;
-  line-height: 1.6;
-  color: var(--ink-mid);
-  max-width: 54ch;
-  margin-bottom: 26px;
-}
-
-.hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 22px;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 22px;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-.btn:hover { text-decoration: none; }
-.btn.primary {
-  background: var(--ink);
-  color: #FFFFFF;
-  border: 1px solid var(--ink);
-}
-.btn.primary:hover {
-  background: var(--blue);
-  border-color: var(--blue);
-}
-.btn.secondary {
-  background: var(--surface);
-  color: var(--ink);
-  border: 1px solid var(--border-strong);
-}
-.btn.secondary:hover {
-  border-color: var(--ink);
-}
-
-.install-strip {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 16px;
-  background: var(--surface-subtle);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 9px 14px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 12.5px;
-  color: var(--ink-mid);
-}
-.install-strip strong {
-  color: var(--ink);
-  font-weight: 500;
-}
-
-/* Right-Side Visual Receipt Card */
-.receipt-preview {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: 0 12px 32px rgba(22, 32, 46, 0.06);
-  overflow: hidden;
-}
-.rp-head {
-  padding: 15px 20px;
-  background: var(--ink);
-  color: #FFFFFF;
+.topbar-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 18px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 12.5px;
+  flex-wrap: wrap;
+  gap: 14px 24px;
 }
-.rp-status {
-  background: rgba(34, 197, 94, 0.18);
-  color: #86EFAC;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 11.5px;
-  font-weight: 500;
-}
-.rp-body {
-  padding: 18px 20px;
-}
-.rp-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--surface-subtle);
-  font-size: 14px;
-}
-.rp-row:last-child { border-bottom: 0; }
-.rp-label {
-  color: var(--ink-faint);
-  font-weight: 500;
-}
-.rp-val {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 12.5px;
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   color: var(--ink);
-  text-align: right;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.01em;
 }
-.rp-foot {
-  padding: 12px 20px;
-  background: var(--surface-subtle);
-  font-size: 13px;
-  color: var(--ink-mid);
-  border-top: 1px solid var(--border);
+.brand svg { width: 22px; height: 22px; display: block; }
+.topnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+  font-size: 14.5px;
+}
+.topnav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.topnav a:hover {
+  color: var(--ink);
+  text-decoration: underline;
 }
 
-/* 3-Column Product Cards */
-.section-block {
-  padding: 52px 0;
-  border-top: 1px solid var(--border);
+/* Direct protocol intro */
+.intro {
+  padding: 48px 0 36px;
+  border-bottom: 1px solid var(--line);
 }
-.section-head {
-  max-width: 60ch;
-  margin-bottom: 30px;
-}
-.section-kicker {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--blue);
-  margin-bottom: 8px;
-}
-.section-head h2 {
-  font-family: 'Source Serif 4', Georgia, serif;
-  font-size: clamp(26px, 3.2vw, 34px);
-  font-weight: 600;
+.intro h1 {
+  font-size: clamp(26px, 3.6vw, 36px);
+  font-weight: 700;
   line-height: 1.2;
-  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+  max-width: 34ch;
 }
-.section-head p {
-  color: var(--ink-mid);
-  font-size: 16.5px;
-}
-
-.tier-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-}
-.tier-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 26px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-.tier-badge {
-  display: inline-block;
-  align-self: flex-start;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 11.5px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--blue-soft);
-  color: var(--blue);
-  margin-bottom: 14px;
-}
-.tier-badge.paid {
-  background: var(--amber-soft);
-  color: var(--amber);
-}
-.tier-card h3 {
-  font-size: 19px;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-.tier-card p {
-  color: var(--ink-mid);
-  font-size: 15px;
+.intro p {
+  font-size: 17px;
+  line-height: 1.64;
+  color: var(--muted);
+  max-width: 68ch;
   margin-bottom: 16px;
 }
-.tier-list {
-  list-style: none;
+.install-bar {
+  margin-top: 22px;
+  padding: 13px 16px;
+  background: var(--code-bg);
+  border-left: 3px solid var(--ink);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  align-items: center;
+}
+.quick-links {
+  margin-top: 16px;
   font-size: 14.5px;
-  color: var(--ink);
-}
-.tier-list li {
-  padding: 5px 0 5px 18px;
-  position: relative;
-}
-.tier-list li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
-  color: var(--green);
-  font-weight: 700;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
 }
 
-/* Two-Column Code Walkthrough */
-.code-grid {
+/* Practical 2-column code layout */
+.sec {
+  padding: 40px 0;
+  border-bottom: 1px solid var(--line);
+}
+.sec h2 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 10px;
+}
+.sec > p {
+  color: var(--muted);
+  max-width: 68ch;
+  margin-bottom: 20px;
+}
+
+.two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
+  align-items: start;
 }
-.code-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 22px;
+.col-block {
   min-width: 0;
 }
-.code-card h3 {
-  font-size: 16.5px;
-  margin-bottom: 6px;
+.col-block h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--ink);
 }
-.code-card p {
-  font-size: 14.5px;
-  color: var(--ink-mid);
-  margin-bottom: 14px;
-}
-pre.cmd {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 12.5px;
-  line-height: 1.58;
-  background: #141C27;
-  color: #E6EDF3;
+pre {
+  background: var(--pre-bg);
+  color: var(--pre-ink);
   padding: 16px;
-  border-radius: 8px;
+  border-radius: 3px;
+  font-size: 12.5px;
+  line-height: 1.56;
   overflow-x: auto;
 }
-pre.cmd .c { color: #8B949E; }
+pre .c { color: #A1A1AA; }
 
-/* Honest Verdicts Chips */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 18px 0;
+/* Clean flat specification & endpoint tables (no bento cards) */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  margin-top: 8px;
 }
-.chip {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+th, td {
+  text-align: left;
+  padding: 11px 12px 11px 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+th {
   font-size: 12px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border-strong);
-  background: var(--surface);
-  color: var(--ink-mid);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--faint);
+  font-weight: 500;
 }
-.chip.ok { background: var(--green-soft); border-color: rgba(21,128,61,0.3); color: var(--green); }
-.chip.warn { background: var(--amber-soft); border-color: rgba(161,98,7,0.3); color: var(--amber); }
-.chip.bad { background: var(--red-soft); border-color: rgba(185,28,28,0.25); color: var(--red); }
+td:first-child {
+  white-space: nowrap;
+  padding-right: 24px;
+}
+td p { color: var(--muted); }
 
-/* Bottom CTA Card */
-.cta-banner {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 32px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 24px;
-  margin-top: 12px;
-}
-.cta-banner h2 {
-  font-family: 'Source Serif 4', Georgia, serif;
-  font-size: 26px;
-  margin-bottom: 6px;
-}
-.cta-banner p {
-  color: var(--ink-mid);
-  max-width: 58ch;
-  font-size: 15.5px;
-}
-
-.site-footer {
-  border-top: 1px solid var(--border);
-  margin-top: 56px;
-  padding: 28px 0 44px;
+footer {
+  padding: 28px 0 48px;
   font-size: 14px;
-  color: var(--ink-faint);
+  color: var(--faint);
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px 24px;
+  gap: 10px 24px;
 }
-.site-footer a { color: var(--ink-mid); }
+footer a { color: var(--muted); }
 
-@media (max-width: 900px) {
-  .hero-split {
-    grid-template-columns: 1fr;
-    padding: 40px 0;
-    gap: 32px;
-  }
-  .tier-grid, .code-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .paxiom-bar-inner { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
-  .paxiom-bar-nav { gap: 12px; font-size: 13px; flex-wrap: wrap; }
-  .paxiom-bar-nav .nav-btn { padding: 5px 11px; font-size: 12.5px; }
-  .container { padding: 0 16px; }
-  .rp-row { flex-direction: column; gap: 2px; }
-  .rp-val { text-align: left; }
+@media (max-width: 780px) {
+  .two-col { grid-template-columns: 1fr; }
+  td:first-child { white-space: normal; padding-right: 12px; }
+  .wrap, .topbar-inner { padding-left: 18px; padding-right: 18px; }
 }
 </style>
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
 
-<header class="paxiom-bar">
-  <div class="paxiom-bar-inner">
-    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/">
       <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
       <span>Paxiom</span>
     </a>
-    <nav class="paxiom-bar-nav" aria-label="Primary">
-      <a href="/receipts.html">Spec</a>
+    <nav class="topnav" aria-label="Primary">
+      <a href="/receipts.html">Specification</a>
       <a href="/api.html">API &amp; SDK</a>
-      <a class="hide-sm" href="/journal.html">Journal</a>
+      <a href="/trust-states.html">Trust States</a>
+      <a href="/journal.html">Build Journal</a>
       <a href="/contact.html">Contact</a>
-      <a class="nav-btn" href="/api.html">Quickstart →</a>
+      <a href="https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0">GitHub</a>
     </nav>
   </div>
 </header>
 
-<main class="container">
+<main class="wrap">
 
-  <section class="hero-split">
-    <div class="hero-copy">
-      <div class="eyebrow-badge">
-        <span class="eyebrow-dot" aria-hidden="true"></span>
-        <span>Open Standard &middot; npm &amp; PyPI &middot; Live on Base</span>
-      </div>
-      <h1>Prove what a paid API <em>actually delivered.</em></h1>
-      <p class="lede">Payment headers prove money moved, not what came back over HTTP. Paxiom binds the request, delivered response bytes, and settlement transaction into one signed receipt any buyer, wallet, or agent can verify.</p>
-      <div class="hero-actions">
-        <a class="btn primary" href="/api.html">Quickstart &amp; Docs →</a>
-        <a class="btn secondary" href="/receipts.html">How Receipts Work</a>
-      </div>
-      <div class="install-strip">
-        <span><strong>Node:</strong> npm i @paxiom/receipts</span>
-        <span>&middot;</span>
-        <span><strong>Python:</strong> pip install paxiom-receipts</span>
-      </div>
+  <section class="intro">
+    <h1>Signed delivery receipts for paid HTTP APIs.</h1>
+    <p>When a script or agent pays an HTTP endpoint (such as via <code>x402</code>), an on-chain transfer log proves funds moved, while <code>HTTP 200</code> delivers bytes over TLS. Once TLS terminates, nothing links the payment transaction to the response body that was actually returned.</p>
+    <p><strong>Paxiom</strong> (<code>paxiom.receipt.v0</code>) attaches an Ed25519-signed <code>X-Paxiom-Receipt</code> header binding the canonicalized request, the SHA-256 digest of the delivered JSON output, and the settlement reference so any buyer, audit log, or downstream process can verify delivery independently.</p>
+
+    <div class="install-bar">
+      <span>npm install @paxiom/receipts</span>
+      <span>pip install paxiom-receipts</span>
+      <span>npx -y @paxiom/receipts --help</span>
     </div>
 
-    <aside class="receipt-preview" aria-label="Example verified Paxiom receipt">
-      <div class="rp-head">
-        <span>X-Paxiom-Receipt (paxiom.receipt.v0)</span>
-        <span class="rp-status">✓ verified</span>
-      </div>
-      <div class="rp-body">
-        <div class="rp-row">
-          <span class="rp-label">HTTP Request</span>
-          <span class="rp-val">POST /v1/market-snapshot</span>
-        </div>
-        <div class="rp-row">
-          <span class="rp-label">Delivered Output</span>
-          <span class="rp-val">SHA-256 canonical JSON matched</span>
-        </div>
-        <div class="rp-row">
-          <span class="rp-label">Payment</span>
-          <span class="rp-val">Base USDC &middot; 0x8f3c…91a2</span>
-        </div>
-        <div class="rp-row">
-          <span class="rp-label">Settlement Check</span>
-          <span class="rp-val">Transfer log confirmed</span>
-        </div>
-        <div class="rp-row">
-          <span class="rp-label">Signatures</span>
-          <span class="rp-val">Seller Ed25519 + Paxiom Key</span>
-        </div>
-      </div>
-      <div class="rp-foot">
-        Unverified transaction hashes stop honestly at <code>settlement_claimed_not_checked</code> until confirmed on-chain.
-      </div>
-    </aside>
-  </section>
-
-  <section class="section-block" id="product">
-    <div class="section-head">
-      <div class="section-kicker">Start Free, Scale When Needed</div>
-      <h2>Everything needed to issue and verify receipts</h2>
-      <p>Issuing receipts and checking payload signatures locally are completely free under MIT. Hosted APIs add live on-chain Base USDC confirmation and pre-payment endpoint checks.</p>
-    </div>
-
-    <div class="tier-grid">
-      <div class="tier-card">
-        <div>
-          <span class="tier-badge">Free &middot; MIT Open Source</span>
-          <h3>1. Issue Receipts</h3>
-          <p>Wrap any Node.js or Python endpoint in three lines to attach signed <code>X-Paxiom-Receipt</code> headers automatically.</p>
-          <ul class="tier-list">
-            <li>Zero-dependency TypeScript &amp; Python SDKs</li>
-            <li>Deterministic canonical JSON hashing</li>
-            <li>Works with x402 or standard paid APIs</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="tier-card">
-        <div>
-          <span class="tier-badge">Free &middot; Offline &amp; MCP</span>
-          <h3>2. Verify Locally</h3>
-          <p>Validate Ed25519 signatures and confirm nobody tampered with the delivered JSON body — with zero RPC calls.</p>
-          <ul class="tier-list">
-            <li>SDK <code>verifyReceipt()</code> &amp; CLI tools</li>
-            <li>Official MCP server (<code>paxiom-receipt-mcp</code>)</li>
-            <li>Free hosted mirror at <code>/v1/receipt/verify</code></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="tier-card">
-        <div>
-          <span class="tier-badge paid">Hosted API &middot; $0.002 – $0.01</span>
-          <h3>3. Confirm On-Chain</h3>
-          <p>Verify Base Mainnet USDC <code>Transfer</code> logs and scan unfamiliar x402 endpoints before sending funds.</p>
-          <ul class="tier-list">
-            <li><code>/v1/receipt/verify-live</code> ($0.002 USDC)</li>
-            <li><code>/v1/x402/preflight</code> ($0.01 USDC)</li>
-            <li>Pay per call via x402 or monthly <code>X-API-Key</code></li>
-          </ul>
-        </div>
-      </div>
+    <div class="quick-links">
+      <a href="/api.html">Quickstart &amp; MCP Setup</a>
+      <span>&middot;</span>
+      <a href="/receipts.html">Receipt v0 Wire Format</a>
+      <span>&middot;</span>
+      <a href="https://api.paxiom.org/v1/receipt/demo">Live Demo Fixtures (JSON)</a>
+      <span>&middot;</span>
+      <a href="https://www.npmjs.com/package/@paxiom/receipts">npm (v0.1.3)</a>
+      <span>&middot;</span>
+      <a href="https://pypi.org/project/paxiom-receipts/">PyPI (v0.1.3)</a>
     </div>
   </section>
 
-  <section class="section-block">
-    <div class="section-head">
-      <div class="section-kicker">Developer Workflow</div>
-      <h2>Three lines for sellers. One call for buyers.</h2>
-    </div>
+  <section class="sec">
+    <h2>Usage</h2>
+    <p>Issuing receipts on the server and verifying signatures/hashes locally require zero runtime dependencies and zero network calls.</p>
 
-    <div class="code-grid">
-      <div class="code-card">
-        <h3>Seller: Sign every delivered response</h3>
-        <p>Drop-in middleware hashes the canonical response and signs the receipt header.</p>
-<pre class="cmd"><span class="c">// npm install @paxiom/receipts</span>
+    <div class="two-col">
+      <div class="col-block">
+        <h3>1. Issue on the seller endpoint (Node.js or Python)</h3>
+<pre><span class="c">// Hash canonical JSON &amp; sign X-Paxiom-Receipt</span>
 import { withPaxiomReceipt } from '@paxiom/receipts';
 
 export default withPaxiomReceipt(paidHandler, {
   privateKey: process.env.PAXIOM_PRIVATE_KEY_PEM,
-  issuer: { name: 'acme', keyId: 'seller-01' }
+  issuer: {
+    name: 'acme-data',
+    uri: 'https://api.acme.dev',
+    keyId: 'seller-01'
+  },
+  serviceName: 'Orderbook Snapshot'
 });</pre>
       </div>
 
-      <div class="code-card">
-        <h3>Buyer / Agent: Verify payload &amp; settlement</h3>
-        <p>Check integrity locally for free, or request a Paxiom-countersigned on-chain check.</p>
-<pre class="cmd"><span class="c"># Free local or hosted payload verification</span>
-curl -sX POST https://api.paxiom.org/v1/receipt/verify   -H 'content-type: application/json'   -d '{"receipt": {...}, "output": {...}}'
+      <div class="col-block">
+        <h3>2. Verify payload binding &amp; on-chain settlement</h3>
+<pre><span class="c">// Offline: checks Ed25519 + canonical outputHash</span>
+import { verifyReceipt } from '@paxiom/receipts';
 
-<span class="c"># Discover live Base x402 verifier endpoints</span>
-curl -s https://api.paxiom.org/.well-known/x402.json</pre>
+const res = verifyReceipt(receipt, { output });
+<span class="c">// res.trustState === 'settlement_claimed_not_checked'</span>
+
+<span class="c"># Confirm Base USDC Transfer ($0.002 or X-API-Key):</span>
+curl -sX POST \
+  https://api.paxiom.org/v1/receipt/verify-live \
+  -H 'content-type: application/json' \
+  -d '{"receipt": {...}, "output": {...}}'</pre>
       </div>
     </div>
   </section>
 
-  <section class="section-block">
-    <div class="section-head">
-      <div class="section-kicker">Explicit Trust States</div>
-      <h2>Self-asserted is never called verified</h2>
-      <p>Instead of a misleading true/false flag, Paxiom resolves every check into an explicit state so automated callers know exactly what was proven and what wasn't:</p>
-    </div>
-    <div class="chips">
-      <span class="chip ok">verified</span>
-      <span class="chip warn">settlement_claimed_not_checked</span>
-      <span class="chip">valid_signature_only</span>
-      <span class="chip bad">output_hash_mismatch</span>
-      <span class="chip bad">settlement_failed</span>
-      <span class="chip bad">invalid_signature</span>
-      <span class="chip bad">expired</span>
-    </div>
-    <p style="margin-top:10px;"><a href="/trust-states.html">Explore all 15 verification states &amp; precedence rules →</a></p>
+  <section class="sec">
+    <h2>Components &amp; Hosted Endpoints</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Surface</th>
+          <th>Cost / License</th>
+          <th>Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>@paxiom/receipts</code><br><code>paxiom-receipts</code></td>
+          <td>Free (MIT)</td>
+          <td>Node &ge;18 and Python &ge;3.10 libraries for RFC 8785-style JSON canonicalization, Ed25519 signing, offline verification, and CLI inspection.</td>
+        </tr>
+        <tr>
+          <td><code>paxiom-receipt-mcp</code></td>
+          <td>Free (MIT)</td>
+          <td>Local stdio MCP server and remote Streamable-HTTP endpoint (<code>https://api.paxiom.org/mcp</code>) exposing receipt checks to MCP clients.</td>
+        </tr>
+        <tr>
+          <td><code>POST /v1/receipt/verify</code></td>
+          <td>Free</td>
+          <td>Stateless hosted mirror of offline verification (schema, canonical base64, Ed25519 signature, expiry, and <code>outputHash</code> match).</td>
+        </tr>
+        <tr>
+          <td><code>POST /v1/receipt/verify-live</code></td>
+          <td>$0.002 USDC or <code>X-API-Key</code></td>
+          <td>Queries Base Mainnet / Base Sepolia RPC logs to confirm the claimed USDC <code>Transfer</code> settled to <code>expectedPayTo</code>, returning a Paxiom counter-signed receipt.</td>
+        </tr>
+        <tr>
+          <td><code>POST /v1/x402/preflight</code></td>
+          <td>$0.01 USDC or <code>X-API-Key</code></td>
+          <td>Probes an unfamiliar <code>402 Payment Required</code> endpoint prior to payment to flag spoofed token contracts, redirect traps, or missing receipt support.</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
-  <div class="cta-banner">
-    <div>
-      <h2>Integrate Paxiom into your API or agent stack</h2>
-      <p>Need flat monthly <code>X-API-Key</code> billing or a 3–5 day integration sprint? Commercial subscriptions and engineering engagements are operated through <a href="https://driftboundlabs.com/ventures.html"><strong>Driftbound Labs LLC</strong></a>.</p>
-    </div>
-    <div class="hero-actions" style="margin-bottom:0;">
-      <a class="btn primary" href="/contact.html">Contact &amp; API Keys →</a>
-      <a class="btn secondary" href="https://github.com/k-luecke/paxiom-static/tree/main/standards/receipts/v0" target="_blank" rel="noopener noreferrer">View on GitHub</a>
-    </div>
-  </div>
+  <section class="sec">
+    <h2>Why Verification Is Not a Boolean</h2>
+    <p>A seller holds their own signing key, so a valid seller signature alone cannot prove that a claimed blockchain transaction hash actually settled. Offline verifiers evaluate receipts in strict precedence order (<a href="/trust-states.html">all 15 states</a>) so callers never mistake an unverified claim for confirmed settlement:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>State</th>
+          <th>Meaning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>verified</code></td>
+          <td>Schema, Ed25519 signature, and <code>outputHash</code> match, and settlement is either <code>not_required</code> or counter-attested against a pinned key in <a href="https://api.paxiom.org/.well-known/paxiom-keys.json"><code>/.well-known/paxiom-keys.json</code></a>.</td>
+        </tr>
+        <tr>
+          <td><code>settlement_claimed_not_checked</code></td>
+          <td>Seller signature and payload hash are intact, but the receipt cites an on-chain payment that has not yet been checked against chain logs.</td>
+        </tr>
+        <tr>
+          <td><code>output_hash_mismatch</code></td>
+          <td>Signature is valid, but the delivered JSON body does not match <code>payload.delivery.outputHash</code> (truncated, substituted, or mutated in transit).</td>
+        </tr>
+        <tr>
+          <td><code>invalid_signature</code></td>
+          <td>Ed25519 verification failed, <code>keyId</code> mismatched, or key/signature base64 was non-canonical.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 
-  <footer class="site-footer">
-    <div>Paxiom &middot; A <a href="https://driftboundlabs.com">Driftbound Labs</a> Product (&copy; 2026 Driftbound Labs LLC)</div>
+  <section class="sec" style="border-bottom:0;padding-bottom:16px;">
+    <h2>Commercial API Keys &amp; Integration</h2>
+    <p style="margin-bottom:0;">Paxiom is developed and operated by <a href="https://driftboundlabs.com/ventures.html">Driftbound Labs LLC</a>. Teams that prefer flat monthly invoiced <code>X-API-Key</code> billing over per-request <code>x402</code> micropayments — or want a scoped 3–5 day integration sprint — can reach us via <a href="/contact.html">Contact</a> (<a href="mailto:kyle@paxiom.org">kyle@paxiom.org</a>).</p>
+  </section>
+
+  <footer>
+    <div>Paxiom &middot; Operated by <a href="https://driftboundlabs.com">Driftbound Labs LLC</a></div>
     <div>
-      <a href="/receipts.html">Specification</a> &middot;
-      <a href="/api.html">API &amp; SDK</a> &middot;
-      <a href="/journal.html">Build Journal</a> &middot;
+      <a href="/receipts.html">Spec</a> &middot;
+      <a href="/canonicalization.html">Canonicalization</a> &middot;
+      <a href="/api.html">API</a> &middot;
+      <a href="/journal.html">Journal</a> &middot;
       <a href="/status.html">Status</a> &middot;
       <a href="/contact.html">Contact</a>
     </div>
