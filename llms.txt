@@ -4,6 +4,8 @@
 
 Paxiom provides the open **paxiom.receipt.v0** specification, the zero-dependency `@paxiom/receipts` npm SDK (`0.1.3`, with built-in TypeScript declarations) + CLI + stdio MCP server, a zero-dependency Python 3.10+ reference SDK (`paxiom_receipts` + FastAPI/ASGI middleware), and a live HTTP verifier, preflight scanner & counter-attestation service on Base Mainnet at `https://api.paxiom.org`.
 
+Paxiom is developed and operated by **Driftbound Labs LLC** (`https://driftboundlabs.com/ventures.html` · `kyle@paxiom.org` / `admin@driftboundlabs.com`).
+
 ## Shipped product surface
 1. **Issue & verify locally in Node.js / TypeScript (`@paxiom/receipts@0.1.3` on npm):**
    - `npm install @paxiom/receipts` (Node >= 18, zero external dependencies, strict `.d.ts` types with zero `@types/node` dependency, MIT)
@@ -53,3 +55,4 @@ Every verification returns one deterministic trust state (`verified`, `valid_sig
 - Trust states: https://paxiom.org/standards/receipts/v0/trust-states.md
 - Build Journal & architectural drawing set: https://paxiom.org/journal.html
 - Contact: https://paxiom.org/contact.html
+- Parent company & commercial terms: https://driftboundlabs.com/ventures.html
