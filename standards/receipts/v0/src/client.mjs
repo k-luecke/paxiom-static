@@ -148,15 +148,49 @@ function buildJsonHeaders({ apiKey, paymentHeader } = {}) {
   return headers;
 }
 
+function extractDidWebEd25519Keys(parsed) {
+  if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.verificationMethod)) {
+    return [];
+  }
+  const out = [];
+  for (const vm of parsed.verificationMethod) {
+    if (!vm || typeof vm !== 'object' || !vm.publicKeyJwk || typeof vm.publicKeyJwk !== 'object') {
+      continue;
+    }
+    const jwk = vm.publicKeyJwk;
+    if (jwk.kty !== 'OKP' || jwk.crv !== 'Ed25519' || typeof jwk.x !== 'string') {
+      continue;
+    }
+    const xTrim = jwk.x.trim();
+    if (!/^[A-Za-z0-9_-]{43}$/.test(xTrim)) continue;
+    const raw = Buffer.from(xTrim, 'base64url');
+    if (raw.length !== 32 || raw.toString('base64url') !== xTrim) continue;
+    const publicKey = raw.toString('base64');
+    if (!STRICT_BASE64_32_RE.test(publicKey)) continue;
+    let keyId = typeof jwk.kid === 'string' && jwk.kid.trim() ? jwk.kid.trim() : '';
+    if (!keyId && typeof vm.id === 'string') {
+      const hashIdx = vm.id.indexOf('#');
+      keyId = hashIdx >= 0 ? vm.id.slice(hashIdx + 1) : vm.id;
+    }
+    out.push({
+      keyId: keyId || 'did-web-ed25519',
+      algorithm: 'ed25519',
+      publicKey
+    });
+  }
+  return out;
+}
+
 /**
  * Discover authorized Ed25519 receipt signing keys for a seller origin via
- * `/.well-known/x402-keys.json` (with automatic fallback to `/.well-known/paxiom-keys.json`).
+ * `/.well-known/x402-keys.json`, W3C `did:web` (`/.well-known/did.json` per x402
+ * `offer-receipt` §4.5.1), or fallback `/.well-known/paxiom-keys.json`.
  */
 export async function discoverIssuerKeys(originOrResourceUrl, options = {}) {
   const opts = options && typeof options === 'object' ? options : {};
   const origin = resolveSafeApiOrigin(originOrResourceUrl);
   const fetchImpl = opts.fetch || opts.fetchImpl || globalThis.fetch;
-  const paths = ['/.well-known/x402-keys.json', '/.well-known/paxiom-keys.json'];
+  const paths = ['/.well-known/x402-keys.json', '/.well-known/did.json', '/.well-known/paxiom-keys.json'];
 
   for (const path of paths) {
     const url = `${origin}${path}`;
@@ -177,19 +211,26 @@ export async function discoverIssuerKeys(originOrResourceUrl, options = {}) {
       return { ok: false, status, origin, keysUrl: url, keys: [], publicKeys: [] };
     }
     const rawKeys = parsed && Array.isArray(parsed.keys) ? parsed.keys : [];
-    const validKeys = rawKeys.filter(
+    const manifestKeys = rawKeys.filter(
       (k) => k && typeof k === 'object' &&
         (k.algorithm === undefined || k.algorithm === 'ed25519') &&
         typeof k.publicKey === 'string' &&
         STRICT_BASE64_32_RE.test(k.publicKey) &&
         Buffer.from(k.publicKey, 'base64').length === 32
     );
+    const validKeys = manifestKeys.length > 0 ? manifestKeys : extractDidWebEd25519Keys(parsed);
+    if (path === '/.well-known/did.json' && validKeys.length === 0) {
+      continue;
+    }
+    const issuerVal = parsed && typeof parsed.issuer === 'string'
+      ? parsed.issuer
+      : (parsed && typeof parsed.id === 'string' ? parsed.id : null);
     return {
       ok: validKeys.length > 0,
       status,
       origin,
       keysUrl: url,
-      issuer: parsed && typeof parsed.issuer === 'string' ? parsed.issuer : null,
+      issuer: issuerVal,
       payTo: parsed && typeof parsed.payTo === 'string' ? parsed.payTo : null,
       keys: validKeys,
       publicKeys: validKeys.map((k) => k.publicKey)

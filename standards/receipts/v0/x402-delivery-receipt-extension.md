@@ -3,7 +3,7 @@
 - **Extension Identifier:** `delivery-receipt`
 - **Wire Envelope Version:** `paxiom.receipt.v0` (reference implementation `0.2.0`)
 - **HTTP Response Header:** `Payment-Receipt` (compatibility alias: `X-Paxiom-Receipt`)
-- **Signer Key Discovery:** `GET /.well-known/x402-keys.json`
+- **Signer Key Discovery:** `GET /.well-known/x402-keys.json` or W3C `did:web` (`GET /.well-known/did.json`)
 - **License:** MIT (open specification, test vectors, TypeScript/Node.js & Python 3.10+ zero-dependency reference SDKs)
 
 ---
@@ -71,9 +71,9 @@ During transition, implementations SHOULD also emit `X-Paxiom-Receipt` with the 
 
 ---
 
-## 3. Signer Key Discovery & Authorization (`/.well-known/x402-keys.json`)
+## 3. Signer Key Discovery & Authorization (`/.well-known/x402-keys.json` & W3C `did:web`)
 
-A valid Ed25519 signature over an embedded `signature.publicKey` proves integrity, **not** signer authorization. To prevent an untrusted party from minting receipts with an arbitrary keypair, resource servers SHOULD publish their active Ed25519 public keys over HTTPS at `/.well-known/x402-keys.json` (fallback: `/.well-known/paxiom-keys.json`):
+A valid Ed25519 signature over an embedded `signature.publicKey` proves integrity, **not** signer authorization. To prevent an untrusted party from minting receipts with an arbitrary keypair, resource servers SHOULD publish their active Ed25519 public keys over HTTPS at either `/.well-known/x402-keys.json` **or** a W3C `did:web` DID document at `/.well-known/did.json` (`JsonWebKey2020` `OKP` `Ed25519`, matching `coinbase/x402` `extension-offer-and-receipt.md` §4.5.1; fallback: `/.well-known/paxiom-keys.json`):
 
 ```json
 {
@@ -89,6 +89,8 @@ A valid Ed25519 signature over an embedded `signature.publicKey` proves integrit
   ]
 }
 ```
+
+Both `discoverIssuerKeys` (`@paxiom/receipts`) and `discover_issuer_keys` (`paxiom-receipts`) also resolve W3C `did:web` documents automatically by extracting `verificationMethod[].publicKeyJwk` (`kty: "OKP"`, `crv: "Ed25519"`, RFC 8037 base64url `x`) and normalizing the 32-byte key for deterministic offline verification.
 
 Buyers and routers verify signer authorization via two orthogonal checks:
 1. **Origin Key Pinning (`expectedIssuerPublicKeys`):** Fetch `https://<seller-origin>/.well-known/x402-keys.json` (with redirect blocking and size caps) and require `signature.publicKey` to match an active `ed25519` entry.
@@ -156,7 +158,29 @@ When an independent verifier confirms the on-chain transfer log (e.g., via JSON-
 
 ---
 
-## 7. Reference Implementations & Conformance Vectors
+## 7. Composition & Interoperability with `offer-receipt` (`v0.6`) and `settlement-attestation-receipt`
+
+`delivery-receipt` is designed to compose directly with upstream `coinbase/x402` extension drafts rather than duplicate them:
+
+1. **Relationship to `extension-offer-and-receipt.md` (`v0.6`):**
+   - `offer-receipt` binds pre-payment commercial terms (`Offer`) and post-settlement payment acknowledgment (`Receipt: { version, network, resourceUrl, payer, issuedAt, transaction }`). It intentionally omits request-input and response-output digests for privacy-minimal review attestations.
+   - `delivery-receipt` shares W3C `did:web` (`/.well-known/did.json` `JsonWebKey2020` `Ed25519`) signer discovery with `offer-receipt` §4.5.1 while adding the 4-way execution commitment (`request` + `payment` + `settlement` + `delivery.outputHash`) needed for machine-verifiable payload delivery.
+2. **HTTP Middleware Ordering (`PAYMENT-RESPONSE` vs. Post-Handler `Payment-Receipt`):**
+   - In standard `x402` HTTP middlewares (`@x402/express`, `@x402/fetch`, FastAPI ASGI), `PAYMENT-RESPONSE` (`SettlementResponse`) is constructed at payment-settlement time *before* the route handler finishes serializing the `2xx` HTTP response body. Carrying `outputHash` inside `PAYMENT-RESPONSE` requires delaying settlement or rewriting facilitator headers post-handler.
+   - Emitting a dedicated post-handler `Payment-Receipt` HTTP header allows non-invasive response-wrapping middleware (`withPaxiomReceipt`, `createReceiptMiddleware`, `PaxiomReceiptMiddleware`) to hash the exact `2xx` body without altering facilitator settlement plumbing.
+3. **Request-Input Binding (`request.requestHash` / `bodyHash`):**
+   - Binding only `(resourceUrl, outputHash)` leaves parameterized `POST` endpoints (e.g., `POST /v1/infer`) open to cross-prompt cache substitution where a server returns a valid `outputHash` computed over a cheaper or cached prompt's output. `payload.request` commits to method, canonical URL, and request body hash.
+4. **Explicit Preimage Disambiguation (`jcs-sha256` vs. `raw-sha256`):**
+   - SDK callers and MCP tools typically inspect parsed JSON (`res.json()`), where wire whitespace has already been discarded, whereas binary/Markdown/streaming consumers — or JSON payloads containing integers outside IEEE-754 `2^53 - 1` — require exact wire-byte hashing. Explicit `delivery.canonicalization` (`"jcs-sha256" | "raw-sha256"`) prevents silent cross-implementation hash forks.
+5. **Cross-SDK Reproducible Test Vector (`examples/valid.receipt.json` + `examples/valid.output.json`):**
+   - Input JSON (`examples/valid.output.json`): `{"demo":true,"message":"Paxiom receipt demo output. This is the bytes the payment bought.","service":"Paxiom Receipt Demo","value":"42"}`
+   - `jcs-sha256` digest: `0x36b33b7db29c8eacf3acc6bbff312ebbeabbaf53b70b956b5fc02d2c1281baf6`
+   - Ed25519 public key (`paxiom-demo-key-001`): `cZASqM+TIUtIt4+ejhPvIOYxOeDBX/ofbG86H/NNLpQ=`
+   - Ed25519 signature over RFC 8785 JCS `{ payload, receiptVersion }`: `P/1YDKMwtFmODNZ8p449sdpRdOJILW2Yc07lSInDu8+jMWdsdS8c+om/RTQnXvy0t9tdHmGcqimX/Wu4Nan9Cw==`
+
+---
+
+## 8. Reference Implementations & Conformance Vectors
 
 - **JSON Schema:** [`paxiom.receipt.v0.schema.json`](./paxiom.receipt.v0.schema.json)
 - **Canonicalization Rules:** [`canonicalization.md`](./canonicalization.md)
@@ -164,3 +188,4 @@ When an independent verifier confirms the on-chain transfer log (e.g., via JSON-
 - **Reproducible Cryptographic Fixtures:** [`examples/`](./examples/) (`valid.receipt.json`, `valid.output.json`, `output-mismatch.output.json`, `settlement-claimed-not-checked.receipt.json`)
 - **TypeScript / Node.js / Fetch / Express SDK (zero dependencies, MIT):** `@paxiom/receipts` (`standards/receipts/v0/src/`)
 - **Python 3.10+ / FastAPI / ASGI SDK (zero dependencies, MIT):** `paxiom-receipts` (`standards/receipts/v0/python/`)
+- **Live Free Public Reference Verifier & `did:web` Endpoint:** `https://api.paxiom.org` (`GET /.well-known/did.json`, `GET /.well-known/x402-keys.json`)

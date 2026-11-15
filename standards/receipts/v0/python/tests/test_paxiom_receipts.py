@@ -431,7 +431,7 @@ process.stdout.write(JSON.stringify({ nodeHeader: nodeIssued.receiptHeader, rece
         )
         self.assertEqual(conflict["trustState"], "malformed_header")
 
-        # 3. discover_issuer_keys resolves /.well-known/x402-keys.json
+        # 3. discover_issuer_keys resolves /.well-known/x402-keys.json and W3C did:web (/.well-known/did.json)
         disc = discover_issuer_keys(
             "https://seller.example/v1/note",
             transport=lambda u, h, b, t, m: (
@@ -442,6 +442,32 @@ process.stdout.write(JSON.stringify({ nodeHeader: nodeIssued.receiptHeader, rece
         )
         self.assertTrue(disc["ok"])
         self.assertEqual(disc["publicKeys"], [kp["publicKey"]])
+
+        x_b64url = base64.urlsafe_b64encode(base64.b64decode(kp["publicKey"])).rstrip(b"=").decode("ascii")
+        did_doc = {
+            "@context": ["https://www.w3.org/ns/did/v1"],
+            "id": "did:web:seller.example",
+            "verificationMethod": [
+                {
+                    "id": f"did:web:seller.example#{kp['keyId']}",
+                    "type": "JsonWebKey2020",
+                    "controller": "did:web:seller.example",
+                    "publicKeyJwk": {"kty": "OKP", "crv": "Ed25519", "x": x_b64url},
+                }
+            ],
+        }
+        disc_did = discover_issuer_keys(
+            "https://seller.example/v1/note",
+            transport=lambda u, h, b, t, m: (
+                (404, {}, "")
+                if u.endswith("/.well-known/x402-keys.json")
+                else (200, {"content-type": "application/json"}, json.dumps(did_doc))
+            ),
+        )
+        self.assertTrue(disc_did["ok"])
+        self.assertEqual(disc_did["issuer"], "did:web:seller.example")
+        self.assertEqual(disc_did["publicKeys"], [kp["publicKey"]])
+        self.assertEqual(disc_did["keys"][0]["keyId"], kp["keyId"])
 
 
 if __name__ == "__main__":

@@ -144,6 +144,38 @@ def _build_json_headers(api_key: str | None, payment_header: str | None) -> dict
     return headers
 
 
+def _extract_did_web_ed25519_keys(parsed: Any) -> list[dict[str, str]]:
+    if not isinstance(parsed, dict) or not isinstance(parsed.get("verificationMethod"), list):
+        return []
+    out: list[dict[str, str]] = []
+    b64u_re = re.compile(r"\A[A-Za-z0-9_-]{43}\Z")
+    for vm in parsed["verificationMethod"]:
+        if not isinstance(vm, dict) or not isinstance(vm.get("publicKeyJwk"), dict):
+            continue
+        jwk = vm["publicKeyJwk"]
+        if jwk.get("kty") != "OKP" or jwk.get("crv") != "Ed25519" or not isinstance(jwk.get("x"), str):
+            continue
+        x_trim = jwk["x"].strip()
+        if not b64u_re.match(x_trim):
+            continue
+        raw = base64.urlsafe_b64decode(x_trim + "=")
+        if len(raw) != 32 or base64.urlsafe_b64encode(raw).rstrip(b"=").decode("ascii") != x_trim:
+            continue
+        pub_b64 = base64.b64encode(raw).decode("ascii")
+        if not _STRICT_BASE64_32_RE.match(pub_b64):
+            continue
+        kid = jwk.get("kid").strip() if isinstance(jwk.get("kid"), str) and jwk.get("kid").strip() else ""
+        if not kid and isinstance(vm.get("id"), str):
+            vm_id = vm["id"]
+            kid = vm_id.split("#", 1)[1] if "#" in vm_id else vm_id
+        out.append({
+            "keyId": kid or "did-web-ed25519",
+            "algorithm": "ed25519",
+            "publicKey": pub_b64,
+        })
+    return out
+
+
 def discover_issuer_keys(
     origin_or_resource_url: str,
     *,
@@ -151,10 +183,10 @@ def discover_issuer_keys(
     transport: Callable[[str, dict[str, str], bytes | None, float, int], tuple[int, dict[str, str], str]] | None = None,
     get_transport: Callable[[str, dict[str, str], float, int], tuple[int, dict[str, str], str]] | None = None,
 ) -> dict[str, Any]:
-    """Discover authorized Ed25519 seller keys via /.well-known/x402-keys.json (fallback /.well-known/paxiom-keys.json)."""
+    """Discover authorized Ed25519 seller keys via /.well-known/x402-keys.json, W3C did:web (/.well-known/did.json), or /.well-known/paxiom-keys.json."""
     origin = resolve_safe_api_origin(origin_or_resource_url)
     eff_timeout = float(timeout_seconds) if timeout_seconds > 0 else DEFAULT_CLIENT_TIMEOUT_SECONDS
-    for path in ("/.well-known/x402-keys.json", "/.well-known/paxiom-keys.json"):
+    for path in ("/.well-known/x402-keys.json", "/.well-known/did.json", "/.well-known/paxiom-keys.json"):
         url = f"{origin}{path}"
         if transport is not None:
             status, _hdrs, body_text = transport(
@@ -189,7 +221,7 @@ def discover_issuer_keys(
         except Exception:
             return {"ok": False, "status": status, "origin": origin, "keysUrl": url, "keys": [], "publicKeys": []}
         raw_keys = parsed.get("keys") if isinstance(parsed, dict) and isinstance(parsed.get("keys"), list) else []
-        valid_keys = [
+        manifest_keys = [
             k
             for k in raw_keys
             if isinstance(k, dict)
@@ -198,12 +230,21 @@ def discover_issuer_keys(
             and bool(_STRICT_BASE64_32_RE.match(k["publicKey"]))
             and len(base64.b64decode(k["publicKey"])) == 32
         ]
+        valid_keys = manifest_keys if manifest_keys else _extract_did_web_ed25519_keys(parsed)
+        if path == "/.well-known/did.json" and not valid_keys:
+            continue
+        issuer_val = None
+        if isinstance(parsed, dict):
+            if isinstance(parsed.get("issuer"), str):
+                issuer_val = parsed["issuer"]
+            elif isinstance(parsed.get("id"), str):
+                issuer_val = parsed["id"]
         return {
             "ok": len(valid_keys) > 0,
             "status": status,
             "origin": origin,
             "keysUrl": url,
-            "issuer": parsed.get("issuer") if isinstance(parsed, dict) and isinstance(parsed.get("issuer"), str) else None,
+            "issuer": issuer_val,
             "payTo": parsed.get("payTo") if isinstance(parsed, dict) and isinstance(parsed.get("payTo"), str) else None,
             "keys": valid_keys,
             "publicKeys": [k["publicKey"] for k in valid_keys],

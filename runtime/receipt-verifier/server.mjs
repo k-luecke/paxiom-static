@@ -137,6 +137,7 @@ function createFunnelStats() {
       llmsTxtReads: 0,
       x402ManifestReads: 0,
       x402KeysReads: 0,
+      didJsonReads: 0,
       paxiomKeysReads: 0,
       mcpCardReads: 0,
       mcpGetReads: 0,
@@ -216,6 +217,7 @@ function buildRootServiceIndex(env = process.env) {
       mcpEndpoint: '/mcp',
       mcpCard: '/.well-known/mcp.json',
       x402Keys: '/.well-known/x402-keys.json',
+      didJson: '/.well-known/did.json',
       paxiomKeys: '/.well-known/paxiom-keys.json',
       ...(x402Enabled ? { x402Manifest: '/.well-known/x402.json' } : {}),
       version: '/version',
@@ -317,6 +319,7 @@ function buildVersionPayload(env = process.env) {
       llmsTxt: 'GET /llms.txt',
       mcpCard: 'GET /.well-known/mcp.json',
       x402Keys: 'GET /.well-known/x402-keys.json',
+      didJson: 'GET /.well-known/did.json',
       paxiomKeys: 'GET /.well-known/paxiom-keys.json',
       stats: 'GET /stats',
       freeOfflineVerify: 'POST /v1/receipt/verify',
@@ -1035,6 +1038,37 @@ export function createHandler({ env: rawEnv = process.env, fetchImpl = globalThi
         output: demoOutput,
         receipt: demoReceipt,
         verify: { method: 'POST', path: '/v1/receipt/verify', body: { receipt: '<receipt>', output: '<output?>' } }
+      });
+    }
+    if (isRead && path === '/.well-known/did.json') {
+      if (method === 'GET') stats.discovery.didJsonReads += 1;
+      const paxiomKey = getConfiguredPaxiomKey(env);
+      const didHost = String(env.PAXIOM_DID_DOMAIN || 'api.paxiom.org').trim();
+      const didId = `did:web:${didHost}`;
+      const vmId = paxiomKey ? `${didId}#${paxiomKey.keyId}` : null;
+      return send(res, 200, {
+        '@context': [
+          'https://www.w3.org/ns/did/v1',
+          'https://w3id.org/security/suites/jws-2020/v1'
+        ],
+        id: didId,
+        verificationMethod: paxiomKey
+          ? [{
+              id: vmId,
+              type: 'JsonWebKey2020',
+              controller: didId,
+              publicKeyJwk: {
+                kty: 'OKP',
+                crv: 'Ed25519',
+                alg: 'EdDSA',
+                use: 'sig',
+                kid: paxiomKey.keyId,
+                x: Buffer.from(paxiomKey.publicKey, 'base64').toString('base64url')
+              }
+            }]
+          : [],
+        assertionMethod: vmId ? [vmId] : [],
+        authentication: vmId ? [vmId] : []
       });
     }
     if (isRead && (path === '/.well-known/x402-keys.json' || path === '/.well-known/paxiom-keys.json')) {

@@ -279,3 +279,42 @@ test('v0.2.0 vendor-neutral checkedByVerifier + trustedVerifierPublicKeys and MC
   assert.equal(mcpResp.result.isError, false);
   assert.equal(mcpResp.result.structuredContent.trustState, 'unauthorized_issuer');
 });
+
+test('v0.2.0 discoverIssuerKeys resolves W3C did:web (/.well-known/did.json) OKP Ed25519 keys', async () => {
+  const kp = generateReceiptKeyPair({ keyId: 'did-seller-01' });
+  const xB64Url = Buffer.from(kp.publicKey, 'base64').toString('base64url');
+  const didDoc = {
+    '@context': ['https://www.w3.org/ns/did/v1', 'https://w3id.org/security/suites/jws-2020/v1'],
+    id: 'did:web:seller.example',
+    verificationMethod: [
+      {
+        id: 'did:web:seller.example#did-seller-01',
+        type: 'JsonWebKey2020',
+        controller: 'did:web:seller.example',
+        publicKeyJwk: {
+          kty: 'OKP',
+          crv: 'Ed25519',
+          x: xB64Url
+        }
+      }
+    ]
+  };
+  const disc = await discoverIssuerKeys('https://seller.example/v1/infer', {
+    fetch: async (url) => {
+      if (url.endsWith('/.well-known/x402-keys.json')) {
+        return new Response('not found', { status: 404 });
+      }
+      if (url.endsWith('/.well-known/did.json')) {
+        return new Response(JSON.stringify(didDoc), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        });
+      }
+      return new Response('not found', { status: 404 });
+    }
+  });
+  assert.equal(disc.ok, true);
+  assert.equal(disc.issuer, 'did:web:seller.example');
+  assert.deepEqual(disc.publicKeys, [kp.publicKey]);
+  assert.equal(disc.keys[0].keyId, 'did-seller-01');
+});

@@ -74,6 +74,14 @@ test('POST oversized body -> 413', async () => {
   assert.equal((await res.json()).error.code, 'body_too_large');
 });
 
+test('GET /.well-known/did.json returns W3C did:web document', async () => {
+  const res = await fetch(base + '/.well-known/did.json');
+  assert.equal(res.status, 200);
+  const j = await res.json();
+  assert.equal(j.id, 'did:web:api.paxiom.org');
+  assert.ok(Array.isArray(j.verificationMethod));
+});
+
 test('unknown path -> 404', async () => {
   const res = await fetch(base + '/nope');
   assert.equal(res.status, 404);

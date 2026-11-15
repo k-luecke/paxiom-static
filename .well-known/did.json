@@ -1,0 +1,28 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://w3id.org/security/suites/jws-2020/v1"
+  ],
+  "id": "did:web:paxiom.org",
+  "verificationMethod": [
+    {
+      "id": "did:web:paxiom.org#paxiom-live-verifier-key-1",
+      "type": "JsonWebKey2020",
+      "controller": "did:web:paxiom.org",
+      "publicKeyJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "alg": "EdDSA",
+        "use": "sig",
+        "kid": "paxiom-live-verifier-key-1",
+        "x": "hsRfDKd2AWxv0KwTs3gsDLMY7nPtVGky1Tc6NWgSxIY"
+      }
+    }
+  ],
+  "assertionMethod": [
+    "did:web:paxiom.org#paxiom-live-verifier-key-1"
+  ],
+  "authentication": [
+    "did:web:paxiom.org#paxiom-live-verifier-key-1"
+  ]
+}
