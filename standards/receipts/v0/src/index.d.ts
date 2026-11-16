@@ -1,4 +1,5 @@
 export const RECEIPT_VERSION: 'paxiom.receipt.v0';
+export const RECEIPT_SCHEMA: Readonly<Record<string, unknown>>;
 export const STANDARD_RECEIPT_HEADER_NAME: 'payment-receipt';
 export const RECEIPT_HEADER_NAME: 'x-paxiom-receipt';
 export const MAX_DEPTH: number;
@@ -198,6 +199,8 @@ export interface IssuedReceiptBundle {
 
 export interface ParsedX402Headers {
   txHash: string | null;
+  transactionHash: string | null;
+  settlementFailed: boolean;
   network: string | null;
   scheme: string | null;
   asset: string | null;
@@ -338,11 +341,10 @@ export function publicKeyFromPrivateKey(
 export function issueReceipt(options: IssueReceiptOptions): IssuedReceiptBundle;
 export function decodeReceiptHeader(headerValue: string): PaxiomReceiptV0;
 
-export function parseX402Headers(headers?: {
-  paymentSignature?: string;
-  paymentResponse?: string;
-  paymentRequired?: string;
-}): ParsedX402Headers;
+export function parseX402Headers(
+  headers?: unknown,
+  responseHeaders?: unknown
+): ParsedX402Headers;
 
 export function withPaxiomReceipt<TArgs extends unknown[]>(
   handler: (request: Request, ...rest: TArgs) => Response | Promise<Response>,
@@ -358,6 +360,7 @@ export function createReceiptMiddleware(
 ) => void;
 
 export function canonicalize(value: unknown): string;
+export function signingInputBytes(doc: { receiptVersion: string; payload: unknown }): Uint8Array;
 export function signingInput(doc: { receiptVersion: string; payload: unknown }): Uint8Array;
 export function sha256Hex(bytes: Uint8Array | string): string;
 export function hashCanonical(value: unknown): string;

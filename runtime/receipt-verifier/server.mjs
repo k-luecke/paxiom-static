@@ -1,4 +1,4 @@
-// Public reference runtime for the Paxiom Receipt Verifier (`https://api.paxiom.org`, v0.2.0):
+// Public reference runtime for the Paxiom Receipt Verifier (`https://api.paxiom.org`, v0.2.1):
 //   - Offline routes (`/health`, `/version`, `/v1/receipt/demo`, `POST /v1/receipt/verify`,
 //     `GET /.well-known/x402-keys.json`, `GET /.well-known/paxiom-keys.json`, `POST /mcp`)
 //     are always active with zero env vars and zero external calls.
@@ -30,7 +30,7 @@ import {
 } from './x402-preflight.mjs';
 import { handleMcpHttpRequest, buildMcpServerCard } from './mcp-http.mjs';
 
-export const RUNTIME_VERSION = '0.2.0';
+export const RUNTIME_VERSION = '0.2.1';
 const MAX_BODY_BYTES = 256 * 1024; // 256 KiB
 const MAX_DRAIN_AFTER_413 = 64 * 1024; // bounded post-413 drain window before destroying socket
 const MAX_RATE_LIMIT_BUCKETS = 4096;

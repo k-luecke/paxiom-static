@@ -1,101 +1,27 @@
 import crypto from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { canonicalize, signingInput, MAX_DEPTH } from './canonicalize.mjs';
+import { signingInput } from './canonicalize.mjs';
 import { sha256Hex, hashCanonical } from './hash.mjs';
+import {
+  RECEIPT_VERSION,
+  RECEIPT_SCHEMA,
+  normalizePayToId,
+  validateReceiptSchema
+} from './schema.mjs';
+import {
+  strictDecodeBase64Bytes,
+  bytesToBase64Url,
+  isByteArray,
+  utf8ToBytes
+} from './bytes.mjs';
 
-export const RECEIPT_VERSION = 'paxiom.receipt.v0';
-
-const schema = JSON.parse(
-  readFileSync(new URL('../paxiom.receipt.v0.schema.json', import.meta.url), 'utf8')
-);
-
-const ISO_DATETIME_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/;
-const STRICT_BASE64_RE = /^[A-Za-z0-9+/]+={0,2}$/;
-
-function isValidIsoDateTime(value) {
-  if (!ISO_DATETIME_RE.test(value)) return false;
-  return !Number.isNaN(Date.parse(value));
-}
-
-function strictDecodeBase64(value, expectedByteLength, label) {
-  if (typeof value !== 'string' || value.length === 0 || value.length % 4 !== 0 || !STRICT_BASE64_RE.test(value)) {
-    throw new Error(`${label} must be canonical base64`);
-  }
-  const raw = Buffer.from(value, 'base64');
-  if (raw.length !== expectedByteLength || raw.toString('base64') !== value) {
-    throw new Error(`${label} must decode to ${expectedByteLength} canonical bytes`);
-  }
-  return raw;
-}
-
-function normalizePayToId(addr) {
-  const s = String(addr || '').trim();
-  return /^0x[0-9a-fA-F]{40}$/.test(s) ? s.toLowerCase() : s;
-}
-
-// --- minimal draft-07 validator (covers the constructs this schema uses) ---
-function validateSchema(node, sch, path, root, depth = 0) {
-  if (depth > MAX_DEPTH) return [`${path}: nesting exceeds max depth ${MAX_DEPTH}`];
-  const errs = [];
-  const kind = (v) => (Array.isArray(v) ? 'array' : v === null ? 'null' : typeof v);
-  switch (sch.type) {
-    case 'object':
-      if (kind(node) !== 'object') return [`${path}: expected object`];
-      for (const r of sch.required || []) {
-        if (!Object.hasOwn(node, r)) errs.push(`${path}.${r}: required`);
-      }
-      if (sch.additionalProperties === false) {
-        for (const k of Object.keys(node)) {
-          if (!(sch.properties && Object.hasOwn(sch.properties, k))) errs.push(`${path}.${k}: not allowed`);
-        }
-      }
-      for (const [k, s] of Object.entries(sch.properties || {})) {
-        if (Object.hasOwn(node, k)) errs.push(...validateSchema(node[k], s, `${path}.${k}`, root, depth + 1));
-      }
-      break;
-    case 'array':
-      if (kind(node) !== 'array') return [`${path}: expected array`];
-      if (sch.items) node.forEach((it, i) => errs.push(...validateSchema(it, sch.items, `${path}[${i}]`, root, depth + 1)));
-      break;
-    case 'string':
-      if (typeof node !== 'string') return [`${path}: expected string`];
-      if (sch.minLength && node.length < sch.minLength) errs.push(`${path}: too short`);
-      if (sch.const && node !== sch.const) errs.push(`${path}: expected ${sch.const}`);
-      if (sch.enum && !sch.enum.includes(node)) errs.push(`${path}: not in enum`);
-      if (sch.pattern && !new RegExp(sch.pattern).test(node)) errs.push(`${path}: pattern mismatch`);
-      if (sch.format === 'date-time' && !isValidIsoDateTime(node)) errs.push(`${path}: invalid date-time`);
-      break;
-    case 'integer':
-      if (!Number.isInteger(node)) errs.push(`${path}: expected integer`);
-      else {
-        if (sch.minimum !== undefined && node < sch.minimum) errs.push(`${path}: below minimum`);
-        if (sch.maximum !== undefined && node > sch.maximum) errs.push(`${path}: above maximum`);
-      }
-      break;
-    case 'boolean':
-      if (typeof node !== 'boolean') errs.push(`${path}: expected boolean`);
-      break;
-    case 'null':
-      if (node !== null) errs.push(`${path}: expected null`);
-      break;
-  }
-  if (sch.$ref) {
-    const def = sch.$ref.split('/').slice(1).reduce((o, k) => (o && Object.hasOwn(o, k) ? o[k] : undefined), root);
-    if (!def) return [`${path}: unresolved $ref ${sch.$ref}`];
-    errs.push(...validateSchema(node, def, path, root, depth + 1));
-  }
-  if (sch.oneOf) {
-    const passes = sch.oneOf.filter((s) => validateSchema(node, s, path, root, depth + 1).length === 0).length;
-    if (passes !== 1) errs.push(`${path}: oneOf matched ${passes}`);
-  }
-  return errs;
-}
+export { RECEIPT_VERSION, RECEIPT_SCHEMA };
 
 function ed25519PublicKey(publicKeyB64) {
-  const raw = strictDecodeBase64(publicKeyB64, 32, 'Ed25519 publicKey');
+  const raw = strictDecodeBase64Bytes(publicKeyB64, 32, 'Ed25519 publicKey');
   return crypto.createPublicKey({
     format: 'jwk',
-    key: { kty: 'OKP', crv: 'Ed25519', x: raw.toString('base64url') }
+    key: { kty: 'OKP', crv: 'Ed25519', x: bytesToBase64Url(raw) }
   });
 }
 
@@ -139,7 +65,7 @@ export function verifyReceipt(receipt, opts = {}) {
   }
 
   // (2) schema
-  const schemaErrs = validateSchema(receipt, schema, 'receipt', schema);
+  const schemaErrs = validateReceiptSchema(receipt, RECEIPT_SCHEMA, 'receipt', RECEIPT_SCHEMA);
   if (schemaErrs.length) {
     checks.schema = CHECK.FAIL;
     return done('schema_invalid', `Receipt does not conform to ${RECEIPT_VERSION} schema: ${schemaErrs[0]}.`);
@@ -158,7 +84,7 @@ export function verifyReceipt(receipt, opts = {}) {
   let sigOk = false;
   try {
     const pubKeyObj = ed25519PublicKey(receipt.signature.publicKey);
-    const sigBuf = strictDecodeBase64(receipt.signature.value, 64, 'Ed25519 signature.value');
+    const sigBuf = strictDecodeBase64Bytes(receipt.signature.value, 64, 'Ed25519 signature.value');
     sigOk = crypto.verify(null, input, pubKeyObj, sigBuf);
   } catch {
     sigOk = false;
@@ -213,10 +139,10 @@ export function verifyReceipt(receipt, opts = {}) {
     const mode = p.delivery.canonicalization || 'jcs-sha256';
     try {
       if (mode === 'raw-sha256') {
-        if (Buffer.isBuffer(safeOpts.output) || safeOpts.output instanceof Uint8Array) {
+        if (isByteArray(safeOpts.output)) {
           recomputed = sha256Hex(safeOpts.output);
         } else if (typeof safeOpts.output === 'string') {
-          recomputed = sha256Hex(Buffer.from(safeOpts.output, 'utf8'));
+          recomputed = sha256Hex(utf8ToBytes(safeOpts.output));
         } else {
           throw new TypeError('delivery.canonicalization="raw-sha256" requires raw Buffer, Uint8Array, or string output');
         }
@@ -293,7 +219,7 @@ export function verifyReceipt(receipt, opts = {}) {
     `Receipt verified: schema, Ed25519 signature, output binding, and settlement (${st}) all consistent.`);
 }
 
-/** Convenience: verify from file paths. */
+/** Convenience: verify from file paths (Node.js only). */
 export function verifyFromFiles(receiptPath, outputPath, extraOpts = {}) {
   const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
   const opts = { ...extraOpts };

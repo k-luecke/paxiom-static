@@ -8,11 +8,11 @@
 
 Open MIT specification, `x402` v2 `delivery-receipt` extension draft, zero-dependency TypeScript/Node & Python SDKs, MCP servers, free public reference verification runtime (`https://api.paxiom.org`), and specification site (`https://paxiom.org`) maintained by **Driftbound Labs** (`https://driftboundlabs.com`).
 
-## Shipped Packages & Free Public Reference Endpoints (`v0.2.0`)
+## Shipped Packages & Free Public Reference Endpoints (`v0.2.1`)
 
 | Surface | Location | Install / Endpoint |
 |---|---|---|
-| **TypeScript / Node SDK & CLI** | [`standards/receipts/v0/`](standards/receipts/v0/) | `npm install @paxiom/receipts` (`0.2.0`, MIT, zero deps) |
+| **TypeScript / Node & Workers SDK** | [`standards/receipts/v0/`](standards/receipts/v0/) | `npm install @paxiom/receipts` (`0.2.1`, MIT, zero deps, `@paxiom/receipts/web` pure WebCrypto) |
 | **Python SDK** | [`standards/receipts/v0/python/`](standards/receipts/v0/python/) | `pip install paxiom-receipts` (`0.2.0`, MIT, zero deps) |
 | **x402 v2 Extension Draft** | [`x402-delivery-receipt-extension.md`](standards/receipts/v0/x402-delivery-receipt-extension.md) | Vendor-neutral `Payment-Receipt` header & `/.well-known/x402-keys.json` discovery |
 | **MCP Server (Official Registry)** | `io.github.k-luecke/paxiom-receipts` | `npx -y --package=@paxiom/receipts paxiom-receipt-mcp` or `https://api.paxiom.org/mcp` |

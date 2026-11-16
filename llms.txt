@@ -2,13 +2,13 @@
 
 > Open proof-of-delivery receipt standard for x402-paid and agentic HTTP APIs. x402 proves a payment; Paxiom (`paxiom.receipt.v0`) proves what the payment bought — binding the HTTP request, delivered payload digest (`jcs-sha256` or `raw-sha256`), payment settlement reference, and signer identity into one Ed25519-signed receipt.
 
-Paxiom provides the open MIT **paxiom.receipt.v0** specification (`v0.2.0`), the `x402` v2 `delivery-receipt` extension draft, the zero-dependency `@paxiom/receipts` npm SDK (`0.2.0`, with built-in TypeScript declarations) + CLI + stdio MCP server, the zero-dependency Python 3.10+ reference SDK (`paxiom-receipts==0.2.0` + FastAPI/ASGI middleware), and a free, rate-limited public reference HTTP verifier, preflight scanner & counter-attestation service on Base Mainnet at `https://api.paxiom.org`.
+Paxiom provides the open MIT **paxiom.receipt.v0** specification (`v0.2.1`), the `x402` v2 `delivery-receipt` extension draft, the zero-dependency `@paxiom/receipts` npm SDK (`0.2.1`, with built-in TypeScript declarations and pure WebCrypto `@paxiom/receipts/web` for Cloudflare Workers/Edge/browsers) + CLI + stdio MCP server, the zero-dependency Python 3.10+ reference SDK (`paxiom-receipts==0.2.0` + FastAPI/ASGI middleware), and a free, rate-limited public reference HTTP verifier, preflight scanner & counter-attestation service on Base Mainnet at `https://api.paxiom.org`.
 
 Paxiom is maintained as open protocol infrastructure by **Driftbound Labs LLC** (`https://driftboundlabs.com` · `kyle@paxiom.org`).
 
-## Open standard & reference surface (`v0.2.0`)
-1. **Issue & verify locally in Node.js / TypeScript (`@paxiom/receipts@0.2.0` on npm):**
-   - `npm install @paxiom/receipts` (Node >= 18, zero external dependencies, strict `.d.ts` types with zero `@types/node` dependency, MIT)
+## Open standard & reference surface (`v0.2.1`)
+1. **Issue & verify locally in Node.js, Cloudflare Workers, & TypeScript (`@paxiom/receipts@0.2.1` on npm):**
+   - `npm install @paxiom/receipts` (Node >= 18 & pure WebCrypto `@paxiom/receipts/web` for Cloudflare Workers / Deno / Bun / browsers without `nodejs_compat` or `@types/node`, MIT)
    - Seller middleware: `withPaxiomReceipt` (Fetch / Workers / Next.js) and `createReceiptMiddleware` (Express / Node `http`) — auto-parses `x402` v2 `PAYMENT-SIGNATURE`, `PAYMENT-RESPONSE`, and `PAYMENT-REQUIRED` headers (`parseX402Headers`), hashes JSON (`jcs-sha256`) or binary/text (`raw-sha256`) responses, and emits `Payment-Receipt` + `X-Paxiom-Receipt`
    - Buyer helpers: `verifyResponseReceipt` (offline `Payment-Receipt` / `X-Paxiom-Receipt` check with conflict-smuggling rejection), `discoverIssuerKeys` (`/.well-known/x402-keys.json` with fallback `/.well-known/paxiom-keys.json`), `preflightX402` (`POST /v1/x402/preflight`), and `verifyReceiptLive` (`POST /v1/receipt/verify-live`)
    - Core functions: `issueReceipt`, `verifyReceipt`, `generateReceiptKeyPair`, `canonicalize`, `sha256Raw`

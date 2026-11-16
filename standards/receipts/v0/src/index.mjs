@@ -1,4 +1,4 @@
-export { RECEIPT_VERSION, verifyReceipt, verifyFromFiles } from './verify.mjs';
+export { RECEIPT_VERSION, RECEIPT_SCHEMA, verifyReceipt, verifyFromFiles } from './verify.mjs';
 export {
   generateReceiptKeyPair,
   normalizeEd25519PrivateKey,
@@ -14,7 +14,7 @@ export {
   withPaxiomReceipt,
   createReceiptMiddleware
 } from './middleware.mjs';
-export { canonicalize, signingInput, MAX_DEPTH } from './canonicalize.mjs';
+export { canonicalize, signingInput, signingInputBytes, MAX_DEPTH } from './canonicalize.mjs';
 export { sha256Hex, hashCanonical } from './hash.mjs';
 export { explain } from './explain.mjs';
 export {

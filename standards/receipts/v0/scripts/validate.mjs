@@ -2,6 +2,7 @@
 import crypto from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { RECEIPT_SCHEMA } from '../src/schema.mjs';
 
 const DIR = fileURLToPath(new URL('..', import.meta.url)).replace(/\/+$/, '');
 const EX = `${DIR}/examples`;
@@ -23,6 +24,7 @@ let parsed = {};
 for (const f of files) { try { parsed[f] = load(f); ok(true, `valid JSON: ${f}`); } catch (e) { ok(false, `valid JSON: ${f} — ${e.message}`); } }
 
 const schema = parsed[`${DIR}/paxiom.receipt.v0.schema.json`];
+ok(canonicalize(RECEIPT_SCHEMA) === canonicalize(schema), 'src/schema.mjs matches paxiom.receipt.v0.schema.json byte-for-byte');
 const validReceipt = parsed[`${EX}/valid.receipt.json`];
 const claimed = parsed[`${EX}/settlement-claimed-not-checked.receipt.json`];
 const output = parsed[`${EX}/valid.output.json`];

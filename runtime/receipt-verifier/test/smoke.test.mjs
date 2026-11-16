@@ -24,7 +24,7 @@ test('GET and HEAD /health', async () => {
   assert.equal(res.status, 200);
   const j = await res.json();
   assert.equal(j.ok, true);
-  assert.equal(j.version, '0.2.0');
+  assert.equal(j.version, '0.2.1');
   const headRes = await fetch(base + '/health', { method: 'HEAD' });
   assert.equal(headRes.status, 200);
   assert.equal(await headRes.text(), '');

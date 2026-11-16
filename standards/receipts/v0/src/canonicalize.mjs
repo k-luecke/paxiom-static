@@ -2,11 +2,11 @@
 // See ../canonicalization.md — object keys sorted lexicographically (recursive),
 // array order preserved, no insignificant whitespace, UTF-8.
 //
-// Two defensive guards (do not change canonical bytes for valid input):
-//  - reject `undefined` (not representable) instead of emitting an invalid token;
-//  - bound recursion depth so pathological deeply-nested input throws a clean
-//    RangeError the caller can catch, rather than overflowing the process stack.
+// Zero `node:*` imports and zero `Buffer` references — safe in Cloudflare Workers,
+// browsers, Deno, Bun, and Node.js.
 export const MAX_DEPTH = 256;
+
+const UTF8_ENCODER = new TextEncoder();
 
 export function canonicalize(value, depth = 0) {
   if (depth > MAX_DEPTH) throw new RangeError(`canonicalize: nesting exceeds max depth ${MAX_DEPTH}`);
@@ -31,10 +31,13 @@ export function canonicalize(value, depth = 0) {
     .join(',') + '}';
 }
 
-// The exact bytes the receipt signature covers.
-export function signingInput(receipt) {
-  return Buffer.from(
-    canonicalize({ receiptVersion: receipt.receiptVersion, payload: receipt.payload }),
-    'utf8'
+// The exact UTF-8 bytes the receipt signature covers (Uint8Array).
+export function signingInputBytes(receipt) {
+  return UTF8_ENCODER.encode(
+    canonicalize({ receiptVersion: receipt.receiptVersion, payload: receipt.payload })
   );
+}
+
+export function signingInput(receipt) {
+  return signingInputBytes(receipt);
 }

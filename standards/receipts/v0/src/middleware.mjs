@@ -110,10 +110,12 @@ export function parseX402Headers(arg1 = {}, responseHeaders = null) {
 
   const payTo = (accepted && accepted.payTo) || (auth && auth.to) || null;
   const payer = (resObj && resObj.payer) || (auth && auth.from) || null;
+  const settlementFailed = Boolean(resObj && resObj.success === false);
 
   return {
     txHash,
     transactionHash: txHash,
+    settlementFailed,
     network,
     scheme: typeof scheme === 'string' && scheme ? scheme : null,
     asset: typeof asset === 'string' && asset ? asset : null,
@@ -232,7 +234,7 @@ export function withPaxiomReceipt(handler, options = {}) {
       ...paymentDefaults,
       ...dynamicPayment,
       settlement: {
-        status: txHash ? 'claimed_not_checked' : (paymentSigHeader ? 'verify_only' : 'not_required'),
+        status: parsedX402.settlementFailed ? 'failed' : (txHash ? 'claimed_not_checked' : (paymentSigHeader ? 'verify_only' : 'not_required')),
         transactionHash: txHash,
         checkedByVerifier: false,
         ...(paymentDefaults.settlement || {}),

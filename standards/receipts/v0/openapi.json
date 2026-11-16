@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Paxiom Receipt Verifier",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "x-status": "live",
     "description": "Free public reference verifier, counter-attestation utility, and x402 pre-payment readiness scanner for paxiom.receipt.v0 \u2014 open MIT proof-bound Ed25519 delivery receipts for x402-paid and agentic APIs.\n\n- **Free offline verification (`POST /v1/receipt/verify`):** verifies receipt structure, Ed25519 signature over canonical JSON, signer authorization (`expectedIssuerPublicKeys` / `expectedPayTo`), `jcs-sha256` or `raw-sha256` output-hash binding, and honest settlement/evidence status with zero RPC calls (`settlement_claimed_not_checked` is never reported as `verified`).\n- **Free rate-limited live on-chain settlement verification (`POST /v1/receipt/verify-live`):** verifies canonical Base Mainnet (`eip155:8453`) and Base Sepolia (`eip155:84532`) USDC `Transfer` logs via multi-RPC failover and emits an Ed25519 counter-attested receipt (`Payment-Receipt` and `X-Paxiom-Receipt`).\n- **Free rate-limited pre-payment seller readiness scan (`POST /v1/x402/preflight`):** SSRF-hardened preflight scanner that probes an untrusted x402 endpoint before payment, verifying canonical Circle USDC asset address, EIP-712 domain parameters, `payTo` manifest consistency, and `Payment-Receipt` / `X-Paxiom-Receipt` readiness.",
     "contact": {
@@ -130,7 +130,7 @@
                 "example": {
                   "ok": true,
                   "service": "paxiom-receipt-verifier",
-                  "version": "0.2.0"
+                  "version": "0.2.1"
                 }
               }
             }

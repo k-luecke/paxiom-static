@@ -308,7 +308,7 @@ test('GET /, /openapi.json, /llms.txt, /.well-known/mcp.json, and zero-PII GET /
       assert.equal(rootRes.status, 200);
       const rootJson = await rootRes.json();
       assert.equal(rootJson.ok, true);
-      assert.equal(rootJson.version, '0.2.0');
+      assert.equal(rootJson.version, '0.2.1');
       assert.equal(rootJson.discovery.openApi, '/openapi.json');
       assert.equal(rootJson.discovery.x402Keys, '/.well-known/x402-keys.json');
       assert.equal(rootJson.discovery.x402Manifest, '/.well-known/x402.json');
@@ -316,7 +316,7 @@ test('GET /, /openapi.json, /llms.txt, /.well-known/mcp.json, and zero-PII GET /
       const oaRes = await fetch(`${base}/openapi.json`);
       assert.equal(oaRes.status, 200);
       const oaJson = await oaRes.json();
-      assert.equal(oaJson.info.version, '0.2.0');
+      assert.equal(oaJson.info.version, '0.2.1');
       assert.ok(oaJson.paths['/v1/x402/preflight']);
 
       const llmsRes = await fetch(`${base}/llms.txt`);
@@ -329,7 +329,7 @@ test('GET /, /openapi.json, /llms.txt, /.well-known/mcp.json, and zero-PII GET /
       assert.equal(cardRes.status, 200);
       const cardJson = await cardRes.json();
       assert.equal(cardJson.name, 'io.github.k-luecke/paxiom-receipts');
-      assert.equal(cardJson.version, '0.2.0');
+      assert.equal(cardJson.version, '0.2.1');
 
       // Trigger one unpaid 402 quote on preflight + one MCP tool call + one demo read
       const demo = await (await fetch(`${base}/v1/receipt/demo`)).json();

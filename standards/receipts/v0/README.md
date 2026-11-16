@@ -1,12 +1,17 @@
-# Paxiom Receipt v0 (`@paxiom/receipts` & `paxiom-receipts` `v0.2.0`)
+# Paxiom Receipt v0 (`@paxiom/receipts` `v0.2.1` & `paxiom-receipts` `v0.2.0`)
 
-**License:** MIT · **Status:** Open protocol specification, conformance vectors, zero-dependency Node.js & Python SDKs, and free public reference verifier (`https://api.paxiom.org`).
+**License:** MIT · **Status:** Open protocol specification, conformance vectors, zero-dependency Node.js, Cloudflare Workers / WebCrypto (`@paxiom/receipts/web`), & Python SDKs, and free public reference verifier (`https://api.paxiom.org`).
 
 > **x402 proves a payment. Paxiom proves what the payment bought.**
 
 A **`paxiom.receipt.v0` delivery receipt** binds **HTTP request, `x402` payment terms, settlement claim, and delivered response payload** into a single Ed25519-signed envelope carried in `Payment-Receipt` (and `X-Paxiom-Receipt`). It is **100% open, free, and vendor-neutral**: any `x402` resource server on Base, EVM, or Solana can mint receipts offline with zero dependencies, and any buyer wallet or agent router can verify them with only a public key.
 
 See [`x402-delivery-receipt-extension.md`](./x402-delivery-receipt-extension.md) for the formal **`x402` v2 `delivery-receipt` extension specification**.
+
+## What's New in `v0.2.1`
+
+- **Pure WebCrypto / Cloudflare Workers / Browser Subpath (`@paxiom/receipts/web`):** Zero `node:*` imports (`node:crypto`, `node:fs`) and zero `Buffer` references anywhere in its module graph or `.d.ts` declarations (`src/web.d.ts`). Uses only standard `globalThis.crypto.subtle` (`Ed25519` + `SHA-256`), `Uint8Array`, `TextEncoder`/`TextDecoder`, and `fetch` — bundles directly into Cloudflare Workers without `nodejs_compat` or `@types/node`, Vercel Edge, Deno Deploy, and browsers while remaining 100% byte-identical with Node and Python PKCS#8 PEM keys and signatures.
+- **W3C `did:web` Discovery (`/.well-known/did.json`):** `discoverIssuerKeys()` resolves Ed25519 `JsonWebKey2020` verification methods per `x402` `offer-receipt` §4.5.1 alongside `/.well-known/x402-keys.json` and `/.well-known/paxiom-keys.json`.
 
 ## What's New in `v0.2.0`
 
@@ -68,6 +73,32 @@ export const POST = withPaxiomReceipt(
     serviceName: 'Weather Forecast API'
   }
 );
+```
+
+### Pure Cloudflare Workers / Edge / Browser (`@paxiom/receipts/web`)
+
+For Workers or Edge projects compiled with `@cloudflare/workers-types` (`lib: ["ES2022", "WebWorker"]`) and **no `nodejs_compat` or `@types/node`**, import from `@paxiom/receipts/web`:
+
+```ts
+import {
+  withPaxiomReceipt,
+  issueReceipt,
+  verifyReceipt,
+  publicKeyFromPrivateKey
+} from '@paxiom/receipts/web';
+
+export default {
+  async fetch(request: Request, env: { PAXIOM_PRIVATE_KEY_PEM: string }): Promise<Response> {
+    const handler = withPaxiomReceipt(
+      async () => Response.json({ ok: true }),
+      {
+        privateKey: env.PAXIOM_PRIVATE_KEY_PEM,
+        issuer: { name: 'edge-seller', keyId: 'edge-1' }
+      }
+    );
+    return handler(request);
+  }
+};
 ```
 
 ## Buyer Verification & Signer Authorization
