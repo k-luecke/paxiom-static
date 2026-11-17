@@ -42,6 +42,7 @@ Every verification returns one deterministic trust state (`verified`, `valid_sig
 ## Key URLs
 - Standard home: https://paxiom.org/
 - Receipt v0 overview: https://paxiom.org/receipts.html
+- Local WebCrypto browser receipt & x402 header inspector (`connect-src 'none'`): https://paxiom.org/verify.html
 - x402 v2 Delivery Receipt Extension draft: https://paxiom.org/standards/receipts/v0/x402-delivery-receipt-extension.md
 - API & SDK docs: https://paxiom.org/api.html
 - Live public reference verifier index: https://api.paxiom.org/

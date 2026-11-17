@@ -25,13 +25,22 @@ jobs:
         uses: actions/checkout@v4
       - name: Forbid inline JS / dynamic content (audit I-3)
         run: |
-          # Active-content guard: matches opening <script> tags AND inline
-          # event handlers (onclick=, onload=, onerror=, ...). External
-          # <script src=...> would also match — by design. Ungate this
-          # gate when intentional JS lands.
-          if grep -rEn --include='*.html' \
-              '<script(\s[^>]*)?>|\son[a-z]+\s*=' .; then
-            echo "::error::Active-content pattern detected — see audit/I-3."
+          # 1. Inline event handlers (onclick=, onload=, onerror=, ...) are forbidden across ALL HTML files.
+          if grep -rEn --include='*.html' '\son[a-z]+\s*=' .; then
+            echo "::error::Inline event handler attribute detected — see audit/I-3."
+            exit 1
+          fi
+          # 2. <script> tags are forbidden on every HTML file EXCEPT ./verify.html (Sheet PXM-RC-103).
+          if grep -rEn --include='*.html' --exclude='verify.html' '<script(\s[^>]*)?>' .; then
+            echo "::error::Unexpected <script> tag outside verify.html — see audit/I-3."
+            exit 1
+          fi
+          # 3. verify.html must enforce CSP connect-src 'none' + script-src 'self' and load ONLY /verify-inspector.mjs.
+          SCRIPT_COUNT=$(grep -Ec '<script' ./verify.html || true)
+          EXACT_MODULE=$(grep -Ec '^<script type="module" src="/verify-inspector\.mjs"></script>$' ./verify.html || true)
+          AIRGAP_CSP=$(grep -Ec "script-src 'self'; connect-src 'none'" ./verify.html || true)
+          if [ "$SCRIPT_COUNT" -ne 1 ] || [ "$EXACT_MODULE" -ne 1 ] || [ "$AIRGAP_CSP" -ne 1 ]; then
+            echo "::error::verify.html must carry exactly one external module script (/verify-inspector.mjs) and CSP connect-src 'none'."
             exit 1
           fi
       - name: Configure Pages

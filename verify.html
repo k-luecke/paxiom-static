@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<title>Paxiom &middot; Local Browser Receipt &amp; x402 Inspector</title>
+<meta name="description" content="Client-side WebCrypto Ed25519 and SHA-256 verifier for paxiom.receipt.v0 Payment-Receipt headers and x402 v2 payment headers. Runs 100% locally in your browser with CSP connect-src 'none'.">
+<meta property="og:title" content="Paxiom · Local Browser Receipt &amp; x402 Inspector">
+<meta property="og:description" content="Verify Payment-Receipt Ed25519 signatures, JCS/raw SHA-256 payload bindings, and signer pinning locally in your browser via @paxiom/receipts/web.">
+<meta property="og:url" content="https://paxiom.org/verify.html">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --rule: #1A2332;
+  --green: #1F5C3A;
+  --green-bg: #E6F0EA;
+  --warn-bg: #F6EFE0;
+  --fail-bg: #F5E6E4;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.paxiom-bar {
+  border-bottom: 1px solid var(--rule-faint);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.paxiom-bar-inner { max-width: 1200px; margin: 0 auto; padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.paxiom-bar-mark {
+  display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+}
+.paxiom-bar-mark svg { width: 22px; height: 22px; display: block; }
+.paxiom-bar-mark:hover { color: var(--blue); }
+.paxiom-bar-nav { display: flex; gap: 18px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+.paxiom-bar-nav a { color: var(--ink-mid); text-decoration: none; padding-bottom: 2px; }
+.paxiom-bar-nav a:hover { color: var(--ink); }
+.paxiom-bar-nav a.active { color: var(--ink); border-bottom: 1.5px solid var(--ink); }
+@media (max-width: 600px) {
+  .paxiom-bar-inner { padding: 8px 14px; }
+  .paxiom-bar-mark span { display: none; }
+  .paxiom-bar-nav { gap: 12px; font-size: 9.5px; letter-spacing: 0.1em; }
+}
+
+.frame { max-width: 1080px; margin: 0 auto; padding: 20px 18px 40px; }
+.title-block { border-bottom: 2px solid var(--ink); padding-bottom: 16px; margin-bottom: 22px; }
+.title-mark { display: block; margin-bottom: 12px; }
+.paxiom-mark { width: 42px; height: 42px; color: var(--ink); display: block; }
+.project-mark {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: 4px;
+}
+.project-title {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 28px; font-weight: 500; line-height: 1.1; color: var(--ink);
+}
+.project-subtitle {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-style: italic; font-size: 14px; color: var(--ink-mid); margin-top: 4px;
+}
+.meta {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; letter-spacing: 0.04em; color: var(--ink-faint);
+  margin-top: 12px; line-height: 1.7;
+}
+.meta .sep { margin: 0 6px; color: var(--rule-faint); }
+
+.airgap-banner {
+  border: 1px solid var(--rule-faint);
+  background: var(--paper-dark);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+}
+.airgap-banner strong { color: var(--green); font-weight: 600; }
+
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.btn {
+  display: inline-block;
+  padding: 9px 14px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  border-radius: 6px;
+  border: 1.5px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.btn:hover { background: var(--ink); color: var(--paper); }
+.btn.primary { background: var(--ink); color: var(--paper); }
+.btn.primary:hover { background: var(--blue); border-color: var(--blue); }
+
+.workbench {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 22px;
+  margin-bottom: 36px;
+}
+@media (max-width: 860px) {
+  .workbench { grid-template-columns: 1fr; }
+}
+
+.panel {
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  background: var(--paper);
+  overflow: hidden;
+}
+.panel-head {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 10px 14px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.panel-body { padding: 16px; }
+
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  margin-bottom: 5px;
+}
+.field textarea, .field input[type="text"] {
+  width: 100%;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  background: #FAF8F3;
+  color: var(--ink);
+  border: 1px solid var(--rule-faint);
+  border-radius: 5px;
+  padding: 9px 11px;
+}
+.field textarea:focus, .field input[type="text"]:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 560px) {
+  .field-row { grid-template-columns: 1fr; }
+}
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ink-mid);
+  margin: 10px 0 14px;
+}
+
+.verdict-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rule-faint);
+  margin-bottom: 12px;
+}
+.verdict-badge {
+  display: inline-block;
+  padding: 5px 11px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.verdict-badge.pass { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+.verdict-badge.warn { background: var(--warn-bg); color: var(--amber); border: 1px solid var(--amber); }
+.verdict-badge.fail { background: var(--fail-bg); color: var(--red); border: 1px solid var(--red); }
+
+.verdict-timing {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  color: var(--ink-faint);
+}
+.verdict-summary {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.hash-line {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ink-mid);
+  background: var(--paper-dark);
+  padding: 7px 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  white-space: nowrap;
+  margin-bottom: 14px;
+}
+
+.checks-grid {
+  border-top: 1px solid var(--rule-faint);
+  margin-bottom: 16px;
+}
+.check-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 2px;
+  border-bottom: 1px solid var(--paper-dark);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11.5px;
+}
+.check-name { color: var(--ink-mid); }
+.check-val { font-weight: 600; }
+.check-val.pass { color: var(--green); }
+.check-val.fail { color: var(--red); }
+.check-val.neutral { color: var(--amber); }
+
+pre.inspector-pre {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11.5px;
+  line-height: 1.5;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 12px 14px;
+  border-radius: 6px;
+  overflow-x: auto;
+  max-height: 260px;
+  margin-top: 6px;
+}
+.subhead {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 14px;
+}
+
+.section { margin-bottom: 36px; }
+.section-mark {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-mark::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
+.section h2 {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-weight: 500; font-size: 22px; margin-bottom: 12px;
+}
+
+.sheet-footer {
+  border-top: 2px solid var(--ink);
+  padding-top: 14px;
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  color: var(--ink-faint);
+}
+.sheet-footer a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="paxiom-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"><circle cx="50" cy="50" r="40"/><path d="M50 14 L76 64 L24 64 Z"/><line x1="50" y1="30" x2="50" y2="80"/><line x1="38" y1="80" x2="62" y2="80"/><circle cx="50" cy="30" r="3.5" fill="currentColor" stroke="none"/></symbol></svg>
+<div class="paxiom-bar">
+  <div class="paxiom-bar-inner">
+    <a class="paxiom-bar-mark" href="/" aria-label="Paxiom — home">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg>
+      <span>Paxiom</span>
+    </a>
+    <nav class="paxiom-bar-nav" aria-label="Primary">
+      <a href="/receipts.html">Receipts</a>
+      <a href="/verify.html" class="active">Inspector</a>
+      <a href="/api.html">API &amp; SDK</a>
+      <a href="/journal.html">Build Journal</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </div>
+</div>
+
+<div class="frame">
+  <header class="title-block">
+    <div class="title-mark"><svg class="paxiom-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#paxiom-mark"/></svg></div>
+    <div>
+      <div class="project-mark">Paxiom &middot; Local WebCrypto Diagnostic Workbench</div>
+      <div class="project-title">Receipt &amp; x402 Header Inspector</div>
+      <div class="project-subtitle">Verify Ed25519 delivery receipts and payload bindings locally in your browser &mdash; zero network calls.</div>
+    </div>
+    <div class="meta">
+      <span>Sheet PXM-RC-103</span><span class="sep">&middot;</span>
+      <span>Runtime: @paxiom/receipts/web (0.2.1)</span><span class="sep">&middot;</span>
+      <span>CSP: connect-src 'none'</span>
+    </div>
+  </header>
+
+  <div class="airgap-banner" role="status">
+    <div><strong>CLIENT-SIDE AIRGAP:</strong> Powered directly by <code>/standards/receipts/v0/src/web.mjs</code>. Pasted receipts and payloads never leave your browser.</div>
+    <div id="webcrypto-support">Checking WebCrypto Ed25519&hellip;</div>
+  </div>
+
+  <div class="preset-bar" aria-label="Example vectors">
+    <button type="button" class="btn" id="btn-preset-valid">1. Valid Verified Vector</button>
+    <button type="button" class="btn" id="btn-preset-claimed">2. Unchecked Settlement Claim</button>
+    <button type="button" class="btn" id="btn-preset-tampered">3. Tampered Output Mismatch</button>
+    <button type="button" class="btn primary" id="btn-preset-mint">4. Mint &amp; Verify Fresh Receipt in Browser</button>
+  </div>
+
+  <div class="workbench">
+    <div class="panel">
+      <div class="panel-head">
+        <span>01 &middot; Receipt &amp; Payload Inputs</span>
+        <span>Header or JSON</span>
+      </div>
+      <div class="panel-body">
+        <div class="field">
+          <label for="receipt-input">Payment-Receipt / X-Paxiom-Receipt Header or JSON</label>
+          <textarea id="receipt-input" rows="9" spellcheck="false" placeholder="Paste base64url Payment-Receipt header or paxiom.receipt.v0 JSON..."></textarea>
+        </div>
+        <div class="field">
+          <label for="output-input">Delivered HTTP Response Body (Optional &mdash; required for trustState = verified)</label>
+          <textarea id="output-input" rows="5" spellcheck="false" placeholder="Paste delivered JSON body (jcs-sha256) or raw text (raw-sha256)..."></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="expected-keys-input">Pinned Seller Public Key(s) (Base64)</label>
+            <input type="text" id="expected-keys-input" spellcheck="false" placeholder="Optional expectedIssuerPublicKeys...">
+          </div>
+          <div class="field">
+            <label for="expected-payto-input">Pinned Seller payTo Address</label>
+            <input type="text" id="expected-payto-input" spellcheck="false" placeholder="Optional 0x... or Solana base58">
+          </div>
+        </div>
+        <label class="checkbox-row" for="trust-paxiom-root">
+          <input type="checkbox" id="trust-paxiom-root" checked>
+          <span>Trust api.paxiom.org counter-attestation key (checkedByVerifier)</span>
+        </label>
+        <button type="button" class="btn primary" id="btn-verify">Verify Locally via WebCrypto</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span>02 &middot; Deterministic Verification Result</span>
+        <span>RFC 8032 + RFC 8785</span>
+      </div>
+      <div class="panel-body">
+        <div class="verdict-header">
+          <span id="verdict-badge" class="verdict-badge pass">READY</span>
+          <span id="verdict-timing" class="verdict-timing">&mdash;</span>
+        </div>
+        <p id="verdict-summary" class="verdict-summary">Select a vector above or paste a receipt to evaluate.</p>
+        <div class="subhead">Signing Input Digest (receiptHash)</div>
+        <div id="verdict-hash" class="hash-line">&mdash;</div>
+
+        <div id="checks-grid" class="checks-grid"></div>
+
+        <div class="subhead">Decoded Receipt Envelope</div>
+        <pre id="decoded-receipt" class="inspector-pre"></pre>
+
+        <div class="subhead">Audit Explanation &amp; Canonical Signing Preimage</div>
+        <pre id="explain-output" class="inspector-pre"></pre>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="section-mark">03 &middot; x402 Header Decoder</div>
+    <h2>Inspect raw <code>PAYMENT-SIGNATURE</code> &amp; <code>PAYMENT-RESPONSE</code> headers.</h2>
+    <div class="panel">
+      <div class="panel-body">
+        <div class="field-row">
+          <div class="field">
+            <label for="x402-sig-input">PAYMENT-SIGNATURE / X-PAYMENT (Base64)</label>
+            <textarea id="x402-sig-input" rows="3" spellcheck="false" placeholder="Optional base64 x402 payment payload header..."></textarea>
+          </div>
+          <div class="field">
+            <label for="x402-res-input">PAYMENT-RESPONSE / X-PAYMENT-RESPONSE (Base64)</label>
+            <textarea id="x402-res-input" rows="3" spellcheck="false" placeholder="Optional base64 x402 settlement response header..."></textarea>
+          </div>
+        </div>
+        <button type="button" class="btn" id="btn-decode-x402">Decode x402 Headers</button>
+        <pre id="x402-decoded-output" class="inspector-pre">Paste a base64 PAYMENT-SIGNATURE and/or PAYMENT-RESPONSE header above to inspect normalized CAIP-2 fields.</pre>
+      </div>
+    </div>
+  </section>
+
+  <footer class="sheet-footer">
+    <div>Paxiom &middot; paxiom.org &middot; Maintained by <a href="https://driftboundlabs.com">Driftbound Labs LLC</a></div>
+    <div>@paxiom/receipts/web@0.2.1 &middot; Zero-Network Browser Verifier</div>
+    <div>PXM-RC-103 &middot; Inspector</div>
+  </footer>
+</div>
+
+<script type="module" src="/verify-inspector.mjs"></script>
+</body>
+</html>
