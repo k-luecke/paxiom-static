@@ -1,4 +1,6 @@
-import type { PaxiomReceiptV0, VerifyResult } from './web.d.ts';
+import type { PaxiomReceiptV0, VerifyReceiptResult } from './web.mjs';
+
+export type VerifyResult = VerifyReceiptResult;
 
 export const ESCROW_SCHEMES: readonly string[];
 export const DEFAULT_ALLOWED_SCHEMES: readonly string[];

@@ -383,4 +383,4 @@ export function verifyReceiptLive(
   receipt: unknown,
   options?: VerifyReceiptLiveOptions
 ): Promise<VerifyReceiptLiveResult>;
-export * from './guard.d.ts';
+export * from './guard.mjs';

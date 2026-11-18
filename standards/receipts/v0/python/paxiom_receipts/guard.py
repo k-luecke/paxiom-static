@@ -474,14 +474,26 @@ def _evaluate_candidate(
         if cand["network"] not in norm_nets:
             return False, "network_not_allowed", f'Network "{cand["network"]}" is not in allowedNetworks.'
 
+    raw_assets = policy.get("allowedAssets")
+    if isinstance(raw_assets, list) and raw_assets:
+        norm_assets = {_normalize_pay_to(str(a)) for a in raw_assets}
+        if not cand.get("asset") or _normalize_pay_to(str(cand["asset"])) not in norm_assets:
+            return False, "asset_not_allowed", f'Asset "{cand.get("asset")}" is not in allowedAssets.'
+
+    norm_cand_pay_to = _normalize_pay_to(cand["payTo"])
     pinned_map = policy.get("pinnedPayToByOrigin")
     if isinstance(pinned_map, dict):
         for k, v in pinned_map.items():
             if str(k).lower() == origin:
                 vals = v if isinstance(v, list) else [v]
-                if _normalize_pay_to(cand["payTo"]) not in {_normalize_pay_to(x) for x in vals}:
+                if norm_cand_pay_to not in {_normalize_pay_to(str(x)) for x in vals}:
                     return False, "untrusted_pay_to", f'payTo ({cand["payTo"]}) does not match pinnedPayToByOrigin.'
                 break
+
+    allowed_pay_to = policy.get("allowedPayTo")
+    if isinstance(allowed_pay_to, list) and allowed_pay_to:
+        if norm_cand_pay_to not in {_normalize_pay_to(str(x)) for x in allowed_pay_to}:
+            return False, "untrusted_pay_to", f'payTo ({cand["payTo"]}) is not in allowedPayTo.'
 
     if caps["maxPerCallAtomic"] is not None and amt > caps["maxPerCallAtomic"]:
         return False, "per_call_cap_exceeded", f"Amount ({amt}) exceeds maxPerCallAtomic ({caps['maxPerCallAtomic']})."
@@ -811,13 +823,48 @@ def evaluate_delivery_arbiter(
                     return settle_void("request_binding_mismatch", "Request URL/resource mismatch.", receipt=receipt, verification=verification)
                 if sha256_hex(got_res.encode("utf-8")) != req_blk.get("resourceHash"):
                     return settle_void("request_binding_mismatch", "resourceHash mismatch.", receipt=receipt, verification=verification)
+            if "body" in req_spec or "bodyBytes" in req_spec:
+                raw_req_in = req_spec.get("bodyBytes") if "bodyBytes" in req_spec else req_spec.get("body")
+                if raw_req_in is None:
+                    raw_req_b = b""
+                elif isinstance(raw_req_in, (bytes, bytearray)):
+                    raw_req_b = bytes(raw_req_in)
+                elif isinstance(raw_req_in, str):
+                    raw_req_b = raw_req_in.encode("utf-8")
+                else:
+                    raw_req_b = json.dumps(raw_req_in).encode("utf-8")
+                body_ok = req_blk.get("bodyHash") == sha256_hex(raw_req_b)
+                if not body_ok and raw_req_b:
+                    try:
+                        body_ok = req_blk.get("bodyHash") == hash_canonical(json.loads(raw_req_b.decode("utf-8")))
+                    except Exception:
+                        body_ok = False
+                if not body_ok:
+                    return settle_void("request_binding_mismatch", "bodyHash mismatch.", receipt=receipt, verification=verification, raw_header=raw_hdr, parsed_out=parsed_output)
             exp_req_hash = hash_canonical({
                 "bodyHash": req_blk.get("bodyHash"),
                 "method": str(svc.get("method", "")).upper(),
                 "resource": str(svc.get("resource", "")),
             })
             if exp_req_hash != req_blk.get("requestHash"):
-                return settle_void("request_binding_mismatch", "requestHash mismatch.", receipt=receipt, verification=verification)
+                return settle_void("request_binding_mismatch", "requestHash mismatch.", receipt=receipt, verification=verification, raw_header=raw_hdr, parsed_out=parsed_output)
+
+        if isinstance(challenge, dict):
+            pay_blk = (receipt.get("payload") or {}).get("payment") or {}
+            if challenge.get("network"):
+                want_net = normalize_caip2_network_id(challenge["network"])
+                got_net = normalize_caip2_network_id(pay_blk.get("network"))
+                if want_net and got_net != want_net:
+                    return settle_void("payment_binding_mismatch", "Receipt network mismatch.", receipt=receipt, verification=verification, raw_header=raw_hdr, parsed_out=parsed_output)
+            if challenge.get("payTo"):
+                got_pt = pay_blk.get("payTo") or ((receipt.get("payload") or {}).get("issuer") or {}).get("payTo")
+                if not got_pt or _normalize_pay_to(str(got_pt)) != _normalize_pay_to(str(challenge["payTo"])):
+                    return settle_void("payment_binding_mismatch", "Receipt payTo mismatch.", receipt=receipt, verification=verification, raw_header=raw_hdr, parsed_out=parsed_output)
+            if challenge.get("amountAtomic") is not None:
+                want_amt = parse_atomic_int(challenge["amountAtomic"], "challenge.amountAtomic")
+                got_amt = _try_parse_atomic_int(pay_blk.get("amountAtomic"))
+                if got_amt is None or got_amt > want_amt or (want_amt > 0 and got_amt == 0):
+                    return settle_void("payment_binding_mismatch", "Receipt amountAtomic inconsistent with challenge.", receipt=receipt, verification=verification, raw_header=raw_hdr, parsed_out=parsed_output)
 
     capture_amt = (
         int(challenge["amountAtomic"])
@@ -836,6 +883,11 @@ def evaluate_delivery_arbiter(
         if pred is False or (isinstance(pred, dict) and pred.get("ok") is False):
             reason = str(pred.get("reason") if isinstance(pred, dict) and pred.get("reason") else "Content rejected by predicate.")
             return settle_void("content_rejected", reason, receipt=receipt, verification=verification, raw_header=raw_hdr, parsed_out=parsed_output)
+        if isinstance(pred, dict) and pred.get("captureAmountAtomic") is not None:
+            override_amt = parse_atomic_int(pred["captureAmountAtomic"], "captureAmountAtomic")
+            if isinstance(challenge, dict) and challenge.get("amountAtomic") is not None and override_amt > int(challenge["amountAtomic"]):
+                return settle_void("capture_exceeds_authorized", "captureAmountAtomic exceeds authorized challenge amount.", receipt=receipt, verification=verification, raw_header=raw_hdr, parsed_out=parsed_output)
+            capture_amt = override_amt
 
     if ledger is not None:
         r_hash = (verification or {}).get("receiptHash")

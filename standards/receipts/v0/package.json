@@ -20,52 +20,125 @@
   "engines": {
     "node": ">=18"
   },
-  "main": "./src/index.mjs",
+  "main": "./cjs/index.cjs",
+  "module": "./src/index.mjs",
   "types": "./src/index.d.ts",
   "exports": {
     ".": {
+      "import": {
+        "types": "./src/index.d.mts",
+        "default": "./src/index.mjs"
+      },
+      "require": {
+        "types": "./cjs/index.d.cts",
+        "default": "./cjs/index.cjs"
+      },
       "types": "./src/index.d.ts",
       "default": "./src/index.mjs"
     },
     "./web": {
+      "import": {
+        "types": "./src/web.d.mts",
+        "default": "./src/web.mjs"
+      },
+      "require": {
+        "types": "./cjs/web.d.cts",
+        "default": "./cjs/web.cjs"
+      },
       "types": "./src/web.d.ts",
       "default": "./src/web.mjs"
     },
     "./guard": {
+      "import": {
+        "types": "./src/guard.d.mts",
+        "default": "./src/guard.mjs"
+      },
+      "require": {
+        "types": "./cjs/guard.d.cts",
+        "default": "./cjs/guard.cjs"
+      },
       "types": "./src/guard.d.ts",
       "default": "./src/guard.mjs"
     },
     "./bytes": {
-      "types": "./src/web.d.ts",
-      "default": "./src/bytes.mjs"
+      "import": {
+        "types": "./src/web.d.mts",
+        "default": "./src/bytes.mjs"
+      },
+      "require": {
+        "types": "./cjs/web.d.cts",
+        "default": "./cjs/bytes.cjs"
+      }
     },
     "./schema": {
-      "types": "./src/web.d.ts",
-      "default": "./src/schema.mjs"
+      "import": {
+        "types": "./src/web.d.mts",
+        "default": "./src/schema.mjs"
+      },
+      "require": {
+        "types": "./cjs/web.d.cts",
+        "default": "./cjs/schema.cjs"
+      }
     },
     "./client": {
-      "types": "./src/index.d.ts",
-      "default": "./src/client.mjs"
+      "import": {
+        "types": "./src/index.d.mts",
+        "default": "./src/client.mjs"
+      },
+      "require": {
+        "types": "./cjs/index.d.cts",
+        "default": "./cjs/client.cjs"
+      }
     },
     "./verify": {
-      "types": "./src/index.d.ts",
-      "default": "./src/verify.mjs"
+      "import": {
+        "types": "./src/index.d.mts",
+        "default": "./src/verify.mjs"
+      },
+      "require": {
+        "types": "./cjs/index.d.cts",
+        "default": "./cjs/verify.cjs"
+      }
     },
     "./issue": {
-      "types": "./src/index.d.ts",
-      "default": "./src/issue.mjs"
+      "import": {
+        "types": "./src/index.d.mts",
+        "default": "./src/issue.mjs"
+      },
+      "require": {
+        "types": "./cjs/index.d.cts",
+        "default": "./cjs/issue.cjs"
+      }
     },
     "./middleware": {
-      "types": "./src/index.d.ts",
-      "default": "./src/middleware.mjs"
+      "import": {
+        "types": "./src/index.d.mts",
+        "default": "./src/middleware.mjs"
+      },
+      "require": {
+        "types": "./cjs/index.d.cts",
+        "default": "./cjs/middleware.cjs"
+      }
     },
     "./canonicalize": {
-      "types": "./src/web.d.ts",
-      "default": "./src/canonicalize.mjs"
+      "import": {
+        "types": "./src/web.d.mts",
+        "default": "./src/canonicalize.mjs"
+      },
+      "require": {
+        "types": "./cjs/web.d.cts",
+        "default": "./cjs/canonicalize.cjs"
+      }
     },
     "./explain": {
-      "types": "./src/web.d.ts",
-      "default": "./src/explain.mjs"
+      "import": {
+        "types": "./src/web.d.mts",
+        "default": "./src/explain.mjs"
+      },
+      "require": {
+        "types": "./cjs/web.d.cts",
+        "default": "./cjs/explain.cjs"
+      }
     },
     "./mcp": "./mcp/server.mjs",
     "./schema.json": "./paxiom.receipt.v0.schema.json"
@@ -84,13 +157,15 @@
     "openapi.json",
     "server.json",
     "src/",
+    "cjs/",
     "bin/",
     "mcp/server.mjs",
     "server/server.mjs",
     "examples/"
   ],
   "scripts": {
-    "validate": "node ./scripts/validate.mjs",
+    "build:cjs": "node ./scripts/build-cjs.mjs",
+    "validate": "node ./scripts/validate.mjs && node ./scripts/build-cjs.mjs --check",
     "test": "node --test ./test/ ./server/ ./mcp/"
   },
   "keywords": [

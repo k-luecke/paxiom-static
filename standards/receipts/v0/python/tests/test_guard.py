@@ -174,6 +174,58 @@ class TestBuyerGuard(unittest.TestCase):
         self.assertTrue(dec_bogus["fraudEvidence"]["nonRepudiable"])
         self.assertEqual(dec_bogus["fraudEvidence"]["issuerKeyId"], kp["keyId"])
 
+    def test_allowed_assets_pay_to_and_payment_binding(self) -> None:
+        usdc = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+        bad_asset = evaluate_pre_sign_policy(
+            {
+                "url": "https://api.seller.example/v1/q",
+                "challenge": {"scheme": "exact", "network": "base", "asset": "0xdead", "amount": "1000", "payTo": SELLER_PAY_TO},
+            },
+            {"allowedAssets": [usdc], "allowedPayTo": [SELLER_PAY_TO]},
+        )
+        self.assertFalse(bad_asset["allow"])
+        self.assertEqual(bad_asset["code"], "asset_not_allowed")
+
+        bad_pay_to = evaluate_pre_sign_policy(
+            {
+                "url": "https://api.seller.example/v1/q",
+                "challenge": {"scheme": "exact", "network": "base", "asset": usdc, "amount": "1000", "payTo": TRUSTED_OP},
+            },
+            {"allowedAssets": [usdc], "allowedPayTo": [SELLER_PAY_TO]},
+        )
+        self.assertFalse(bad_pay_to["allow"])
+        self.assertEqual(bad_pay_to["code"], "untrusted_pay_to")
+
+        kp = generate_receipt_keypair("py-bind-k1")
+        out = {"ok": True}
+        issued = issue_receipt(
+            private_key=kp["privateKeyPem"],
+            issuer={"name": "Seller", "keyId": kp["keyId"], "payTo": SELLER_PAY_TO},
+            service={"name": "Seller", "resource": "/v1/q", "method": "POST"},
+            request={"method": "POST", "resource": "/v1/q", "body": '{"q":1}'},
+            payment={
+                "scheme": "exact",
+                "network": "eip155:8453",
+                "asset": usdc,
+                "amountAtomic": "50000",
+                "payTo": SELLER_PAY_TO,
+                "settlement": {"status": "verify_only", "transactionHash": None},
+            },
+            output=out,
+        )
+        # Receipt claims 50000 atomic when challenge only authorized 10000 -> VOID payment_binding_mismatch
+        overcharged = evaluate_delivery_arbiter(
+            {
+                "challenge": {"scheme": "exact", "network": "eip155:8453", "amountAtomic": 10_000, "payTo": SELLER_PAY_TO},
+                "request": {"url": "https://api.seller.example/v1/q", "method": "POST", "body": '{"q":1}'},
+                "response": {"status": 200, "headers": {"payment-receipt": issued["receiptHeader"]}},
+                "body": json.dumps(out),
+            },
+            expected_issuer_public_keys=[kp["publicKey"]],
+        )
+        self.assertEqual(overcharged["action"], "VOID")
+        self.assertEqual(overcharged["reasonCode"], "payment_binding_mismatch")
+
 
 if __name__ == "__main__":
     unittest.main()

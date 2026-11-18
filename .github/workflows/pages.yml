@@ -66,6 +66,7 @@ jobs:
             --exclude='docs/' \
             --exclude='runtime/' \
             --exclude='standards/receipts/v0/bin/' \
+            --exclude='standards/receipts/v0/cjs/' \
             --exclude='standards/receipts/v0/mcp/' \
             --exclude='standards/receipts/v0/python/' \
             --exclude='standards/receipts/v0/scripts/' \
@@ -82,6 +83,7 @@ jobs:
             dist/docs \
             dist/runtime \
             dist/standards/receipts/v0/bin \
+            dist/standards/receipts/v0/cjs \
             dist/standards/receipts/v0/mcp \
             dist/standards/receipts/v0/python \
             dist/standards/receipts/v0/scripts \
@@ -151,6 +153,7 @@ jobs:
             --exclude='docs/' \
             --exclude='runtime/' \
             --exclude='standards/receipts/v0/bin/' \
+            --exclude='standards/receipts/v0/cjs/' \
             --exclude='standards/receipts/v0/mcp/' \
             --exclude='standards/receipts/v0/python/' \
             --exclude='standards/receipts/v0/scripts/' \
