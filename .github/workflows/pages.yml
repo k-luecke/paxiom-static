@@ -3,26 +3,27 @@ name: Deploy static site
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  verify:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - name: Forbid inline JS / dynamic content (audit I-3)
         run: |
           # 1. Inline event handlers (onclick=, onload=, onerror=, ...) are forbidden across ALL HTML files.
@@ -43,15 +44,14 @@ jobs:
             echo "::error::verify.html must carry exactly one external module script (/verify-inspector.mjs) and CSP connect-src 'none'."
             exit 1
           fi
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-      - name: Stage publish directory (audit L-12)
+      - name: Validate & test @paxiom/receipts (Node, runtime & Python)
         run: |
-          # Build dist/ containing only the public assets. Excludes repo
-          # meta (.git*, .github/) and audit/contributor docs that have
-          # no business being served (AUDIT_REPORT.md, README.md).
-          # upload-pages-artifact@v3 takes a single path, so we stage
-          # instead of globbing.
+          npm --prefix standards/receipts/v0 run validate
+          npm --prefix standards/receipts/v0 test
+          npm --prefix runtime/receipt-verifier test
+          python3 -m unittest discover -s standards/receipts/v0/python/tests
+      - name: Audit staged Pages surface & internal links (audit L-12)
+        run: |
           mkdir -p dist
           rsync -a \
             --exclude='dist' \
@@ -59,8 +59,107 @@ jobs:
             --exclude='.github' \
             --exclude='.gitignore' \
             --exclude='.gitattributes' \
+            --exclude='.dockerignore' \
+            --exclude='Dockerfile' \
             --exclude='AUDIT_REPORT.md' \
             --exclude='README.md' \
+            --exclude='docs/' \
+            --exclude='runtime/' \
+            --exclude='standards/receipts/v0/bin/' \
+            --exclude='standards/receipts/v0/mcp/' \
+            --exclude='standards/receipts/v0/python/' \
+            --exclude='standards/receipts/v0/scripts/' \
+            --exclude='standards/receipts/v0/server/' \
+            --exclude='standards/receipts/v0/test/' \
+            --exclude='standards/receipts/v0/README.md' \
+            --exclude='standards/receipts/v0/bazaar-metadata.example.json' \
+            --exclude='standards/receipts/v0/listing-copy.md' \
+            --exclude='standards/receipts/v0/package.json' \
+            ./ dist/
+          for forbidden in \
+            dist/Dockerfile \
+            dist/.dockerignore \
+            dist/docs \
+            dist/runtime \
+            dist/standards/receipts/v0/bin \
+            dist/standards/receipts/v0/mcp \
+            dist/standards/receipts/v0/python \
+            dist/standards/receipts/v0/scripts \
+            dist/standards/receipts/v0/server \
+            dist/standards/receipts/v0/test \
+            dist/standards/receipts/v0/package.json; do
+            if [ -e "$forbidden" ]; then
+              echo "::error::Internal file or directory leaked into Pages dist/: $forbidden"
+              exit 1
+            fi
+          done
+          node --input-type=module -e "const m = await import('./dist/standards/receipts/v0/src/web.mjs'); if (typeof m.verifyReceipt !== 'function') process.exit(1);"
+          python3 - <<'PY'
+          import glob, os, re, sys
+          root = "dist"
+          missing = []
+          for fn in sorted(glob.glob(os.path.join(root, "*.html"))):
+              txt = open(fn, encoding="utf-8").read()
+              for m in re.finditer(r'(?:href|src)="(/[^"#?]*)"', txt):
+                  rel = m.group(1)
+                  target = os.path.join(root, "index.html" if rel == "/" else rel.lstrip("/"))
+                  if not os.path.exists(target):
+                      missing.append((os.path.basename(fn), rel))
+          sm = open(os.path.join(root, "sitemap.xml"), encoding="utf-8").read()
+          for m in re.finditer(r'<loc>https://paxiom\.org(/[^<]*)</loc>', sm):
+              rel = m.group(1)
+              target = os.path.join(root, "index.html" if rel in ("", "/") else rel.lstrip("/"))
+              if not os.path.exists(target):
+                  missing.append(("sitemap.xml", rel))
+          if missing:
+              print("::error::Broken internal links in dist/:", missing)
+              sys.exit(1)
+          PY
+
+  deploy:
+    needs: verify
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Stage publish directory (audit L-12)
+        run: |
+          # Build dist/ containing only public static assets, discovery manifests,
+          # and the browser-consumable receipt standard & ESM bundle. Server runtimes,
+          # Docker build files, CLI/MCP entrypoints, and test suites stay out of Pages.
+          mkdir -p dist
+          rsync -a \
+            --exclude='dist' \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.gitignore' \
+            --exclude='.gitattributes' \
+            --exclude='.dockerignore' \
+            --exclude='Dockerfile' \
+            --exclude='AUDIT_REPORT.md' \
+            --exclude='README.md' \
+            --exclude='docs/' \
+            --exclude='runtime/' \
+            --exclude='standards/receipts/v0/bin/' \
+            --exclude='standards/receipts/v0/mcp/' \
+            --exclude='standards/receipts/v0/python/' \
+            --exclude='standards/receipts/v0/scripts/' \
+            --exclude='standards/receipts/v0/server/' \
+            --exclude='standards/receipts/v0/test/' \
+            --exclude='standards/receipts/v0/README.md' \
+            --exclude='standards/receipts/v0/bazaar-metadata.example.json' \
+            --exclude='standards/receipts/v0/listing-copy.md' \
+            --exclude='standards/receipts/v0/package.json' \
             ./ dist/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
