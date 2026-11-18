@@ -10,6 +10,7 @@ from typing import Any
 
 from .canonicalize import MAX_DEPTH, hash_canonical, sha256_hex, signing_input
 from .ed25519_pure import ed25519_verify
+from .proofs import ALLOWED_FINALITY_TIERS, evaluate_receipt_offline_proofs
 
 RECEIPT_VERSION = "paxiom.receipt.v0"
 
@@ -323,8 +324,15 @@ def verify_receipt(
     output: Any = _SENTINEL,
     expected_issuer_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
     expected_pay_to: str | None = None,
+    expected_payer: str | None = None,
     trusted_verifier_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
     trusted_paxiom_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
+    trusted_root_public_keys: list[str] | tuple[str, ...] | set[str] | None = None,
+    trusted_roots: Any = None,
+    allowed_finality_tiers: list[str] | tuple[str, ...] | set[str] | None = None,
+    settlement_proof: Any = None,
+    claim_proof: Any = None,
+    root_attestation: Any = None,
     now: float | datetime | str | None = None,
 ) -> dict[str, Any]:
     has_output = output is not _SENTINEL
@@ -475,42 +483,83 @@ def verify_receipt(
         return done("proof_unavailable", "A referenced evidence record could not be retrieved.")
 
     raw_trusted = trusted_verifier_public_keys if trusted_verifier_public_keys is not None else trusted_paxiom_public_keys
+    raw_root_keys = trusted_root_public_keys if trusted_root_public_keys is not None else raw_trusted
+
+    if allowed_finality_tiers is not None and not isinstance(allowed_finality_tiers, (list, tuple, set)):
+        return done("error", f"allowed_finality_tiers must be a sequence of {ALLOWED_FINALITY_TIERS}")
+
+    offline_settled = False
+    unanchored_note: str | None = None
+    if claim_proof is not None or settlement_proof is not None:
+        proof_eval = evaluate_receipt_offline_proofs(
+            receipt=receipt,
+            settlement_proof=settlement_proof,
+            claim_proof=claim_proof,
+            trusted_roots=trusted_roots,
+            root_attestation=root_attestation,
+            trusted_root_public_keys=raw_root_keys,
+            allowed_finality_tiers=allowed_finality_tiers,
+            expected_pay_to=expected_pay_to,
+            expected_payer=expected_payer,
+            now=now,
+        )
+        if proof_eval["outcome"] == "fail":
+            if proof_eval.get("checkSettlement"):
+                checks["settlement"] = proof_eval["checkSettlement"]
+            if proof_eval.get("checkProof"):
+                checks["proof"] = proof_eval["checkProof"]
+            return done(proof_eval["trustState"], proof_eval["summary"])
+        if proof_eval["outcome"] == "verified_settled":
+            offline_settled = True
+            checks["settlement"] = "verified_settled"
+            checks["proof"] = "verified"
+        elif proof_eval["outcome"] == "unanchored_settlement_proof":
+            checks["proof"] = proof_eval["checkProof"]
+            unanchored_note = proof_eval["summary"]
+        elif proof_eval["outcome"] == "claim_verified":
+            checks["proof"] = "verified"
+
     trusted_set = set(raw_trusted) if raw_trusted is not None else None
     is_trusted_verifier = bool(trusted_set and receipt["signature"]["publicKey"] in trusted_set)
     asserts_verifier = bool(settlement.get("checkedByVerifier") or settlement.get("checkedByPaxiom"))
 
-    if asserts_verifier and not is_trusted_verifier:
-        return done(
-            "settlement_claimed_not_checked",
-            "Receipt asserts independent verifier settlement check, but signer is not in trusted_verifier_public_keys.",
-        )
+    if not offline_settled:
+        if asserts_verifier and not is_trusted_verifier:
+            return done(
+                "settlement_claimed_not_checked",
+                unanchored_note or "Receipt asserts independent verifier settlement check, but signer is not in trusted_verifier_public_keys.",
+            )
 
-    if st in ("not_required", "disabled", "verify_only") and settlement.get("transactionHash") is not None:
-        return done(
-            "settlement_claimed_not_checked",
-            "Receipt carries a non-null settlement.transactionHash under a non-settled status that this offline verifier did not check.",
-        )
+        if st in ("not_required", "disabled", "verify_only") and settlement.get("transactionHash") is not None:
+            return done(
+                "settlement_claimed_not_checked",
+                unanchored_note or "Receipt carries a non-null settlement.transactionHash under a non-settled status that this offline verifier did not check.",
+            )
 
-    counter_verified = st == "verified_settled" and asserts_verifier and is_trusted_verifier
-    if st == "claimed_not_checked" or (st == "verified_settled" and not counter_verified):
-        return done(
-            "settlement_claimed_not_checked",
-            "Signature and output hash verified. Receipt claims an onchain settlement that this offline verifier did not check."
-            if has_output
-            else "Signature verified. Receipt claims an onchain settlement that this offline verifier did not check.",
-        )
+        counter_verified = st == "verified_settled" and asserts_verifier and is_trusted_verifier
+        if st == "claimed_not_checked" or (st == "verified_settled" and not counter_verified):
+            return done(
+                "settlement_claimed_not_checked",
+                unanchored_note
+                or (
+                    "Signature and output hash verified. Receipt claims an onchain settlement that this offline verifier did not check."
+                    if has_output
+                    else "Signature verified. Receipt claims an onchain settlement that this offline verifier did not check."
+                ),
+            )
 
     if not has_output:
         return done(
             "valid_signature_only",
             "Signature valid. No output supplied, so payment-to-output binding was not checked.",
         )
-    if st == "unknown":
+    if st == "unknown" and not offline_settled:
         return done("valid_signature_only", "Signature and output verified, but settlement status is unknown.")
 
+    eff_st = "verified_settled (offline MPT proof)" if offline_settled else st
     return done(
         "verified",
-        f"Receipt verified: schema, Ed25519 signature, output binding, and settlement ({st}) all consistent.",
+        f"Receipt verified: schema, Ed25519 signature, output binding, and settlement ({eff_st}) all consistent.",
     )
 
 

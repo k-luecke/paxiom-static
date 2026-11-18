@@ -19,7 +19,7 @@ import {
 export const MCP_PROTOCOL_VERSION = '2024-11-05';
 export const SERVER_INFO = {
   name: 'paxiom-receipt-mcp',
-  version: '0.3.0'
+  version: '0.4.0'
 };
 const MAX_JSONRPC_LINE_BYTES = 1024 * 1024; // 1 MiB stdio line safety bound
 

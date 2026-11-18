@@ -83,7 +83,18 @@ async function handleVerify(req, res) {
   }
 
   try {
-    const opts = Object.prototype.hasOwnProperty.call(parsed, 'output') ? { output: parsed.output } : {};
+    const opts = {};
+    if (Object.prototype.hasOwnProperty.call(parsed, 'output')) opts.output = parsed.output;
+    if (Array.isArray(parsed.expectedIssuerPublicKeys)) opts.expectedIssuerPublicKeys = parsed.expectedIssuerPublicKeys;
+    if (typeof parsed.expectedPayTo === 'string' && parsed.expectedPayTo.trim()) opts.expectedPayTo = parsed.expectedPayTo;
+    if (typeof parsed.expectedPayer === 'string' && parsed.expectedPayer.trim()) opts.expectedPayer = parsed.expectedPayer;
+    if (Array.isArray(parsed.trustedVerifierPublicKeys)) opts.trustedVerifierPublicKeys = parsed.trustedVerifierPublicKeys;
+    if (Array.isArray(parsed.trustedRootPublicKeys)) opts.trustedRootPublicKeys = parsed.trustedRootPublicKeys;
+    if (parsed.trustedRoots !== undefined) opts.trustedRoots = parsed.trustedRoots;
+    if (Array.isArray(parsed.allowedFinalityTiers)) opts.allowedFinalityTiers = parsed.allowedFinalityTiers;
+    if (parsed.settlementProof !== undefined) opts.settlementProof = parsed.settlementProof;
+    if (parsed.claimProof !== undefined) opts.claimProof = parsed.claimProof;
+    if (parsed.rootAttestation !== undefined) opts.rootAttestation = parsed.rootAttestation;
     const result = verifyReceipt(parsed.receipt, opts);
     // 200 for any normal verification result, including non-verified receipts.
     return send(res, 200, result);

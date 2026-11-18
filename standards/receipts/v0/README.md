@@ -1,12 +1,21 @@
-# Paxiom Receipt v0 (`@paxiom/receipts` `v0.3.0` & `paxiom-receipts` `v0.3.0`)
+# Paxiom Receipt v0 (`@paxiom/receipts` `v0.4.0` & `paxiom-receipts` `v0.4.0`)
 
-**License:** MIT · **Status:** Open protocol specification, conformance vectors, zero-dependency Node.js, Cloudflare Workers / WebCrypto (`@paxiom/receipts/web`), & Python SDKs, and free public reference verifier (`https://api.paxiom.org`).
+**License:** MIT · **Status:** Open protocol specification, conformance vectors, zero-dependency Node.js (ESM + CommonJS), Cloudflare Workers / WebCrypto (`@paxiom/receipts/web`), Offline MPT & EIP-1186 Proofs (`@paxiom/receipts/proofs`), & Python SDKs, and free public reference verifier (`https://api.paxiom.org`).
 
 > **x402 proves a payment. Paxiom proves what the payment bought.**
 
-A **`paxiom.receipt.v0` delivery receipt** binds **HTTP request, `x402` payment terms, settlement claim, and delivered response payload** into a single Ed25519-signed envelope carried in `Payment-Receipt` (and `X-Paxiom-Receipt`). It is **100% open, free, and vendor-neutral**: any `x402` resource server on Base, EVM, or Solana can mint receipts offline with zero dependencies, and any buyer wallet or agent router can verify them with only a public key.
+A **`paxiom.receipt.v0` delivery receipt** binds **HTTP request, `x402` payment terms, settlement claim, and delivered response payload** into a single Ed25519-signed envelope carried in `Payment-Receipt` (and `X-Paxiom-Receipt`). It is **100% open, free, and vendor-neutral**: any `x402` resource server on Base, EVM, Circle Arc, or Solana can mint receipts offline with zero dependencies, and any buyer wallet or agent router can verify them with only a public key.
 
 See [`x402-delivery-receipt-extension.md`](./x402-delivery-receipt-extension.md) for the formal **`x402` v2 `delivery-receipt` extension specification**.
+
+## What's New in `v0.4.0`
+
+- **Zero-Dependency Offline MPT, EIP-1186 & EVM Receipt-Trie Verifier (`@paxiom/receipts/proofs` & Python `paxiom_receipts.proofs`):**
+  - **Pure Keccak-256, Strict Canonical RLP & Ethereum MPT (`keccak256Hex`, `rlpEncode`, `rlpDecode`, `verifyMptProof`, `buildMptProof`):** Implements 24-round `Keccak-f[1600]` (`0x01` pad), Yellow Paper Appendix B canonical RLP (rejecting malleable prefixes, non-minimal lengths, trailing bytes, and deep nesting), and Appendix D Modified Merkle-Patricia Trie walking & building (including `< 32`-byte inline child nodes and authenticated exclusion proofs) with **zero external dependencies**, zero `node:*` imports, and zero `Buffer` references.
+  - **Offline EIP-1186 State & Storage Verification (`verifyAccountProof`, `verifyStorageProof`, `verifyEip1186Proof`, `computeEip3009AuthStateSlot`):** Verify `eth_getProof` account tuples, storage slot inclusions, `0x0` storage exclusions, and EIP-3009 USDC `authorizationState` consumption completely offline against a block `stateRoot`.
+  - **Offline EVM Receipt-Trie USDC Settlement Proofs (`buildReceiptTrieProof`, `verifyEvmReceiptProof`, `verifyUsdcSettlementProof`):** Reconstruct and verify transaction receipt inclusion proofs (`status === 1` + canonical ERC-20 `Transfer(payer, payTo, amount)`) across Legacy, EIP-2718 (`0x01`–`0x04`), and OP-Stack (`0x7e` deposit) receipts on **Ethereum (`eip155:1`), Base (`eip155:8453`), Base Sepolia (`eip155:84532`), Arbitrum (`eip155:42161`), Optimism (`eip155:10`), Polygon (`eip155:137`), and Circle Arc (`eip155:5042` / `eip155:5042002`)**.
+  - **Signed Block Root Attestations (`paxiom.root.v0` — `issueRootAttestation`, `verifyRootAttestation`):** Upgrade offline `verifyReceipt()` and strict `evaluateDeliveryArbiter(..., { allowUncheckedSettlementClaim: false })` checks from `settlement_claimed_not_checked` to **`verified` (`checks.settlement = 'verified_settled'`, `checks.proof = 'verified'`)** via buyer `trustedRoots` or Ed25519-signed root attestations (`Payment-Settlement-Proof` header).
+  - **Dual ESM + CommonJS (`nodenext`) Support:** Every entrypoint (`.`, `./web`, `./guard`, `./proofs`) ships both native ESM (`.mjs` / `.d.mts`) and CommonJS (`require()`, `.cjs` / `.d.cts`).
 
 ## What's New in `v0.3.0`
 

@@ -91,7 +91,7 @@ function transpileMjsToCjs(source, filename) {
     throw new Error(`Unhandled ESM import/export syntax remaining in ${filename}`);
   }
 
-  if (filename === 'web.mjs') {
+  if (filename === 'web.mjs' || filename === 'proofs.mjs') {
     code = code.replace(
       'const c = explicitCrypto || globalThis.crypto;',
       "const c = explicitCrypto || globalThis.crypto || require('node:crypto').webcrypto;"

@@ -25,7 +25,9 @@ test('v0.2.1 @paxiom/receipts/web module graph has ZERO node:* imports and ZERO 
     '../src/canonicalize.mjs',
     '../src/explain.mjs',
     '../src/guard.mjs',
-    '../src/guard.d.ts'
+    '../src/guard.d.ts',
+    '../src/proofs.mjs',
+    '../src/proofs.d.ts'
   ];
 
   for (const rel of webGraphFiles) {

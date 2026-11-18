@@ -51,11 +51,19 @@ function normalizeCaip2NetworkId(rawNet) {
   if (typeof rawNet !== 'string' || !rawNet.trim()) return null;
   const trimmed = rawNet.trim();
   const lower = trimmed.toLowerCase();
-  if (lower === 'base') return 'eip155:8453';
+  if (lower === 'base' || lower === 'base-mainnet') return 'eip155:8453';
   if (lower === 'base-sepolia') return 'eip155:84532';
-  if (lower === 'ethereum' || lower === 'mainnet') return 'eip155:1';
+  if (lower === 'ethereum' || lower === 'mainnet' || lower === 'eth') return 'eip155:1';
+  if (lower === 'sepolia' || lower === 'ethereum-sepolia') return 'eip155:11155111';
+  if (lower === 'arbitrum' || lower === 'arbitrum-one') return 'eip155:42161';
+  if (lower === 'arbitrum-sepolia') return 'eip155:421614';
+  if (lower === 'optimism' || lower === 'op-mainnet') return 'eip155:10';
+  if (lower === 'polygon' || lower === 'polygon-pos') return 'eip155:137';
+  if (lower === 'arc' || lower === 'arc-mainnet') return 'eip155:5042';
+  if (lower === 'arc-testnet') return 'eip155:5042002';
   if (lower === 'solana' || lower === 'solana-mainnet') return 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp';
   if (lower === 'solana-devnet') return 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1';
+  if (lower.startsWith('eip155:')) return lower;
   return trimmed;
 }
 
@@ -1095,11 +1103,33 @@ async function evaluateDeliveryArbiter(input = {}, options = {}) {
     }
 
     const expectedPayTo = safeOpts.expectedPayTo || (challenge && challenge.payTo) || undefined;
+    const rawProofHeader =
+      extractHeader(response, 'payment-settlement-proof') ||
+      extractHeader(response, 'x-paxiom-settlement-proof');
+    const decodedProofHeader = rawProofHeader ? decodeFlexibleBase64JsonObject(rawProofHeader) : null;
+    const effectiveSettlementProof =
+      input.settlementProof !== undefined
+        ? input.settlementProof
+        : safeOpts.settlementProof !== undefined
+          ? safeOpts.settlementProof
+          : decodedProofHeader || undefined;
+    const effectiveClaimProof =
+      input.claimProof !== undefined ? input.claimProof : safeOpts.claimProof;
+    const effectiveRootAttestation =
+      input.rootAttestation !== undefined ? input.rootAttestation : safeOpts.rootAttestation;
+
     verification = await verifyReceipt(receipt, {
       output: canonMode === 'jcs-sha256' ? parsedOutput : rawBodyBytes,
       expectedIssuerPublicKeys: safeOpts.expectedIssuerPublicKeys,
       expectedPayTo,
+      expectedPayer: safeOpts.expectedPayer,
       trustedVerifierPublicKeys: safeOpts.trustedVerifierPublicKeys,
+      trustedRootPublicKeys: safeOpts.trustedRootPublicKeys,
+      trustedRoots: safeOpts.trustedRoots,
+      allowedFinalityTiers: safeOpts.allowedFinalityTiers,
+      settlementProof: effectiveSettlementProof,
+      claimProof: effectiveClaimProof,
+      rootAttestation: effectiveRootAttestation,
       now: nowMs,
       crypto: safeOpts.crypto
     });
@@ -1297,6 +1327,10 @@ function createGuardedFetch(options = {}) {
     fetchImpl = globalThis.fetch,
     expectedIssuerPublicKeys,
     trustedVerifierPublicKeys,
+    trustedRootPublicKeys,
+    trustedRoots,
+    allowedFinalityTiers,
+    allowUncheckedSettlementClaim,
     requireReceipt = true,
     validateContent,
     onCapture,
@@ -1514,6 +1548,11 @@ function createGuardedFetch(options = {}) {
         ledger,
         expectedIssuerPublicKeys: resolvedIssuerKeys,
         trustedVerifierPublicKeys,
+        trustedRootPublicKeys: callOverrides.trustedRootPublicKeys ?? trustedRootPublicKeys,
+        trustedRoots: callOverrides.trustedRoots ?? trustedRoots,
+        allowedFinalityTiers: callOverrides.allowedFinalityTiers ?? allowedFinalityTiers,
+        allowUncheckedSettlementClaim:
+          callOverrides.allowUncheckedSettlementClaim ?? allowUncheckedSettlementClaim,
         requireReceipt: callOverrides.requireReceipt ?? requireReceipt,
         validateContent: callOverrides.validateContent ?? validateContent,
         maxResponseBytes,

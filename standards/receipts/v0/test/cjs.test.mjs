@@ -7,17 +7,20 @@ import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const pkgDir = fileURLToPath(new URL('..', import.meta.url)).replace(/\/+$/, '');
 
-test('CommonJS exports match ESM exports 1:1 across index, guard, and web', async () => {
+test('CommonJS exports match ESM exports 1:1 across index, guard, proofs, and web', async () => {
   const esmIndex = await import('../src/index.mjs');
   const esmGuard = await import('../src/guard.mjs');
+  const esmProofs = await import('../src/proofs.mjs');
   const esmWeb = await import('../src/web.mjs');
 
   const cjsIndex = require('../cjs/index.cjs');
   const cjsGuard = require('../cjs/guard.cjs');
+  const cjsProofs = require('../cjs/proofs.cjs');
   const cjsWeb = require('../cjs/web.cjs');
 
   assert.deepEqual(Object.keys(cjsIndex).sort(), Object.keys(esmIndex).sort());
   assert.deepEqual(Object.keys(cjsGuard).sort(), Object.keys(esmGuard).sort());
+  assert.deepEqual(Object.keys(cjsProofs).sort(), Object.keys(esmProofs).sort());
   assert.deepEqual(Object.keys(cjsWeb).sort(), Object.keys(esmWeb).sort());
 });
 

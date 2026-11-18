@@ -8,6 +8,7 @@ const { canonicalize, signingInputBytes, signingInput, MAX_DEPTH } = require('./
 const { RECEIPT_VERSION, RECEIPT_SCHEMA, normalizePayToId, validateReceiptSchema } = require('./schema.cjs');
 const { isByteArray, asUint8Array, utf8ToBytes, bytesToUtf8, bytesToHex, hexToBytes, concatBytes, bytesToBase64, base64ToBytes, strictDecodeBase64Bytes, bytesToBase64Url, base64UrlToBytes, decodeFlexibleBase64JsonObject } = require('./bytes.cjs');
 const { explain } = require('./explain.cjs');
+const { ALLOWED_FINALITY_TIERS, verifyRootAttestation, evaluateReceiptOfflineProofsSync } = require('./proofs.cjs');
 
 
 
@@ -696,35 +697,99 @@ async function verifyReceipt(receipt, opts = {}) {
   if (anyInvalid) return done('proof_invalid', 'A provided evidence record failed verification.');
   if (anyUnavailable) return done('proof_unavailable', 'A referenced evidence record could not be retrieved.');
 
-  // (11) unconfirmed onchain settlement or untrusted counter-verifier claim
+  // (10.5) Optional offline cryptographic proofs (EIP-1186 state claimProof & EVM receipt-trie settlementProof)
   const rawTrustedKeys = safeOpts.trustedVerifierPublicKeys || safeOpts.trustedPaxiomPublicKeys || null;
+  const rawRootKeys = safeOpts.trustedRootPublicKeys || rawTrustedKeys || null;
+  const rawAtt =
+    safeOpts.rootAttestation ||
+    (safeOpts.settlementProof && safeOpts.settlementProof.rootAttestation) ||
+    (safeOpts.claimProof && safeOpts.claimProof.rootAttestation) ||
+    null;
+
+  let verifiedRootAtt = null;
+  let rootAttErr = null;
+  if (rawAtt) {
+    if (!rawRootKeys) {
+      rootAttErr = {
+        code: 'untrusted_root_signer',
+        reason: 'rootAttestation supplied without trustedRootPublicKeys or trustedVerifierPublicKeys.'
+      };
+    } else {
+      const attCheck = await verifyRootAttestation(rawAtt, {
+        trustedRootPublicKeys: rawRootKeys,
+        allowedFinalityTiers: safeOpts.allowedFinalityTiers,
+        now: nowMs,
+        crypto: webCrypto
+      });
+      if (attCheck.ok) {
+        verifiedRootAtt = attCheck;
+      } else {
+        rootAttErr = attCheck;
+      }
+    }
+  } else if (safeOpts.allowedFinalityTiers && !Array.isArray(safeOpts.allowedFinalityTiers)) {
+    return done('error', `allowedFinalityTiers must be an array of: ${ALLOWED_FINALITY_TIERS.join(', ')}`);
+  }
+
+  let offlineProofSettled = false;
+  let unanchoredProofNote = null;
+  if (safeOpts.claimProof !== undefined || safeOpts.settlementProof !== undefined) {
+    const proofEval = evaluateReceiptOfflineProofsSync({
+      receipt,
+      opts: safeOpts,
+      verifiedRootAttestation: verifiedRootAtt,
+      rootAttestationError: rootAttErr
+    });
+    if (proofEval.outcome === 'fail') {
+      if (proofEval.checkSettlement) checks.settlement = proofEval.checkSettlement;
+      if (proofEval.checkProof) checks.proof = proofEval.checkProof;
+      return done(proofEval.trustState, proofEval.summary);
+    }
+    if (proofEval.outcome === 'verified_settled') {
+      offlineProofSettled = true;
+      checks.settlement = 'verified_settled';
+      checks.proof = 'verified';
+    } else if (proofEval.outcome === 'unanchored_settlement_proof') {
+      checks.proof = proofEval.checkProof;
+      unanchoredProofNote = proofEval.summary;
+    } else if (proofEval.outcome === 'claim_verified') {
+      checks.proof = 'verified';
+    }
+  }
+
+  // (11) unconfirmed onchain settlement or untrusted counter-verifier claim
   const trustedVerifierSet = rawTrustedKeys ? new Set(rawTrustedKeys) : null;
   const isTrustedVerifierSigner = Boolean(trustedVerifierSet && trustedVerifierSet.has(receipt.signature.publicKey));
   const assertsVerifierCheck = Boolean(p.payment.settlement.checkedByVerifier || p.payment.settlement.checkedByPaxiom);
 
-  if (assertsVerifierCheck && !isTrustedVerifierSigner) {
-    return done(
-      'settlement_claimed_not_checked',
-      'Receipt asserts independent verifier settlement check, but signer is not in trustedVerifierPublicKeys.'
-    );
-  }
-  if (
-    (st === 'not_required' || st === 'disabled' || st === 'verify_only') &&
-    p.payment.settlement.transactionHash !== null
-  ) {
-    return done(
-      'settlement_claimed_not_checked',
-      'Receipt carries a non-null settlement.transactionHash under a non-settled status that this offline verifier did not check.'
-    );
-  }
-  const counterVerified = st === 'verified_settled' && assertsVerifierCheck && isTrustedVerifierSigner;
-  if (st === 'claimed_not_checked' || (st === 'verified_settled' && !counterVerified)) {
-    return done(
-      'settlement_claimed_not_checked',
-      hasOutput
-        ? 'Signature and output hash verified. Receipt claims an onchain settlement that this offline verifier did not check.'
-        : 'Signature verified. Receipt claims an onchain settlement that this offline verifier did not check.'
-    );
+  if (!offlineProofSettled) {
+    if (assertsVerifierCheck && !isTrustedVerifierSigner) {
+      return done(
+        'settlement_claimed_not_checked',
+        unanchoredProofNote ||
+          'Receipt asserts independent verifier settlement check, but signer is not in trustedVerifierPublicKeys.'
+      );
+    }
+    if (
+      (st === 'not_required' || st === 'disabled' || st === 'verify_only') &&
+      p.payment.settlement.transactionHash !== null
+    ) {
+      return done(
+        'settlement_claimed_not_checked',
+        unanchoredProofNote ||
+          'Receipt carries a non-null settlement.transactionHash under a non-settled status that this offline verifier did not check.'
+      );
+    }
+    const counterVerified = st === 'verified_settled' && assertsVerifierCheck && isTrustedVerifierSigner;
+    if (st === 'claimed_not_checked' || (st === 'verified_settled' && !counterVerified)) {
+      return done(
+        'settlement_claimed_not_checked',
+        unanchoredProofNote ||
+          (hasOutput
+            ? 'Signature and output hash verified. Receipt claims an onchain settlement that this offline verifier did not check.'
+            : 'Signature verified. Receipt claims an onchain settlement that this offline verifier did not check.')
+      );
+    }
   }
 
   // (12) output not supplied, or settlement unknown
@@ -734,14 +799,15 @@ async function verifyReceipt(receipt, opts = {}) {
       'Signature valid. No output supplied, so payment-to-output binding was not checked.'
     );
   }
-  if (st === 'unknown') {
+  if (st === 'unknown' && !offlineProofSettled) {
     return done('valid_signature_only', 'Signature and output verified, but settlement status is unknown.');
   }
 
   // (13) verified
+  const effectiveSettlement = offlineProofSettled ? 'verified_settled (offline MPT proof)' : st;
   return done(
     'verified',
-    `Receipt verified: schema, Ed25519 signature, output binding, and settlement (${st}) all consistent.`
+    `Receipt verified: schema, Ed25519 signature, output binding, and settlement (${effectiveSettlement}) all consistent.`
   );
 }
 
@@ -759,10 +825,19 @@ function normalizeCaip2Network(rawNet) {
   if (!rawNet || typeof rawNet !== 'string') return null;
   const trimmed = rawNet.trim();
   const lower = trimmed.toLowerCase();
-  if (lower === 'base') return 'eip155:8453';
+  if (lower === 'base' || lower === 'base-mainnet') return 'eip155:8453';
   if (lower === 'base-sepolia') return 'eip155:84532';
+  if (lower === 'ethereum' || lower === 'mainnet' || lower === 'eth') return 'eip155:1';
+  if (lower === 'sepolia' || lower === 'ethereum-sepolia') return 'eip155:11155111';
+  if (lower === 'arbitrum' || lower === 'arbitrum-one') return 'eip155:42161';
+  if (lower === 'arbitrum-sepolia') return 'eip155:421614';
+  if (lower === 'optimism' || lower === 'op-mainnet') return 'eip155:10';
+  if (lower === 'polygon' || lower === 'polygon-pos') return 'eip155:137';
+  if (lower === 'arc' || lower === 'arc-mainnet') return 'eip155:5042';
+  if (lower === 'arc-testnet') return 'eip155:5042002';
   if (lower === 'solana' || lower === 'solana-mainnet') return 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp';
   if (lower === 'solana-devnet') return 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1';
+  if (lower.startsWith('eip155:')) return lower;
   return trimmed;
 }
 
@@ -1576,3 +1651,39 @@ Object.defineProperty(exports, 'createMemorySpendLedger', { enumerable: true, ge
 Object.defineProperty(exports, 'evaluatePreSignPolicy', { enumerable: true, get: function () { return _reexport_1.evaluatePreSignPolicy; } });
 Object.defineProperty(exports, 'evaluateDeliveryArbiter', { enumerable: true, get: function () { return _reexport_1.evaluateDeliveryArbiter; } });
 Object.defineProperty(exports, 'createGuardedFetch', { enumerable: true, get: function () { return _reexport_1.createGuardedFetch; } });
+const _reexport_2 = require('./proofs.cjs');
+Object.defineProperty(exports, 'ROOT_ATTESTATION_VERSION', { enumerable: true, get: function () { return _reexport_2.ROOT_ATTESTATION_VERSION; } });
+Object.defineProperty(exports, 'EMPTY_TRIE_ROOT_HEX', { enumerable: true, get: function () { return _reexport_2.EMPTY_TRIE_ROOT_HEX; } });
+Object.defineProperty(exports, 'EMPTY_CODE_HASH_HEX', { enumerable: true, get: function () { return _reexport_2.EMPTY_CODE_HASH_HEX; } });
+Object.defineProperty(exports, 'ERC20_TRANSFER_TOPIC0', { enumerable: true, get: function () { return _reexport_2.ERC20_TRANSFER_TOPIC0; } });
+Object.defineProperty(exports, 'ALLOWED_FINALITY_TIERS', { enumerable: true, get: function () { return _reexport_2.ALLOWED_FINALITY_TIERS; } });
+Object.defineProperty(exports, 'CANONICAL_USDC_BY_NETWORK', { enumerable: true, get: function () { return _reexport_2.CANONICAL_USDC_BY_NETWORK; } });
+Object.defineProperty(exports, 'keccak256Bytes', { enumerable: true, get: function () { return _reexport_2.keccak256Bytes; } });
+Object.defineProperty(exports, 'keccak256Hex', { enumerable: true, get: function () { return _reexport_2.keccak256Hex; } });
+Object.defineProperty(exports, 'uintToMinimalBytes', { enumerable: true, get: function () { return _reexport_2.uintToMinimalBytes; } });
+Object.defineProperty(exports, 'bytesToBigInt', { enumerable: true, get: function () { return _reexport_2.bytesToBigInt; } });
+Object.defineProperty(exports, 'rlpEncode', { enumerable: true, get: function () { return _reexport_2.rlpEncode; } });
+Object.defineProperty(exports, 'rlpDecode', { enumerable: true, get: function () { return _reexport_2.rlpDecode; } });
+Object.defineProperty(exports, 'normalizeEvmNetworkId', { enumerable: true, get: function () { return _reexport_2.normalizeEvmNetworkId; } });
+Object.defineProperty(exports, 'deriveAccountTrieKey', { enumerable: true, get: function () { return _reexport_2.deriveAccountTrieKey; } });
+Object.defineProperty(exports, 'deriveStorageTrieKey', { enumerable: true, get: function () { return _reexport_2.deriveStorageTrieKey; } });
+Object.defineProperty(exports, 'computeMappingSlot', { enumerable: true, get: function () { return _reexport_2.computeMappingSlot; } });
+Object.defineProperty(exports, 'computeNestedMappingSlot', { enumerable: true, get: function () { return _reexport_2.computeNestedMappingSlot; } });
+Object.defineProperty(exports, 'computeEip3009AuthStateSlot', { enumerable: true, get: function () { return _reexport_2.computeEip3009AuthStateSlot; } });
+Object.defineProperty(exports, 'verifyMptProof', { enumerable: true, get: function () { return _reexport_2.verifyMptProof; } });
+Object.defineProperty(exports, 'buildMptProof', { enumerable: true, get: function () { return _reexport_2.buildMptProof; } });
+Object.defineProperty(exports, 'encodeEvmAccount', { enumerable: true, get: function () { return _reexport_2.encodeEvmAccount; } });
+Object.defineProperty(exports, 'decodeEvmAccount', { enumerable: true, get: function () { return _reexport_2.decodeEvmAccount; } });
+Object.defineProperty(exports, 'verifyAccountProof', { enumerable: true, get: function () { return _reexport_2.verifyAccountProof; } });
+Object.defineProperty(exports, 'verifyStorageProof', { enumerable: true, get: function () { return _reexport_2.verifyStorageProof; } });
+Object.defineProperty(exports, 'verifyEip1186Proof', { enumerable: true, get: function () { return _reexport_2.verifyEip1186Proof; } });
+Object.defineProperty(exports, 'encodeEvmReceipt', { enumerable: true, get: function () { return _reexport_2.encodeEvmReceipt; } });
+Object.defineProperty(exports, 'decodeEvmReceipt', { enumerable: true, get: function () { return _reexport_2.decodeEvmReceipt; } });
+Object.defineProperty(exports, 'buildReceiptTrieProof', { enumerable: true, get: function () { return _reexport_2.buildReceiptTrieProof; } });
+Object.defineProperty(exports, 'verifyEvmReceiptProof', { enumerable: true, get: function () { return _reexport_2.verifyEvmReceiptProof; } });
+Object.defineProperty(exports, 'verifyUsdcSettlementProofSync', { enumerable: true, get: function () { return _reexport_2.verifyUsdcSettlementProofSync; } });
+Object.defineProperty(exports, 'verifyUsdcSettlementProof', { enumerable: true, get: function () { return _reexport_2.verifyUsdcSettlementProof; } });
+Object.defineProperty(exports, 'rootAttestationSigningBytes', { enumerable: true, get: function () { return _reexport_2.rootAttestationSigningBytes; } });
+Object.defineProperty(exports, 'validateRootAttestationStructure', { enumerable: true, get: function () { return _reexport_2.validateRootAttestationStructure; } });
+Object.defineProperty(exports, 'issueRootAttestation', { enumerable: true, get: function () { return _reexport_2.issueRootAttestation; } });
+Object.defineProperty(exports, 'verifyRootAttestation', { enumerable: true, get: function () { return _reexport_2.verifyRootAttestation; } });

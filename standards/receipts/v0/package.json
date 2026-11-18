@@ -1,8 +1,8 @@
 {
   "name": "@paxiom/receipts",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "mcpName": "io.github.k-luecke/paxiom-receipts",
-  "description": "Zero-dependency open-standard issuer, verifier, pure WebCrypto/Workers runtime (@paxiom/receipts/web), buyer policy firewall & AuthCaptureEscrow arbiter (@paxiom/receipts/guard), x402 v2 middleware, and MCP server for proof-bound delivery receipts (paxiom.receipt.v0).",
+  "description": "Zero-dependency open-standard issuer, verifier, pure WebCrypto/Workers runtime (@paxiom/receipts/web), buyer policy firewall & AuthCaptureEscrow arbiter (@paxiom/receipts/guard), offline MPT/EIP-1186/receipt-trie proofs (@paxiom/receipts/proofs), x402 v2 middleware, and MCP server for proof-bound delivery receipts (paxiom.receipt.v0).",
   "type": "module",
   "license": "MIT",
   "homepage": "https://paxiom.org/receipts.html",
@@ -59,6 +59,18 @@
       },
       "types": "./src/guard.d.ts",
       "default": "./src/guard.mjs"
+    },
+    "./proofs": {
+      "import": {
+        "types": "./src/proofs.d.mts",
+        "default": "./src/proofs.mjs"
+      },
+      "require": {
+        "types": "./cjs/proofs.d.cts",
+        "default": "./cjs/proofs.cjs"
+      },
+      "types": "./src/proofs.d.ts",
+      "default": "./src/proofs.mjs"
     },
     "./bytes": {
       "import": {

@@ -25,7 +25,7 @@ export const MAX_MCP_BATCH_SIZE = 32;
 export const REMOTE_MCP_SERVER_INFO = Object.freeze({
   name: 'io.github.k-luecke/paxiom-receipts',
   title: 'Paxiom Receipts MCP',
-  version: '0.3.0'
+  version: '0.4.0'
 });
 
 const TRUST_STATE_ENUM = [

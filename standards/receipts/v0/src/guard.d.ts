@@ -1,4 +1,11 @@
 import type { PaxiomReceiptV0, VerifyReceiptResult } from './web.mjs';
+import type {
+  EvmReceiptTrieProof,
+  ClaimProofEnvelope,
+  PaxiomRootAttestationV0,
+  TrustedRootsInput,
+  RootFinalityTier
+} from './proofs.mjs';
 
 export type VerifyResult = VerifyReceiptResult;
 
@@ -192,12 +199,22 @@ export function evaluateDeliveryArbiter(
     bodyBytes?: Uint8Array;
     receipt?: PaxiomReceiptV0 | null;
     receiptHeader?: string;
+    settlementProof?: EvmReceiptTrieProof;
+    claimProof?: ClaimProofEnvelope;
+    rootAttestation?: PaxiomRootAttestationV0;
   },
   options?: {
     ledger?: SpendLedger | null;
     expectedIssuerPublicKeys?: string[] | Set<string>;
     expectedPayTo?: string;
+    expectedPayer?: string;
     trustedVerifierPublicKeys?: string[];
+    trustedRootPublicKeys?: readonly string[] | ReadonlySet<string>;
+    trustedRoots?: TrustedRootsInput;
+    allowedFinalityTiers?: readonly RootFinalityTier[];
+    settlementProof?: EvmReceiptTrieProof;
+    claimProof?: ClaimProofEnvelope;
+    rootAttestation?: PaxiomRootAttestationV0;
     requireReceipt?: boolean;
     allowUncheckedSettlementClaim?: boolean;
     strictStandardHeaderOnly?: boolean;
@@ -242,6 +259,10 @@ export function createGuardedFetch(options: {
   fetchImpl?: typeof fetch;
   expectedIssuerPublicKeys?: string[] | Set<string> | ((origin: string) => Promise<string[] | Set<string>>);
   trustedVerifierPublicKeys?: string[];
+  trustedRootPublicKeys?: readonly string[] | ReadonlySet<string>;
+  trustedRoots?: TrustedRootsInput;
+  allowedFinalityTiers?: readonly RootFinalityTier[];
+  allowUncheckedSettlementClaim?: boolean;
   requireReceipt?: boolean;
   validateContent?: (
     output: unknown,

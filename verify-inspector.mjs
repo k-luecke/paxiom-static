@@ -118,10 +118,18 @@ function parseReceiptInput(rawText) {
     throw new Error('Paste a Payment-Receipt / X-Paxiom-Receipt header value or a paxiom.receipt.v0 JSON object.');
   }
   if (trimmed.startsWith('{')) {
-    return { receipt: JSON.parse(trimmed), sourceFormat: 'JSON envelope' };
+    const obj = JSON.parse(trimmed);
+    if (obj && typeof obj === 'object' && obj.receipt && typeof obj.receipt === 'object') {
+      return {
+        receipt: obj.receipt,
+        proofBundle: obj,
+        sourceFormat: 'JSON proof bundle'
+      };
+    }
+    return { receipt: obj, proofBundle: null, sourceFormat: 'JSON envelope' };
   }
   const stripped = trimmed.replace(/^(?:payment-receipt|x-paxiom-receipt)\s*:\s*/i, '').trim();
-  return { receipt: decodeReceiptHeader(stripped), sourceFormat: 'Base64url HTTP header' };
+  return { receipt: decodeReceiptHeader(stripped), proofBundle: null, sourceFormat: 'Base64url HTTP header' };
 }
 
 function renderBadgeClass(result) {
@@ -136,7 +144,13 @@ function renderBadgeClass(result) {
 }
 
 function renderCheckPillClass(val) {
-  if (val === 'pass' || val === 'not_required' || val === 'verify_only' || val === 'verified_settled') {
+  if (
+    val === 'pass' ||
+    val === 'verified' ||
+    val === 'not_required' ||
+    val === 'verify_only' ||
+    val === 'verified_settled'
+  ) {
     return 'check-val pass';
   }
   if (val === 'fail' || val === 'error' || val === 'failed' || val === 'invalid') {
@@ -176,8 +190,17 @@ async function runVerification() {
     return;
   }
 
-  const { receipt, sourceFormat } = parsed;
+  const { receipt, proofBundle, sourceFormat } = parsed;
   const opts = {};
+  if (proofBundle) {
+    if (proofBundle.settlementProof !== undefined) opts.settlementProof = proofBundle.settlementProof;
+    if (proofBundle.claimProof !== undefined) opts.claimProof = proofBundle.claimProof;
+    if (proofBundle.rootAttestation !== undefined) opts.rootAttestation = proofBundle.rootAttestation;
+    if (proofBundle.trustedRoots !== undefined) opts.trustedRoots = proofBundle.trustedRoots;
+    if (Array.isArray(proofBundle.trustedRootPublicKeys)) {
+      opts.trustedRootPublicKeys = proofBundle.trustedRootPublicKeys;
+    }
+  }
 
   const trimmedOut = outputInput.trim();
   if (trimmedOut !== '') {

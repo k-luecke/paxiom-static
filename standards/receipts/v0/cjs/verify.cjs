@@ -6,6 +6,7 @@ const { signingInput } = require('./canonicalize.cjs');
 const { sha256Hex, hashCanonical } = require('./hash.cjs');
 const { RECEIPT_VERSION, RECEIPT_SCHEMA, normalizePayToId, validateReceiptSchema } = require('./schema.cjs');
 const { strictDecodeBase64Bytes, bytesToBase64Url, isByteArray, utf8ToBytes } = require('./bytes.cjs');
+const { ALLOWED_FINALITY_TIERS, validateRootAttestationStructure, rootAttestationSigningBytes, evaluateReceiptOfflineProofsSync } = require('./proofs.cjs');
 
 
 
@@ -15,6 +16,55 @@ function ed25519PublicKey(publicKeyB64) {
     format: 'jwk',
     key: { kty: 'OKP', crv: 'Ed25519', x: bytesToBase64Url(raw) }
   });
+}
+
+function verifyRootAttestationSync(attestation, { trustedRootPublicKeys, allowedFinalityTiers, nowMs }) {
+  const fail = (code, reason) => ({ ok: false, verified: false, code, reason, payload: null });
+  const schemaErrs = validateRootAttestationStructure(attestation);
+  if (schemaErrs.length > 0) {
+    return fail('invalid_root_attestation', schemaErrs[0]);
+  }
+  let sigOk = false;
+  try {
+    const pubKeyObj = ed25519PublicKey(attestation.signature.publicKey);
+    const sigBuf = strictDecodeBase64Bytes(attestation.signature.value, 64, 'rootAttestation signature.value');
+    const msgBuf = rootAttestationSigningBytes(attestation.payload);
+    sigOk = crypto.verify(null, msgBuf, pubKeyObj, sigBuf);
+  } catch {
+    sigOk = false;
+  }
+  if (!sigOk) {
+    return fail('invalid_signature', 'Ed25519 signature verification failed on rootAttestation.');
+  }
+  if (trustedRootPublicKeys !== undefined && trustedRootPublicKeys !== null) {
+    const allowedSet = trustedRootPublicKeys instanceof Set
+      ? trustedRootPublicKeys
+      : new Set(Array.isArray(trustedRootPublicKeys) ? trustedRootPublicKeys : []);
+    if (!allowedSet.has(attestation.signature.publicKey)) {
+      return fail(
+        'untrusted_root_signer',
+        `Root attestation signer (${attestation.signature.publicKey}) is not in trustedRootPublicKeys.`
+      );
+    }
+  }
+  if (Array.isArray(allowedFinalityTiers) && allowedFinalityTiers.length > 0) {
+    if (!allowedFinalityTiers.includes(attestation.payload.finalityTier)) {
+      return fail(
+        'disallowed_finality_tier',
+        `Root attestation finalityTier "${attestation.payload.finalityTier}" is not in allowedFinalityTiers.`
+      );
+    }
+  }
+  if (attestation.payload.expiresAt && Date.parse(attestation.payload.expiresAt) < nowMs) {
+    return fail('expired_root_attestation', `Root attestation expired at ${attestation.payload.expiresAt}.`);
+  }
+  return {
+    ok: true,
+    verified: true,
+    code: 'verified',
+    payload: attestation.payload,
+    signerPublicKey: attestation.signature.publicKey
+  };
 }
 
 const CHECK = { PASS: 'pass', FAIL: 'fail', SKIP: 'not_checked' };
@@ -174,27 +224,90 @@ function verifyReceipt(receipt, opts = {}) {
   if (anyInvalid) return done('proof_invalid', 'A provided evidence record failed verification.');
   if (anyUnavailable) return done('proof_unavailable', 'A referenced evidence record could not be retrieved.');
 
-  // (11) unconfirmed onchain settlement or untrusted counter-verifier claim
+  // (10.5) Optional offline cryptographic proofs (EIP-1186 state claimProof & EVM receipt-trie settlementProof)
   const rawTrustedKeys = safeOpts.trustedVerifierPublicKeys || safeOpts.trustedPaxiomPublicKeys || null;
+  const rawRootKeys = safeOpts.trustedRootPublicKeys || rawTrustedKeys || null;
+  const rawAtt =
+    safeOpts.rootAttestation ||
+    (safeOpts.settlementProof && safeOpts.settlementProof.rootAttestation) ||
+    (safeOpts.claimProof && safeOpts.claimProof.rootAttestation) ||
+    null;
+
+  let verifiedRootAtt = null;
+  let rootAttErr = null;
+  if (rawAtt) {
+    if (!rawRootKeys) {
+      rootAttErr = {
+        code: 'untrusted_root_signer',
+        reason: 'rootAttestation supplied without trustedRootPublicKeys or trustedVerifierPublicKeys.'
+      };
+    } else {
+      const attCheck = verifyRootAttestationSync(rawAtt, {
+        trustedRootPublicKeys: rawRootKeys,
+        allowedFinalityTiers: safeOpts.allowedFinalityTiers,
+        nowMs
+      });
+      if (attCheck.ok) {
+        verifiedRootAtt = attCheck;
+      } else {
+        rootAttErr = attCheck;
+      }
+    }
+  } else if (safeOpts.allowedFinalityTiers && !Array.isArray(safeOpts.allowedFinalityTiers)) {
+    return done('error', `allowedFinalityTiers must be an array of: ${ALLOWED_FINALITY_TIERS.join(', ')}`);
+  }
+
+  let offlineProofSettled = false;
+  let unanchoredProofNote = null;
+  if (safeOpts.claimProof !== undefined || safeOpts.settlementProof !== undefined) {
+    const proofEval = evaluateReceiptOfflineProofsSync({
+      receipt,
+      opts: safeOpts,
+      verifiedRootAttestation: verifiedRootAtt,
+      rootAttestationError: rootAttErr
+    });
+    if (proofEval.outcome === 'fail') {
+      if (proofEval.checkSettlement) checks.settlement = proofEval.checkSettlement;
+      if (proofEval.checkProof) checks.proof = proofEval.checkProof;
+      return done(proofEval.trustState, proofEval.summary);
+    }
+    if (proofEval.outcome === 'verified_settled') {
+      offlineProofSettled = true;
+      checks.settlement = 'verified_settled';
+      checks.proof = 'verified';
+    } else if (proofEval.outcome === 'unanchored_settlement_proof') {
+      checks.proof = proofEval.checkProof;
+      unanchoredProofNote = proofEval.summary;
+    } else if (proofEval.outcome === 'claim_verified') {
+      checks.proof = 'verified';
+    }
+  }
+
+  // (11) unconfirmed onchain settlement or untrusted counter-verifier claim
   const trustedVerifierSet = rawTrustedKeys ? new Set(rawTrustedKeys) : null;
   const isTrustedVerifierSigner = Boolean(trustedVerifierSet && trustedVerifierSet.has(receipt.signature.publicKey));
   const assertsVerifierCheck = Boolean(p.payment.settlement.checkedByVerifier || p.payment.settlement.checkedByPaxiom);
 
-  if (assertsVerifierCheck && !isTrustedVerifierSigner) {
-    return done('settlement_claimed_not_checked',
-      'Receipt asserts independent verifier settlement check, but signer is not in trustedVerifierPublicKeys.');
-  }
-  if ((st === 'not_required' || st === 'disabled' || st === 'verify_only') &&
-      p.payment.settlement.transactionHash !== null) {
-    return done('settlement_claimed_not_checked',
-      'Receipt carries a non-null settlement.transactionHash under a non-settled status that this offline verifier did not check.');
-  }
-  const counterVerified = st === 'verified_settled' && assertsVerifierCheck && isTrustedVerifierSigner;
-  if (st === 'claimed_not_checked' || (st === 'verified_settled' && !counterVerified)) {
-    return done('settlement_claimed_not_checked',
-      hasOutput
-        ? 'Signature and output hash verified. Receipt claims an onchain settlement that this offline verifier did not check.'
-        : 'Signature verified. Receipt claims an onchain settlement that this offline verifier did not check.');
+  if (!offlineProofSettled) {
+    if (assertsVerifierCheck && !isTrustedVerifierSigner) {
+      return done('settlement_claimed_not_checked',
+        unanchoredProofNote ||
+        'Receipt asserts independent verifier settlement check, but signer is not in trustedVerifierPublicKeys.');
+    }
+    if ((st === 'not_required' || st === 'disabled' || st === 'verify_only') &&
+        p.payment.settlement.transactionHash !== null) {
+      return done('settlement_claimed_not_checked',
+        unanchoredProofNote ||
+        'Receipt carries a non-null settlement.transactionHash under a non-settled status that this offline verifier did not check.');
+    }
+    const counterVerified = st === 'verified_settled' && assertsVerifierCheck && isTrustedVerifierSigner;
+    if (st === 'claimed_not_checked' || (st === 'verified_settled' && !counterVerified)) {
+      return done('settlement_claimed_not_checked',
+        unanchoredProofNote ||
+        (hasOutput
+          ? 'Signature and output hash verified. Receipt claims an onchain settlement that this offline verifier did not check.'
+          : 'Signature verified. Receipt claims an onchain settlement that this offline verifier did not check.'));
+    }
   }
 
   // (12) output not supplied, or settlement unknown -> can't reach verified
@@ -202,13 +315,14 @@ function verifyReceipt(receipt, opts = {}) {
     return done('valid_signature_only',
       'Signature valid. No output supplied, so payment-to-output binding was not checked.');
   }
-  if (st === 'unknown') {
+  if (st === 'unknown' && !offlineProofSettled) {
     return done('valid_signature_only', 'Signature and output verified, but settlement status is unknown.');
   }
 
   // (13) verified
+  const effectiveSettlement = offlineProofSettled ? 'verified_settled (offline MPT proof)' : st;
   return done('verified',
-    `Receipt verified: schema, Ed25519 signature, output binding, and settlement (${st}) all consistent.`);
+    `Receipt verified: schema, Ed25519 signature, output binding, and settlement (${effectiveSettlement}) all consistent.`);
 }
 
 /** Convenience: verify from file paths (Node.js only). */

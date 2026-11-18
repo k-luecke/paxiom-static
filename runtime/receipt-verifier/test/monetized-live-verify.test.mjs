@@ -293,7 +293,7 @@ test('RENDER=true forces free public reference mode (even if legacy X402_ENABLED
   const base = `http://127.0.0.1:${port}`;
 
   const ver = await fetch(`${base}/version`).then((r) => r.json());
-  assert.equal(ver.version, '0.3.0');
+  assert.equal(ver.version, '0.4.0');
   assert.equal(ver.x402Enabled, false);
   assert.equal(ver.capabilities.liveSettlementVerification, true);
   assert.equal(ver.rateLimits.verifyLivePerMinute, 2);

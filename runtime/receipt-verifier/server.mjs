@@ -1,4 +1,4 @@
-// Public reference runtime for the Paxiom Receipt Verifier (`https://api.paxiom.org`, v0.3.0):
+// Public reference runtime for the Paxiom Receipt Verifier (`https://api.paxiom.org`, v0.4.0):
 //   - Offline routes (`/health`, `/version`, `/v1/receipt/demo`, `POST /v1/receipt/verify`,
 //     `GET /.well-known/x402-keys.json`, `GET /.well-known/paxiom-keys.json`, `POST /mcp`)
 //     are always active with zero env vars and zero external calls.
@@ -30,7 +30,7 @@ import {
 } from './x402-preflight.mjs';
 import { handleMcpHttpRequest, buildMcpServerCard } from './mcp-http.mjs';
 
-export const RUNTIME_VERSION = '0.3.0';
+export const RUNTIME_VERSION = '0.4.0';
 const MAX_BODY_BYTES = 256 * 1024; // 256 KiB
 const MAX_DRAIN_AFTER_413 = 64 * 1024; // bounded post-413 drain window before destroying socket
 const MAX_RATE_LIMIT_BUCKETS = 4096;
@@ -299,6 +299,7 @@ function buildVersionPayload(env = process.env) {
     ],
     capabilities: {
       offlineVerification: true,
+      offlineMptProofVerification: true,
       signerKeyDiscovery: true,
       rawAndJcsPayloadBinding: true,
       liveSettlementVerification: liveEnabled,
@@ -463,6 +464,9 @@ async function handleOfflineVerify(req, res, env, stats) {
     if (typeof parsed.expectedPayTo === 'string' && parsed.expectedPayTo.trim()) {
       opts.expectedPayTo = parsed.expectedPayTo;
     }
+    if (typeof parsed.expectedPayer === 'string' && parsed.expectedPayer.trim()) {
+      opts.expectedPayer = parsed.expectedPayer;
+    }
     if (Array.isArray(parsed.trustedVerifierPublicKeys)) {
       opts.trustedVerifierPublicKeys = parsed.trustedVerifierPublicKeys;
     } else if (Array.isArray(parsed.trustedPaxiomPublicKeys)) {
@@ -473,6 +477,14 @@ async function handleOfflineVerify(req, res, env, stats) {
         opts.trustedVerifierPublicKeys = [paxiomKey.publicKey];
       }
     }
+    if (Array.isArray(parsed.trustedRootPublicKeys)) {
+      opts.trustedRootPublicKeys = parsed.trustedRootPublicKeys;
+    }
+    if (parsed.trustedRoots !== undefined) opts.trustedRoots = parsed.trustedRoots;
+    if (Array.isArray(parsed.allowedFinalityTiers)) opts.allowedFinalityTiers = parsed.allowedFinalityTiers;
+    if (parsed.settlementProof !== undefined) opts.settlementProof = parsed.settlementProof;
+    if (parsed.claimProof !== undefined) opts.claimProof = parsed.claimProof;
+    if (parsed.rootAttestation !== undefined) opts.rootAttestation = parsed.rootAttestation;
     const verdict = verifyReceipt(parsed.receipt, opts);
     if (stats) {
       stats.offlineVerify.calls += 1;

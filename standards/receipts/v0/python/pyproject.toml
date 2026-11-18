@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "paxiom-receipts"
-version = "0.3.0"
-description = "Zero-dependency open-standard Python issuer, verifier, buyer policy firewall & AuthCaptureEscrow arbiter, x402 v2 buyer client, and FastAPI/ASGI middleware for proof-bound delivery receipts (paxiom.receipt.v0)."
+version = "0.4.0"
+description = "Zero-dependency open-standard Python issuer, verifier, buyer policy firewall & AuthCaptureEscrow arbiter, offline MPT/EIP-1186/receipt-trie proofs, x402 v2 buyer client, and FastAPI/ASGI middleware for proof-bound delivery receipts (paxiom.receipt.v0)."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]

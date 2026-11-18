@@ -50,16 +50,32 @@ def normalize_caip2_network_id(raw_net: Any) -> str | None:
         return None
     trimmed = raw_net.strip()
     low = trimmed.lower()
-    if low == "base":
+    if low in ("base", "base-mainnet"):
         return "eip155:8453"
     if low == "base-sepolia":
         return "eip155:84532"
-    if low in ("ethereum", "mainnet"):
+    if low in ("ethereum", "mainnet", "eth"):
         return "eip155:1"
+    if low in ("sepolia", "ethereum-sepolia"):
+        return "eip155:11155111"
+    if low in ("arbitrum", "arbitrum-one"):
+        return "eip155:42161"
+    if low == "arbitrum-sepolia":
+        return "eip155:421614"
+    if low in ("optimism", "op-mainnet"):
+        return "eip155:10"
+    if low in ("polygon", "polygon-pos"):
+        return "eip155:137"
+    if low in ("arc", "arc-mainnet"):
+        return "eip155:5042"
+    if low == "arc-testnet":
+        return "eip155:5042002"
     if low in ("solana", "solana-mainnet"):
         return "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
     if low == "solana-devnet":
         return "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+    if low.startswith("eip155:"):
+        return low
     return trimmed
 
 
@@ -643,7 +659,14 @@ def evaluate_delivery_arbiter(
     ledger: MemorySpendLedger | None = None,
     expected_issuer_public_keys: list[str] | set[str] | None = None,
     expected_pay_to: str | None = None,
+    expected_payer: str | None = None,
     trusted_verifier_public_keys: list[str] | None = None,
+    trusted_root_public_keys: list[str] | set[str] | None = None,
+    trusted_roots: Any = None,
+    allowed_finality_tiers: list[str] | tuple[str, ...] | None = None,
+    settlement_proof: Any = None,
+    claim_proof: Any = None,
+    root_attestation: Any = None,
     require_receipt: bool = True,
     allow_unchecked_settlement_claim: bool = True,
     validate_content: Callable[[Any, dict[str, Any]], Any] | None = None,
@@ -773,12 +796,33 @@ def evaluate_delivery_arbiter(
                 return settle_void("invalid_json_output", "Invalid UTF-8 JSON for jcs-sha256 receipt.", receipt=receipt, raw_header=raw_hdr)
 
         eff_pay_to = expected_pay_to or (challenge or {}).get("payTo")
+        raw_proof_hdr = (
+            _extract_header(resp, "payment-settlement-proof")
+            or _extract_header(resp, "x-paxiom-settlement-proof")
+        )
+        decoded_proof_hdr = _decode_flexible_b64_json(raw_proof_hdr) if raw_proof_hdr else None
+        eff_sp = (
+            input_data["settlementProof"]
+            if "settlementProof" in input_data
+            else (settlement_proof if settlement_proof is not None else decoded_proof_hdr)
+        )
+        eff_cp = input_data.get("claimProof", claim_proof)
+        eff_att = input_data.get("rootAttestation", root_attestation)
+
         verification = verify_receipt(
             receipt,
             output=parsed_output if canon_mode == "jcs-sha256" else raw_bytes,
             expected_issuer_public_keys=list(expected_issuer_public_keys) if expected_issuer_public_keys is not None else None,
             expected_pay_to=eff_pay_to,
+            expected_payer=expected_payer,
             trusted_verifier_public_keys=trusted_verifier_public_keys,
+            trusted_root_public_keys=trusted_root_public_keys,
+            trusted_roots=trusted_roots,
+            allowed_finality_tiers=allowed_finality_tiers,
+            settlement_proof=eff_sp,
+            claim_proof=eff_cp,
+            root_attestation=eff_att,
+            now=t_ms,
         )
         ts = verification.get("trustState")
         checks = verification.get("checks") or {}

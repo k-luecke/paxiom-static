@@ -95,7 +95,7 @@ jobs:
               exit 1
             fi
           done
-          node --input-type=module -e "const m = await import('./dist/standards/receipts/v0/src/web.mjs'); if (typeof m.verifyReceipt !== 'function') process.exit(1);"
+          node --input-type=module -e "const m = await import('./dist/standards/receipts/v0/src/web.mjs'); if (typeof m.verifyReceipt !== 'function' || typeof m.verifyUsdcSettlementProof !== 'function' || typeof m.verifyEip1186Proof !== 'function') process.exit(1);"
           python3 - <<'PY'
           import glob, os, re, sys
           root = "dist"

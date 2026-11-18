@@ -5,7 +5,7 @@ import { verifyFromFiles } from '../src/verify.mjs';
 import { generateReceiptKeyPair, issueReceipt } from '../src/issue.mjs';
 import { explain } from '../src/explain.mjs';
 
-const USAGE = `paxiom-receipt — CLI for paxiom.receipt.v0 (v0.3.0)
+const USAGE = `paxiom-receipt — CLI for paxiom.receipt.v0 (v0.4.0)
 
 Usage:
   paxiom-receipt verify <receipt.json> [--output <file>] [--expected-issuer-key <pubKeyB64>] [--expected-pay-to <addr>] [--trusted-verifier-key <pubKeyB64>] [--json]

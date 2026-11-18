@@ -2,6 +2,14 @@
 // Zero `@types/node` and zero `Buffer` references — compiles cleanly under
 // `"types": ["@cloudflare/workers-types"]`, `"lib": ["ES2022", "WebWorker"]`, or `"DOM"`.
 
+import type {
+  EvmReceiptTrieProof,
+  ClaimProofEnvelope,
+  PaxiomRootAttestationV0,
+  TrustedRootsInput,
+  RootFinalityTier
+} from './proofs.mjs';
+
 export const RECEIPT_VERSION: 'paxiom.receipt.v0';
 export const RECEIPT_SCHEMA: Readonly<Record<string, unknown>>;
 export const STANDARD_RECEIPT_HEADER_NAME: 'payment-receipt';
@@ -127,8 +135,16 @@ export interface VerifyReceiptOptions {
   now?: string | number | Date;
   expectedIssuerPublicKeys?: readonly string[] | ReadonlySet<string>;
   expectedPayTo?: string;
+  expectedPayer?: string;
   trustedVerifierPublicKeys?: readonly string[] | ReadonlySet<string>;
   trustedPaxiomPublicKeys?: readonly string[] | ReadonlySet<string>;
+  trustedRootPublicKeys?: readonly string[] | ReadonlySet<string>;
+  trustedRoots?: TrustedRootsInput;
+  allowedFinalityTiers?: readonly RootFinalityTier[];
+  settlementProof?: EvmReceiptTrieProof;
+  claimProof?: ClaimProofEnvelope;
+  rootAttestation?: PaxiomRootAttestationV0;
+  crypto?: Crypto;
 }
 
 export interface VerifyReceiptResult {
@@ -366,3 +382,4 @@ export function verifyReceiptLive(
   options?: VerifyReceiptLiveOptions
 ): Promise<VerifyReceiptLiveResult>;
 export * from './guard.mjs';
+export * from './proofs.mjs';

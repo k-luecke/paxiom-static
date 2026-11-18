@@ -1,9 +1,9 @@
-# `paxiom-receipts` (Python Reference SDK — `v0.3.0`)
+# `paxiom-receipts` (Python Reference SDK — `v0.4.0`)
 
-Zero-dependency Python 3.10+ reference implementation of **`paxiom.receipt.v0`** — open MIT cryptographic proof-of-delivery receipts (`Payment-Receipt` / `X-Paxiom-Receipt`), seller key discovery (`/.well-known/x402-keys.json`), pre-payment `x402` seller readiness checks, live Base USDC settlement verification, and FastAPI / Starlette ASGI middleware.
+Zero-dependency Python 3.10+ reference implementation of **`paxiom.receipt.v0`** — open MIT cryptographic proof-of-delivery receipts (`Payment-Receipt` / `X-Paxiom-Receipt`), two-gate buyer policy firewall & `AuthCaptureEscrow` arbiter (`paxiom_receipts.guard`), offline Ethereum MPT / EIP-1186 state & EVM receipt-trie USDC settlement verifier (`paxiom_receipts.proofs`), seller key discovery (`/.well-known/x402-keys.json`), pre-payment `x402` seller readiness checks, live Base USDC settlement verification, and FastAPI / Starlette ASGI middleware.
 
-- **Zero required dependencies:** Ships a pure-stdlib RFC 8032 Ed25519 implementation (automatically accelerating via OpenSSL `cryptography` when installed in the environment).
-- **100% byte-compatible with [`@paxiom/receipts`](https://www.npmjs.com/package/@paxiom/receipts) (`0.3.0`, Node.js):** Shares identical PKCS#8 PEM keys, RFC 8785 JCS (`jcs-sha256`) and non-JSON (`raw-sha256`) payload hashing, `x402` v2 header auto-parsing (CAIP-2 EVM & Solana), `Payment-Receipt` + `X-Paxiom-Receipt` headers, and all 16 deterministic trust states (including `unauthorized_issuer`).
+- **Zero required dependencies:** Ships pure-stdlib RFC 8032 Ed25519, 24-round Ethereum Keccak-256, strict Yellow Paper RLP, and Modified Merkle-Patricia Trie (MPT) implementations.
+- **100% byte-compatible with [`@paxiom/receipts`](https://www.npmjs.com/package/@paxiom/receipts) (`0.4.0`, Node.js / WebCrypto):** Shares identical PKCS#8 PEM keys, RFC 8785 JCS (`jcs-sha256`) and non-JSON (`raw-sha256`) payload hashing, `paxiom.root.v0` signed block root attestations, offline EIP-1186 & EVM receipt-trie proofs (Ethereum, Base, Arbitrum, Optimism, Polygon, Circle Arc), `x402` v2 header auto-parsing (CAIP-2 EVM & Solana), `Payment-Receipt` + `X-Paxiom-Receipt` headers, and all deterministic trust states.
 - **Inline PEP 561 types (`py.typed`):** Full type hints for `mypy`, `pyright`, and IDE autocomplete.
 
 ## Install
@@ -84,5 +84,5 @@ if check["trustState"] == "settlement_claimed_not_checked":
 - **`x402` Extension Spec:** <https://paxiom.org/standards/receipts/v0/x402-delivery-receipt-extension.md>
 - **Specification & Vectors:** <https://paxiom.org/receipts.html>
 - **Free Public Verifier & Keys:** <https://api.paxiom.org/.well-known/x402-keys.json>
-- **MCP Server (`0.3.0`):** <https://api.paxiom.org/mcp>
+- **MCP Server (`0.4.0`):** <https://api.paxiom.org/mcp>
 - **TypeScript / Node.js SDK:** [`@paxiom/receipts`](https://www.npmjs.com/package/@paxiom/receipts)

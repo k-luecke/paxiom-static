@@ -1,7 +1,7 @@
 {
   "name": "io.github.k-luecke/paxiom-receipts",
   "title": "Paxiom Receipts MCP",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Verify and explain Ed25519 proof-bound delivery receipts (paxiom.receipt.v0) for x402 APIs, and discover free public Base USDC settlement & preflight reference endpoints.",
   "websiteUrl": "https://paxiom.org/receipts.html",
   "transport": {
