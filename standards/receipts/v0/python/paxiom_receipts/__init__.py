@@ -21,9 +21,20 @@ from .issue import (
     normalize_transaction_id,
     public_key_from_private_key,
 )
+from .guard import (
+    DEFAULT_ALLOWED_SCHEMES,
+    ESCROW_SCHEMES,
+    MemorySpendLedger,
+    evaluate_delivery_arbiter,
+    evaluate_pre_sign_policy,
+    extract_payment_challenges,
+    normalize_caip2_network_id,
+    parse_atomic_int,
+    resolve_firewall_origin,
+)
 from .verify import RECEIPT_VERSION, explain, verify_from_files, verify_receipt
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "__version__",
@@ -54,4 +65,13 @@ __all__ = [
     "preflight_x402",
     "verify_receipt_live",
     "PaxiomReceiptMiddleware",
+    "ESCROW_SCHEMES",
+    "DEFAULT_ALLOWED_SCHEMES",
+    "MemorySpendLedger",
+    "normalize_caip2_network_id",
+    "parse_atomic_int",
+    "resolve_firewall_origin",
+    "extract_payment_challenges",
+    "evaluate_pre_sign_policy",
+    "evaluate_delivery_arbiter",
 ]

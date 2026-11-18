@@ -1,4 +1,4 @@
-# Paxiom Receipt v0 (`@paxiom/receipts` `v0.2.1` & `paxiom-receipts` `v0.2.0`)
+# Paxiom Receipt v0 (`@paxiom/receipts` `v0.3.0` & `paxiom-receipts` `v0.3.0`)
 
 **License:** MIT · **Status:** Open protocol specification, conformance vectors, zero-dependency Node.js, Cloudflare Workers / WebCrypto (`@paxiom/receipts/web`), & Python SDKs, and free public reference verifier (`https://api.paxiom.org`).
 
@@ -7,6 +7,13 @@
 A **`paxiom.receipt.v0` delivery receipt** binds **HTTP request, `x402` payment terms, settlement claim, and delivered response payload** into a single Ed25519-signed envelope carried in `Payment-Receipt` (and `X-Paxiom-Receipt`). It is **100% open, free, and vendor-neutral**: any `x402` resource server on Base, EVM, or Solana can mint receipts offline with zero dependencies, and any buyer wallet or agent router can verify them with only a public key.
 
 See [`x402-delivery-receipt-extension.md`](./x402-delivery-receipt-extension.md) for the formal **`x402` v2 `delivery-receipt` extension specification**.
+
+## What's New in `v0.3.0`
+
+- **Two-Gate Buyer Policy Firewall & `AuthCaptureEscrow` Arbiter (`@paxiom/receipts/guard` & Python `paxiom_receipts.guard`):**
+  - **Gate 1 (`evaluatePreSignPolicy`):** Evaluates `402 Payment Required` challenges *before* invoking any wallet signer — enforcing HTTPS transport, origin allow/deny lists, reservation-safe `BigInt` atomic caps (`maxPerCallAtomic`, `maxPerOriginWindowAtomic`, `maxSessionAtomic`), `payTo` pinning, automatic upgrade from irreversible `exact` above `maxUnescrowedExactAtomic` to Coinbase `AuthCaptureEscrow` (`auth-capture`), and strict `PaymentInfo` (`operator`, `maxFeeBps`, `authorizationExpiry`) bounds.
+  - **Gate 2 (`evaluateDeliveryArbiter` & `createGuardedFetch`):** Gates escrow `CAPTURE` vs. `VOID` on HTTP 2xx bounds, Ed25519 `Payment-Receipt` verification, request/query/body & payment anti-replay binding, and caller `validateContent()` predicates — emitting a non-repudiable `FraudEvidenceRecord` under the seller's `keyId` when signed bogus content is rejected and tripping a per-origin circuit breaker.
+  - Zero `node:*` imports and zero `Buffer` tokens — runs identically in Node.js `>=18`, Cloudflare Workers, Deno, Bun, and browsers.
 
 ## What's New in `v0.2.1`
 

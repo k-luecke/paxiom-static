@@ -28,3 +28,15 @@ export {
   preflightX402,
   verifyReceiptLive
 } from './client.mjs';
+export {
+  ESCROW_SCHEMES,
+  DEFAULT_ALLOWED_SCHEMES,
+  normalizeCaip2NetworkId,
+  parseAtomicBigInt,
+  resolveFirewallOrigin,
+  extractPaymentChallenges,
+  createMemorySpendLedger,
+  evaluatePreSignPolicy,
+  evaluateDeliveryArbiter,
+  createGuardedFetch
+} from './guard.mjs';

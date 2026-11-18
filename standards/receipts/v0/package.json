@@ -1,8 +1,8 @@
 {
   "name": "@paxiom/receipts",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "mcpName": "io.github.k-luecke/paxiom-receipts",
-  "description": "Zero-dependency open-standard issuer, verifier, pure WebCrypto/Workers runtime (@paxiom/receipts/web), x402 v2 middleware, buyer preflight/live client, and MCP server for proof-bound delivery receipts (paxiom.receipt.v0).",
+  "description": "Zero-dependency open-standard issuer, verifier, pure WebCrypto/Workers runtime (@paxiom/receipts/web), buyer policy firewall & AuthCaptureEscrow arbiter (@paxiom/receipts/guard), x402 v2 middleware, and MCP server for proof-bound delivery receipts (paxiom.receipt.v0).",
   "type": "module",
   "license": "MIT",
   "homepage": "https://paxiom.org/receipts.html",
@@ -30,6 +30,10 @@
     "./web": {
       "types": "./src/web.d.ts",
       "default": "./src/web.mjs"
+    },
+    "./guard": {
+      "types": "./src/guard.d.ts",
+      "default": "./src/guard.mjs"
     },
     "./bytes": {
       "types": "./src/web.d.ts",
@@ -100,6 +104,8 @@
     "mcp",
     "proof-of-delivery",
     "verification",
-    "paxiom"
+    "paxiom",
+    "buyer-firewall",
+    "auth-capture-escrow"
   ]
 }

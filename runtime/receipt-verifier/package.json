@@ -1,6 +1,6 @@
 {
   "name": "paxiom-receipt-verifier-runtime",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Free public reference runtime for the Paxiom Receipt Verifier (paxiom.receipt.v0, MIT). Zero external dependencies, rate-limited live Base USDC settlement check and x402 seller preflight.",
