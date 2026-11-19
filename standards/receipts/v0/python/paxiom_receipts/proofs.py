@@ -27,6 +27,7 @@ from .ed25519_pure import (
 )
 
 ROOT_ATTESTATION_VERSION = "paxiom.root.v0"
+ERC8021_MARKER_HEX = "0x80218021802180218021802180218021"
 EMPTY_TRIE_ROOT_HEX = "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
 EMPTY_CODE_HASH_HEX = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
 ERC20_TRANSFER_TOPIC0 = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
@@ -2049,3 +2050,297 @@ def evaluate_receipt_offline_proofs(
         return {"outcome": "claim_verified", "checkProof": "verified"}
 
     return {"outcome": "none"}
+
+
+# ─── 8. ERC-8021 Base Builder Code & x402 Calldata Attribution ──────────
+
+_ERC8021_MARKER_BYTES = bytes.fromhex("80218021802180218021802180218021")
+_ERC8021_CODE_RE = re.compile(r"\A[\x21-\x2b\x2d-\x7e]+\Z")
+_MAX_CBOR_DEPTH = 16
+
+
+def _validate_attr_code(code: Any, label: str) -> str:
+    if not isinstance(code, str) or not code or not _ERC8021_CODE_RE.match(code):
+        raise ValueError(f"{label} must be a non-empty printable ASCII identifier without commas or whitespace")
+    return code
+
+
+def _cbor_head(major: int, length: int) -> bytes:
+    mt = major << 5
+    if length < 24:
+        return bytes([mt | length])
+    if length <= 0xFF:
+        return bytes([mt | 24, length])
+    if length <= 0xFFFF:
+        return bytes([mt | 25, (length >> 8) & 0xFF, length & 0xFF])
+    if length <= 0xFFFFFFFF:
+        return bytes([mt | 26]) + length.to_bytes(4, "big")
+    raise ValueError("CBOR value exceeds 32-bit length bounds")
+
+
+def _cbor_encode(val: Any, depth: int = 0) -> bytes:
+    if depth > _MAX_CBOR_DEPTH:
+        raise ValueError("CBOR nesting exceeds max depth")
+    if val is None:
+        return b"\xf6"
+    if val is False:
+        return b"\xf4"
+    if val is True:
+        return b"\xf5"
+    if isinstance(val, int):
+        return _cbor_head(0, val) if val >= 0 else _cbor_head(1, -1 - val)
+    if isinstance(val, str):
+        b = val.encode("utf-8")
+        return _cbor_head(3, len(b)) + b
+    if isinstance(val, (bytes, bytearray)):
+        b = bytes(val)
+        return _cbor_head(2, len(b)) + b
+    if isinstance(val, (list, tuple)):
+        return _cbor_head(4, len(val)) + b"".join(_cbor_encode(x, depth + 1) for x in val)
+    if isinstance(val, dict):
+        items = [(k, v) for k, v in val.items() if v is not None]
+        return _cbor_head(5, len(items)) + b"".join(
+            _cbor_encode(str(k), depth + 1) + _cbor_encode(v, depth + 1) for k, v in items
+        )
+    raise TypeError(f"Unsupported CBOR value type: {type(val).__name__}")
+
+
+def _cbor_decode_head(data: bytes, offset: int) -> tuple[int, int, int]:
+    if offset >= len(data):
+        raise ValueError("Unexpected end of CBOR input")
+    initial = data[offset]
+    major = initial >> 5
+    info = initial & 0x1F
+    if info < 24:
+        return major, info, offset + 1
+    if info == 24:
+        if offset + 2 > len(data):
+            raise ValueError("Truncated CBOR uint8")
+        return major, data[offset + 1], offset + 2
+    if info == 25:
+        if offset + 3 > len(data):
+            raise ValueError("Truncated CBOR uint16")
+        return major, int.from_bytes(data[offset + 1 : offset + 3], "big"), offset + 3
+    if info == 26:
+        if offset + 5 > len(data):
+            raise ValueError("Truncated CBOR uint32")
+        return major, int.from_bytes(data[offset + 1 : offset + 5], "big"), offset + 5
+    raise ValueError(f"Unsupported CBOR additional info: {info}")
+
+
+def _cbor_decode_item(data: bytes, offset: int, depth: int = 0) -> tuple[Any, int]:
+    if depth > _MAX_CBOR_DEPTH:
+        raise ValueError("CBOR nesting exceeds max depth")
+    major, arg, nxt = _cbor_decode_head(data, offset)
+    if major == 0:
+        return arg, nxt
+    if major == 1:
+        return -1 - arg, nxt
+    if major == 2:
+        if nxt + arg > len(data):
+            raise ValueError("Truncated CBOR bytes")
+        return data[nxt : nxt + arg], nxt + arg
+    if major == 3:
+        if nxt + arg > len(data):
+            raise ValueError("Truncated CBOR text")
+        return data[nxt : nxt + arg].decode("utf-8"), nxt + arg
+    if major == 4:
+        arr: list[Any] = []
+        cur = nxt
+        for _ in range(arg):
+            v, cur = _cbor_decode_item(data, cur, depth + 1)
+            arr.append(v)
+        return arr, cur
+    if major == 5:
+        obj: dict[str, Any] = {}
+        cur = nxt
+        for _ in range(arg):
+            k, cur = _cbor_decode_item(data, cur, depth + 1)
+            v, cur = _cbor_decode_item(data, cur, depth + 1)
+            obj[str(k)] = v
+        return obj, cur
+    if major == 7:
+        if arg == 20:
+            return False, nxt
+        if arg == 21:
+            return True, nxt
+        if arg == 22:
+            return None, nxt
+    raise ValueError(f"Unsupported CBOR major type {major}")
+
+
+def encode_erc8021_suffix(attribution: Any) -> str:
+    if isinstance(attribution, str):
+        spec: dict[str, Any] = {"codes": [attribution]}
+    elif isinstance(attribution, (list, tuple)):
+        spec = {"codes": list(attribution)}
+    elif isinstance(attribution, dict):
+        spec = attribution
+    else:
+        raise TypeError("attribution must be a Builder Code str, list[str], or ERC-8021 dict")
+
+    is_schema2 = (
+        spec.get("id") == 2
+        or any(k in spec for k in ("appCode", "walletCode", "serviceCodes", "registries", "metadata"))
+    )
+    if is_schema2:
+        cmap: dict[str, Any] = {}
+        if spec.get("appCode") is not None:
+            cmap["a"] = _validate_attr_code(spec["appCode"], "appCode")
+        if spec.get("walletCode") is not None:
+            cmap["w"] = _validate_attr_code(spec["walletCode"], "walletCode")
+        if spec.get("serviceCodes"):
+            cmap["s"] = [_validate_attr_code(c, f"serviceCodes[{i}]") for i, c in enumerate(spec["serviceCodes"])]
+        if isinstance(spec.get("registries"), dict):
+            r: dict[str, Any] = {}
+            if spec["registries"].get("app"):
+                ra = spec["registries"]["app"]
+                r["a"] = {
+                    "c": hex(_parse_uint256(ra["chainId"], "registries.app.chainId")),
+                    "a": "0x" + _as_fixed_bytes(ra["address"], 20, "registries.app.address").hex(),
+                }
+            if spec["registries"].get("wallet"):
+                rw = spec["registries"]["wallet"]
+                r["w"] = {
+                    "c": hex(_parse_uint256(rw["chainId"], "registries.wallet.chainId")),
+                    "a": "0x" + _as_fixed_bytes(rw["address"], 20, "registries.wallet.address").hex(),
+                }
+            if r:
+                cmap["r"] = r
+        if isinstance(spec.get("metadata"), dict) and spec["metadata"]:
+            cmap["m"] = spec["metadata"]
+        cbor_b = _cbor_encode(cmap)
+        if len(cbor_b) == 0 or len(cbor_b) > 0xFFFF:
+            raise ValueError("ERC-8021 Schema 2 CBOR payload must be 1..65535 bytes")
+        return "0x" + (cbor_b + len(cbor_b).to_bytes(2, "big") + b"\x02" + _ERC8021_MARKER_BYTES).hex()
+
+    codes = spec.get("codes")
+    if not isinstance(codes, (list, tuple)) or not codes:
+        raise ValueError("ERC-8021 Schema 0/1 requires a non-empty codes sequence")
+    clean = [_validate_attr_code(c, f"codes[{i}]") for i, c in enumerate(codes)]
+    codes_b = ",".join(clean).encode("ascii")
+    if len(codes_b) > 255:
+        raise ValueError("ERC-8021 Schema 0/1 codes payload cannot exceed 255 bytes")
+
+    if spec.get("id") == 1 or "codeRegistry" in spec:
+        reg = spec.get("codeRegistry")
+        if not isinstance(reg, dict):
+            raise ValueError("ERC-8021 Schema 1 requires codeRegistry: { address, chainId }")
+        reg_addr = _as_fixed_bytes(reg["address"], 20, "codeRegistry.address")
+        cid = _parse_uint256(reg["chainId"], "codeRegistry.chainId")
+        if cid <= 0:
+            raise ValueError("codeRegistry.chainId must be > 0")
+        cid_b = uint_to_minimal_bytes(cid)
+        return "0x" + (reg_addr + cid_b + bytes([len(cid_b)]) + codes_b + bytes([len(codes_b), 0x01]) + _ERC8021_MARKER_BYTES).hex()
+
+    return "0x" + (codes_b + bytes([len(codes_b), 0x00]) + _ERC8021_MARKER_BYTES).hex()
+
+
+def append_erc8021_suffix(calldata: Any, attribution: Any) -> str:
+    base = b"" if not calldata or calldata in ("0x", "0X") else _as_bytes_flex(calldata, "calldata")
+    suf = _hex_to_bytes_strict(encode_erc8021_suffix(attribution), "suffix")
+    return "0x" + (base + suf).hex()
+
+
+def decode_erc8021_suffix(calldata: Any) -> dict[str, Any]:
+    def none(code: str, reason: str) -> dict[str, Any]:
+        return {"ok": False, "present": False, "code": code, "reason": reason, "schemaId": None, "attribution": None}
+
+    try:
+        raw = _as_bytes_flex(calldata, "calldata")
+    except Exception as exc:
+        return none("invalid_calldata", str(exc))
+    if len(raw) < 18 or raw[-16:] != _ERC8021_MARKER_BYTES:
+        return none("no_erc8021_marker", "No trailing ERC-8021 marker present.")
+
+    schema_id = raw[-17]
+    if schema_id in (0, 1):
+        if len(raw) < 19:
+            return {"ok": False, "present": True, "code": "truncated_erc8021", "reason": "Truncated Schema 0/1 length.", "schemaId": schema_id, "attribution": None}
+        codes_len = raw[-18]
+        codes_end = len(raw) - 18
+        codes_start = codes_end - codes_len
+        if codes_len == 0 or codes_start < 0:
+            return {"ok": False, "present": True, "code": "truncated_erc8021", "reason": "Invalid codesLength.", "schemaId": schema_id, "attribution": None}
+        try:
+            codes = [c for c in raw[codes_start:codes_end].decode("utf-8").split(",") if c]
+        except Exception:
+            return {"ok": False, "present": True, "code": "invalid_erc8021_codes", "reason": "Invalid UTF-8.", "schemaId": schema_id, "attribution": None}
+        if not codes:
+            return {"ok": False, "present": True, "code": "invalid_erc8021_codes", "reason": "Empty codes.", "schemaId": schema_id, "attribution": None}
+        if schema_id == 0:
+            return {
+                "ok": True,
+                "present": True,
+                "code": "verified",
+                "reason": f"Decoded ERC-8021 Schema 0 Builder Code(s): {', '.join(codes)}",
+                "schemaId": 0,
+                "calldataWithoutSuffix": "0x" + raw[:codes_start].hex(),
+                "attribution": {"id": 0, "codes": codes},
+            }
+        if codes_start < 22:
+            return {"ok": False, "present": True, "code": "truncated_erc8021", "reason": "Truncated Schema 1 registry.", "schemaId": 1, "attribution": None}
+        cid_len = raw[codes_start - 1]
+        if cid_len == 0 or cid_len > 32 or codes_start < 21 + cid_len:
+            return {"ok": False, "present": True, "code": "truncated_erc8021", "reason": "Invalid chainIdLen.", "schemaId": 1, "attribution": None}
+        cid_start = codes_start - 1 - cid_len
+        addr_start = cid_start - 20
+        return {
+            "ok": True,
+            "present": True,
+            "code": "verified",
+            "reason": f"Decoded ERC-8021 Schema 1 Builder Code(s): {', '.join(codes)}",
+            "schemaId": 1,
+            "calldataWithoutSuffix": "0x" + raw[:addr_start].hex(),
+            "attribution": {
+                "id": 1,
+                "codes": codes,
+                "codeRegistry": {
+                    "address": "0x" + raw[addr_start:cid_start].hex(),
+                    "chainId": bytes_to_int(raw[cid_start : codes_start - 1]),
+                },
+            },
+        }
+
+    if schema_id == 2:
+        if len(raw) < 20:
+            return {"ok": False, "present": True, "code": "truncated_erc8021", "reason": "Truncated Schema 2 length.", "schemaId": 2, "attribution": None}
+        cbor_len = int.from_bytes(raw[-19:-17], "big")
+        cbor_end = len(raw) - 19
+        cbor_start = cbor_end - cbor_len
+        if cbor_len == 0 or cbor_start < 0:
+            return {"ok": False, "present": True, "code": "truncated_erc8021", "reason": "Invalid cborLength.", "schemaId": 2, "attribution": None}
+        try:
+            dec, consumed = _cbor_decode_item(raw[cbor_start:cbor_end], 0, 0)
+            if consumed != cbor_len or not isinstance(dec, dict):
+                raise ValueError("Schema 2 payload must be a canonical CBOR map")
+        except Exception as exc:
+            return {"ok": False, "present": True, "code": "invalid_erc8021_cbor", "reason": str(exc), "schemaId": 2, "attribution": None}
+        attr: dict[str, Any] = {"id": 2}
+        if isinstance(dec.get("a"), str):
+            attr["appCode"] = dec["a"]
+        if isinstance(dec.get("w"), str):
+            attr["walletCode"] = dec["w"]
+        if isinstance(dec.get("s"), list):
+            attr["serviceCodes"] = [str(x) for x in dec["s"]]
+        if isinstance(dec.get("r"), dict):
+            regs: dict[str, Any] = {}
+            if isinstance(dec["r"].get("a"), dict):
+                regs["app"] = {"address": str(dec["r"]["a"]["a"]), "chainId": int(str(dec["r"]["a"]["c"]), 16)}
+            if isinstance(dec["r"].get("w"), dict):
+                regs["wallet"] = {"address": str(dec["r"]["w"]["a"]), "chainId": int(str(dec["r"]["w"]["c"]), 16)}
+            if regs:
+                attr["registries"] = regs
+        if isinstance(dec.get("m"), dict):
+            attr["metadata"] = dict(dec["m"])
+        return {
+            "ok": True,
+            "present": True,
+            "code": "verified",
+            "reason": "Decoded ERC-8021 Schema 2 (CBOR) attribution.",
+            "schemaId": 2,
+            "calldataWithoutSuffix": "0x" + raw[:cbor_start].hex(),
+            "attribution": attr,
+        }
+
+    return {"ok": False, "present": True, "code": "unsupported_erc8021_schema", "reason": f"Unsupported schemaId={schema_id}.", "schemaId": schema_id, "attribution": None}

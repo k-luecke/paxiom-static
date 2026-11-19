@@ -1,4 +1,5 @@
 export const ROOT_ATTESTATION_VERSION: 'paxiom.root.v0';
+export const ERC8021_MARKER_HEX: '0x80218021802180218021802180218021';
 export const EMPTY_TRIE_ROOT_HEX: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421';
 export const EMPTY_CODE_HASH_HEX: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470';
 export const ERC20_TRANSFER_TOPIC0: '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
@@ -405,3 +406,52 @@ export function verifyRootAttestation(
     crypto?: Crypto;
   }
 ): Promise<VerifyRootAttestationResult>;
+
+export interface Erc8021CustomRegistry {
+  address: string;
+  chainId: number;
+}
+
+export interface Erc8021AttributionSchema0 {
+  id?: 0;
+  codes: readonly string[];
+}
+
+export interface Erc8021AttributionSchema1 {
+  id?: 1;
+  codes: readonly string[];
+  codeRegistry: Erc8021CustomRegistry;
+}
+
+export interface Erc8021AttributionSchema2 {
+  id?: 2;
+  appCode?: string;
+  walletCode?: string;
+  serviceCodes?: readonly string[];
+  registries?: {
+    app?: Erc8021CustomRegistry;
+    wallet?: Erc8021CustomRegistry;
+  };
+  metadata?: Record<string, unknown>;
+}
+
+export type Erc8021AttributionInput =
+  | string
+  | readonly string[]
+  | Erc8021AttributionSchema0
+  | Erc8021AttributionSchema1
+  | Erc8021AttributionSchema2;
+
+export interface DecodedErc8021Result {
+  ok: boolean;
+  present: boolean;
+  code: string;
+  reason: string;
+  schemaId: 0 | 1 | 2 | number | null;
+  calldataWithoutSuffix?: string;
+  attribution: Erc8021AttributionSchema0 | Erc8021AttributionSchema1 | Erc8021AttributionSchema2 | null;
+}
+
+export function encodeErc8021Suffix(attribution: Erc8021AttributionInput): string;
+export function appendErc8021Suffix(calldata: FlexibleBytesInput, attribution: Erc8021AttributionInput): string;
+export function decodeErc8021Suffix(calldata: FlexibleBytesInput): DecodedErc8021Result;

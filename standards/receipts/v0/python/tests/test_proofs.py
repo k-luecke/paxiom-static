@@ -313,6 +313,23 @@ if (!res.valid || res.trustState !== 'verified') {
         self.assertFalse(res_rev["valid"])
         self.assertEqual(res_rev["trustState"], "settlement_failed")
 
+    def test_erc8021_base_builder_codes_match_wevm_ox_vectors(self) -> None:
+        self.assertEqual(
+            pr.encode_erc8021_suffix(["baseapp", "morpho"]),
+            "0x626173656170702c6d6f7270686f0e0080218021802180218021802180218021",
+        )
+        s0 = pr.decode_erc8021_suffix("0xdddddddd62617365617070070080218021802180218021802180218021")
+        self.assertTrue(s0["ok"])
+        self.assertEqual(s0["schemaId"], 0)
+        self.assertEqual(s0["attribution"], {"id": 0, "codes": ["baseapp"]})
+
+        s2_hex = "0xdddddddda161616762617365617070000b0280218021802180218021802180218021"
+        self.assertEqual(pr.append_erc8021_suffix("0xdddddddd", {"appCode": "baseapp"}), s2_hex)
+        s2 = pr.decode_erc8021_suffix(s2_hex)
+        self.assertTrue(s2["ok"])
+        self.assertEqual(s2["schemaId"], 2)
+        self.assertEqual(s2["attribution"], {"id": 2, "appCode": "baseapp"})
+
 
 if __name__ == "__main__":
     unittest.main()

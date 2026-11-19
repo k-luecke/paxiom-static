@@ -53,6 +53,7 @@ Object.defineProperty(exports, 'evaluateDeliveryArbiter', { enumerable: true, ge
 Object.defineProperty(exports, 'createGuardedFetch', { enumerable: true, get: function () { return _reexport_8.createGuardedFetch; } });
 const _reexport_9 = require('./proofs.cjs');
 Object.defineProperty(exports, 'ROOT_ATTESTATION_VERSION', { enumerable: true, get: function () { return _reexport_9.ROOT_ATTESTATION_VERSION; } });
+Object.defineProperty(exports, 'ERC8021_MARKER_HEX', { enumerable: true, get: function () { return _reexport_9.ERC8021_MARKER_HEX; } });
 Object.defineProperty(exports, 'EMPTY_TRIE_ROOT_HEX', { enumerable: true, get: function () { return _reexport_9.EMPTY_TRIE_ROOT_HEX; } });
 Object.defineProperty(exports, 'EMPTY_CODE_HASH_HEX', { enumerable: true, get: function () { return _reexport_9.EMPTY_CODE_HASH_HEX; } });
 Object.defineProperty(exports, 'ERC20_TRANSFER_TOPIC0', { enumerable: true, get: function () { return _reexport_9.ERC20_TRANSFER_TOPIC0; } });
@@ -87,3 +88,6 @@ Object.defineProperty(exports, 'rootAttestationSigningBytes', { enumerable: true
 Object.defineProperty(exports, 'validateRootAttestationStructure', { enumerable: true, get: function () { return _reexport_9.validateRootAttestationStructure; } });
 Object.defineProperty(exports, 'issueRootAttestation', { enumerable: true, get: function () { return _reexport_9.issueRootAttestation; } });
 Object.defineProperty(exports, 'verifyRootAttestation', { enumerable: true, get: function () { return _reexport_9.verifyRootAttestation; } });
+Object.defineProperty(exports, 'encodeErc8021Suffix', { enumerable: true, get: function () { return _reexport_9.encodeErc8021Suffix; } });
+Object.defineProperty(exports, 'appendErc8021Suffix', { enumerable: true, get: function () { return _reexport_9.appendErc8021Suffix; } });
+Object.defineProperty(exports, 'decodeErc8021Suffix', { enumerable: true, get: function () { return _reexport_9.decodeErc8021Suffix; } });

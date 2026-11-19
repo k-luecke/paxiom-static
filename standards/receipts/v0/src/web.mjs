@@ -1654,6 +1654,7 @@ export {
 } from './guard.mjs';
 export {
   ROOT_ATTESTATION_VERSION,
+  ERC8021_MARKER_HEX,
   EMPTY_TRIE_ROOT_HEX,
   EMPTY_CODE_HASH_HEX,
   ERC20_TRANSFER_TOPIC0,
@@ -1687,5 +1688,8 @@ export {
   rootAttestationSigningBytes,
   validateRootAttestationStructure,
   issueRootAttestation,
-  verifyRootAttestation
+  verifyRootAttestation,
+  encodeErc8021Suffix,
+  appendErc8021Suffix,
+  decodeErc8021Suffix
 } from './proofs.mjs';

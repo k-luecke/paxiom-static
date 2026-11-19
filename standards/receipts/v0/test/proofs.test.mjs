@@ -472,3 +472,63 @@ test('v0.4.0 Circle Arc (eip155:5042) & Adversarial Receipt-Trie Rejection (reve
   assert.equal(underRes.valid, false);
   assert.equal(underRes.trustState, 'proof_invalid');
 });
+
+test('v0.4.0 ERC-8021 Base Builder Code & x402 CBOR attribution matches official wevm/ox vectors', () => {
+  // Official wevm/ox Schema 0 multi-code vector
+  assert.equal(
+    proofs.encodeErc8021Suffix(['baseapp', 'morpho']),
+    '0x626173656170702c6d6f7270686f0e0080218021802180218021802180218021'
+  );
+
+  // Official wevm/ox Schema 0 calldata vector
+  const s0 = proofs.decodeErc8021Suffix(
+    '0xdddddddd62617365617070070080218021802180218021802180218021'
+  );
+  assert.equal(s0.ok, true);
+  assert.equal(s0.schemaId, 0);
+  assert.equal(s0.calldataWithoutSuffix, '0xdddddddd');
+  assert.deepEqual(s0.attribution, { id: 0, codes: ['baseapp'] });
+
+  // Official wevm/ox Schema 1 custom registry calldata vector (chainId 8453 = 0x2105)
+  const schema1Hex =
+    '0xddddddddcccccccccccccccccccccccccccccccccccccccc210502626173656170702c6d6f7270686f0e0180218021802180218021802180218021';
+  const s1 = proofs.decodeErc8021Suffix(schema1Hex);
+  assert.equal(s1.ok, true);
+  assert.equal(s1.schemaId, 1);
+  assert.equal(s1.calldataWithoutSuffix, '0xdddddddd');
+  assert.deepEqual(s1.attribution, {
+    id: 1,
+    codes: ['baseapp', 'morpho'],
+    codeRegistry: { address: '0xcccccccccccccccccccccccccccccccccccccccc', chainId: 8453 }
+  });
+  assert.equal(proofs.appendErc8021Suffix('0xdddddddd', s1.attribution), schema1Hex);
+
+  // Official wevm/ox Schema 2 (CBOR x402 attribution) vector
+  const schema2Hex =
+    '0xdddddddda161616762617365617070000b0280218021802180218021802180218021';
+  assert.equal(proofs.appendErc8021Suffix('0xdddddddd', { appCode: 'baseapp' }), schema2Hex);
+  const s2 = proofs.decodeErc8021Suffix(schema2Hex);
+  assert.equal(s2.ok, true);
+  assert.equal(s2.schemaId, 2);
+  assert.equal(s2.calldataWithoutSuffix, '0xdddddddd');
+  assert.deepEqual(s2.attribution, { id: 2, appCode: 'baseapp' });
+
+  // Full x402 Schema 2 round-trip (appCode + walletCode + serviceCodes + metadata)
+  const fullCalldata = proofs.appendErc8021Suffix('0x3009abcd', {
+    appCode: 'bc_paxiom',
+    walletCode: 'agentkit',
+    serviceCodes: ['cdp-x402'],
+    metadata: { receiptVersion: 'paxiom.receipt.v0', verified: true }
+  });
+  const decFull = proofs.decodeErc8021Suffix(fullCalldata);
+  assert.equal(decFull.ok, true);
+  assert.equal(decFull.attribution.appCode, 'bc_paxiom');
+  assert.equal(decFull.attribution.walletCode, 'agentkit');
+  assert.deepEqual(decFull.attribution.serviceCodes, ['cdp-x402']);
+  assert.deepEqual(decFull.attribution.metadata, { receiptVersion: 'paxiom.receipt.v0', verified: true });
+
+  // Plain calldata without marker -> clean ok: false, present: false (never throws)
+  const absent = proofs.decodeErc8021Suffix('0xa9059cbb0000000000000000000000001111111111111111111111111111111111111111');
+  assert.equal(absent.ok, false);
+  assert.equal(absent.present, false);
+});

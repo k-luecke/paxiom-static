@@ -14,11 +14,12 @@
 // Pure Web-Standard module: ZERO `node:*` imports and ZERO Node buffer references.
 // Runs identically in Browsers, Cloudflare Workers, Deno, Bun, and Node.js >= 18.
 
-const { isByteArray, asUint8Array, utf8ToBytes, bytesToHex, hexToBytes, concatBytes, bytesToBase64, base64ToBytes, strictDecodeBase64Bytes } = require('./bytes.cjs');
+const { isByteArray, asUint8Array, utf8ToBytes, bytesToUtf8, bytesToHex, hexToBytes, concatBytes, bytesToBase64, base64ToBytes, strictDecodeBase64Bytes } = require('./bytes.cjs');
 const { canonicalize, MAX_DEPTH } = require('./canonicalize.cjs');
 const { normalizePayToId } = require('./schema.cjs');
 
 const ROOT_ATTESTATION_VERSION = 'paxiom.root.v0';
+const ERC8021_MARKER_HEX = '0x80218021802180218021802180218021';
 const EMPTY_TRIE_ROOT_HEX =
   '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421';
 const EMPTY_CODE_HASH_HEX =
@@ -2837,7 +2838,389 @@ async function verifyUsdcSettlementProof(opts = {}) {
   });
 }
 
+// ─── 8. ERC-8021 Base Builder Code & x402 Calldata Attribution ──────────
+
+const ERC8021_MARKER_BYTES = new Uint8Array([
+  0x80, 0x21, 0x80, 0x21, 0x80, 0x21, 0x80, 0x21,
+  0x80, 0x21, 0x80, 0x21, 0x80, 0x21, 0x80, 0x21
+]);
+const ERC8021_CODE_RE = /^[\x21-\x2b\x2d-\x7e]+$/; // printable non-whitespace, non-comma ASCII
+const MAX_CBOR_DEPTH = 16;
+
+function validateAttributionCode(code, label) {
+  if (typeof code !== 'string' || !code || !ERC8021_CODE_RE.test(code)) {
+    throw new TypeError(`${label} must be a non-empty printable ASCII identifier without commas or whitespace`);
+  }
+  return code;
+}
+
+function cborEncodeHeader(majorType, length) {
+  const mt = majorType << 5;
+  if (length < 24) return new Uint8Array([mt | length]);
+  if (length <= 0xff) return new Uint8Array([mt | 24, length]);
+  if (length <= 0xffff) return new Uint8Array([mt | 25, (length >>> 8) & 0xff, length & 0xff]);
+  if (length <= 0xffffffff) {
+    return new Uint8Array([
+      mt | 26,
+      (length >>> 24) & 0xff,
+      (length >>> 16) & 0xff,
+      (length >>> 8) & 0xff,
+      length & 0xff
+    ]);
+  }
+  throw new RangeError('CBOR value exceeds 32-bit length bounds');
+}
+
+function cborEncodeValue(val, depth = 0) {
+  if (depth > MAX_CBOR_DEPTH) throw new RangeError('CBOR nesting exceeds max depth');
+  if (val === null) return new Uint8Array([0xf6]);
+  if (val === false) return new Uint8Array([0xf4]);
+  if (val === true) return new Uint8Array([0xf5]);
+  if (typeof val === 'number' || typeof val === 'bigint') {
+    const n = typeof val === 'bigint' ? Number(val) : val;
+    if (!Number.isSafeInteger(n)) throw new TypeError('CBOR integer must be a safe integer');
+    if (n >= 0) return cborEncodeHeader(0, n);
+    return cborEncodeHeader(1, -1 - n);
+  }
+  if (typeof val === 'string') {
+    const b = utf8ToBytes(val);
+    return concatBytes([cborEncodeHeader(3, b.length), b]);
+  }
+  if (val instanceof Uint8Array) {
+    return concatBytes([cborEncodeHeader(2, val.length), val]);
+  }
+  if (Array.isArray(val)) {
+    const parts = [cborEncodeHeader(4, val.length)];
+    for (const item of val) parts.push(cborEncodeValue(item, depth + 1));
+    return concatBytes(parts);
+  }
+  if (val && typeof val === 'object') {
+    const entries = Object.entries(val).filter(([, v]) => v !== undefined);
+    const parts = [cborEncodeHeader(5, entries.length)];
+    for (const [k, v] of entries) {
+      parts.push(cborEncodeValue(k, depth + 1));
+      parts.push(cborEncodeValue(v, depth + 1));
+    }
+    return concatBytes(parts);
+  }
+  throw new TypeError(`Unsupported CBOR value type: ${typeof val}`);
+}
+
+function cborDecodeHead(data, offset) {
+  if (offset >= data.length) throw new Error('Unexpected end of CBOR input');
+  const initial = data[offset];
+  const major = initial >>> 5;
+  const info = initial & 0x1f;
+  if (info < 24) return { major, arg: info, next: offset + 1 };
+  if (info === 24) {
+    if (offset + 2 > data.length) throw new Error('Truncated CBOR uint8');
+    return { major, arg: data[offset + 1], next: offset + 2 };
+  }
+  if (info === 25) {
+    if (offset + 3 > data.length) throw new Error('Truncated CBOR uint16');
+    return { major, arg: (data[offset + 1] << 8) | data[offset + 2], next: offset + 3 };
+  }
+  if (info === 26) {
+    if (offset + 5 > data.length) throw new Error('Truncated CBOR uint32');
+    const u32 = (
+      (data[offset + 1] * 0x1000000) +
+      ((data[offset + 2] << 16) | (data[offset + 3] << 8) | data[offset + 4])
+    );
+    return { major, arg: u32, next: offset + 5 };
+  }
+  throw new Error(`Unsupported CBOR additional info: ${info}`);
+}
+
+function cborDecodeItem(data, offset, depth = 0) {
+  if (depth > MAX_CBOR_DEPTH) throw new Error('CBOR nesting exceeds max depth');
+  const { major, arg, next } = cborDecodeHead(data, offset);
+  if (major === 0) return { value: arg, next };
+  if (major === 1) return { value: -1 - arg, next };
+  if (major === 2) {
+    if (next + arg > data.length) throw new Error('Truncated CBOR byte string');
+    return { value: data.slice(next, next + arg), next: next + arg };
+  }
+  if (major === 3) {
+    if (next + arg > data.length) throw new Error('Truncated CBOR text string');
+    return { value: bytesToUtf8(data.subarray(next, next + arg)), next: next + arg };
+  }
+  if (major === 4) {
+    const arr = [];
+    let cur = next;
+    for (let i = 0; i < arg; i++) {
+      const child = cborDecodeItem(data, cur, depth + 1);
+      arr.push(child.value);
+      cur = child.next;
+    }
+    return { value: arr, next: cur };
+  }
+  if (major === 5) {
+    const obj = Object.create(null);
+    let cur = next;
+    for (let i = 0; i < arg; i++) {
+      const k = cborDecodeItem(data, cur, depth + 1);
+      const v = cborDecodeItem(data, k.next, depth + 1);
+      obj[String(k.value)] = v.value;
+      cur = v.next;
+    }
+    return { value: obj, next: cur };
+  }
+  if (major === 7) {
+    if (arg === 20) return { value: false, next };
+    if (arg === 21) return { value: true, next };
+    if (arg === 22) return { value: null, next };
+  }
+  throw new Error(`Unsupported CBOR major type ${major}`);
+}
+
+/**
+ * Encode an ERC-8021 transaction attribution suffix (`0x...` hex) compatible with Base Builder Codes
+ * and `wevm/ox` (`Schema 0` canonical codes, `Schema 1` custom registry, and `Schema 2` CBOR `x402` attribution).
+ * Accepts a single Builder Code string (e.g. `'bc_...'`), an array of code strings, or an attribution object.
+ */
+function encodeErc8021Suffix(attribution) {
+  let spec;
+  if (typeof attribution === 'string') {
+    spec = { codes: [attribution] };
+  } else if (Array.isArray(attribution)) {
+    spec = { codes: attribution };
+  } else if (attribution && typeof attribution === 'object') {
+    spec = attribution;
+  } else {
+    throw new TypeError('attribution must be a Builder Code string, string[], or ERC-8021 attribution object');
+  }
+
+  const isSchema2 =
+    spec.id === 2 ||
+    spec.appCode !== undefined ||
+    spec.walletCode !== undefined ||
+    spec.serviceCodes !== undefined ||
+    spec.registries !== undefined ||
+    spec.metadata !== undefined;
+
+  if (isSchema2) {
+    const map = {};
+    if (spec.appCode !== undefined) map.a = validateAttributionCode(spec.appCode, 'appCode');
+    if (spec.walletCode !== undefined) map.w = validateAttributionCode(spec.walletCode, 'walletCode');
+    if (Array.isArray(spec.serviceCodes) && spec.serviceCodes.length > 0) {
+      map.s = spec.serviceCodes.map((c, idx) => validateAttributionCode(c, `serviceCodes[${idx}]`));
+    }
+    if (spec.registries && typeof spec.registries === 'object') {
+      const r = {};
+      if (spec.registries.app) {
+        const addr = `0x${bytesToHex(asFixedBytes(spec.registries.app.address, 20, 'registries.app.address'))}`;
+        const cid = `0x${parseFlexibleUint256(spec.registries.app.chainId, 'registries.app.chainId').toString(16)}`;
+        r.a = { c: cid, a: addr };
+      }
+      if (spec.registries.wallet) {
+        const addr = `0x${bytesToHex(asFixedBytes(spec.registries.wallet.address, 20, 'registries.wallet.address'))}`;
+        const cid = `0x${parseFlexibleUint256(spec.registries.wallet.chainId, 'registries.wallet.chainId').toString(16)}`;
+        r.w = { c: cid, a: addr };
+      }
+      if (r.a || r.w) map.r = r;
+    }
+    if (spec.metadata && typeof spec.metadata === 'object' && Object.keys(spec.metadata).length > 0) {
+      map.m = spec.metadata;
+    }
+    const cborBytes = cborEncodeValue(map);
+    if (cborBytes.length === 0 || cborBytes.length > 0xffff) {
+      throw new RangeError('ERC-8021 Schema 2 CBOR payload must be 1..65535 bytes');
+    }
+    const len2 = new Uint8Array([(cborBytes.length >>> 8) & 0xff, cborBytes.length & 0xff, 0x02]);
+    return `0x${bytesToHex(concatBytes([cborBytes, len2, ERC8021_MARKER_BYTES]))}`;
+  }
+
+  if (!Array.isArray(spec.codes) || spec.codes.length === 0) {
+    throw new TypeError('ERC-8021 Schema 0/1 requires a non-empty codes array');
+  }
+  const cleanCodes = spec.codes.map((c, idx) => validateAttributionCode(c, `codes[${idx}]`));
+  const codesBytes = utf8ToBytes(cleanCodes.join(','));
+  if (codesBytes.length > 255) {
+    throw new RangeError('ERC-8021 Schema 0/1 codes payload cannot exceed 255 bytes');
+  }
+
+  if (spec.id === 1 || spec.codeRegistry) {
+    if (!spec.codeRegistry || typeof spec.codeRegistry !== 'object') {
+      throw new TypeError('ERC-8021 Schema 1 requires codeRegistry: { address, chainId }');
+    }
+    const regAddr = asFixedBytes(spec.codeRegistry.address, 20, 'codeRegistry.address');
+    const chainIdBig = parseFlexibleUint256(spec.codeRegistry.chainId, 'codeRegistry.chainId');
+    if (chainIdBig <= 0n) throw new RangeError('codeRegistry.chainId must be > 0');
+    const chainIdBytes = uintToMinimalBytes(chainIdBig);
+    const tail = new Uint8Array([codesBytes.length, 0x01]);
+    return `0x${bytesToHex(
+      concatBytes([
+        regAddr,
+        chainIdBytes,
+        new Uint8Array([chainIdBytes.length]),
+        codesBytes,
+        tail,
+        ERC8021_MARKER_BYTES
+      ])
+    )}`;
+  }
+
+  const tail = new Uint8Array([codesBytes.length, 0x00]);
+  return `0x${bytesToHex(concatBytes([codesBytes, tail, ERC8021_MARKER_BYTES]))}`;
+}
+
+/**
+ * Append an ERC-8021 attribution suffix to EVM transaction `calldata` (`0x...` hex or `Uint8Array`),
+ * returning `0x`-prefixed hex calldata.
+ */
+function appendErc8021Suffix(calldata, attribution) {
+  const baseBytes = !calldata || calldata === '0x' || calldata === '0X'
+    ? new Uint8Array(0)
+    : asBytesFlexible(calldata, 'calldata');
+  const suffixBytes = hexToBytes(encodeErc8021Suffix(attribution));
+  return `0x${bytesToHex(concatBytes([baseBytes, suffixBytes]))}`;
+}
+
+/**
+ * Extract and decode an ERC-8021 attribution suffix from EVM transaction `calldata` (reading backwards
+ * from the 16-byte `0x8021...8021` marker). Deterministic and never throws on arbitrary calldata.
+ */
+function decodeErc8021Suffix(calldata) {
+  const none = (code, reason) => ({ ok: false, present: false, code, reason, schemaId: null, attribution: null });
+  let raw;
+  try {
+    raw = asBytesFlexible(calldata, 'calldata');
+  } catch (err) {
+    return none('invalid_calldata', String((err && err.message) || err));
+  }
+  if (raw.length < 18) {
+    return none('no_erc8021_marker', 'Calldata shorter than minimum ERC-8021 suffix (18 bytes).');
+  }
+  const markerSlice = raw.subarray(raw.length - 16);
+  if (!bytesEqual(markerSlice, ERC8021_MARKER_BYTES)) {
+    return none('no_erc8021_marker', 'Trailing 16 bytes do not match ERC-8021 marker.');
+  }
+
+  const schemaId = raw[raw.length - 17];
+
+  if (schemaId === 0 || schemaId === 1) {
+    if (raw.length < 19) {
+      return { ok: false, present: true, code: 'truncated_erc8021', reason: 'Truncated Schema 0/1 length byte.', schemaId, attribution: null };
+    }
+    const codesLen = raw[raw.length - 18];
+    const codesEnd = raw.length - 18;
+    const codesStart = codesEnd - codesLen;
+    if (codesLen === 0 || codesStart < 0) {
+      return { ok: false, present: true, code: 'truncated_erc8021', reason: 'Invalid Schema 0/1 codesLength.', schemaId, attribution: null };
+    }
+    let codesStr;
+    try {
+      codesStr = bytesToUtf8(raw.subarray(codesStart, codesEnd));
+    } catch {
+      return { ok: false, present: true, code: 'invalid_erc8021_codes', reason: 'Invalid UTF-8 in ERC-8021 codes.', schemaId, attribution: null };
+    }
+    const codes = codesStr.split(',').filter(Boolean);
+    if (codes.length === 0) {
+      return { ok: false, present: true, code: 'invalid_erc8021_codes', reason: 'Empty ERC-8021 codes list.', schemaId, attribution: null };
+    }
+
+    if (schemaId === 0) {
+      return {
+        ok: true,
+        present: true,
+        code: 'verified',
+        reason: `Decoded ERC-8021 Schema 0 Builder Code(s): ${codes.join(', ')}`,
+        schemaId: 0,
+        calldataWithoutSuffix: `0x${bytesToHex(raw.subarray(0, codesStart))}`,
+        attribution: { id: 0, codes }
+      };
+    }
+
+    // Schema 1: [address(20B)][chainId(N)][chainIdLen(1B)] immediately before codesStart
+    if (codesStart < 22) {
+      return { ok: false, present: true, code: 'truncated_erc8021', reason: 'Truncated Schema 1 custom registry.', schemaId: 1, attribution: null };
+    }
+    const chainIdLen = raw[codesStart - 1];
+    if (chainIdLen === 0 || chainIdLen > 32 || codesStart < 20 + 1 + chainIdLen) {
+      return { ok: false, present: true, code: 'truncated_erc8021', reason: 'Invalid Schema 1 chainIdLen.', schemaId: 1, attribution: null };
+    }
+    const chainIdStart = codesStart - 1 - chainIdLen;
+    const addrStart = chainIdStart - 20;
+    const regAddress = `0x${bytesToHex(raw.subarray(addrStart, chainIdStart))}`;
+    const regChainId = Number(bytesToBigInt(raw.subarray(chainIdStart, codesStart - 1)));
+
+    return {
+      ok: true,
+      present: true,
+      code: 'verified',
+      reason: `Decoded ERC-8021 Schema 1 Builder Code(s): ${codes.join(', ')}`,
+      schemaId: 1,
+      calldataWithoutSuffix: `0x${bytesToHex(raw.subarray(0, addrStart))}`,
+      attribution: {
+        id: 1,
+        codes,
+        codeRegistry: { address: regAddress, chainId: regChainId }
+      }
+    };
+  }
+
+  if (schemaId === 2) {
+    if (raw.length < 20) {
+      return { ok: false, present: true, code: 'truncated_erc8021', reason: 'Truncated Schema 2 CBOR length.', schemaId: 2, attribution: null };
+    }
+    const cborLen = (raw[raw.length - 19] << 8) | raw[raw.length - 18];
+    const cborEnd = raw.length - 19;
+    const cborStart = cborEnd - cborLen;
+    if (cborLen === 0 || cborStart < 0) {
+      return { ok: false, present: true, code: 'truncated_erc8021', reason: 'Invalid Schema 2 cborLength.', schemaId: 2, attribution: null };
+    }
+    let decoded;
+    try {
+      const item = cborDecodeItem(raw.subarray(cborStart, cborEnd), 0, 0);
+      if (item.next !== cborLen || !item.value || typeof item.value !== 'object' || Array.isArray(item.value)) {
+        throw new Error('Schema 2 payload must be a canonical CBOR map');
+      }
+      decoded = item.value;
+    } catch (err) {
+      return { ok: false, present: true, code: 'invalid_erc8021_cbor', reason: String((err && err.message) || err), schemaId: 2, attribution: null };
+    }
+
+    const attribution = { id: 2 };
+    if (typeof decoded.a === 'string') attribution.appCode = decoded.a;
+    if (typeof decoded.w === 'string') attribution.walletCode = decoded.w;
+    if (Array.isArray(decoded.s)) attribution.serviceCodes = decoded.s.map(String);
+    if (decoded.r && typeof decoded.r === 'object') {
+      const registries = {};
+      if (decoded.r.a && decoded.r.a.a && decoded.r.a.c) {
+        registries.app = { address: String(decoded.r.a.a), chainId: Number(BigInt(decoded.r.a.c)) };
+      }
+      if (decoded.r.w && decoded.r.w.a && decoded.r.w.c) {
+        registries.wallet = { address: String(decoded.r.w.a), chainId: Number(BigInt(decoded.r.w.c)) };
+      }
+      if (registries.app || registries.wallet) attribution.registries = registries;
+    }
+    if (decoded.m && typeof decoded.m === 'object') {
+      attribution.metadata = Object.assign({}, decoded.m);
+    }
+
+    return {
+      ok: true,
+      present: true,
+      code: 'verified',
+      reason: 'Decoded ERC-8021 Schema 2 (CBOR) attribution.',
+      schemaId: 2,
+      calldataWithoutSuffix: `0x${bytesToHex(raw.subarray(0, cborStart))}`,
+      attribution
+    };
+  }
+
+  return {
+    ok: false,
+    present: true,
+    code: 'unsupported_erc8021_schema',
+    reason: `Unsupported ERC-8021 schemaId=${schemaId}.`,
+    schemaId,
+    attribution: null
+  };
+}
+
 exports.ROOT_ATTESTATION_VERSION = ROOT_ATTESTATION_VERSION;
+exports.ERC8021_MARKER_HEX = ERC8021_MARKER_HEX;
 exports.EMPTY_TRIE_ROOT_HEX = EMPTY_TRIE_ROOT_HEX;
 exports.EMPTY_CODE_HASH_HEX = EMPTY_CODE_HASH_HEX;
 exports.ERC20_TRANSFER_TOPIC0 = ERC20_TRANSFER_TOPIC0;
@@ -2873,3 +3256,6 @@ exports.issueRootAttestation = issueRootAttestation;
 exports.verifyRootAttestation = verifyRootAttestation;
 exports.evaluateReceiptOfflineProofsSync = evaluateReceiptOfflineProofsSync;
 exports.verifyUsdcSettlementProof = verifyUsdcSettlementProof;
+exports.encodeErc8021Suffix = encodeErc8021Suffix;
+exports.appendErc8021Suffix = appendErc8021Suffix;
+exports.decodeErc8021Suffix = decodeErc8021Suffix;
