@@ -358,7 +358,7 @@ a:hover { color: var(--red); }
     <div class="status-key-grid">
       <div class="status-key-cell">
         <div class="label">Open Standard</div>
-        <div class="value"><strong>Paxiom Receipts (<code>paxiom.receipt.v0</code> &middot; <code>v0.2.0</code>)</strong> &mdash; MIT specification, <code>x402</code> v2 <code>delivery-receipt</code> extension draft, <code>@paxiom/receipts@0.2.0</code> on npm, <code>paxiom-receipts==0.2.0</code> on PyPI, Official MCP Registry (<code>io.github.k-luecke/paxiom-receipts</code>), and free public Base Mainnet reference verifier on <code>api.paxiom.org</code>.</div>
+        <div class="value"><strong>Paxiom Receipts (<code>paxiom.receipt.v0</code> &middot; <code>v0.4.0</code>)</strong> &mdash; MIT specification, <code>x402</code> v2 <code>delivery-receipt</code> extension draft, <code>@paxiom/receipts@0.4.0</code> on npm, <code>paxiom-receipts==0.4.0</code> on PyPI, Official MCP Registry (<code>io.github.k-luecke/paxiom-receipts</code>), and free public Base Mainnet reference verifier on <code>api.paxiom.org</code>.</div>
       </div>
       <div class="status-key-cell">
         <div class="label">R&amp;D Substrate Track</div>
@@ -380,6 +380,14 @@ a:hover { color: var(--red); }
       <div class="build-log-header">
         <span id="log-heading">Build Log</span>
         <span>Most recent first</span>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">2026.11.24 &middot; v0.4.0</div>
+        <ul>
+          <li>Released <code>@paxiom/receipts@0.4.0</code> and <code>paxiom-receipts==0.4.0</code> with zero-dependency offline Ethereum MPT, EIP-1186 state/storage, and EVM receipt-trie USDC settlement verifiers (<code>@paxiom/receipts/proofs</code> &amp; <code>paxiom_receipts.proofs</code>) across Ethereum, Base, Arbitrum, Optimism, Polygon, and Circle Arc (<code>eip155:5042</code> / <code>eip155:5042002</code>), plus signed <code>paxiom.root.v0</code> block root attestations and zero-dependency <code>ERC-8021</code> Builder Code &amp; <code>x402</code> Schema 2 CBOR calldata attribution helpers</li>
+          <li>Upgraded <code>POST /v1/receipt/verify-live</code> on <code>api.paxiom.org</code> to reconstruct and attach self-verifying <code>evm_receipt_trie_v0</code> Modified Merkle-Patricia Trie proofs against canonical block <code>receiptsRoot</code> headers alongside two-gate buyer policy firewall &amp; <code>AuthCaptureEscrow</code> arbitration (<code>@paxiom/receipts/guard</code>, shipped in <code>v0.3.0</code>)</li>
+        </ul>
       </div>
 
       <div class="log-entry">
