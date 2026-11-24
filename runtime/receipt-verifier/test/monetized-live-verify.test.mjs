@@ -4,6 +4,10 @@ import { createServer } from '../server.mjs';
 import { ERC20_TRANSFER_TOPIC0, NETWORK_CONFIGS } from '../onchain-settlement.mjs';
 import { generateReceiptKeyPair, issueReceipt } from '../../../standards/receipts/v0/src/issue.mjs';
 import { verifyReceipt } from '../../../standards/receipts/v0/src/verify.mjs';
+import {
+  buildReceiptTrieProof,
+  verifyUsdcSettlementProofSync
+} from '../../../standards/receipts/v0/src/proofs.mjs';
 
 function padAddressTopic(addr) {
   return '0x' + addr.toLowerCase().replace(/^0x/, '').padStart(64, '0');
@@ -633,5 +637,130 @@ test('FERMI-PAX-06: pending RPC receipt (blockNumber: null) returns structured t
     assert.equal(res.status, 502);
     const body = await res.json();
     assert.equal(body.error.code, 'payment_gate_error');
+  });
+});
+
+test('POST /v1/receipt/verify-live builds & cryptographically verifies offline evm_receipt_trie_v0 MPT settlementProof', async () => {
+  const sellerKey = generateReceiptKeyPair({ keyId: 'seller-mpt-01' });
+  const sellerPayTo = '0x1111111111111111111111111111111111111111';
+  const buyerAddr = '0x2222222222222222222222222222222222222222';
+  const txHash0 = '0x' + '10'.repeat(32);
+  const txHash1 = '0x' + 'ab'.repeat(32);
+  const blockHash = '0x' + 'be'.repeat(32);
+  const output = { proofBacked: true };
+
+  const { receipt: claimedReceipt } = issueReceipt({
+    privateKey: sellerKey.privateKeyPem,
+    issuer: { name: 'Proof Seller', uri: 'https://proof.example', keyId: sellerKey.keyId },
+    service: { name: 'Proof API', resource: 'https://proof.example/v1/data', method: 'POST' },
+    payment: {
+      scheme: 'x402',
+      network: 'base',
+      asset: 'USDC',
+      amountAtomic: '12000',
+      amountDisplay: '0.012',
+      payTo: sellerPayTo,
+      settlement: { status: 'claimed_not_checked', transactionHash: txHash1, checkedByVerifier: false }
+    },
+    output
+  });
+
+  const blockReceipts = [
+    {
+      type: '0x2',
+      status: '0x1',
+      cumulativeGasUsed: '0x5208',
+      logsBloom: '0x' + '00'.repeat(256),
+      logs: [],
+      transactionHash: txHash0,
+      transactionIndex: '0x0',
+      blockNumber: '0x2000',
+      blockHash
+    },
+    {
+      type: '0x2',
+      status: '0x1',
+      cumulativeGasUsed: '0x12000',
+      logsBloom: '0x' + '00'.repeat(256),
+      logs: [
+        {
+          address: NETWORK_CONFIGS.base.usdcAddress,
+          topics: [
+            ERC20_TRANSFER_TOPIC0,
+            padAddressTopic(buyerAddr),
+            padAddressTopic(sellerPayTo)
+          ],
+          data: padUint256Hex(12000)
+        }
+      ],
+      transactionHash: txHash1,
+      transactionIndex: '0x1',
+      blockNumber: '0x2000',
+      blockHash
+    }
+  ];
+  const expectedTrie = buildReceiptTrieProof(blockReceipts, txHash1, { network: 'eip155:8453', blockNumber: '8192', blockHash });
+
+  const env = {
+    LIVE_VERIFY_ENABLED: 'true',
+    RENDER: 'true',
+    BASE_RPC_URL: 'https://mpt.base.mock'
+  };
+
+  let blockReceiptsFetches = 0;
+  const mockMptRpc = async (_url, init) => {
+    const req = JSON.parse(init.body);
+    if (req.method === 'eth_blockNumber') {
+      return new Response(JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x2005' }), { status: 200 });
+    }
+    if (req.method === 'eth_getTransactionReceipt') {
+      return new Response(JSON.stringify({ jsonrpc: '2.0', id: 1, result: blockReceipts[1] }), { status: 200 });
+    }
+    if (req.method === 'eth_getBlockByHash') {
+      return new Response(JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        result: { hash: blockHash, number: '0x2000', receiptsRoot: expectedTrie.receiptsRoot }
+      }), { status: 200 });
+    }
+    if (req.method === 'eth_getBlockReceipts') {
+      blockReceiptsFetches += 1;
+      return new Response(JSON.stringify({ jsonrpc: '2.0', id: 1, result: blockReceipts }), { status: 200 });
+    }
+    throw new Error(`Unexpected RPC method: ${req.method}`);
+  };
+
+  await withServer({ env, fetchImpl: mockMptRpc }, async (base) => {
+    const res1 = await fetch(`${base}/v1/receipt/verify-live`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ receipt: claimedReceipt, output, expectedPayTo: sellerPayTo })
+    });
+    assert.equal(res1.status, 200);
+    const b1 = await res1.json();
+    assert.equal(b1.valid, true);
+    assert.equal(b1.onchainSettlement.cryptographicProofVerified, true);
+    assert.equal(b1.onchainSettlement.settlementProof.type, 'evm_receipt_trie_v0');
+    assert.equal(b1.onchainSettlement.settlementProof.receiptsRoot, expectedTrie.receiptsRoot);
+
+    // Buyer verifies returned MPT proof 100% offline with ZERO RPC calls!
+    const offlineCheck = verifyUsdcSettlementProofSync({
+      settlementProof: b1.onchainSettlement.settlementProof,
+      network: 'eip155:8453',
+      expectedPayTo: sellerPayTo,
+      minAmountAtomic: '12000',
+      expectedTransactionHash: txHash1,
+      trustedRoots: { 'eip155:8453:8192': expectedTrie.receiptsRoot }
+    });
+    assert.equal(offlineCheck.verified, true);
+
+    // Second call on same block hits LRU blockReceipts cache (0 extra eth_getBlockReceipts calls!)
+    const res2 = await fetch(`${base}/v1/receipt/verify-live`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ receipt: claimedReceipt, output, expectedPayTo: sellerPayTo })
+    });
+    assert.equal(res2.status, 200);
+    assert.equal(blockReceiptsFetches, 1);
   });
 });

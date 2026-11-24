@@ -5,12 +5,36 @@
 // from the canonical USDC contract >= `amountAtomic` (and matching `expectedPayTo`
 // when supplied).
 
+import {
+  buildReceiptTrieProof,
+  verifyUsdcSettlementProofSync
+} from '../../standards/receipts/v0/src/proofs.mjs';
+
 export const ERC20_TRANSFER_TOPIC0 =
   '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
 export const EVM_ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
 const HEX_UINT_RE = /^0x[0-9a-fA-F]+$/;
 const DEC_UINT_RE = /^[0-9]+$/;
+const MAX_BLOCK_RECEIPTS_CACHE = 32;
+const blockReceiptsProofCache = new Map();
+
+function getCachedBlockBundle(cacheKey) {
+  if (!blockReceiptsProofCache.has(cacheKey)) return null;
+  const val = blockReceiptsProofCache.get(cacheKey);
+  blockReceiptsProofCache.delete(cacheKey);
+  blockReceiptsProofCache.set(cacheKey, val);
+  return val;
+}
+
+function setCachedBlockBundle(cacheKey, val) {
+  if (blockReceiptsProofCache.has(cacheKey)) blockReceiptsProofCache.delete(cacheKey);
+  else if (blockReceiptsProofCache.size >= MAX_BLOCK_RECEIPTS_CACHE) {
+    const oldest = blockReceiptsProofCache.keys().next().value;
+    if (oldest !== undefined) blockReceiptsProofCache.delete(oldest);
+  }
+  blockReceiptsProofCache.set(cacheKey, val);
+}
 
 export const NETWORK_CONFIGS = Object.freeze(Object.assign(Object.create(null), {
   base: Object.freeze({
@@ -100,7 +124,8 @@ export async function verifyOnchainUsdcSettlement(receipt, {
   env = process.env,
   fetchImpl = globalThis.fetch,
   expectedPayTo = null,
-  minConfirmations = 1
+  minConfirmations = 1,
+  includeSettlementProof = false
 } = {}) {
   const payment = receipt && receipt.payload && receipt.payload.payment;
   if (!payment || !payment.settlement || !payment.settlement.transactionHash) {
@@ -243,6 +268,61 @@ export async function verifyOnchainUsdcSettlement(receipt, {
     };
   }
 
+  // Opportunistically construct & cryptographically self-verify an offline `evm_receipt_trie_v0`
+  // Merkle-Patricia settlement proof against the block header's canonical `receiptsRoot` (`0` buyer RPC trust!).
+  let settlementProof = null;
+  let cryptographicProofVerified = false;
+  const shouldBuildMpt = Boolean(
+    env.PAXIOM_DISABLE_MPT_SETTLEMENT_PROOF !== 'true' &&
+    (includeSettlementProof || txReceipt.blockHash)
+  );
+  if (shouldBuildMpt) {
+    try {
+      const blockRef = txReceipt.blockHash || txReceipt.blockNumber;
+      const cacheKey = `${netCfg.caip2}:${String(blockRef).toLowerCase()}`;
+      let bundle = getCachedBlockBundle(cacheKey);
+      if (!bundle) {
+        const [blockHeader, blockReceipts] = await Promise.all([
+          txReceipt.blockHash
+            ? rpcCall(rpcUrl, 'eth_getBlockByHash', [txReceipt.blockHash, false], fetchImpl, 5000)
+            : rpcCall(rpcUrl, 'eth_getBlockByNumber', [txReceipt.blockNumber, false], fetchImpl, 5000),
+          rpcCall(rpcUrl, 'eth_getBlockReceipts', [blockRef], fetchImpl, 6000)
+        ]);
+        if (blockHeader && blockHeader.receiptsRoot && Array.isArray(blockReceipts) && blockReceipts.length > 0) {
+          bundle = {
+            receiptsRoot: String(blockHeader.receiptsRoot).toLowerCase(),
+            blockHash: blockHeader.hash ? String(blockHeader.hash).toLowerCase() : null,
+            blockReceipts
+          };
+          setCachedBlockBundle(cacheKey, bundle);
+        }
+      }
+      if (bundle) {
+        const candidateProof = buildReceiptTrieProof(bundle.blockReceipts, txHash, {
+          network: netCfg.caip2,
+          blockNumber: txBlock.toString(),
+          blockHash: bundle.blockHash || txReceipt.blockHash || undefined
+        });
+        if (String(candidateProof.receiptsRoot).toLowerCase() === bundle.receiptsRoot) {
+          const mptCheck = verifyUsdcSettlementProofSync({
+            settlementProof: candidateProof,
+            network: netCfg.caip2,
+            expectedPayTo: wantTo || matchingTransfers[0].to,
+            minAmountAtomic: requiredAmount,
+            expectedTransactionHash: txHash,
+            allowUnanchoredRoot: true
+          });
+          if (mptCheck && mptCheck.verified) {
+            settlementProof = candidateProof;
+            cryptographicProofVerified = true;
+          }
+        }
+      }
+    } catch {
+      // Graceful fallback when an upstream RPC node does not implement `eth_getBlockReceipts`
+    }
+  }
+
   return {
     checked: true,
     settled: true,
@@ -251,6 +331,8 @@ export async function verifyOnchainUsdcSettlement(receipt, {
     blockNumber: txBlock.toString(),
     confirmations,
     recipientChecked: Boolean(wantTo),
-    matchedTransfer: matchingTransfers[0]
+    matchedTransfer: matchingTransfers[0],
+    cryptographicProofVerified,
+    ...(settlementProof ? { settlementProof } : {})
   };
 }

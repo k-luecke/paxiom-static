@@ -656,7 +656,8 @@ async function handleLiveVerify(req, res, { env, fetchImpl, stats, checkRateLimi
       env,
       fetchImpl,
       expectedPayTo: normalizedExpectedPayTo,
-      minConfirmations: Number(env.MIN_CONFIRMATIONS) || 1
+      minConfirmations: Number(env.MIN_CONFIRMATIONS) || 1,
+      includeSettlementProof: Boolean(parsed.includeSettlementProof)
     });
   } catch {
     return send(res, 502, errBody(
